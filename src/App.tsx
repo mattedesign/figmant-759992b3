@@ -6,8 +6,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { RoleRedirect } from "@/components/auth/RoleRedirect";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
+import OwnerDashboard from "./pages/OwnerDashboard";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -27,7 +29,19 @@ const App = () => (
               path="/dashboard" 
               element={
                 <AuthGuard requiresSubscription={true}>
-                  <Dashboard />
+                  <RoleRedirect>
+                    <Dashboard />
+                  </RoleRedirect>
+                </AuthGuard>
+              } 
+            />
+            <Route 
+              path="/owner-dashboard" 
+              element={
+                <AuthGuard>
+                  <RoleRedirect ownerOnly={true}>
+                    <OwnerDashboard />
+                  </RoleRedirect>
                 </AuthGuard>
               } 
             />

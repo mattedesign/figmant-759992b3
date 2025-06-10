@@ -11,12 +11,22 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, LogOut, Crown, Settings } from 'lucide-react';
+import { User, LogOut, Crown, Settings, LayoutDashboard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export const UserMenu = () => {
   const { profile, signOut, isOwner, hasActiveSubscription } = useAuth();
+  const navigate = useNavigate();
 
   if (!profile) return null;
+
+  const handleDashboardClick = () => {
+    if (isOwner) {
+      navigate('/owner-dashboard');
+    } else {
+      navigate('/dashboard');
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -49,6 +59,10 @@ export const UserMenu = () => {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleDashboardClick}>
+          <LayoutDashboard className="mr-2 h-4 w-4" />
+          <span>{isOwner ? 'Owner Dashboard' : 'Dashboard'}</span>
+        </DropdownMenuItem>
         <DropdownMenuItem>
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>

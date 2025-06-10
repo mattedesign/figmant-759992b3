@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: Json | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -33,6 +63,36 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      subscription_analytics: {
+        Row: {
+          cancelled_subscriptions: number | null
+          created_at: string
+          date: string
+          id: string
+          new_subscriptions: number | null
+          revenue_usd: number | null
+          total_subscribers: number | null
+        }
+        Insert: {
+          cancelled_subscriptions?: number | null
+          created_at?: string
+          date: string
+          id?: string
+          new_subscriptions?: number | null
+          revenue_usd?: number | null
+          total_subscribers?: number | null
+        }
+        Update: {
+          cancelled_subscriptions?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          new_subscriptions?: number | null
+          revenue_usd?: number | null
+          total_subscribers?: number | null
         }
         Relationships: []
       }
@@ -79,6 +139,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_management_logs: {
+        Row: {
+          action: string
+          admin_user_id: string
+          created_at: string
+          details: Json | null
+          id: string
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_user_id: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_user_id?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
