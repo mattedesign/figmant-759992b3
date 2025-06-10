@@ -1,10 +1,13 @@
 
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Settings, User, Activity } from 'lucide-react';
+import { Bell, Settings, Activity } from 'lucide-react';
+import { UserMenu } from './UserMenu';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const Navigation = () => {
+  const { user } = useAuth();
+
   return (
     <header className="border-b bg-card">
       <div className="container mx-auto px-4 py-4">
@@ -20,15 +23,17 @@ export const Navigation = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon">
-              <Bell className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <User className="h-4 w-4" />
-            </Button>
+            {user && (
+              <>
+                <Button variant="ghost" size="icon">
+                  <Bell className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon">
+                  <Settings className="h-4 w-4" />
+                </Button>
+                <UserMenu />
+              </>
+            )}
           </div>
         </div>
       </div>

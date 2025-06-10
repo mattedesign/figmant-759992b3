@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Brain, BarChart3, Users, Target, Zap, Shield } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
   const features = [
     {
@@ -41,6 +43,14 @@ const Index = () => {
     },
   ];
 
+  const handleGetStarted = () => {
+    if (user) {
+      navigate('/dashboard');
+    } else {
+      navigate('/auth');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -50,9 +60,24 @@ const Index = () => {
               <Brain className="h-8 w-8 text-primary" />
               <h1 className="text-2xl font-bold">UX Analytics AI</h1>
             </div>
-            <Button onClick={() => navigate('/dashboard')}>
-              Launch Dashboard
-            </Button>
+            <div className="space-x-2">
+              {loading ? (
+                <div className="h-10 w-24 bg-gray-200 animate-pulse rounded-md"></div>
+              ) : user ? (
+                <Button onClick={() => navigate('/dashboard')}>
+                  Go to Dashboard
+                </Button>
+              ) : (
+                <>
+                  <Button variant="outline" onClick={() => navigate('/auth')}>
+                    Sign In
+                  </Button>
+                  <Button onClick={handleGetStarted}>
+                    Get Started
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -70,7 +95,7 @@ const Index = () => {
             into user behavior, optimize conversion funnels, and make data-driven UX decisions.
           </p>
           <div className="space-x-4">
-            <Button size="lg" onClick={() => navigate('/dashboard')}>
+            <Button size="lg" onClick={handleGetStarted}>
               Get Started
             </Button>
             <Button variant="outline" size="lg">
