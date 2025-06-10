@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, LogOut, Crown, Settings, LayoutDashboard } from 'lucide-react';
+import { User, LogOut, Crown, Settings, LayoutDashboard, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const UserMenu = () => {
@@ -68,7 +68,8 @@ export const UserMenu = () => {
           <span>Settings</span>
         </DropdownMenuItem>
         {!isOwner && (
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/subscription')}>
+            <CreditCard className="mr-2 h-4 w-4" />
             <span>Subscription</span>
           </DropdownMenuItem>
         )}

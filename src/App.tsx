@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import DesignAnalysis from "./pages/DesignAnalysis";
+import Subscription from "./pages/Subscription";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -50,6 +51,14 @@ function App() {
                 element={
                   <AuthGuard requiresSubscription={true}>
                     <DesignAnalysis />
+                  </AuthGuard>
+                } 
+              />
+              <Route 
+                path="/subscription" 
+                element={
+                  <AuthGuard>
+                    <Subscription />
                   </AuthGuard>
                 } 
               />
