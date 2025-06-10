@@ -65,7 +65,8 @@ export const useAuthState = () => {
   }, []);
 
   const isOwner = profile?.role === 'owner';
-  const hasActiveSubscription = subscription?.status === 'active' || isOwner;
+  // Updated logic: Now includes 'free' status as having access
+  const hasActiveSubscription = subscription?.status === 'active' || subscription?.status === 'free' || isOwner;
 
   console.log('Current auth state:', {
     user: user?.id,

@@ -448,7 +448,12 @@ export type Database = {
       }
     }
     Enums: {
-      subscription_status: "active" | "inactive" | "cancelled" | "expired"
+      subscription_status:
+        | "active"
+        | "inactive"
+        | "cancelled"
+        | "expired"
+        | "free"
       user_role: "owner" | "subscriber"
     }
     CompositeTypes: {
@@ -565,7 +570,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      subscription_status: ["active", "inactive", "cancelled", "expired"],
+      subscription_status: [
+        "active",
+        "inactive",
+        "cancelled",
+        "expired",
+        "free",
+      ],
       user_role: ["owner", "subscriber"],
     },
   },

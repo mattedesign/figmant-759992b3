@@ -15,7 +15,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
   children, 
   requiresSubscription = false 
 }) => {
-  const { user, loading, hasActiveSubscription, isOwner } = useAuth();
+  const { user, loading, hasActiveSubscription, isOwner, subscription } = useAuth();
 
   if (loading) {
     return (
@@ -39,7 +39,9 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
             <CardDescription>
               {isOwner 
                 ? "Owner access detected - this should not happen. Please contact support."
-                : "You need an active subscription to access this feature."
+                : subscription?.status === 'free' 
+                  ? "You have free access but this feature requires a paid subscription."
+                  : "You need an active subscription to access this feature."
               }
             </CardDescription>
           </CardHeader>
@@ -47,7 +49,10 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
             {!isOwner && (
               <>
                 <p className="text-sm text-muted-foreground text-center">
-                  Upgrade to a paid plan to unlock advanced UX analytics features.
+                  {subscription?.status === 'free' 
+                    ? "Upgrade to a paid plan to unlock premium features."
+                    : "Upgrade to a paid plan to unlock advanced UX analytics features."
+                  }
                 </p>
                 <Button className="w-full" onClick={() => window.location.href = '/subscription'}>
                   View Subscription Plans
