@@ -28,6 +28,8 @@ serve(async (req) => {
       );
     }
 
+    console.log('Processing request:', { requestType, userId: userId.substring(0, 8) + '...' });
+
     // Get Claude settings from admin_settings
     const { data: settings, error: settingsError } = await supabase
       .rpc('get_claude_settings');
@@ -74,6 +76,24 @@ serve(async (req) => {
 
     console.log('Using Claude API key:', claudeApiKey ? claudeApiKey.substring(0, 10) + '...' : 'undefined');
 
+    // Enhanced prompt for design analysis
+    let enhancedPrompt = prompt;
+    if (requestType === 'design_analysis') {
+      enhancedPrompt = `${claudeSettings.claude_system_prompt}
+
+As a UX/UI design expert, please provide a comprehensive analysis of the design. Structure your response with clear sections:
+
+1. **Overall Assessment** - First impressions and general observations
+2. **Strengths** - What works well in the current design
+3. **Areas for Improvement** - Specific issues and their impact
+4. **Actionable Recommendations** - Concrete steps to improve the design
+5. **Priority Actions** - Top 3 most important changes to make
+
+User request: ${prompt}`;
+    } else {
+      enhancedPrompt = `${claudeSettings.claude_system_prompt}\n\nUser request: ${prompt}`;
+    }
+
     // Make request to Claude API
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -84,11 +104,11 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: claudeSettings.claude_model,
-        max_tokens: 1024,
+        max_tokens: requestType === 'design_analysis' ? 2048 : 1024,
         messages: [
           {
             role: 'user',
-            content: `${claudeSettings.claude_system_prompt}\n\nUser request: ${prompt}`
+            content: enhancedPrompt
           }
         ]
       })
@@ -120,6 +140,12 @@ serve(async (req) => {
     // Estimate cost (rough estimation based on Claude pricing)
     const costPerToken = 0.00001; // Approximate cost per token
     const estimatedCost = tokensUsed * costPerToken;
+
+    console.log('Claude response received:', {
+      tokensUsed,
+      estimatedCost: estimatedCost.toFixed(4),
+      responseLength: responseText.length
+    });
 
     // Log successful request
     await supabase.from('claude_usage_logs').insert({

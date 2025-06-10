@@ -142,6 +142,137 @@ export type Database = {
           },
         ]
       }
+      design_analysis: {
+        Row: {
+          analysis_results: Json
+          analysis_type: string
+          confidence_score: number | null
+          created_at: string
+          design_upload_id: string
+          id: string
+          improvement_areas: string[] | null
+          prompt_used: string
+          suggestions: Json | null
+          user_id: string
+        }
+        Insert: {
+          analysis_results: Json
+          analysis_type: string
+          confidence_score?: number | null
+          created_at?: string
+          design_upload_id: string
+          id?: string
+          improvement_areas?: string[] | null
+          prompt_used: string
+          suggestions?: Json | null
+          user_id: string
+        }
+        Update: {
+          analysis_results?: Json
+          analysis_type?: string
+          confidence_score?: number | null
+          created_at?: string
+          design_upload_id?: string
+          id?: string
+          improvement_areas?: string[] | null
+          prompt_used?: string
+          suggestions?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "design_analysis_design_upload_id_fkey"
+            columns: ["design_upload_id"]
+            isOneToOne: false
+            referencedRelation: "design_uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "design_analysis_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      design_uploads: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          status: string
+          updated_at: string
+          use_case: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id?: string
+          status?: string
+          updated_at?: string
+          use_case: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          use_case?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "design_uploads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      design_use_cases: {
+        Row: {
+          analysis_focus: string[]
+          created_at: string
+          description: string
+          id: string
+          name: string
+          prompt_template: string
+          updated_at: string
+        }
+        Insert: {
+          analysis_focus: string[]
+          created_at?: string
+          description: string
+          id?: string
+          name: string
+          prompt_template: string
+          updated_at?: string
+        }
+        Update: {
+          analysis_focus?: string[]
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          prompt_template?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null

@@ -11,6 +11,7 @@ import { RoleRedirect } from "@/components/auth/RoleRedirect";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import OwnerDashboard from "./pages/OwnerDashboard";
+import DesignAnalysis from "./pages/DesignAnalysis";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -41,6 +42,14 @@ function App() {
                     <RoleRedirect>
                       <Dashboard />
                     </RoleRedirect>
+                  </AuthGuard>
+                } 
+              />
+              <Route 
+                path="/design-analysis" 
+                element={
+                  <AuthGuard requiresSubscription={true}>
+                    <DesignAnalysis />
                   </AuthGuard>
                 } 
               />
