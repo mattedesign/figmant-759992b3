@@ -4,17 +4,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Crown, Mail, Calendar, Settings } from 'lucide-react';
+import { Crown, Mail, Calendar, Settings, UserPlus } from 'lucide-react';
 import { format } from 'date-fns';
+import { CreateUserDialog } from './CreateUserDialog';
 
 export const UserManagement = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('subscribers');
+  const [createUserDialogOpen, setCreateUserDialogOpen] = useState(false);
 
   const { data: users, isLoading, refetch } = useQuery({
     queryKey: ['all-users'],
@@ -77,6 +81,15 @@ export const UserManagement = () => {
     }
   };
 
+  const handleUserCreated = () => {
+    refetch();
+    setCreateUserDialogOpen(false);
+    toast({
+      title: "User Created",
+      description: "New user has been created successfully",
+    });
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -95,83 +108,129 @@ export const UserManagement = () => {
     );
   }
 
+  const ownerUsers = users?.filter(user => user.role === 'owner') || [];
+  const subscriberUsers = users?.filter(user => user.role === 'subscriber') || [];
+
+  const renderUserTable = (userList: typeof users, userType: 'owner' | 'subscriber') => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>User</TableHead>
+          <TableHead>Role</TableHead>
+          <TableHead>Subscription</TableHead>
+          <TableHead>Joined</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {userList?.map((user) => (
+          <TableRow key={user.id}>
+            <TableCell>
+              <div className="flex items-center space-x-2">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <div className="font-medium">{user.full_name || 'Unnamed User'}</div>
+                  <div className="text-sm text-muted-foreground">{user.email}</div>
+                </div>
+              </div>
+            </TableCell>
+            <TableCell>
+              <Badge variant={user.role === 'owner' ? 'default' : 'secondary'}>
+                {user.role === 'owner' && <Crown className="h-3 w-3 mr-1" />}
+                {user.role}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              <Badge variant={user.subscriptions?.[0]?.status === 'active' ? 'default' : 'outline'}>
+                {user.subscriptions?.[0]?.status || 'inactive'}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center space-x-1">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">
+                  {user.created_at ? format(new Date(user.created_at), 'MMM dd, yyyy') : 'Unknown'}
+                </span>
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="flex space-x-2">
+                {user.role === 'subscriber' && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => updateUserRole(user.id, 'owner')}
+                  >
+                    Make Owner
+                  </Button>
+                )}
+                {user.role === 'owner' && user.id !== user?.id && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => updateUserRole(user.id, 'subscriber')}
+                  >
+                    Remove Owner
+                  </Button>
+                )}
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+        {userList?.length === 0 && (
+          <TableRow>
+            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+              No {userType === 'owner' ? 'owners' : 'subscribers'} found
+            </TableCell>
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>
+  );
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>User Management</CardTitle>
-        <CardDescription>
-          Manage users and their subscriptions
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>User Management</CardTitle>
+            <CardDescription>
+              Manage users, their roles, and subscriptions
+            </CardDescription>
+          </div>
+          <Button onClick={() => setCreateUserDialogOpen(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add User
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Subscription</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users?.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <div className="font-medium">{user.full_name || 'Unnamed User'}</div>
-                      <div className="text-sm text-muted-foreground">{user.email}</div>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={user.role === 'owner' ? 'default' : 'secondary'}>
-                    {user.role === 'owner' && <Crown className="h-3 w-3 mr-1" />}
-                    {user.role}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={user.subscriptions?.[0]?.status === 'active' ? 'default' : 'outline'}>
-                    {user.subscriptions?.[0]?.status || 'inactive'}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center space-x-1">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      {user.created_at ? format(new Date(user.created_at), 'MMM dd, yyyy') : 'Unknown'}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    {user.role === 'subscriber' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateUserRole(user.id, 'owner')}
-                      >
-                        Make Owner
-                      </Button>
-                    )}
-                    {user.role === 'owner' && user.id !== user?.id && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateUserRole(user.id, 'subscriber')}
-                      >
-                        Remove Owner
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="subscribers">
+              Subscribers ({subscriberUsers.length})
+            </TabsTrigger>
+            <TabsTrigger value="owners">
+              Owners ({ownerUsers.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="subscribers" className="mt-6">
+            {renderUserTable(subscriberUsers, 'subscriber')}
+          </TabsContent>
+
+          <TabsContent value="owners" className="mt-6">
+            {renderUserTable(ownerUsers, 'owner')}
+          </TabsContent>
+        </Tabs>
       </CardContent>
+
+      <CreateUserDialog
+        open={createUserDialogOpen}
+        onOpenChange={setCreateUserDialogOpen}
+        onUserCreated={handleUserCreated}
+        defaultRole={activeTab === 'owners' ? 'owner' : 'subscriber'}
+      />
     </Card>
   );
 };
