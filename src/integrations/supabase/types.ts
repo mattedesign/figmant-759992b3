@@ -298,6 +298,23 @@ export type Database = {
         }
         Returns: boolean
       }
+      upsert_admin_setting: {
+        Args: {
+          p_setting_key: string
+          p_setting_value: string
+          p_description?: string
+          p_updated_by?: string
+        }
+        Returns: Json
+      }
+      validate_claude_api_key: {
+        Args: { api_key: string }
+        Returns: boolean
+      }
+      validate_claude_model: {
+        Args: { model: string }
+        Returns: boolean
+      }
     }
     Enums: {
       subscription_status: "active" | "inactive" | "cancelled" | "expired"
