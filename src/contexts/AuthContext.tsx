@@ -31,6 +31,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  refetchUserData: () => Promise<void>;
   isOwner: boolean;
   hasActiveSubscription: boolean;
 }
@@ -55,13 +56,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId);
+      
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile fetch error:', profileError);
+        throw profileError;
+      }
+
+      console.log('Profile data received:', profileData);
 
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('subscriptions')
@@ -69,12 +77,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('user_id', userId)
         .single();
 
-      if (subscriptionError) throw subscriptionError;
+      if (subscriptionError) {
+        console.error('Subscription fetch error:', subscriptionError);
+        throw subscriptionError;
+      }
+
+      console.log('Subscription data received:', subscriptionData);
 
       setProfile(profileData);
       setSubscription(subscriptionData);
     } catch (error) {
       console.error('Error fetching user data:', error);
+      // Don't clear profile/subscription on error - they might already be set
+    }
+  };
+
+  const refetchUserData = async () => {
+    if (user?.id) {
+      await fetchUserProfile(user.id);
     }
   };
 
@@ -82,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -101,6 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -189,6 +211,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isOwner = profile?.role === 'owner';
   const hasActiveSubscription = subscription?.status === 'active' || isOwner;
 
+  console.log('Current auth state:', {
+    user: user?.id,
+    profile: profile?.role,
+    subscription: subscription?.status,
+    isOwner,
+    hasActiveSubscription
+  });
+
   const value = {
     user,
     session,
@@ -198,6 +228,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signUp,
     signOut,
+    refetchUserData,
     isOwner,
     hasActiveSubscription,
   };
