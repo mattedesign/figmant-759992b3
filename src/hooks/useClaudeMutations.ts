@@ -9,9 +9,15 @@ export const useClaudeMutations = () => {
 
   const updateSettingMutation = useMutation({
     mutationFn: async ({ key, value, description }: { key: string; value: any; description?: string }) => {
+      // Convert boolean values to string for storage in the database
+      let processedValue = value;
+      if (typeof value === 'boolean') {
+        processedValue = value.toString();
+      }
+      
       const { data, error } = await supabase.rpc('upsert_admin_setting', {
         p_setting_key: key,
-        p_setting_value: String(value),
+        p_setting_value: processedValue,
         p_description: description
       });
       
