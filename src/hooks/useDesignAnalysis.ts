@@ -14,7 +14,9 @@ export const useDesignUploads = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data || [];
+      
+      // Type assertion to ensure the data matches our DesignUpload interface
+      return (data || []) as DesignUpload[];
     }
   });
 };
@@ -29,7 +31,7 @@ export const useDesignUseCases = () => {
         .order('name');
       
       if (error) throw error;
-      return data || [];
+      return (data || []) as DesignUseCase[];
     }
   });
 };
@@ -47,7 +49,7 @@ export const useDesignAnalyses = (uploadId?: string) => {
       const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data || [];
+      return (data || []) as DesignAnalysis[];
     },
     enabled: !!uploadId
   });
