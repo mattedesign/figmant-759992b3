@@ -39,6 +39,109 @@ export type Database = {
         }
         Relationships: []
       }
+      claude_insights: {
+        Row: {
+          confidence_score: number | null
+          created_at: string | null
+          data_source: Json | null
+          description: string
+          id: string
+          impact_area: string | null
+          insight_type: string
+          priority: string
+          recommendations: Json | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string | null
+          data_source?: Json | null
+          description: string
+          id?: string
+          impact_area?: string | null
+          insight_type: string
+          priority?: string
+          recommendations?: Json | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string | null
+          data_source?: Json | null
+          description?: string
+          id?: string
+          impact_area?: string | null
+          insight_type?: string
+          priority?: string
+          recommendations?: Json | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claude_insights_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      claude_usage_logs: {
+        Row: {
+          cost_usd: number | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          request_data: Json | null
+          request_type: string
+          response_data: Json | null
+          success: boolean | null
+          tokens_used: number | null
+          user_id: string | null
+        }
+        Insert: {
+          cost_usd?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          request_data?: Json | null
+          request_type: string
+          response_data?: Json | null
+          success?: boolean | null
+          tokens_used?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          cost_usd?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          request_data?: Json | null
+          request_type?: string
+          response_data?: Json | null
+          success?: boolean | null
+          tokens_used?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claude_usage_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -179,6 +282,14 @@ export type Database = {
           p_role?: Database["public"]["Enums"]["user_role"]
         }
         Returns: Json
+      }
+      get_claude_settings: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          claude_ai_enabled: boolean
+          claude_model: string
+          claude_system_prompt: string
+        }[]
       }
       has_role: {
         Args: {
