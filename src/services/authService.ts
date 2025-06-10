@@ -1,0 +1,127 @@
+
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { UserProfile, Subscription } from '@/types/auth';
+
+export const createAuthService = () => {
+  const { toast } = useToast();
+
+  const fetchUserProfile = async (userId: string): Promise<{ profile: UserProfile | null; subscription: Subscription | null }> => {
+    try {
+      console.log('Fetching profile for user:', userId);
+      
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profileError) {
+        console.error('Profile fetch error:', profileError);
+        throw profileError;
+      }
+
+      console.log('Profile data received:', profileData);
+
+      const { data: subscriptionData, error: subscriptionError } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (subscriptionError) {
+        console.error('Subscription fetch error:', subscriptionError);
+        throw subscriptionError;
+      }
+
+      console.log('Subscription data received:', subscriptionData);
+
+      return {
+        profile: profileData,
+        subscription: subscriptionData
+      };
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      return { profile: null, subscription: null };
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Sign In Failed",
+          description: error.message,
+        });
+      } else {
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully signed in.",
+        });
+      }
+      
+      return { error };
+    } catch (error) {
+      return { error };
+    }
+  };
+
+  const signUp = async (email: string, password: string, fullName: string) => {
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: fullName,
+          }
+        }
+      });
+      
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Sign Up Failed",
+          description: error.message,
+        });
+      } else {
+        toast({
+          title: "Account Created!",
+          description: "Please check your email to verify your account.",
+        });
+      }
+      
+      return { error };
+    } catch (error) {
+      return { error };
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out.",
+      });
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  return {
+    fetchUserProfile,
+    signIn,
+    signUp,
+    signOut
+  };
+};
