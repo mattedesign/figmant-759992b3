@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
@@ -50,7 +49,7 @@ serve(async (req) => {
       );
     }
 
-    // Get Claude API key from admin settings
+    // Get Claude API key from admin settings with proper parsing
     const { data: apiKeyData, error: apiKeyError } = await supabase
       .from('admin_settings')
       .select('setting_value')
@@ -65,7 +64,15 @@ serve(async (req) => {
       );
     }
 
-    const claudeApiKey = apiKeyData.setting_value as string;
+    // Parse the API key - handle both old format (direct value) and new format (JSON with value property)
+    let claudeApiKey;
+    if (typeof apiKeyData.setting_value === 'object' && apiKeyData.setting_value && 'value' in apiKeyData.setting_value) {
+      claudeApiKey = (apiKeyData.setting_value as any).value;
+    } else {
+      claudeApiKey = apiKeyData.setting_value as string;
+    }
+
+    console.log('Using Claude API key:', claudeApiKey ? claudeApiKey.substring(0, 10) + '...' : 'undefined');
 
     // Make request to Claude API
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
