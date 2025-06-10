@@ -16,11 +16,12 @@ export const useClaudeSettings = () => {
       
       const settings: ClaudeSettings = {};
       data.forEach(setting => {
+        const key = setting.setting_key as keyof ClaudeSettings;
         // Handle both old format (direct value) and new format (JSON with value property)
         if (setting.setting_value && typeof setting.setting_value === 'object' && 'value' in setting.setting_value) {
-          settings[setting.setting_key as keyof ClaudeSettings] = (setting.setting_value as any).value;
+          settings[key] = (setting.setting_value as any).value;
         } else {
-          settings[setting.setting_key as keyof ClaudeSettings] = setting.setting_value as any;
+          settings[key] = setting.setting_value as any;
         }
       });
       

@@ -1,18 +1,18 @@
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Bot } from 'lucide-react';
 import { ClaudeFormData } from '@/types/claude';
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL, validateApiKey } from '@/constants/claude';
 import { useClaudeSettings } from '@/hooks/useClaudeSettings';
 import { useClaudeUsageStats } from '@/hooks/useClaudeUsageStats';
 import { useClaudeMutations } from '@/hooks/useClaudeMutations';
 import { getConnectionStatus } from '@/utils/claudeStatus';
+import { ClaudeHeader } from './claude/ClaudeHeader';
 import { ClaudeConfigurationForm } from './claude/ClaudeConfigurationForm';
 import { ClaudeActionButtons } from './claude/ClaudeActionButtons';
 import { ClaudeUsageStatsCard } from './claude/ClaudeUsageStatsCard';
+import { ClaudeLoadingState } from './claude/ClaudeLoadingState';
 
 export const ClaudeSettings = () => {
   const { toast } = useToast();
@@ -129,42 +129,15 @@ export const ClaudeSettings = () => {
   };
 
   if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Claude AI Settings</CardTitle>
-          <CardDescription>Loading settings...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-10 bg-muted rounded animate-pulse" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <ClaudeLoadingState />;
   }
 
   const connectionStatus = getConnectionStatus(formData.enabled, formData.apiKey);
-  const StatusIcon = connectionStatus.icon;
 
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Bot className="h-5 w-5" />
-            <span>Claude AI Configuration</span>
-            <Badge variant="outline" className={`ml-auto ${connectionStatus.color}`}>
-              <StatusIcon className="h-3 w-3 mr-1" />
-              {connectionStatus.text}
-            </Badge>
-          </CardTitle>
-          <CardDescription>
-            Configure Claude AI integration for enhanced UX analytics insights
-          </CardDescription>
-        </CardHeader>
+        <ClaudeHeader connectionStatus={connectionStatus} />
         <CardContent>
           <ClaudeConfigurationForm
             formData={formData}

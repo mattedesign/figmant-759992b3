@@ -34,8 +34,8 @@ export const AdminSettings = () => {
       const settingsMap: Record<string, any> = {};
       data.forEach(setting => {
         // Handle both old format (direct value) and new format (JSON with value property)
-        if (setting.setting_value && typeof setting.setting_value === 'object' && setting.setting_value.value !== undefined) {
-          settingsMap[setting.setting_key] = setting.setting_value.value;
+        if (setting.setting_value && typeof setting.setting_value === 'object' && 'value' in setting.setting_value) {
+          settingsMap[setting.setting_key] = (setting.setting_value as any).value;
         } else {
           settingsMap[setting.setting_key] = setting.setting_value;
         }
