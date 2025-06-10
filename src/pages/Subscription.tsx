@@ -39,7 +39,7 @@ const Subscription = () => {
       description: 'Enhanced analytics for growing teams',
       icon: Star,
       features: [
-        'Advanced analytics dashboard',
+        'Everything in Free',
         'Unlimited design uploads',
         'Advanced user journey mapping',
         'Real-time monitoring',
@@ -128,6 +128,14 @@ const Subscription = () => {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Start with our free tier and upgrade when you need more advanced features
           </p>
+          {subscription?.status === 'free' && (
+            <div className="mt-4">
+              <Badge variant="default" className="text-sm">
+                <Gift className="h-3 w-3 mr-1" />
+                Currently on Free Plan
+              </Badge>
+            </div>
+          )}
         </div>
 
         <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">

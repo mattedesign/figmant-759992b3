@@ -15,9 +15,61 @@ export const useAuthState = () => {
   const authService = createAuthService();
 
   const updateUserData = async (userId: string) => {
-    const { profile: profileData, subscription: subscriptionData } = await authService.fetchUserProfile(userId);
-    if (profileData) setProfile(profileData);
-    if (subscriptionData) setSubscription(subscriptionData);
+    try {
+      const { profile: profileData, subscription: subscriptionData } = await authService.fetchUserProfile(userId);
+      
+      console.log('Fetched user data:', { profileData, subscriptionData });
+      
+      if (profileData) setProfile(profileData);
+      
+      // If no subscription data exists, create a default 'free' subscription
+      if (subscriptionData) {
+        setSubscription(subscriptionData);
+      } else {
+        console.log('No subscription found, creating free subscription for user:', userId);
+        // Try to create a free subscription for this user
+        try {
+          const { data, error } = await supabase
+            .from('subscriptions')
+            .insert({
+              user_id: userId,
+              status: 'free'
+            })
+            .select()
+            .single();
+          
+          if (error) {
+            console.error('Error creating free subscription:', error);
+            // Set a default free subscription locally if database insert fails
+            setSubscription({
+              id: 'temp-free',
+              user_id: userId,
+              status: 'free',
+              stripe_customer_id: null,
+              stripe_subscription_id: null,
+              current_period_start: null,
+              current_period_end: null
+            });
+          } else {
+            setSubscription(data);
+          }
+        } catch (createError) {
+          console.error('Failed to create subscription:', createError);
+          // Fallback: set a local free subscription
+          setSubscription({
+            id: 'temp-free',
+            user_id: userId,
+            status: 'free',
+            stripe_customer_id: null,
+            stripe_subscription_id: null,
+            current_period_start: null,
+            current_period_end: null
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error updating user data:', error);
+    }
   };
 
   const refetchUserData = async () => {
@@ -65,7 +117,7 @@ export const useAuthState = () => {
   }, []);
 
   const isOwner = profile?.role === 'owner';
-  // Updated logic: Now includes 'free' status as having access
+  // Updated logic: Now includes 'free' status as having access, plus owners always have access
   const hasActiveSubscription = subscription?.status === 'active' || subscription?.status === 'free' || isOwner;
 
   console.log('Current auth state:', {

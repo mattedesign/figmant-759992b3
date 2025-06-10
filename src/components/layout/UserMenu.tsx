@@ -11,11 +11,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, LogOut, Crown, Settings, LayoutDashboard, CreditCard } from 'lucide-react';
+import { User, LogOut, Crown, Settings, LayoutDashboard, CreditCard, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const UserMenu = () => {
-  const { profile, signOut, isOwner, hasActiveSubscription } = useAuth();
+  const { profile, signOut, isOwner, subscription } = useAuth();
   const navigate = useNavigate();
 
   if (!profile) return null;
@@ -25,6 +25,39 @@ export const UserMenu = () => {
       navigate('/owner-dashboard');
     } else {
       navigate('/dashboard');
+    }
+  };
+
+  const getSubscriptionBadge = () => {
+    if (isOwner) {
+      return (
+        <Badge variant="default" className="text-xs">
+          <Crown className="h-3 w-3 mr-1" />
+          Owner
+        </Badge>
+      );
+    }
+
+    switch (subscription?.status) {
+      case 'active':
+        return (
+          <Badge variant="default" className="text-xs">
+            Premium
+          </Badge>
+        );
+      case 'free':
+        return (
+          <Badge variant="secondary" className="text-xs">
+            <Gift className="h-3 w-3 mr-1" />
+            Free
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline" className="text-xs">
+            Inactive
+          </Badge>
+        );
     }
   };
 
@@ -45,16 +78,7 @@ export const UserMenu = () => {
               {profile.email}
             </p>
             <div className="flex items-center space-x-1 pt-1">
-              {isOwner ? (
-                <Badge variant="default" className="text-xs">
-                  <Crown className="h-3 w-3 mr-1" />
-                  Owner
-                </Badge>
-              ) : (
-                <Badge variant={hasActiveSubscription ? "default" : "secondary"} className="text-xs">
-                  {hasActiveSubscription ? 'Active' : 'Inactive'}
-                </Badge>
-              )}
+              {getSubscriptionBadge()}
             </div>
           </div>
         </DropdownMenuLabel>
