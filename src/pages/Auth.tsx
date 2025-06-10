@@ -6,6 +6,7 @@ import { AuthHeader } from '@/components/auth/AuthHeader';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
 import { UpdatePasswordForm } from '@/components/auth/UpdatePasswordForm';
+import { TestingGuide } from '@/components/auth/TestingGuide';
 import { Brain } from 'lucide-react';
 
 const Auth = () => {
@@ -56,6 +57,8 @@ const Auth = () => {
         ) : (
           <AuthCard onForgotPassword={() => setShowPasswordReset(true)} />
         )}
+
+        <TestingGuide />
 
         <div className="text-center text-sm text-muted-foreground">
           <p>

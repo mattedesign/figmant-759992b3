@@ -21,6 +21,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({ onBack }) 
     e.preventDefault();
     if (!email.trim()) return;
     
+    console.log('Password reset form submitted for:', email);
     setIsSubmitting(true);
     
     const { error } = await resetPassword(email);
@@ -42,10 +43,24 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({ onBack }) 
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Please check your email and click the password reset link to continue.
-            The link will expire in 1 hour for security reasons.
-          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-medium text-blue-900 mb-2">What to do next:</h4>
+            <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+              <li>Check your email inbox (and spam folder)</li>
+              <li>Click the password reset link in the email</li>
+              <li>You'll be redirected back here to set a new password</li>
+            </ol>
+          </div>
+          
+          <div className="text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+              The reset link will expire in 1 hour for security reasons.
+            </p>
+            <Button onClick={() => setIsEmailSent(false)} variant="outline" size="sm">
+              Send Another Email
+            </Button>
+          </div>
+          
           <Button onClick={onBack} variant="outline" className="w-full">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Sign In
@@ -79,6 +94,13 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({ onBack }) 
                 required
               />
             </div>
+          </div>
+
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <p className="text-sm text-yellow-800">
+              <strong>Testing tip:</strong> Make sure to use an email address that you've already registered with. 
+              If you need to test with a new email, sign up first using the "Sign Up" tab.
+            </p>
           </div>
 
           <div className="space-y-2">

@@ -48,18 +48,22 @@ export const createAuthService = () => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('Attempting sign in for:', email);
+      
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) {
+        console.error('Sign in error:', error);
         toast({
           variant: "destructive",
           title: "Sign In Failed",
           description: error.message,
         });
       } else {
+        console.log('Sign in successful');
         toast({
           title: "Welcome back!",
           description: "You have successfully signed in.",
@@ -68,15 +72,17 @@ export const createAuthService = () => {
       
       return { error };
     } catch (error) {
+      console.error('Sign in catch error:', error);
       return { error };
     }
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
+      console.log('Attempting sign up for:', email);
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -88,21 +94,31 @@ export const createAuthService = () => {
       });
       
       if (error) {
+        console.error('Sign up error:', error);
         toast({
           variant: "destructive",
           title: "Sign Up Failed",
           description: error.message,
         });
       } else {
-        toast({
-          title: "Account Created!",
-          description: "Please check your email to verify your account.",
-        });
+        console.log('Sign up response:', data);
+        if (data.user && !data.session) {
+          toast({
+            title: "Account Created!",
+            description: "Please check your email to verify your account before signing in.",
+          });
+        } else {
+          toast({
+            title: "Account Created!",
+            description: "You have successfully created your account and are now signed in.",
+          });
+        }
       }
       
-      return { error };
+      return { error, data };
     } catch (error) {
-      return { error };
+      console.error('Sign up catch error:', error);
+      return { error, data: null };
     }
   };
 
@@ -129,7 +145,7 @@ export const createAuthService = () => {
       
       toast({
         title: "Password Reset Email Sent",
-        description: "Please check your email for password reset instructions.",
+        description: "If an account exists with this email, you will receive reset instructions.",
       });
       
       return { error: null };
@@ -146,17 +162,21 @@ export const createAuthService = () => {
 
   const updatePassword = async (newPassword: string) => {
     try {
+      console.log('Attempting to update password');
+      
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
       
       if (error) {
+        console.error('Password update error:', error);
         toast({
           variant: "destructive",
           title: "Password Update Failed",
           description: error.message,
         });
       } else {
+        console.log('Password updated successfully');
         toast({
           title: "Password Updated",
           description: "Your password has been successfully updated.",
@@ -165,12 +185,14 @@ export const createAuthService = () => {
       
       return { error };
     } catch (error) {
+      console.error('Password update catch error:', error);
       return { error };
     }
   };
 
   const signOut = async () => {
     try {
+      console.log('Signing out user');
       await supabase.auth.signOut();
       toast({
         title: "Signed Out",
