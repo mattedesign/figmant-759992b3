@@ -198,36 +198,48 @@ export type Database = {
       }
       design_uploads: {
         Row: {
+          batch_id: string | null
+          batch_name: string | null
           created_at: string
           file_name: string
-          file_path: string
-          file_size: number
-          file_type: string
+          file_path: string | null
+          file_size: number | null
+          file_type: string | null
           id: string
+          source_type: string
+          source_url: string | null
           status: string
           updated_at: string
           use_case: string
           user_id: string
         }
         Insert: {
+          batch_id?: string | null
+          batch_name?: string | null
           created_at?: string
           file_name: string
-          file_path: string
-          file_size: number
-          file_type: string
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
           id?: string
+          source_type?: string
+          source_url?: string | null
           status?: string
           updated_at?: string
           use_case: string
           user_id: string
         }
         Update: {
+          batch_id?: string | null
+          batch_name?: string | null
           created_at?: string
           file_name?: string
-          file_path?: string
-          file_size?: number
-          file_type?: string
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
           id?: string
+          source_type?: string
+          source_url?: string | null
           status?: string
           updated_at?: string
           use_case?: string

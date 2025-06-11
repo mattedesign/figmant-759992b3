@@ -13,27 +13,45 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
 
   console.log('Status updated to processing');
 
-  // Get the uploaded file URL
+  // Get the uploaded design details
   const { data: upload } = await supabase
     .from('design_uploads')
-    .select('file_path')
+    .select('*')
     .eq('id', uploadId)
     .single();
 
   if (!upload) throw new Error('Upload not found');
 
-  console.log('Getting signed URL for file:', upload.file_path);
+  console.log('Upload details:', { 
+    source_type: upload.source_type, 
+    file_path: upload.file_path, 
+    source_url: upload.source_url 
+  });
 
-  const { data: urlData } = await supabase.storage
-    .from('design-uploads')
-    .createSignedUrl(upload.file_path, 3600);
+  let analysisTarget = '';
 
-  if (!urlData?.signedUrl) {
-    console.error('Failed to get signed URL');
-    throw new Error('Failed to get file URL');
+  if (upload.source_type === 'file') {
+    // Handle file analysis
+    console.log('Getting signed URL for file:', upload.file_path);
+
+    const { data: urlData } = await supabase.storage
+      .from('design-uploads')
+      .createSignedUrl(upload.file_path, 3600);
+
+    if (!urlData?.signedUrl) {
+      console.error('Failed to get signed URL');
+      throw new Error('Failed to get file URL');
+    }
+
+    analysisTarget = `Please analyze the design image at this URL: ${urlData.signedUrl}`;
+  } else if (upload.source_type === 'url') {
+    // Handle URL analysis
+    analysisTarget = `Please analyze the website design at this URL: ${upload.source_url}`;
+  } else {
+    throw new Error('Invalid source type');
   }
 
-  console.log('Signed URL created, calling Claude AI...');
+  console.log('Calling Claude AI for analysis...');
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('User not authenticated');
@@ -41,7 +59,7 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
   // Call Claude AI for analysis
   const { data: analysisResponse, error: claudeError } = await supabase.functions.invoke('claude-ai', {
     body: {
-      prompt: `${useCase.prompt_template}\n\nPlease analyze the design at this URL: ${urlData.signedUrl}`,
+      prompt: `${useCase.prompt_template}\n\n${analysisTarget}`,
       userId: user.id,
       requestType: 'design_analysis'
     }

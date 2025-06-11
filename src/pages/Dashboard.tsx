@@ -1,7 +1,8 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DesignUploader } from '@/components/design/DesignUploader';
+import { EnhancedDesignUploader } from '@/components/design/EnhancedDesignUploader';
 import { DesignList } from '@/components/design/DesignList';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { RecentAnalyses } from '@/components/dashboard/RecentAnalyses';
@@ -59,7 +60,7 @@ const Dashboard = () => {
           <TabsContent value="upload" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                <DesignUploader />
+                <EnhancedDesignUploader />
                 <UploadProgress />
               </div>
               <div>

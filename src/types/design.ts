@@ -3,11 +3,15 @@ export interface DesignUpload {
   id: string;
   user_id: string;
   file_name: string;
-  file_path: string;
-  file_size: number;
-  file_type: string;
+  file_path: string | null;
+  file_size: number | null;
+  file_type: string | null;
   use_case: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
+  source_type: 'file' | 'url';
+  source_url: string | null;
+  batch_id: string | null;
+  batch_name: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -33,4 +37,12 @@ export interface DesignUseCase {
   analysis_focus: string[];
   created_at: string;
   updated_at: string;
+}
+
+export interface BatchUpload {
+  batch_id: string;
+  batch_name: string;
+  files: File[];
+  urls: string[];
+  use_case: string;
 }
