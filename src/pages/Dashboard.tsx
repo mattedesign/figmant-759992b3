@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +9,9 @@ import { Navigation } from '@/components/layout/Navigation';
 import { DesignUpload } from '@/types/design';
 import { AnalysisViewer } from '@/components/design/AnalysisViewer';
 import { Upload, History, BarChart3, FileText } from 'lucide-react';
+import { UploadProgress } from '@/components/dashboard/UploadProgress';
+import { ClaudeConnectionTest } from '@/components/dashboard/ClaudeConnectionTest';
+import { ClaudeInsights } from '@/components/dashboard/ClaudeInsights';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('upload');
@@ -56,8 +58,9 @@ const Dashboard = () => {
 
           <TabsContent value="upload" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-2 space-y-6">
                 <DesignUploader />
+                <UploadProgress />
               </div>
               <div>
                 <Card>
@@ -78,7 +81,11 @@ const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="insights" className="mt-6">
-            <RecentAnalyses onViewAnalysis={setSelectedUpload} showInsights={true} />
+            <div className="space-y-6">
+              <ClaudeConnectionTest />
+              <ClaudeInsights />
+              <RecentAnalyses onViewAnalysis={setSelectedUpload} showInsights={true} />
+            </div>
           </TabsContent>
 
           <TabsContent value="actions" className="mt-6">
