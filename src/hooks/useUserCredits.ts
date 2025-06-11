@@ -142,16 +142,34 @@ export const useUserCredits = () => {
     if (!user?.id) return false;
     
     try {
-      const { data, error } = await supabase.rpc('user_has_access', {
-        user_id: user.id
-      });
-      
-      if (error) {
-        console.error('Error checking user access:', error);
-        return false;
+      // Check user role, subscription, and credits directly
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.role === 'owner') {
+        return true;
       }
-      
-      return data || false;
+
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('status')
+        .eq('user_id', user.id)
+        .single();
+
+      if (subscription?.status === 'active' || subscription?.status === 'free') {
+        return true;
+      }
+
+      const { data: userCredits } = await supabase
+        .from('user_credits')
+        .select('current_balance')
+        .eq('user_id', user.id)
+        .single();
+
+      return (userCredits?.current_balance || 0) > 0;
     } catch (error) {
       console.error('Error checking user access:', error);
       return false;
@@ -165,18 +183,47 @@ export const useUserCredits = () => {
     }
 
     try {
-      const { data: success, error } = await supabase.rpc('deduct_analysis_credits', {
-        analysis_user_id: user.id,
-        credits_to_deduct: creditsToDeduct,
-        analysis_description: description
-      });
-
-      if (error) {
-        console.error('Error deducting credits:', error);
+      // Check access first
+      const hasAccess = await checkUserAccess();
+      if (!hasAccess) {
+        toast({
+          variant: "destructive",
+          title: "Access Denied",
+          description: "You need an active subscription or credits to perform this action.",
+        });
         return false;
       }
 
-      if (!success) {
+      // Check if user is owner or has active subscription (unlimited access)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profile?.role === 'owner') {
+        return true;
+      }
+
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('status')
+        .eq('user_id', user.id)
+        .single();
+
+      if (subscription?.status === 'active' || subscription?.status === 'free') {
+        return true;
+      }
+
+      // For non-subscribers, deduct credits
+      const { data: currentCredits } = await supabase
+        .from('user_credits')
+        .select('current_balance')
+        .eq('user_id', user.id)
+        .single();
+
+      const balance = currentCredits?.current_balance || 0;
+      if (balance < creditsToDeduct) {
         toast({
           variant: "destructive",
           title: "Insufficient Credits",
@@ -185,10 +232,14 @@ export const useUserCredits = () => {
         return false;
       }
 
-      // Refresh credits data
-      queryClient.invalidateQueries({ queryKey: ['user-credits'] });
-      queryClient.invalidateQueries({ queryKey: ['credit-transactions'] });
-      
+      // Deduct credits using the transaction system
+      await createTransactionMutation.mutateAsync({
+        user_id: user.id,
+        transaction_type: 'usage',
+        amount: creditsToDeduct,
+        description
+      });
+
       return true;
     } catch (error) {
       console.error('Error deducting credits:', error);

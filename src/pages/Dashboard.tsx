@@ -8,6 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreditStatus } from '@/components/dashboard/CreditStatus';
 
 const Dashboard = () => {
+  const handleViewAnalysis = (analysisId: string) => {
+    // Navigate to analysis view or open modal
+    console.log('Viewing analysis:', analysisId);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -33,7 +38,7 @@ const Dashboard = () => {
                 <QuickActions />
                 <CreditStatus />
               </div>
-              <RecentAnalyses />
+              <RecentAnalyses onViewAnalysis={handleViewAnalysis} />
             </div>
           </TabsContent>
 

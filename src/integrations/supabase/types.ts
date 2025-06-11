@@ -838,6 +838,14 @@ export type Database = {
         }
         Returns: Json
       }
+      deduct_analysis_credits: {
+        Args: {
+          analysis_user_id: string
+          credits_to_deduct?: number
+          analysis_description?: string
+        }
+        Returns: boolean
+      }
       get_best_prompt_for_category: {
         Args: { category_name: string }
         Returns: {
@@ -871,6 +879,10 @@ export type Database = {
           p_updated_by?: string
         }
         Returns: Json
+      }
+      user_has_access: {
+        Args: { user_id: string }
+        Returns: boolean
       }
       validate_claude_api_key: {
         Args: { api_key: string }
