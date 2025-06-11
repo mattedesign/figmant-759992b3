@@ -9,16 +9,34 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Crown, Mail, Calendar, Settings, UserPlus } from 'lucide-react';
+import { Crown, Mail, Calendar, Settings, UserPlus, Coins, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { CreateUserDialog } from './CreateUserDialog';
+import { EditUserDialog } from './EditUserDialog';
+import { CreditManagementDialog } from './CreditManagementDialog';
+import { useUserManagementCredits } from '@/hooks/useUserManagementCredits';
+
+interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string | null;
+  role: 'owner' | 'subscriber';
+  created_at: string;
+  subscriptions?: Array<{
+    status: string;
+    current_period_end: string | null;
+    stripe_customer_id: string | null;
+  }>;
+}
 
 export const UserManagement = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [activeTab, setActiveTab] = useState('subscribers');
   const [createUserDialogOpen, setCreateUserDialogOpen] = useState(false);
+  const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
+  const [creditManagementDialogOpen, setCreditManagementDialogOpen] = useState(false);
 
   const { data: users, isLoading, refetch } = useQuery({
     queryKey: ['all-users'],
@@ -36,9 +54,11 @@ export const UserManagement = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data as UserProfile[];
     }
   });
+
+  const { data: creditsMap, refetch: refetchCredits } = useUserManagementCredits();
 
   const logUserAction = async (targetUserId: string, action: string, details: any = {}) => {
     try {
@@ -90,6 +110,47 @@ export const UserManagement = () => {
     });
   };
 
+  const handleUserUpdated = () => {
+    refetch();
+    setEditUserDialogOpen(false);
+  };
+
+  const handleCreditsUpdated = () => {
+    refetchCredits();
+    setCreditManagementDialogOpen(false);
+  };
+
+  const handleEditUser = (user: UserProfile) => {
+    setSelectedUser(user);
+    setEditUserDialogOpen(true);
+  };
+
+  const handleManageCredits = (user: UserProfile) => {
+    setSelectedUser(user);
+    setCreditManagementDialogOpen(true);
+  };
+
+  const getUserActivityStatus = (user: UserProfile) => {
+    const subscription = user.subscriptions?.[0];
+    const credits = creditsMap?.get(user.id);
+    
+    if (user.role === 'owner') return 'Active (Owner)';
+    if (subscription?.status === 'active') return 'Active (Subscribed)';
+    if (credits && credits.current_balance > 0) return `Active (${credits.current_balance} credits)`;
+    return 'Inactive';
+  };
+
+  const getActivityStatusBadge = (user: UserProfile) => {
+    const status = getUserActivityStatus(user);
+    const isActive = status.startsWith('Active');
+    
+    return (
+      <Badge variant={isActive ? 'default' : 'outline'}>
+        {status}
+      </Badge>
+    );
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -111,75 +172,101 @@ export const UserManagement = () => {
   const ownerUsers = users?.filter(user => user.role === 'owner') || [];
   const subscriberUsers = users?.filter(user => user.role === 'subscriber') || [];
 
-  const renderUserTable = (userList: typeof users, userType: 'owner' | 'subscriber') => (
+  const renderUserTable = (userList: UserProfile[], userType: 'owner' | 'subscriber') => (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>User</TableHead>
           <TableHead>Role</TableHead>
-          <TableHead>Subscription</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Credits</TableHead>
           <TableHead>Joined</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {userList?.map((user) => (
-          <TableRow key={user.id}>
-            <TableCell>
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <div className="font-medium">{user.full_name || 'Unnamed User'}</div>
-                  <div className="text-sm text-muted-foreground">{user.email}</div>
+        {userList?.map((userProfile) => {
+          const credits = creditsMap?.get(userProfile.id);
+          return (
+            <TableRow key={userProfile.id}>
+              <TableCell>
+                <div className="flex items-center space-x-2">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <div className="font-medium">{userProfile.full_name || 'Unnamed User'}</div>
+                    <div className="text-sm text-muted-foreground">{userProfile.email}</div>
+                  </div>
                 </div>
-              </div>
-            </TableCell>
-            <TableCell>
-              <Badge variant={user.role === 'owner' ? 'default' : 'secondary'}>
-                {user.role === 'owner' && <Crown className="h-3 w-3 mr-1" />}
-                {user.role}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <Badge variant={user.subscriptions?.[0]?.status === 'active' ? 'default' : 'outline'}>
-                {user.subscriptions?.[0]?.status || 'inactive'}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center space-x-1">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">
-                  {user.created_at ? format(new Date(user.created_at), 'MMM dd, yyyy') : 'Unknown'}
-                </span>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex space-x-2">
-                {user.role === 'subscriber' && (
+              </TableCell>
+              <TableCell>
+                <Badge variant={userProfile.role === 'owner' ? 'default' : 'secondary'}>
+                  {userProfile.role === 'owner' && <Crown className="h-3 w-3 mr-1" />}
+                  {userProfile.role}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                {getActivityStatusBadge(userProfile)}
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center space-x-1">
+                  <Coins className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">
+                    {credits?.current_balance || 0}
+                  </span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center space-x-1">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">
+                    {userProfile.created_at ? format(new Date(userProfile.created_at), 'MMM dd, yyyy') : 'Unknown'}
+                  </span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex space-x-2">
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => updateUserRole(user.id, 'owner')}
+                    onClick={() => handleEditUser(userProfile)}
                   >
-                    Make Owner
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
                   </Button>
-                )}
-                {user.role === 'owner' && user.id !== user?.id && (
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => updateUserRole(user.id, 'subscriber')}
+                    onClick={() => handleManageCredits(userProfile)}
                   >
-                    Remove Owner
+                    <Coins className="h-4 w-4 mr-1" />
+                    Credits
                   </Button>
-                )}
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
+                  {userProfile.role === 'subscriber' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => updateUserRole(userProfile.id, 'owner')}
+                    >
+                      Make Owner
+                    </Button>
+                  )}
+                  {userProfile.role === 'owner' && userProfile.id !== user?.id && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => updateUserRole(userProfile.id, 'subscriber')}
+                    >
+                      Remove Owner
+                    </Button>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          );
+        })}
         {userList?.length === 0 && (
           <TableRow>
-            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
               No {userType === 'owner' ? 'owners' : 'subscribers'} found
             </TableCell>
           </TableRow>
@@ -195,7 +282,7 @@ export const UserManagement = () => {
           <div>
             <CardTitle>User Management</CardTitle>
             <CardDescription>
-              Manage users, their roles, and subscriptions
+              Manage users, their roles, subscriptions, and credits
             </CardDescription>
           </div>
           <Button onClick={() => setCreateUserDialogOpen(true)}>
@@ -230,6 +317,21 @@ export const UserManagement = () => {
         onOpenChange={setCreateUserDialogOpen}
         onUserCreated={handleUserCreated}
         defaultRole={activeTab === 'owners' ? 'owner' : 'subscriber'}
+      />
+
+      <EditUserDialog
+        open={editUserDialogOpen}
+        onOpenChange={setEditUserDialogOpen}
+        user={selectedUser}
+        onUserUpdated={handleUserUpdated}
+      />
+
+      <CreditManagementDialog
+        open={creditManagementDialogOpen}
+        onOpenChange={setCreditManagementDialogOpen}
+        user={selectedUser}
+        credits={selectedUser ? creditsMap?.get(selectedUser.id) || null : null}
+        onCreditsUpdated={handleCreditsUpdated}
       />
     </Card>
   );
