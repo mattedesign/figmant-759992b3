@@ -1,13 +1,11 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DesignUploader } from '@/components/design/DesignUploader';
 import { DesignList } from '@/components/design/DesignList';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { RecentAnalyses } from '@/components/dashboard/RecentAnalyses';
-import { AnalysisStats } from '@/components/dashboard/AnalysisStats';
 import { Navigation } from '@/components/layout/Navigation';
 import { DesignUpload } from '@/types/design';
 import { AnalysisViewer } from '@/components/design/AnalysisViewer';
@@ -36,35 +34,6 @@ const Dashboard = () => {
       <Navigation />
       
       <main className="container mx-auto px-4 py-8">
-        {/* Hero Section */}
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold mb-2">Design Analysis Dashboard</h1>
-          <p className="text-muted-foreground text-lg mb-6">
-            Upload your designs and get AI-powered insights to improve user experience and conversion rates
-          </p>
-          
-          {/* Quick Upload Card */}
-          <Card className="max-w-2xl mx-auto mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-center gap-2">
-                <Upload className="h-5 w-5" />
-                Quick Upload
-              </CardTitle>
-              <CardDescription>
-                Get started by uploading a design for instant AI analysis
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DesignUploader />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="mb-8">
-          <AnalysisStats />
-        </div>
-
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="upload" className="flex items-center gap-2">
