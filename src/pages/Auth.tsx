@@ -7,7 +7,7 @@ import { AuthCard } from '@/components/auth/AuthCard';
 import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
 import { UpdatePasswordForm } from '@/components/auth/UpdatePasswordForm';
 import { TestingGuide } from '@/components/auth/TestingGuide';
-import { Brain } from 'lucide-react';
+import { Logo } from '@/components/common/Logo';
 
 const Auth = () => {
   const { user, loading } = useAuth();
@@ -29,7 +29,7 @@ const Auth = () => {
         <div className="w-full max-w-md">
           <div className="text-center space-y-2 mb-6">
             <div className="flex items-center justify-center space-x-2">
-              <Brain className="h-8 w-8 text-primary" />
+              <Logo size="md" />
               <h1 className="text-2xl font-bold">UX Analytics AI</h1>
             </div>
           </div>

@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Brain, BarChart3, Users, Target, Zap, Shield } from 'lucide-react';
+import { BarChart3, Users, Target, Zap, Shield } from 'lucide-react';
+import { Logo } from '@/components/common/Logo';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Brain className="h-8 w-8 text-primary" />
+              <Logo size="md" />
               <h1 className="text-2xl font-bold">UX Analytics AI</h1>
             </div>
             <div className="space-x-2">
@@ -156,7 +157,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Brain className="h-5 w-5 text-primary" />
+              <Logo size="sm" />
               <span className="text-sm text-muted-foreground">
                 UX Analytics AI - Powered by Claude
               </span>

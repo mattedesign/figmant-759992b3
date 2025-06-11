@@ -1,9 +1,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Settings, Activity } from 'lucide-react';
+import { Bell, Settings } from 'lucide-react';
 import { UserMenu } from './UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
+import { Logo } from '@/components/common/Logo';
 
 export const Navigation = () => {
   const { user } = useAuth();
@@ -14,7 +15,7 @@ export const Navigation = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <Activity className="h-6 w-6 text-primary" />
+              <Logo size="sm" />
               <h2 className="text-xl font-semibold">UX Analytics</h2>
             </div>
             <Badge variant="secondary" className="bg-green-100 text-green-800">
