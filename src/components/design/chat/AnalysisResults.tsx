@@ -50,7 +50,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
         {relatedBatch && onViewBatchAnalysis && (
           <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
             <div>
-              <h4 className="font-medium">{relatedBatch.batch_name}</h4>
+              <h4 className="font-medium">Batch Analysis</h4>
               <p className="text-sm text-muted-foreground">
                 Batch analysis with {relatedUploads.length} items
               </p>
@@ -74,7 +74,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
               <div key={upload.id} className="flex items-center justify-between p-2 bg-muted/30 rounded">
                 <div className="flex items-center space-x-2">
                   <FileText className="h-4 w-4" />
-                  <span className="text-sm truncate">{upload.original_filename}</span>
+                  <span className="text-sm truncate">{upload.file_name}</span>
                   <Badge variant="secondary" className="text-xs">
                     {upload.use_case}
                   </Badge>
