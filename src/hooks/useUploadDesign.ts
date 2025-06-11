@@ -5,16 +5,24 @@ import { useToast } from '@/hooks/use-toast';
 import { useProcessingRedirect } from '@/hooks/useProcessingRedirect';
 import { DesignUseCase } from '@/types/design';
 import { triggerAnalysis } from './designAnalysisHelpers';
+import { useUserCredits } from './useUserCredits';
 
 export const useUploadDesign = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { redirectToProcessing } = useProcessingRedirect();
+  const { checkUserAccess, deductAnalysisCredits } = useUserCredits();
 
   return useMutation({
     mutationFn: async ({ file, useCase, analysisGoals }: { file: File; useCase: string; analysisGoals?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
+
+      // Check if user has access before upload
+      const hasAccess = await checkUserAccess();
+      if (!hasAccess) {
+        throw new Error('You need an active subscription or credits to upload and analyze designs. Please upgrade your plan or purchase credits.');
+      }
 
       console.log('Starting file upload...', { fileName: file.name, size: file.size });
 
@@ -70,7 +78,7 @@ export const useUploadDesign = () => {
       // Redirect to processing page
       redirectToProcessing(uploadData.batchId, `Successfully uploaded ${uploadData.file_name} for analysis.`);
       
-      // Automatically trigger analysis in the background
+      // Automatically trigger analysis in the background with credit deduction
       try {
         const { data: useCases } = await supabase
           .from('design_use_cases')
@@ -79,8 +87,16 @@ export const useUploadDesign = () => {
           .single();
 
         if (useCases) {
-          console.log('Found use case, starting analysis:', useCases.name);
-          await triggerAnalysis(uploadData.id, useCases);
+          console.log('Found use case, checking credits and starting analysis:', useCases.name);
+          
+          // Deduct credits for auto-analysis
+          const creditsDeducted = await deductAnalysisCredits(1, `Auto-analysis: ${useCases.name}`);
+          if (creditsDeducted) {
+            await triggerAnalysis(uploadData.id, useCases);
+            queryClient.invalidateQueries({ queryKey: ['user-credits'] });
+          } else {
+            console.warn('Auto-analysis skipped due to insufficient credits');
+          }
         }
       } catch (error) {
         console.error('Auto-analysis failed:', error);

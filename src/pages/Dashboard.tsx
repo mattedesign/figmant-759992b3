@@ -1,148 +1,48 @@
 
-import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DesignChatInterface } from '@/components/design/DesignChatInterface';
-import { DesignList } from '@/components/design/DesignList';
+import { Navigation } from '@/components/layout/Navigation';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { RecentAnalyses } from '@/components/dashboard/RecentAnalyses';
-import { Navigation } from '@/components/layout/Navigation';
-import { DesignUpload, DesignBatchAnalysis } from '@/types/design';
-import { AnalysisViewer } from '@/components/design/AnalysisViewer';
-import { EnhancedBatchAnalysisViewer } from '@/components/design/EnhancedBatchAnalysisViewer';
-import { MessageSquare, History, BarChart3, FileText } from 'lucide-react';
-import { UploadProgress } from '@/components/dashboard/UploadProgress';
-import { ClaudeConnectionTest } from '@/components/dashboard/ClaudeConnectionTest';
-import { ClaudeInsights } from '@/components/dashboard/ClaudeInsights';
+import { AnalyticsOverview } from '@/components/dashboard/AnalyticsOverview';
+import { Settings } from '@/components/dashboard/Settings';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CreditStatus } from '@/components/dashboard/CreditStatus';
 
 const Dashboard = () => {
-  const location = useLocation();
-  const [activeTab, setActiveTab] = useState('chat');
-  const [selectedUpload, setSelectedUpload] = useState<DesignUpload | null>(null);
-  const [selectedBatchAnalysis, setSelectedBatchAnalysis] = useState<DesignBatchAnalysis | null>(null);
-
-  // Handle navigation from processing page
-  useEffect(() => {
-    if (location.state) {
-      if (location.state.viewBatchAnalysis) {
-        setSelectedBatchAnalysis(location.state.viewBatchAnalysis);
-      } else if (location.state.viewUpload) {
-        setSelectedUpload(location.state.viewUpload);
-      }
-      // Clear the state to prevent repeated navigation
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
-
-  if (selectedUpload) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <main className="container mx-auto px-4 py-8">
-          <AnalysisViewer
-            upload={selectedUpload}
-            onBack={() => setSelectedUpload(null)}
-          />
-        </main>
-      </div>
-    );
-  }
-
-  if (selectedBatchAnalysis) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <main className="container mx-auto px-4 py-8">
-          <EnhancedBatchAnalysisViewer
-            batchAnalysis={selectedBatchAnalysis}
-            onBack={() => setSelectedBatchAnalysis(null)}
-          />
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       
       <main className="container mx-auto px-4 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="chat" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Chat Analysis
-            </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center gap-2">
-              <History className="h-4 w-4" />
-              History
-            </TabsTrigger>
-            <TabsTrigger value="insights" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Insights
-            </TabsTrigger>
-            <TabsTrigger value="actions" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Actions
-            </TabsTrigger>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Monitor your UX analytics and design performance
+          </p>
+        </div>
+
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="chat" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              <div className="lg:col-span-3">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>UX Analysis Assistant</CardTitle>
-                    <CardDescription>
-                      Upload designs or share URLs, then describe what you'd like me to analyze. I can help with conversion optimization, user experience, visual hierarchy, and more.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <DesignChatInterface 
-                      onViewUpload={setSelectedUpload}
-                      onViewBatchAnalysis={setSelectedBatchAnalysis}
-                    />
-                  </CardContent>
-                </Card>
+          <TabsContent value="overview" className="mt-6">
+            <div className="grid gap-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                <QuickActions />
+                <CreditStatus />
               </div>
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recent Analyses</CardTitle>
-                    <CardDescription>Your latest results</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <RecentAnalyses 
-                      onViewAnalysis={setSelectedUpload}
-                      onViewBatchAnalysis={setSelectedBatchAnalysis}
-                      limit={3} 
-                    />
-                  </CardContent>
-                </Card>
-                <UploadProgress />
-              </div>
+              <RecentAnalyses />
             </div>
           </TabsContent>
 
-          <TabsContent value="history" className="mt-6">
-            <DesignList onViewAnalysis={setSelectedUpload} />
+          <TabsContent value="analytics" className="mt-6">
+            <AnalyticsOverview />
           </TabsContent>
 
-          <TabsContent value="insights" className="mt-6">
-            <div className="space-y-6">
-              <ClaudeConnectionTest />
-              <ClaudeInsights />
-              <RecentAnalyses 
-                onViewAnalysis={setSelectedUpload}
-                onViewBatchAnalysis={setSelectedBatchAnalysis}
-                showInsights={true} 
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="actions" className="mt-6">
-            <QuickActions />
+          <TabsContent value="settings" className="mt-6">
+            <Settings />
           </TabsContent>
         </Tabs>
       </main>
