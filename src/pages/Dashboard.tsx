@@ -6,6 +6,7 @@ import { AnalyticsOverview } from '@/components/dashboard/AnalyticsOverview';
 import { Settings } from '@/components/dashboard/Settings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreditStatus } from '@/components/dashboard/CreditStatus';
+import { DesignAnalysisPage } from '@/components/design/DesignAnalysisPage';
 import { DesignUpload } from '@/types/design';
 
 const Dashboard = () => {
@@ -27,8 +28,9 @@ const Dashboard = () => {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="design">Design Analysis</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
@@ -41,6 +43,10 @@ const Dashboard = () => {
               </div>
               <RecentAnalyses onViewAnalysis={handleViewAnalysis} />
             </div>
+          </TabsContent>
+
+          <TabsContent value="design" className="mt-6">
+            <DesignAnalysisPage />
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-6">
