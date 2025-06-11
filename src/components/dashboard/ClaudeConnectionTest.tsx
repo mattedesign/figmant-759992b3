@@ -20,15 +20,12 @@ export const ClaudeConnectionTest = () => {
 
     try {
       console.log('Testing Claude AI connection...');
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase.functions.invoke('claude-ai', {
         body: {
-          prompt: 'Please respond with "Claude AI connection test successful" to confirm you are working correctly.',
-          userId: user.id,
-          requestType: 'test'
+          message: 'Please respond with "Claude AI connection test successful" to confirm you are working correctly.',
+          attachments: [],
+          uploadIds: []
         }
       });
 
@@ -39,7 +36,7 @@ export const ClaudeConnectionTest = () => {
 
       console.log('Claude test response:', data);
       setTestResult('success');
-      setTestResponse(data.response || 'Connection successful');
+      setTestResponse(data.analysis || 'Connection successful');
       
       toast({
         title: "Connection Test Successful",

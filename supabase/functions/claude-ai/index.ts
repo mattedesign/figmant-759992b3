@@ -330,6 +330,11 @@ serve(async (req) => {
       }))
     });
 
+    // Validate that we have a message
+    if (!message || typeof message !== 'string') {
+      throw new Error('Message is required and must be a string');
+    }
+
     // Environment check
     console.log('Environment check:', {
       hasSupabaseUrl: !!Deno.env.get('SUPABASE_URL'),
@@ -359,18 +364,26 @@ serve(async (req) => {
     console.log('Starting attachment processing...');
     const visionContent = await processAttachmentsForVision(supabase, attachments);
     
-    // Build the message content
-    const messageContent: Array<{ type: 'text' | 'image'; text?: string; source?: any }> = [
-      { type: 'text', text: message },
-      ...visionContent
-    ];
+    // Build the message content - simple string for text-only, array for mixed content
+    let messageContent: string | Array<{ type: 'text' | 'image'; text?: string; source?: any }>;
+    
+    if (visionContent.length === 0) {
+      // Simple text-only message
+      messageContent = message;
+      console.log('Using simple text message format');
+    } else {
+      // Mixed content with attachments
+      messageContent = [
+        { type: 'text', text: message },
+        ...visionContent
+      ];
+      console.log('Using complex message format with attachments');
+    }
 
     console.log('Final message content structure:', {
-      totalItems: messageContent.length,
-      itemTypes: messageContent.map(item => item.type),
-      hasImages: messageContent.some(item => item.type === 'image'),
-      textItems: messageContent.filter(item => item.type === 'text').length,
-      imageItems: messageContent.filter(item => item.type === 'image').length
+      isSimpleString: typeof messageContent === 'string',
+      hasImages: Array.isArray(messageContent) && messageContent.some(item => item.type === 'image'),
+      contentLength: Array.isArray(messageContent) ? messageContent.length : 1
     });
 
     // Prepare the messages for Claude
@@ -383,8 +396,8 @@ serve(async (req) => {
 
     console.log('Sending request to Claude API...', {
       model: claudeSettings.model,
-      messageContentLength: messageContent.length,
-      hasImages: messageContent.some(item => item.type === 'image')
+      messageType: typeof messageContent,
+      hasImages: Array.isArray(messageContent) && messageContent.some(item => item.type === 'image')
     });
 
     // Call Claude API
@@ -400,7 +413,7 @@ serve(async (req) => {
       maxTokens: claudePayload.max_tokens,
       systemPromptLength: claudePayload.system.length,
       messagesCount: claudePayload.messages.length,
-      messageContentTypes: claudePayload.messages[0].content.map((item: any) => item.type)
+      messageContentType: typeof claudePayload.messages[0].content
     });
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
