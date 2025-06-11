@@ -48,6 +48,8 @@ export const DesignChatInterface = () => {
   const [urlInput, setUrlInput] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [storageStatus, setStorageStatus] = useState<'checking' | 'ready' | 'error'>('checking');
+  const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
   
   const { toast } = useToast();
   const { analyzeWithChat } = useChatAnalysis();
@@ -249,6 +251,9 @@ export const DesignChatInterface = () => {
         attachments: currentAttachments
       });
 
+      // Store the analysis result for debugging
+      setLastAnalysisResult(result);
+
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
@@ -261,6 +266,12 @@ export const DesignChatInterface = () => {
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Chat analysis failed:', error);
+      
+      // Store the error for debugging
+      setLastAnalysisResult({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
       
       const errorMessage: ChatMessage = {
         id: crypto.randomUUID(),
@@ -283,7 +294,18 @@ export const DesignChatInterface = () => {
       <div className="lg:col-span-2 flex flex-col">
         <Card className="flex-1 flex flex-col">
           <CardHeader>
-            <CardTitle>Design Analysis Chat</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Design Analysis Chat</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDebugPanel(!showDebugPanel)}
+                className="flex items-center gap-2"
+              >
+                <Bug className="h-4 w-4" />
+                {showDebugPanel ? 'Hide' : 'Show'} Debug
+              </Button>
+            </div>
             <StorageStatus status={storageStatus} />
           </CardHeader>
           <CardContent className="flex-1 flex flex-col">
@@ -344,6 +366,13 @@ export const DesignChatInterface = () => {
             />
           </CardContent>
         </Card>
+
+        {/* Debug Panel */}
+        <DebugPanel 
+          attachments={attachments}
+          lastAnalysisResult={lastAnalysisResult}
+          isVisible={showDebugPanel}
+        />
       </div>
 
       {/* Sidebar */}
