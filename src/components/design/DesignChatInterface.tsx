@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useChatAnalysis } from '@/hooks/useChatAnalysis';
 import { useDropzone } from 'react-dropzone';
-import { Send, Upload, Plus, AlertTriangle, CheckCircle, Bug } from 'lucide-react';
+import { Send, Upload, Plus, AlertTriangle, CheckCircle, Bug, Activity } from 'lucide-react';
 import { ChatMessage } from './chat/ChatMessage';
 import { ChatAttachments } from './chat/ChatAttachments';
 import { SuggestedPrompts } from './chat/SuggestedPrompts';
@@ -17,8 +17,10 @@ import { URLInput } from './chat/URLInput';
 import { MessageInput } from './chat/MessageInput';
 import { DebugPanel } from './chat/DebugPanel';
 import { EnhancedImageUpload } from './chat/EnhancedImageUpload';
+import { ProcessingMonitor } from './chat/ProcessingMonitor';
 import { verifyStorageAccess } from '@/utils/storageUtils';
 import { validateImageFile, ProcessedImage } from '@/utils/imageProcessing';
+import { useImageProcessingMonitor } from '@/hooks/useImageProcessingMonitor';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ChatAttachment {
@@ -52,10 +54,18 @@ export const DesignChatInterface = () => {
   const [storageStatus, setStorageStatus] = useState<'checking' | 'ready' | 'error'>('checking');
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [showProcessingMonitor, setShowProcessingMonitor] = useState(false);
   const [pendingImageProcessing, setPendingImageProcessing] = useState<Set<string>>(new Set());
   
   const { toast } = useToast();
   const { analyzeWithChat } = useChatAnalysis();
+  const { 
+    jobs, 
+    systemHealth, 
+    pauseJob, 
+    resumeJob, 
+    cancelJob 
+  } = useImageProcessingMonitor();
 
   // Check storage access on component mount
   React.useEffect(() => {
@@ -398,15 +408,26 @@ export const DesignChatInterface = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Design Analysis Chat</CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowDebugPanel(!showDebugPanel)}
-                className="flex items-center gap-2"
-              >
-                <Bug className="h-4 w-4" />
-                {showDebugPanel ? 'Hide' : 'Show'} Debug
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowProcessingMonitor(!showProcessingMonitor)}
+                  className="flex items-center gap-2"
+                >
+                  <Activity className="h-4 w-4" />
+                  {showProcessingMonitor ? 'Hide' : 'Show'} Monitor
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDebugPanel(!showDebugPanel)}
+                  className="flex items-center gap-2"
+                >
+                  <Bug className="h-4 w-4" />
+                  {showDebugPanel ? 'Hide' : 'Show'} Debug
+                </Button>
+              </div>
             </div>
             <StorageStatus status={storageStatus} />
           </CardHeader>
@@ -480,6 +501,17 @@ export const DesignChatInterface = () => {
             />
           </CardContent>
         </Card>
+
+        {/* Processing Monitor */}
+        {showProcessingMonitor && (
+          <ProcessingMonitor
+            jobs={jobs}
+            onPauseJob={pauseJob}
+            onResumeJob={resumeJob}
+            onCancelJob={cancelJob}
+            systemHealth={systemHealth}
+          />
+        )}
 
         {/* Debug Panel */}
         <DebugPanel 
