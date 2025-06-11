@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ export interface ChatAttachment {
   name: string;
   file?: File;
   url?: string;
+  uploadPath?: string;
   status?: 'pending' | 'uploading' | 'uploaded' | 'error';
   errorMessage?: string;
 }
