@@ -2,6 +2,8 @@
 import { extractTextPreview, generateContextFilePath, generateFilePath, uploadFile } from './fileUploadHelpers';
 import { insertContextFile, insertDesignUpload } from './databaseHelpers';
 import { BatchUploadOptions, BatchUploadResult, ProcessContextFileOptions, ProcessFileOptions, ProcessUrlOptions } from './batchUploadTypes';
+import { useAuthenticationValidator } from './authenticationValidator';
+import { useBatchMetadataGenerator } from './batchMetadataGenerator';
 
 export const processFileUpload = async ({
   file,
@@ -94,21 +96,16 @@ export const processContextFile = async ({
 export const processBatchUpload = async (options: BatchUploadOptions): Promise<BatchUploadResult> => {
   const { files, urls, contextFiles = [], useCase, batchName, analysisGoals, analysisPreferences } = options;
   
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('User not authenticated');
+  const { validateUserAuthentication } = useAuthenticationValidator();
+  const { generateBatchMetadata, logBatchInfo } = useBatchMetadataGenerator();
+  
+  const user = await validateUserAuthentication();
+  const metadata = generateBatchMetadata(files, urls, contextFiles, batchName);
+  
+  logBatchInfo(metadata, analysisGoals, analysisPreferences);
 
-  const batchId = crypto.randomUUID();
   const uploads = [];
   const contextFileUploads = [];
-
-  console.log('Starting batch upload...', { 
-    filesCount: files.length, 
-    urlsCount: urls.length,
-    contextFilesCount: contextFiles.length,
-    batchId,
-    analysisGoals,
-    analysisPreferences
-  });
 
   // Process file uploads
   for (const file of files) {
@@ -116,8 +113,8 @@ export const processBatchUpload = async (options: BatchUploadOptions): Promise<B
       file,
       userId: user.id,
       useCase,
-      batchId,
-      batchName,
+      batchId: metadata.batchId,
+      batchName: metadata.batchName,
       analysisGoals,
       analysisPreferences
     });
@@ -130,8 +127,8 @@ export const processBatchUpload = async (options: BatchUploadOptions): Promise<B
       url,
       userId: user.id,
       useCase,
-      batchId,
-      batchName,
+      batchId: metadata.batchId,
+      batchName: metadata.batchName,
       analysisGoals,
       analysisPreferences
     });
@@ -144,8 +141,8 @@ export const processBatchUpload = async (options: BatchUploadOptions): Promise<B
       const contextFileData = await processContextFile({
         file: contextFile,
         userId: user.id,
-        batchId,
-        uploadId: uploads[0]?.id || batchId
+        batchId: metadata.batchId,
+        uploadId: uploads[0]?.id || metadata.batchId
       });
       if (contextFileData) {
         contextFileUploads.push(contextFileData);
@@ -157,8 +154,5 @@ export const processBatchUpload = async (options: BatchUploadOptions): Promise<B
   }
 
   console.log('Batch upload completed:', uploads.length, 'items,', contextFileUploads.length, 'context files');
-  return { uploads, batchId, contextFiles: contextFileUploads };
+  return { uploads, batchId: metadata.batchId, contextFiles: contextFileUploads };
 };
-
-// Fix the missing import
-import { supabase } from '@/integrations/supabase/client';

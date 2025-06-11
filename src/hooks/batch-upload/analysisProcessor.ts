@@ -1,6 +1,7 @@
 
 import { triggerAnalysis, triggerBatchAnalysis } from '@/hooks/designAnalysisHelpers';
-import { supabase } from '@/integrations/supabase/client';
+import { useUseCaseValidator } from './useCaseValidator';
+import { useAnalysisDecisionEngine } from './analysisDecisionEngine';
 
 export const processAnalysis = async (
   uploads: any[], 
@@ -8,17 +9,10 @@ export const processAnalysis = async (
   useCaseId: string,
   shouldTriggerBatchAnalysis: boolean
 ) => {
+  const { validateAndFetchUseCase } = useUseCaseValidator();
+  
   // Get the use case details for analysis
-  const { data: useCase } = await supabase
-    .from('design_use_cases')
-    .select('*')
-    .eq('id', useCaseId)
-    .single();
-
-  if (!useCase) {
-    console.error('Use case not found:', useCaseId);
-    return;
-  }
+  const useCase = await validateAndFetchUseCase(useCaseId);
 
   // Trigger individual analyses for each upload
   const analysisPromises = uploads.map(upload => 
