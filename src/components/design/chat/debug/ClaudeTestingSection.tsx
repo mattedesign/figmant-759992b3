@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -517,7 +516,7 @@ export const ClaudeTestingSection: React.FC = () => {
       <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
         <TestTube className="h-4 w-4" />
         Claude AI Integration Tests
-        <Activity className="h-3 w-3 text-blue-500" title="Analytics Enabled" />
+        <Activity className="h-3 w-3 text-blue-500" />
       </h4>
       
       {/* Test Message Input */}
@@ -707,3 +706,5 @@ export const ClaudeTestingSection: React.FC = () => {
     </div>
   );
 };
+
+export default ClaudeTestingSection;
