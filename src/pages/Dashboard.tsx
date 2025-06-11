@@ -6,11 +6,12 @@ import { AnalyticsOverview } from '@/components/dashboard/AnalyticsOverview';
 import { Settings } from '@/components/dashboard/Settings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreditStatus } from '@/components/dashboard/CreditStatus';
+import { DesignUpload } from '@/types/design';
 
 const Dashboard = () => {
-  const handleViewAnalysis = (analysisId: string) => {
+  const handleViewAnalysis = (upload: DesignUpload) => {
     // Navigate to analysis view or open modal
-    console.log('Viewing analysis:', analysisId);
+    console.log('Viewing analysis:', upload.id, upload.file_name);
   };
 
   return (
