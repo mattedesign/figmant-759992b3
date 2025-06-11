@@ -511,6 +511,50 @@ export type Database = {
           },
         ]
       }
+      design_upload_analytics: {
+        Row: {
+          analysis_success: boolean | null
+          created_at: string
+          file_size_bytes: number | null
+          file_type: string | null
+          id: string
+          processing_time_ms: number | null
+          upload_id: string | null
+          use_case: string | null
+          user_id: string | null
+        }
+        Insert: {
+          analysis_success?: boolean | null
+          created_at?: string
+          file_size_bytes?: number | null
+          file_type?: string | null
+          id?: string
+          processing_time_ms?: number | null
+          upload_id?: string | null
+          use_case?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          analysis_success?: boolean | null
+          created_at?: string
+          file_size_bytes?: number | null
+          file_type?: string | null
+          id?: string
+          processing_time_ms?: number | null
+          upload_id?: string | null
+          use_case?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "design_upload_analytics_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "design_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       design_uploads: {
         Row: {
           analysis_goals: string | null
@@ -768,6 +812,60 @@ export type Database = {
           },
         ]
       }
+      system_performance_metrics: {
+        Row: {
+          id: string
+          metric_name: string
+          metric_unit: string | null
+          metric_value: number
+          timestamp: string
+        }
+        Insert: {
+          id?: string
+          metric_name: string
+          metric_unit?: string | null
+          metric_value: number
+          timestamp?: string
+        }
+        Update: {
+          id?: string
+          metric_name?: string
+          metric_unit?: string | null
+          metric_value?: number
+          timestamp?: string
+        }
+        Relationships: []
+      }
+      user_activity_logs: {
+        Row: {
+          activity_type: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          page_path: string | null
+          session_duration_seconds: number | null
+          user_id: string | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          session_duration_seconds?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          session_duration_seconds?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_credits: {
         Row: {
           created_at: string
@@ -846,6 +944,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      get_analytics_summary: {
+        Args: { days_back?: number }
+        Returns: {
+          total_users: number
+          active_users: number
+          total_uploads: number
+          total_analyses: number
+          avg_response_time: number
+          total_tokens_used: number
+          total_cost: number
+          success_rate: number
+        }[]
+      }
       get_best_prompt_for_category: {
         Args: { category_name: string }
         Returns: {
@@ -870,6 +981,16 @@ export type Database = {
           _role: Database["public"]["Enums"]["user_role"]
         }
         Returns: boolean
+      }
+      log_user_activity: {
+        Args: {
+          p_user_id: string
+          p_activity_type: string
+          p_page_path?: string
+          p_session_duration_seconds?: number
+          p_metadata?: Json
+        }
+        Returns: string
       }
       upsert_admin_setting: {
         Args: {

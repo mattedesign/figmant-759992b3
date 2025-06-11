@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 
@@ -26,6 +25,39 @@ interface AttachmentData {
   file?: File;
   url?: string;
   uploadPath?: string;
+}
+
+async function logClaudeUsage(
+  supabase: any, 
+  userId: string, 
+  requestType: string,
+  success: boolean,
+  tokensUsed?: number,
+  costUsd?: number,
+  responseTimeMs?: number,
+  errorMessage?: string,
+  modelUsed?: string
+) {
+  try {
+    const { error } = await supabase
+      .from('claude_usage_logs')
+      .insert({
+        user_id: userId,
+        request_type: requestType,
+        success,
+        tokens_used: tokensUsed,
+        cost_usd: costUsd,
+        response_time_ms: responseTimeMs,
+        error_message: errorMessage,
+        model_used: modelUsed
+      });
+
+    if (error) {
+      console.error('Failed to log Claude usage:', error);
+    }
+  } catch (error) {
+    console.error('Error logging Claude usage:', error);
+  }
 }
 
 async function getClaudeSettings(supabase: any): Promise<{ apiKey: string; model: string; systemPrompt: string }> {
@@ -308,11 +340,16 @@ async function processAttachmentsForVision(supabase: any, attachments: Attachmen
 serve(async (req) => {
   console.log('=== CLAUDE AI FUNCTION START ===');
   console.log('Request method:', req.method);
+  
+  const startTime = Date.now();
 
   if (req.method === 'OPTIONS') {
     console.log('Handling CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
+
+  let userId: string | null = null;
+  let requestType = 'unknown';
 
   try {
     const requestBody = await req.json();
@@ -322,12 +359,14 @@ serve(async (req) => {
     const message = requestBody.message || requestBody.prompt || '';
     const attachments = requestBody.attachments || [];
     const uploadIds = requestBody.uploadIds || [];
+    requestType = requestBody.requestType || 'analysis';
     
     console.log('Extracted parameters:', { 
       messageLength: message?.length || 0, 
       attachmentsCount: attachments.length,
       uploadIdsCount: uploadIds.length,
       messagePreview: message ? message.substring(0, 100) + '...' : 'No message',
+      requestType,
       attachmentSummary: attachments.map((att: any) => ({
         type: att.type,
         name: att.name,
@@ -446,6 +485,20 @@ serve(async (req) => {
         statusText: claudeResponse.statusText,
         errorData: errorData
       });
+
+      // Log failed usage
+      await logClaudeUsage(
+        supabase,
+        userId || 'unknown',
+        requestType,
+        false,
+        undefined,
+        undefined,
+        Date.now() - startTime,
+        `Claude API error: ${claudeResponse.status} - ${errorData}`,
+        claudeSettings.model
+      );
+
       throw new Error(`Claude API error: ${claudeResponse.status} - ${errorData}`);
     }
 
@@ -459,11 +512,32 @@ serve(async (req) => {
 
     // Extract the text content from Claude's response
     const analysis = claudeData.content?.[0]?.text || 'No analysis available';
+    const responseTime = Date.now() - startTime;
+
+    // Calculate estimated cost (rough estimation based on tokens)
+    const tokensUsed = claudeData.usage?.input_tokens + claudeData.usage?.output_tokens || 0;
+    const estimatedCost = tokensUsed * 0.0001; // Rough estimate
 
     console.log('Analysis extracted:', {
       analysisLength: analysis.length,
-      analysisPreview: analysis.substring(0, 100) + '...'
+      analysisPreview: analysis.substring(0, 100) + '...',
+      tokensUsed,
+      responseTime,
+      estimatedCost
     });
+
+    // Log successful usage
+    await logClaudeUsage(
+      supabase,
+      userId || 'system',
+      requestType,
+      true,
+      tokensUsed,
+      estimatedCost,
+      responseTime,
+      undefined,
+      claudeSettings.model
+    );
 
     const response = {
       analysis,
@@ -477,7 +551,10 @@ serve(async (req) => {
         settingsSource: 'admin_settings',
         model: claudeSettings.model,
         messageReceived: !!message,
-        messageLength: message.length
+        messageLength: message.length,
+        tokensUsed,
+        responseTimeMs: responseTime,
+        estimatedCost
       }
     };
 
@@ -498,6 +575,29 @@ serve(async (req) => {
       stack: error.stack,
       name: error.name
     });
+
+    // Log failed usage if we have supabase connection
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      
+      if (supabaseUrl && supabaseServiceKey) {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        await logClaudeUsage(
+          supabase,
+          userId || 'unknown',
+          requestType,
+          false,
+          undefined,
+          undefined,
+          Date.now() - startTime,
+          error.message,
+          undefined
+        );
+      }
+    } catch (logError) {
+      console.error('Failed to log error usage:', logError);
+    }
     
     return new Response(
       JSON.stringify({
@@ -506,7 +606,8 @@ serve(async (req) => {
         debugInfo: {
           errorType: error.name,
           timestamp: new Date().toISOString(),
-          settingsSource: 'admin_settings'
+          settingsSource: 'admin_settings',
+          responseTimeMs: Date.now() - startTime
         }
       }),
       {
