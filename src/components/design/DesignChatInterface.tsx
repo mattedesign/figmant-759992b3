@@ -4,11 +4,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Send, Paperclip, Image, Globe, Sparkles } from 'lucide-react';
+import { Send, Paperclip, Globe, Sparkles } from 'lucide-react';
 import { ChatMessage } from './chat/ChatMessage';
 import { ChatAttachments } from './chat/ChatAttachments';
 import { SuggestedPrompts } from './chat/SuggestedPrompts';
+import { AnalysisResults } from './chat/AnalysisResults';
 import { useChatAnalysis } from '@/hooks/useChatAnalysis';
+import { DesignUpload, DesignBatchAnalysis } from '@/types/design';
 
 export interface ChatAttachment {
   id: string;
@@ -25,10 +27,22 @@ export interface ChatMessageType {
   content: string;
   timestamp: Date;
   attachments?: ChatAttachment[];
-  analysisResult?: any;
+  analysisResult?: {
+    analysis: string;
+    uploadIds: string[];
+    batchId?: string;
+  };
 }
 
-export const DesignChatInterface = () => {
+interface DesignChatInterfaceProps {
+  onViewUpload?: (upload: DesignUpload) => void;
+  onViewBatchAnalysis?: (batch: DesignBatchAnalysis) => void;
+}
+
+export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({ 
+  onViewUpload, 
+  onViewBatchAnalysis 
+}) => {
   const [messages, setMessages] = useState<ChatMessageType[]>([
     {
       id: '1',
@@ -41,7 +55,6 @@ export const DesignChatInterface = () => {
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const urlInputRef = useRef<HTMLInputElement>(null);
 
   const { analyzeWithChat } = useChatAnalysis();
 
@@ -125,95 +138,102 @@ export const DesignChatInterface = () => {
   };
 
   return (
-    <div className="flex flex-col h-[600px] max-w-4xl mx-auto">
-      <Card className="flex-1 flex flex-col">
-        <CardContent className="flex-1 flex flex-col p-0">
-          {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
-              <ChatMessage 
-                key={message.id} 
-                message={message}
-              />
-            ))}
-            {isAnalyzing && (
-              <div className="flex items-center space-x-2 text-muted-foreground">
-                <Sparkles className="h-4 w-4 animate-spin" />
-                <span>Analyzing your design...</span>
+    <div className="flex flex-col h-[700px]">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((message) => (
+          <div key={message.id}>
+            <ChatMessage message={message} />
+            {message.analysisResult && (
+              <div className="mt-4 ml-10">
+                <AnalysisResults 
+                  result={message.analysisResult}
+                  onViewUpload={onViewUpload}
+                  onViewBatchAnalysis={onViewBatchAnalysis}
+                />
               </div>
             )}
           </div>
-
-          {/* Suggested Prompts */}
-          {messages.length === 1 && (
-            <div className="p-4 border-t bg-muted/20">
-              <SuggestedPrompts onSelectPrompt={handleSuggestedPrompt} />
-            </div>
-          )}
-
-          {/* Attachments Preview */}
-          {attachments.length > 0 && (
-            <div className="p-4 border-t bg-muted/10">
-              <ChatAttachments 
-                attachments={attachments}
-                onRemove={removeAttachment}
-              />
-            </div>
-          )}
-
-          {/* Input Area */}
-          <div className="p-4 border-t">
-            <div className="flex items-end space-x-2">
-              <div className="flex-1">
-                <Input
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Describe what you'd like me to analyze..."
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  className="min-h-[40px]"
-                />
-              </div>
-              
-              {/* Attachment Buttons */}
-              <div className="flex space-x-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-2"
-                >
-                  <Paperclip className="h-4 w-4" />
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const url = prompt('Enter a website URL to analyze:');
-                    if (url) handleUrlAdd(url);
-                  }}
-                  className="px-2"
-                >
-                  <Globe className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <Button 
-                onClick={handleSendMessage}
-                disabled={!inputValue.trim() && attachments.length === 0}
-                size="sm"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
+        ))}
+        {isAnalyzing && (
+          <div className="flex items-center space-x-2 text-muted-foreground p-4">
+            <Sparkles className="h-4 w-4 animate-spin" />
+            <span>Analyzing your design...</span>
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
+
+      {/* Suggested Prompts */}
+      {messages.length === 1 && (
+        <div className="p-4 border-t bg-muted/20">
+          <SuggestedPrompts onSelectPrompt={handleSuggestedPrompt} />
+        </div>
+      )}
+
+      {/* Attachments Preview */}
+      {attachments.length > 0 && (
+        <div className="p-4 border-t bg-muted/10">
+          <ChatAttachments 
+            attachments={attachments}
+            onRemove={removeAttachment}
+          />
+        </div>
+      )}
+
+      {/* Input Area */}
+      <div className="p-4 border-t">
+        <div className="flex items-end space-x-2">
+          <div className="flex-1">
+            <Input
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Describe what you'd like me to analyze..."
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              className="min-h-[40px]"
+              disabled={isAnalyzing}
+            />
+          </div>
+          
+          {/* Attachment Buttons */}
+          <div className="flex space-x-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-2"
+              disabled={isAnalyzing}
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const url = prompt('Enter a website URL to analyze:');
+                if (url) handleUrlAdd(url);
+              }}
+              className="px-2"
+              disabled={isAnalyzing}
+            >
+              <Globe className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <Button 
+            onClick={handleSendMessage}
+            disabled={(!inputValue.trim() && attachments.length === 0) || isAnalyzing}
+            size="sm"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
       {/* Hidden file input */}
       <input

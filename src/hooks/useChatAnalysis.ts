@@ -56,17 +56,23 @@ export const useChatAnalysis = () => {
         });
 
         return {
-          analysis: `I've uploaded and started analyzing your ${files.length + urls.length} item(s). I'll provide detailed insights based on your request: "${message}". The analysis will be available shortly in your dashboard.`,
+          analysis: `I've successfully uploaded and started analyzing your ${files.length + urls.length} item(s). Based on your request: "${message}", I'll provide detailed insights tailored to ${useCaseId} optimization. The analysis results are now available below.`,
           uploadIds: result.uploads.map(u => u.id),
           batchId: result.batchId
         };
       } else {
-        // Handle text-only queries
+        // Handle text-only queries with helpful guidance
         return {
-          analysis: `I'd be happy to help with "${message}". Please upload some designs or share website URLs so I can provide specific analysis and recommendations.`,
+          analysis: `I'd be happy to help with "${message}". To provide specific analysis and recommendations, please upload some designs (images, PDFs) or share website URLs. I can analyze them for conversion optimization, user experience improvements, visual hierarchy, and more.`,
           uploadIds: []
         };
       }
+    },
+    onSuccess: () => {
+      toast({
+        title: "Analysis Complete",
+        description: "Your design analysis is ready! Check the results below.",
+      });
     },
     onError: (error) => {
       console.error('Chat analysis failed:', error);

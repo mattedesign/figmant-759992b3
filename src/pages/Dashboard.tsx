@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { EnhancedDesignUploader } from '@/components/design/EnhancedDesignUploader';
 import { DesignChatInterface } from '@/components/design/DesignChatInterface';
 import { DesignList } from '@/components/design/DesignList';
 import { QuickActions } from '@/components/dashboard/QuickActions';
@@ -12,7 +11,7 @@ import { Navigation } from '@/components/layout/Navigation';
 import { DesignUpload, DesignBatchAnalysis } from '@/types/design';
 import { AnalysisViewer } from '@/components/design/AnalysisViewer';
 import { EnhancedBatchAnalysisViewer } from '@/components/design/EnhancedBatchAnalysisViewer';
-import { MessageSquare, Upload, History, BarChart3, FileText } from 'lucide-react';
+import { MessageSquare, History, BarChart3, FileText } from 'lucide-react';
 import { UploadProgress } from '@/components/dashboard/UploadProgress';
 import { ClaudeConnectionTest } from '@/components/dashboard/ClaudeConnectionTest';
 import { ClaudeInsights } from '@/components/dashboard/ClaudeInsights';
@@ -70,14 +69,10 @@ const Dashboard = () => {
       
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="chat" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Chat Analysis
-            </TabsTrigger>
-            <TabsTrigger value="upload" className="flex items-center gap-2">
-              <Upload className="h-4 w-4" />
-              Upload
             </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center gap-2">
               <History className="h-4 w-4" />
@@ -94,17 +89,20 @@ const Dashboard = () => {
           </TabsList>
 
           <TabsContent value="chat" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className="lg:col-span-3">
                 <Card>
                   <CardHeader>
                     <CardTitle>UX Analysis Assistant</CardTitle>
                     <CardDescription>
-                      Chat with our AI to get instant design analysis and recommendations
+                      Upload designs or share URLs, then describe what you'd like me to analyze. I can help with conversion optimization, user experience, visual hierarchy, and more.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <DesignChatInterface />
+                  <CardContent className="p-0">
+                    <DesignChatInterface 
+                      onViewUpload={setSelectedUpload}
+                      onViewBatchAnalysis={setSelectedBatchAnalysis}
+                    />
                   </CardContent>
                 </Card>
               </div>
@@ -123,30 +121,6 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
                 <UploadProgress />
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="upload" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <EnhancedDesignUploader />
-                <UploadProgress />
-              </div>
-              <div>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recent Analyses</CardTitle>
-                    <CardDescription>Your latest design analysis results</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <RecentAnalyses 
-                      onViewAnalysis={setSelectedUpload}
-                      onViewBatchAnalysis={setSelectedBatchAnalysis}
-                      limit={3} 
-                    />
-                  </CardContent>
-                </Card>
               </div>
             </div>
           </TabsContent>
