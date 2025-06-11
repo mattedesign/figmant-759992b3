@@ -14,6 +14,9 @@ export interface DesignUpload {
   batch_name: string | null;
   analysis_goals: string | null;
   analysis_preferences: AnalysisPreferences | null;
+  original_batch_id: string | null;
+  is_replacement: boolean | null;
+  replaced_upload_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +26,7 @@ export interface AnalysisPreferences {
   context_integration: boolean;
   analysis_depth?: 'basic' | 'detailed' | 'comprehensive';
   focus_areas?: string[];
+  [key: string]: any; // Add index signature to make it compatible with Json type
 }
 
 export interface FigmantPromptVariables {
@@ -75,6 +79,9 @@ export interface DesignBatchAnalysis {
   confidence_score: number;
   context_summary?: string;
   analysis_settings?: any;
+  parent_analysis_id?: string;
+  modification_summary?: string;
+  version_number?: number;
   created_at: string;
 }
 
