@@ -29,6 +29,16 @@ export const URLUploadSection = ({
 
   const validUrls = urls.filter(url => url.trim() !== '');
 
+  // Helper function to safely get hostname from URL
+  const getHostname = (url: string): string => {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      // If URL is invalid, just return the URL as-is (truncated if too long)
+      return url.length > 30 ? url.substring(0, 30) + '...' : url;
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="space-y-3">
@@ -70,7 +80,7 @@ export const URLUploadSection = ({
             {validUrls.map((url, index) => (
               <Badge key={index} variant="secondary" className="px-3 py-1">
                 <Globe className="h-3 w-3 mr-1" />
-                {new URL(url).hostname}
+                {getHostname(url)}
               </Badge>
             ))}
           </div>
