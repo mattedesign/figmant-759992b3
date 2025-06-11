@@ -89,3 +89,18 @@ export const fetchUseCase = async (useCaseId: string) => {
 
   return data;
 };
+
+export const fetchUseCaseByName = async (name: string) => {
+  const { data, error } = await supabase
+    .from('design_use_cases')
+    .select('*')
+    .eq('name', name)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching use case by name:', error);
+    return null;
+  }
+
+  return data;
+};

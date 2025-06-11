@@ -22,12 +22,14 @@ export const useBatchMetadataGenerator = () => {
     };
   };
 
-  const logBatchInfo = (metadata: any, analysisGoals?: string, analysisPreferences?: any) => {
+  const logBatchInfo = (metadata: any, analysisGoals?: string, analysisPreferences?: any, useCaseId?: string) => {
     console.log('Starting batch upload...', { 
       filesCount: metadata.totalItems - metadata.contextFilesCount,
       urlsCount: 0, // Will be calculated in processor
       contextFilesCount: metadata.contextFilesCount,
       batchId: metadata.batchId,
+      useCaseId,
+      useCaseType: useCaseId?.startsWith('figmant_') ? 'Figmant Template' : 'Standard Use Case',
       analysisGoals,
       analysisPreferences
     });

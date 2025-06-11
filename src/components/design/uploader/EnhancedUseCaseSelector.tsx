@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getFigmantTemplate } from '@/data/figmantPromptTemplates';
 import { FigmantPromptTemplate, FigmantPromptVariables } from '@/types/figmant';
 import { AnalysisFrameworkTabs } from './AnalysisFrameworkTabs';
+import { useDesignUseCases } from '@/hooks/useDesignUseCases';
 
 interface EnhancedUseCaseSelectorProps {
   selectedUseCase: string;
@@ -23,12 +24,31 @@ export const EnhancedUseCaseSelector = ({
 }: EnhancedUseCaseSelectorProps) => {
   const [selectedTemplate, setSelectedTemplate] = useState<FigmantPromptTemplate | null>(null);
   const [analysisMode, setAnalysisMode] = useState<'standard' | 'figmant'>('figmant');
+  const { data: useCases = [] } = useDesignUseCases();
+
+  // Map Figmant template names to database use case IDs
+  const getFigmantUseCaseId = (templateId: string): string | null => {
+    const template = getFigmantTemplate(templateId);
+    if (!template) return null;
+    
+    // Find the corresponding use case in the database by name
+    const useCase = useCases.find(uc => uc.name === template.name);
+    return useCase?.id || null;
+  };
 
   const handleTemplateSelect = (templateId: string) => {
     const template = getFigmantTemplate(templateId);
     if (template) {
       setSelectedTemplate(template);
-      setSelectedUseCase(`figmant_${templateId}`);
+      
+      // Get the actual database UUID for this template
+      const useCaseId = getFigmantUseCaseId(templateId);
+      if (useCaseId) {
+        setSelectedUseCase(useCaseId);
+      } else {
+        // Fallback to the figmant_ prefix if not found in database yet
+        setSelectedUseCase(`figmant_${templateId}`);
+      }
     }
   };
 
@@ -38,6 +58,16 @@ export const EnhancedUseCaseSelector = ({
       [key]: value
     });
   };
+
+  // Update the selected use case when switching modes
+  useEffect(() => {
+    if (analysisMode === 'figmant' && selectedTemplate) {
+      const useCaseId = getFigmantUseCaseId(selectedTemplate.id);
+      if (useCaseId) {
+        setSelectedUseCase(useCaseId);
+      }
+    }
+  }, [analysisMode, selectedTemplate, useCases, setSelectedUseCase]);
 
   return (
     <div className="space-y-6">
