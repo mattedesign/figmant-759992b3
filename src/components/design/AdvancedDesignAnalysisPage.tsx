@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Upload, MessageSquare, BarChart3, History, Sparkles, RefreshCw } from 'lucide-react';
-import { DesignWizardUploader } from './wizard/DesignWizardUploader';
+import { EnhancedDesignUploader } from './EnhancedDesignUploader';
 import { DesignChatInterface } from './DesignChatInterface';
 import { DesignList } from './DesignList';
 import { BatchAnalysisDashboard } from './BatchAnalysisDashboard';
@@ -123,7 +123,20 @@ export const AdvancedDesignAnalysisPage = () => {
         </TabsList>
 
         <TabsContent value="upload" className="mt-6">
-          <DesignWizardUploader key={refreshKey} />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Sparkles className="h-5 w-5" />
+                <span>Enhanced Design Uploader</span>
+              </CardTitle>
+              <CardDescription>
+                Upload multiple designs with advanced analysis options and batch processing
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EnhancedDesignUploader key={refreshKey} />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="chat" className="mt-6">
