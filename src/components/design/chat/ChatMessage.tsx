@@ -4,15 +4,15 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { User, Bot, Info, Image, Globe } from 'lucide-react';
-import { ChatMessageType } from '../DesignChatInterface';
+import { ChatMessage as ChatMessageType } from '../DesignChatInterface';
 
 interface ChatMessageProps {
   message: ChatMessageType;
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
-  const isUser = message.type === 'user';
-  const isSystem = message.type === 'system';
+  const isUser = message.role === 'user';
+  const isSystem = message.role === 'system';
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} space-x-2`}>
@@ -54,7 +54,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
             </div>
             
             {/* Analysis results preview */}
-            {message.analysisResult && (
+            {message.batchId && (
               <div className="mt-3 p-2 rounded bg-muted/50">
                 <Badge variant="secondary" className="mb-2">
                   Analysis Complete

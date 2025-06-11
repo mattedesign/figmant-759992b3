@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -403,12 +402,11 @@ export const DesignChatInterface = () => {
 
       {/* Sidebar */}
       <div className="space-y-6">
-        <SuggestedPrompts onPromptClick={handleSuggestedPrompt} />
+        <SuggestedPrompts onSelectPrompt={handleSuggestedPrompt} />
         
         {messages.length > 0 && (
           <AnalysisResults 
-            messages={messages}
-            onUploadMore={() => document.querySelector('input[type="file"]')?.click()}
+            onUploadMore={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
           />
         )}
       </div>
