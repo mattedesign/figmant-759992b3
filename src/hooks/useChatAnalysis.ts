@@ -12,6 +12,11 @@ interface ChatAnalysisResponse {
   analysis: string;
   uploadIds?: string[];
   batchId?: string;
+  debugInfo?: {
+    settingsSource?: string;
+    attachmentsProcessed?: number;
+    [key: string]: any;
+  };
 }
 
 const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAnalysisResponse> => {
@@ -166,7 +171,8 @@ const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAna
 
   return {
     analysis: data.analysis,
-    uploadIds: uploadIds.length > 0 ? uploadIds : undefined
+    uploadIds: uploadIds.length > 0 ? uploadIds : undefined,
+    debugInfo: data.debugInfo
   };
 };
 
