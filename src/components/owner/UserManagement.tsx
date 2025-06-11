@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,10 +16,19 @@ import { CreditManagementDialog } from './CreditManagementDialog';
 import { useUserManagementCredits } from '@/hooks/useUserManagementCredits';
 import { UserProfile } from '@/types/auth';
 
+// Extended interface for user management that includes subscription data
+interface UserManagementProfile extends UserProfile {
+  subscriptions?: Array<{
+    status: string;
+    current_period_end: string | null;
+    stripe_customer_id: string | null;
+  }>;
+}
+
 export const UserManagement = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserManagementProfile | null>(null);
   const [activeTab, setActiveTab] = useState('subscribers');
   const [createUserDialogOpen, setCreateUserDialogOpen] = useState(false);
   const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
@@ -43,11 +51,11 @@ export const UserManagement = () => {
       
       if (error) throw error;
       
-      // Transform the data to match the UserProfile type from auth.ts
+      // Transform the data to match the UserManagementProfile type
       return data.map(profile => ({
         ...profile,
         subscriptions: profile.subscriptions ? [profile.subscriptions] : []
-      })) as UserProfile[];
+      })) as UserManagementProfile[];
     }
   });
 
@@ -113,17 +121,17 @@ export const UserManagement = () => {
     setCreditManagementDialogOpen(false);
   };
 
-  const handleEditUser = (user: UserProfile) => {
+  const handleEditUser = (user: UserManagementProfile) => {
     setSelectedUser(user);
     setEditUserDialogOpen(true);
   };
 
-  const handleManageCredits = (user: UserProfile) => {
+  const handleManageCredits = (user: UserManagementProfile) => {
     setSelectedUser(user);
     setCreditManagementDialogOpen(true);
   };
 
-  const getUserActivityStatus = (user: UserProfile) => {
+  const getUserActivityStatus = (user: UserManagementProfile) => {
     const subscription = user.subscriptions?.[0];
     const credits = creditsMap?.get(user.id);
     
@@ -133,7 +141,7 @@ export const UserManagement = () => {
     return 'Inactive';
   };
 
-  const getActivityStatusBadge = (user: UserProfile) => {
+  const getActivityStatusBadge = (user: UserManagementProfile) => {
     const status = getUserActivityStatus(user);
     const isActive = status.startsWith('Active');
     
@@ -165,7 +173,7 @@ export const UserManagement = () => {
   const ownerUsers = users?.filter(user => user.role === 'owner') || [];
   const subscriberUsers = users?.filter(user => user.role === 'subscriber') || [];
 
-  const renderUserTable = (userList: UserProfile[], userType: 'owner' | 'subscriber') => (
+  const renderUserTable = (userList: UserManagementProfile[], userType: 'owner' | 'subscriber') => (
     <Table>
       <TableHeader>
         <TableRow>
