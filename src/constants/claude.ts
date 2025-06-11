@@ -13,7 +13,7 @@ export const CLAUDE_MODELS: ClaudeModel[] = [
 
 export const DEFAULT_SYSTEM_PROMPT = 'You are a UX analytics expert that provides insights on user behavior and experience patterns. Analyze data and provide actionable recommendations for improving user experience, conversion rates, and engagement.';
 
-export const DEFAULT_MODEL = 'claude-3-5-haiku-20241022';
+export const DEFAULT_MODEL = 'claude-sonnet-4-20250514';
 
 export const validateApiKey = (key: string): boolean => {
   return key.length >= 20 && key.startsWith('sk-ant-');

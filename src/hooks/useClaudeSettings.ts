@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ClaudeSettings } from '@/types/claude';
+import { DEFAULT_MODEL } from '@/constants/claude';
 
 export const useClaudeSettings = () => {
   return useQuery({
@@ -37,11 +38,17 @@ export const useClaudeSettings = () => {
         } else if (key === 'claude_api_key') {
           settings.claude_api_key = value;
         } else if (key === 'claude_model') {
-          settings.claude_model = value;
+          // Use the new default model if no model is set
+          settings.claude_model = value || DEFAULT_MODEL;
         } else if (key === 'claude_system_prompt') {
           settings.claude_system_prompt = value;
         }
       });
+      
+      // Ensure we have a default model even if none is set in the database
+      if (!settings.claude_model) {
+        settings.claude_model = DEFAULT_MODEL;
+      }
       
       return settings;
     }
