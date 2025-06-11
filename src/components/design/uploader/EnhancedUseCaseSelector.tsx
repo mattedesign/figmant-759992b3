@@ -31,7 +31,7 @@ export const EnhancedUseCaseSelector = ({
     const template = getFigmantTemplate(templateId);
     if (!template) return null;
     
-    // Find the corresponding use case in the database by name (now without "Figmant:" prefix)
+    // Find the corresponding use case in the database by name (without "Figmant:" prefix)
     const useCase = useCases.find(uc => uc.name === template.name);
     return useCase?.id || null;
   };
@@ -46,6 +46,7 @@ export const EnhancedUseCaseSelector = ({
       if (useCaseId) {
         // Use the actual database UUID
         setSelectedUseCase(useCaseId);
+        console.log(`Selected template "${template.name}" with database ID: ${useCaseId}`);
       } else {
         // Fallback to the figmant_ prefix if not found in database yet
         setSelectedUseCase(`figmant_${templateId}`);
@@ -67,9 +68,10 @@ export const EnhancedUseCaseSelector = ({
       const useCaseId = getFigmantUseCaseId(selectedTemplate.id);
       if (useCaseId && selectedUseCase !== useCaseId) {
         setSelectedUseCase(useCaseId);
+        console.log(`Updated template "${selectedTemplate.name}" to use database ID: ${useCaseId}`);
       }
     }
-  }, [analysisMode, selectedTemplate, useCases, setSelectedUseCase]);
+  }, [analysisMode, selectedTemplate, useCases, setSelectedUseCase, selectedUseCase]);
 
   return (
     <div className="space-y-6">

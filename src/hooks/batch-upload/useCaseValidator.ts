@@ -10,12 +10,14 @@ export const useUseCaseValidator = () => {
       const template = getFigmantTemplate(templateId);
       
       if (template) {
-        // Fetch from database using the template name (now without "Figmant:" prefix)
+        // Fetch from database using the template name (templates names now match database names)
+        console.log(`Looking for template in database: "${template.name}"`);
         const useCase = await fetchUseCaseByName(template.name);
         if (!useCase) {
-          console.error(`Template "${template.name}" not found in database. Available templates should include this name.`);
+          console.error(`Template "${template.name}" not found in database. This template should be available.`);
           throw new Error(`Figmant template "${template.name}" not found in database`);
         }
+        console.log(`Successfully found template "${template.name}" in database with ID: ${useCase.id}`);
         return useCase;
       } else {
         throw new Error(`Figmant template not found: ${templateId}`);
