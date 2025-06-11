@@ -66,11 +66,11 @@ export const EnhancedUseCaseSelector = ({
     }
   };
 
-  const handleVariableChange = (key: keyof FigmantPromptVariables, value: string) => {
-    setPromptVariables(prev => ({
-      ...prev,
+  const handleVariableChange = (key: keyof FigmantPromptVariables, value: string | string[]) => {
+    setPromptVariables({
+      ...promptVariables,
       [key]: value
-    }));
+    });
   };
 
   return (
@@ -183,7 +183,10 @@ export const EnhancedUseCaseSelector = ({
                         id="competitorUrls"
                         placeholder="Enter competitor URLs, one per line"
                         value={promptVariables.competitorUrls?.join('\n') || ''}
-                        onChange={(e) => handleVariableChange('competitorUrls', e.target.value.split('\n').filter(url => url.trim()))}
+                        onChange={(e) => {
+                          const urls = e.target.value.split('\n').filter(url => url.trim());
+                          handleVariableChange('competitorUrls', urls);
+                        }}
                       />
                     </div>
                   )}
