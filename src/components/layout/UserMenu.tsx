@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, LogOut, Crown, Settings, LayoutDashboard, CreditCard, Gift } from 'lucide-react';
+import { User, LogOut, Crown, Settings, LayoutDashboard, CreditCard, Gift, FileImage } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const UserMenu = () => {
@@ -26,6 +26,10 @@ export const UserMenu = () => {
     } else {
       navigate('/dashboard');
     }
+  };
+
+  const handleDesignAnalysisClick = () => {
+    navigate('/design-analysis');
   };
 
   const getSubscriptionBadge = () => {
@@ -86,6 +90,10 @@ export const UserMenu = () => {
         <DropdownMenuItem onClick={handleDashboardClick}>
           <LayoutDashboard className="mr-2 h-4 w-4" />
           <span>{isOwner ? 'Owner Dashboard' : 'Dashboard'}</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleDesignAnalysisClick}>
+          <FileImage className="mr-2 h-4 w-4" />
+          <span>Design Analysis</span>
         </DropdownMenuItem>
         <DropdownMenuItem>
           <Settings className="mr-2 h-4 w-4" />
