@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Brain, Plus } from 'lucide-react';
+import { Brain, Plus, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { 
   useClaudePromptExamples, 
@@ -13,6 +13,7 @@ import {
 import { CreatePromptForm } from './CreatePromptForm';
 import { PromptCategoryList } from './PromptCategoryList';
 import { PromptSeeder } from './PromptSeeder';
+import { MasterPromptUpdater } from './MasterPromptUpdater';
 
 export const ClaudePromptManager = () => {
   const { toast } = useToast();
@@ -112,12 +113,20 @@ export const ClaudePromptManager = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue={isEmpty ? "seed" : "examples"} className="space-y-4">
+          <Tabs defaultValue={isEmpty ? "seed" : "enhance"} className="space-y-4">
             <TabsList>
+              <TabsTrigger value="enhance">
+                <Zap className="h-4 w-4 mr-2" />
+                Enhance Master Prompt
+              </TabsTrigger>
               <TabsTrigger value="examples">Prompt Examples ({promptExamples?.length || 0})</TabsTrigger>
               {isEmpty && <TabsTrigger value="seed">Seed Database</TabsTrigger>}
               {isCreating && <TabsTrigger value="create">Create New</TabsTrigger>}
             </TabsList>
+
+            <TabsContent value="enhance" className="space-y-4">
+              <MasterPromptUpdater />
+            </TabsContent>
 
             <TabsContent value="examples" className="space-y-4">
               {isEmpty ? (
