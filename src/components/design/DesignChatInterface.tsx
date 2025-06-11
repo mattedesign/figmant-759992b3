@@ -111,10 +111,10 @@ export const DesignChatInterface = () => {
     return filePath;
   };
 
-  const updateAttachmentStatus = (id: string, status: ChatAttachment['status'], errorMessage?: string) => {
+  const updateAttachmentStatus = (id: string, status: ChatAttachment['status'], errorMessage?: string, uploadPath?: string) => {
     setAttachments(prev => prev.map(att => 
       att.id === id 
-        ? { ...att, status, errorMessage }
+        ? { ...att, status, errorMessage, uploadPath }
         : att
     ));
   };
@@ -145,8 +145,8 @@ export const DesignChatInterface = () => {
         updateAttachmentStatus(attachment.id, 'uploading');
         
         if (attachment.file) {
-          await uploadFileToStorage(attachment.file);
-          updateAttachmentStatus(attachment.id, 'uploaded');
+          const uploadPath = await uploadFileToStorage(attachment.file);
+          updateAttachmentStatus(attachment.id, 'uploaded', undefined, uploadPath);
           
           toast({
             title: "File Uploaded",

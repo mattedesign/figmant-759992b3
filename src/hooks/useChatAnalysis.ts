@@ -26,37 +26,22 @@ const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAna
     throw new Error('User not authenticated');
   }
 
-  // Process file attachments - upload them if they haven't been uploaded yet
+  // Process attachments - create database records for files that have upload paths
   const uploadIds: string[] = [];
   const processedAttachments: ChatAttachment[] = [];
 
   for (const attachment of request.attachments) {
-    if (attachment.type === 'file' && attachment.file && attachment.status === 'uploaded') {
+    if (attachment.type === 'file' && attachment.file && attachment.uploadPath && attachment.status === 'uploaded') {
       try {
-        // Generate file path
-        const fileExt = attachment.file.name.split('.').pop();
-        const fileName = `chat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-        const filePath = `${user.id}/${fileName}`;
+        console.log('Creating database record for uploaded file:', attachment.name);
 
-        console.log('Uploading file for analysis:', fileName);
-
-        // Upload to storage
-        const { error: uploadError } = await supabase.storage
-          .from('design-uploads')
-          .upload(filePath, attachment.file);
-
-        if (uploadError) {
-          console.error('Failed to upload file:', uploadError);
-          throw new Error(`Failed to upload ${attachment.name}: ${uploadError.message}`);
-        }
-
-        // Create database record
+        // Create database record for the already uploaded file
         const { data: uploadRecord, error: dbError } = await supabase
           .from('design_uploads')
           .insert({
             user_id: user.id,
             file_name: attachment.file.name,
-            file_path: filePath,
+            file_path: attachment.uploadPath,
             file_size: attachment.file.size,
             mime_type: attachment.file.type,
             use_case: 'chat_analysis'
@@ -72,16 +57,16 @@ const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAna
         uploadIds.push(uploadRecord.id);
         processedAttachments.push({
           ...attachment,
-          uploadPath: filePath
+          uploadPath: attachment.uploadPath
         });
 
-        console.log('File uploaded successfully:', uploadRecord.id);
+        console.log('Database record created successfully:', uploadRecord.id);
       } catch (error) {
         console.error('Error processing file attachment:', error);
         // Continue with other attachments even if one fails
       }
     } else {
-      // For URL attachments or already processed files
+      // For URL attachments or files without upload paths
       processedAttachments.push(attachment);
     }
   }

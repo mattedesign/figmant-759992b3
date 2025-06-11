@@ -71,7 +71,7 @@ async function processAttachmentsForVision(supabase: any, attachments: Attachmen
   
   for (const attachment of attachments) {
     if (attachment.type === 'file' && attachment.uploadPath) {
-      console.log('Processing file attachment:', attachment.name);
+      console.log('Processing file attachment:', attachment.name, 'at path:', attachment.uploadPath);
       
       // Check if it's an image file
       const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(attachment.name);
@@ -189,38 +189,15 @@ serve(async (req) => {
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Process attachments to handle file paths from uploadIds
-    const processedAttachments = [...attachments];
-    
-    // If we have uploadIds, fetch the file paths from the database
-    if (uploadIds && uploadIds.length > 0) {
-      console.log('Fetching upload paths for IDs:', uploadIds);
-      
-      const { data: uploads, error: uploadsError } = await supabase
-        .from('design_uploads')
-        .select('file_path, file_name')
-        .in('id', uploadIds);
-
-      if (uploadsError) {
-        console.error('Error fetching uploads:', uploadsError);
-      } else if (uploads) {
-        // Add file paths to attachments
-        uploads.forEach((upload, index) => {
-          if (upload.file_path) {
-            processedAttachments.push({
-              type: 'file',
-              name: upload.file_name || `Upload ${index + 1}`,
-              uploadPath: upload.file_path
-            });
-          }
-        });
-      }
-    }
-
-    console.log('Processing attachments for vision analysis...');
+    // The attachments now come with uploadPath already set from the UI
+    console.log('Processing attachments:', attachments.map(att => ({ 
+      type: att.type, 
+      name: att.name, 
+      hasUploadPath: !!att.uploadPath 
+    })));
     
     // Process attachments for vision analysis
-    const visionContent = await processAttachmentsForVision(supabase, processedAttachments);
+    const visionContent = await processAttachmentsForVision(supabase, attachments);
     
     // Build the message content
     const messageContent: Array<{ type: 'text' | 'image'; text?: string; source?: any }> = [
