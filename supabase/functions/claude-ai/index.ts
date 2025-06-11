@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 
@@ -141,8 +142,18 @@ async function verifyStorageBucket(supabase: any): Promise<boolean> {
   }
 }
 
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
 async function downloadImageFromStorage(supabase: any, filePath: string): Promise<{ base64: string; mimeType: string } | null> {
-  const maxRetries = 2; // Reduced retries for faster failure detection
+  const maxRetries = 2;
   let attempt = 0;
   
   while (attempt < maxRetries) {
@@ -174,7 +185,7 @@ async function downloadImageFromStorage(supabase: any, filePath: string): Promis
       const timeoutId = setTimeout(() => {
         controller.abort();
         console.log('Download timeout after 20 seconds');
-      }, 20000); // 20 second timeout for URLs
+      }, 20000);
       
       try {
         const response = await fetch(urlData.signedUrl, {
@@ -220,15 +231,8 @@ async function downloadImageFromStorage(supabase: any, filePath: string): Promis
           throw new Error('Downloaded file is empty');
         }
         
-        // Convert to base64 with memory efficiency
-        const uint8Array = new Uint8Array(arrayBuffer);
-        const chunkSize = 8192;
-        let base64 = '';
-        
-        for (let i = 0; i < uint8Array.length; i += chunkSize) {
-          const chunk = uint8Array.slice(i, i + chunkSize);
-          base64 += btoa(String.fromCharCode(...chunk));
-        }
+        // Convert to base64 using proper method
+        const base64 = arrayBufferToBase64(arrayBuffer);
         
         console.log('Image downloaded and converted successfully:', {
           sizeBytes: arrayBuffer.byteLength,
@@ -293,7 +297,7 @@ async function downloadImageFromUrl(url: string): Promise<{ base64: string; mime
     const timeoutId = setTimeout(() => {
       controller.abort();
       console.log('URL download timeout after 15 seconds');
-    }, 15000); // 15 second timeout for URLs
+    }, 15000);
     
     const response = await fetch(url, {
       signal: controller.signal,
@@ -330,8 +334,7 @@ async function downloadImageFromUrl(url: string): Promise<{ base64: string; mime
       return null;
     }
     
-    const uint8Array = new Uint8Array(arrayBuffer);
-    const base64 = btoa(String.fromCharCode(...uint8Array));
+    const base64 = arrayBufferToBase64(arrayBuffer);
     
     console.log('URL image downloaded successfully:', {
       sizeBytes: arrayBuffer.byteLength,
