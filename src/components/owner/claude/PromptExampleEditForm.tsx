@@ -13,7 +13,7 @@ import { CategoryType, CATEGORY_OPTIONS } from '@/types/promptTypes';
 interface EditedPromptData {
   title: string;
   description: string;
-  category: string;
+  category: CategoryType;
   original_prompt: string;
   claude_response: string;
   effectiveness_rating: number;
@@ -78,7 +78,7 @@ export const PromptExampleEditForm: React.FC<PromptExampleEditFormProps> = ({
           <Label htmlFor="category">Category</Label>
           <Select
             value={editedPrompt.category}
-            onValueChange={(value: string) => setEditedPrompt({ ...editedPrompt, category: value as CategoryType })}
+            onValueChange={(value: CategoryType) => setEditedPrompt({ ...editedPrompt, category: value })}
           >
             <SelectTrigger>
               <SelectValue />
