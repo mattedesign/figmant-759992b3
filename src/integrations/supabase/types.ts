@@ -274,9 +274,11 @@ export type Database = {
           created_at: string | null
           error_message: string | null
           id: string
+          model_used: string | null
           request_data: Json | null
           request_type: string
           response_data: Json | null
+          response_time_ms: number | null
           success: boolean | null
           tokens_used: number | null
           user_id: string | null
@@ -286,9 +288,11 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
+          model_used?: string | null
           request_data?: Json | null
           request_type: string
           response_data?: Json | null
+          response_time_ms?: number | null
           success?: boolean | null
           tokens_used?: number | null
           user_id?: string | null
@@ -298,9 +302,11 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
+          model_used?: string | null
           request_data?: Json | null
           request_type?: string
           response_data?: Json | null
+          response_time_ms?: number | null
           success?: boolean | null
           tokens_used?: number | null
           user_id?: string | null

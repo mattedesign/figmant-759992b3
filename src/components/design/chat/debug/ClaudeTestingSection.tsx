@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { TestTube, Send, Globe, CheckCircle, XCircle, Loader2, Image, AlertTriangle } from 'lucide-react';
+import { TestTube, Send, Globe, CheckCircle, XCircle, Loader2, Image, AlertTriangle, Activity } from 'lucide-react';
 import { ChatAttachment } from '../../DesignChatInterface';
 import { useChatAnalysis } from '@/hooks/useChatAnalysis';
 import { useToast } from '@/hooks/use-toast';
+import { useLogUserActivity } from '@/hooks/useAnalytics';
 import { supabase } from '@/integrations/supabase/client';
 
 export const ClaudeTestingSection: React.FC = () => {
@@ -22,9 +23,49 @@ export const ClaudeTestingSection: React.FC = () => {
   
   const { analyzeWithChat } = useChatAnalysis();
   const { toast } = useToast();
+  const logUserActivity = useLogUserActivity();
+
+  const logTestActivity = async (testType: string, success: boolean, metadata: any = {}) => {
+    try {
+      await logUserActivity.mutateAsync({
+        activity_type: 'claude_test',
+        page_path: '/design-analysis',
+        metadata: {
+          test_type: testType,
+          success,
+          ...metadata
+        }
+      });
+    } catch (error) {
+      console.warn('Failed to log test activity:', error);
+    }
+  };
+
+  const logClaudeUsage = async (requestType: string, success: boolean, responseTime: number, metadata: any = {}) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase.from('claude_usage_logs').insert({
+        user_id: user.id,
+        request_type: requestType,
+        success,
+        response_time_ms: responseTime,
+        tokens_used: metadata.tokensUsed || 0,
+        cost_usd: metadata.cost || 0,
+        model_used: metadata.model || 'claude-sonnet-4-20250514',
+        request_data: metadata.requestData || {},
+        response_data: metadata.responseData || {},
+        error_message: success ? null : metadata.error
+      });
+    } catch (error) {
+      console.warn('Failed to log Claude usage:', error);
+    }
+  };
 
   const runSimpleTest = async () => {
     setIsTestingSimple(true);
+    const startTime = Date.now();
     
     try {
       console.log('=== STARTING SIMPLE CLAUDE TEST ===');
@@ -34,6 +75,7 @@ export const ClaudeTestingSection: React.FC = () => {
         attachments: []
       });
 
+      const responseTime = Date.now() - startTime;
       const testResult = {
         type: 'Simple Text Test',
         timestamp: new Date().toISOString(),
@@ -41,10 +83,25 @@ export const ClaudeTestingSection: React.FC = () => {
         message: testMessage,
         response: result.analysis,
         responseLength: result.analysis.length,
+        responseTime,
         debugInfo: result.debugInfo || {}
       };
 
       setTestResults(prev => [testResult, ...prev]);
+      
+      // Log analytics
+      await logTestActivity('simple_text', true, {
+        response_length: result.analysis.length,
+        response_time_ms: responseTime,
+        message_length: testMessage.length
+      });
+
+      await logClaudeUsage('simple_text_test', true, responseTime, {
+        tokensUsed: result.debugInfo?.tokensUsed,
+        cost: result.debugInfo?.cost,
+        requestData: { message: testMessage },
+        responseData: { analysis: result.analysis.substring(0, 500) }
+      });
       
       toast({
         title: "Simple Test Completed",
@@ -53,6 +110,7 @@ export const ClaudeTestingSection: React.FC = () => {
       
       console.log('Simple test completed successfully:', testResult);
     } catch (error) {
+      const responseTime = Date.now() - startTime;
       console.error('Simple test failed:', error);
       
       const testResult = {
@@ -60,11 +118,23 @@ export const ClaudeTestingSection: React.FC = () => {
         timestamp: new Date().toISOString(),
         success: false,
         message: testMessage,
+        responseTime,
         error: error instanceof Error ? error.message : 'Unknown error',
         debugInfo: {}
       };
 
       setTestResults(prev => [testResult, ...prev]);
+      
+      // Log analytics for failure
+      await logTestActivity('simple_text', false, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        response_time_ms: responseTime
+      });
+
+      await logClaudeUsage('simple_text_test', false, responseTime, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        requestData: { message: testMessage }
+      });
       
       toast({
         variant: "destructive",
@@ -87,6 +157,7 @@ export const ClaudeTestingSection: React.FC = () => {
     }
 
     setIsTestingWithUrl(true);
+    const startTime = Date.now();
     
     try {
       console.log('=== STARTING URL CLAUDE TEST ===');
@@ -104,6 +175,7 @@ export const ClaudeTestingSection: React.FC = () => {
         attachments: [urlAttachment]
       });
 
+      const responseTime = Date.now() - startTime;
       const testResult = {
         type: 'URL Test',
         timestamp: new Date().toISOString(),
@@ -112,10 +184,25 @@ export const ClaudeTestingSection: React.FC = () => {
         url: testUrl,
         response: result.analysis,
         responseLength: result.analysis.length,
+        responseTime,
         debugInfo: result.debugInfo || {}
       };
 
       setTestResults(prev => [testResult, ...prev]);
+      
+      // Log analytics
+      await logTestActivity('url_test', true, {
+        url: testUrl,
+        response_length: result.analysis.length,
+        response_time_ms: responseTime
+      });
+
+      await logClaudeUsage('url_analysis_test', true, responseTime, {
+        tokensUsed: result.debugInfo?.tokensUsed,
+        cost: result.debugInfo?.cost,
+        requestData: { message: testMessage, url: testUrl },
+        responseData: { analysis: result.analysis.substring(0, 500) }
+      });
       
       toast({
         title: "URL Test Completed",
@@ -124,6 +211,7 @@ export const ClaudeTestingSection: React.FC = () => {
       
       console.log('URL test completed successfully:', testResult);
     } catch (error) {
+      const responseTime = Date.now() - startTime;
       console.error('URL test failed:', error);
       
       const testResult = {
@@ -132,11 +220,24 @@ export const ClaudeTestingSection: React.FC = () => {
         success: false,
         message: testMessage,
         url: testUrl,
+        responseTime,
         error: error instanceof Error ? error.message : 'Unknown error',
         debugInfo: {}
       };
 
       setTestResults(prev => [testResult, ...prev]);
+      
+      // Log analytics for failure
+      await logTestActivity('url_test', false, {
+        url: testUrl,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        response_time_ms: responseTime
+      });
+
+      await logClaudeUsage('url_analysis_test', false, responseTime, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        requestData: { message: testMessage, url: testUrl }
+      });
       
       toast({
         variant: "destructive",
@@ -159,6 +260,7 @@ export const ClaudeTestingSection: React.FC = () => {
     }
 
     setIsTestingWithFile(true);
+    const startTime = Date.now();
     
     try {
       console.log('=== STARTING FILE CLAUDE TEST ===');
@@ -195,6 +297,7 @@ export const ClaudeTestingSection: React.FC = () => {
         attachments: [fileAttachment]
       });
 
+      const responseTime = Date.now() - startTime;
       const testResult = {
         type: 'File Test',
         timestamp: new Date().toISOString(),
@@ -204,10 +307,32 @@ export const ClaudeTestingSection: React.FC = () => {
         fileSize: testFile.size,
         response: result.analysis,
         responseLength: result.analysis.length,
+        responseTime,
         debugInfo: result.debugInfo || {}
       };
 
       setTestResults(prev => [testResult, ...prev]);
+      
+      // Log analytics
+      await logTestActivity('file_test', true, {
+        file_name: testFile.name,
+        file_size: testFile.size,
+        file_type: testFile.type,
+        response_length: result.analysis.length,
+        response_time_ms: responseTime
+      });
+
+      await logClaudeUsage('file_analysis_test', true, responseTime, {
+        tokensUsed: result.debugInfo?.tokensUsed,
+        cost: result.debugInfo?.cost,
+        requestData: { 
+          message: testMessage, 
+          file_name: testFile.name,
+          file_size: testFile.size,
+          file_type: testFile.type
+        },
+        responseData: { analysis: result.analysis.substring(0, 500) }
+      });
       
       toast({
         title: "File Test Completed",
@@ -216,6 +341,7 @@ export const ClaudeTestingSection: React.FC = () => {
       
       console.log('File test completed successfully:', testResult);
     } catch (error) {
+      const responseTime = Date.now() - startTime;
       console.error('File test failed:', error);
       
       const testResult = {
@@ -225,11 +351,30 @@ export const ClaudeTestingSection: React.FC = () => {
         message: testMessage,
         fileName: testFile?.name,
         fileSize: testFile?.size,
+        responseTime,
         error: error instanceof Error ? error.message : 'Unknown error',
         debugInfo: {}
       };
 
       setTestResults(prev => [testResult, ...prev]);
+      
+      // Log analytics for failure
+      await logTestActivity('file_test', false, {
+        file_name: testFile?.name,
+        file_size: testFile?.size,
+        file_type: testFile?.type,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        response_time_ms: responseTime
+      });
+
+      await logClaudeUsage('file_analysis_test', false, responseTime, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        requestData: { 
+          message: testMessage,
+          file_name: testFile?.name,
+          file_size: testFile?.size
+        }
+      });
       
       toast({
         variant: "destructive",
@@ -243,6 +388,7 @@ export const ClaudeTestingSection: React.FC = () => {
 
   const testClaudeConnection = async () => {
     setIsTestingConnection(true);
+    const startTime = Date.now();
     
     try {
       console.log('=== TESTING CLAUDE CONNECTION ===');
@@ -255,6 +401,7 @@ export const ClaudeTestingSection: React.FC = () => {
         }
       });
 
+      const responseTime = Date.now() - startTime;
       console.log('Claude connection test response:', { data, error });
 
       if (error) {
@@ -267,10 +414,22 @@ export const ClaudeTestingSection: React.FC = () => {
           timestamp: new Date().toISOString(),
           success: true,
           response: data.analysis,
+          responseTime,
           debugInfo: data.debugInfo || {}
         };
 
         setTestResults(prev => [testResult, ...prev]);
+        
+        // Log analytics
+        await logTestActivity('connection_test', true, {
+          response_time_ms: responseTime
+        });
+
+        await logClaudeUsage('connection_test', true, responseTime, {
+          tokensUsed: data.debugInfo?.tokensUsed,
+          requestData: { test_type: 'connection' },
+          responseData: { success: true }
+        });
         
         toast({
           title: "Connection Test Passed",
@@ -280,17 +439,30 @@ export const ClaudeTestingSection: React.FC = () => {
         throw new Error(data?.error || 'Connection test failed');
       }
     } catch (error) {
+      const responseTime = Date.now() - startTime;
       console.error('Claude connection test failed:', error);
       
       const testResult = {
         type: 'Connection Test',
         timestamp: new Date().toISOString(),
         success: false,
+        responseTime,
         error: error instanceof Error ? error.message : 'Unknown error',
         debugInfo: {}
       };
 
       setTestResults(prev => [testResult, ...prev]);
+      
+      // Log analytics for failure
+      await logTestActivity('connection_test', false, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        response_time_ms: responseTime
+      });
+
+      await logClaudeUsage('connection_test', false, responseTime, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        requestData: { test_type: 'connection' }
+      });
       
       toast({
         variant: "destructive",
@@ -345,6 +517,7 @@ export const ClaudeTestingSection: React.FC = () => {
       <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
         <TestTube className="h-4 w-4" />
         Claude AI Integration Tests
+        <Activity className="h-3 w-3 text-blue-500" title="Analytics Enabled" />
       </h4>
       
       {/* Test Message Input */}
@@ -474,6 +647,11 @@ export const ClaudeTestingSection: React.FC = () => {
                     {result.type}
                   </Badge>
                   <span className="text-gray-500">{new Date(result.timestamp).toLocaleTimeString()}</span>
+                  {result.responseTime && (
+                    <span className="text-blue-600 text-xs">
+                      {result.responseTime}ms
+                    </span>
+                  )}
                 </div>
               </div>
               
@@ -506,7 +684,7 @@ export const ClaudeTestingSection: React.FC = () => {
                       <div className="text-blue-700 text-xs">
                         Images Processed: {result.debugInfo.imagesProcessed || 0} | 
                         Tokens Used: {result.debugInfo.tokensUsed || 0} | 
-                        Response Time: {result.debugInfo.responseTimeMs || 0}ms
+                        Response Time: {result.responseTime || 0}ms
                       </div>
                     </div>
                   )}
