@@ -1,10 +1,7 @@
 
 import { useMutation } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
-import { useBatchUploadDesign } from './useBatchUploadDesign';
-import { useChatUseCaseMapping } from './useChatUseCaseMapping';
-import { ClaudePromptOptimizer } from '@/utils/claudePromptOptimizer';
 
 interface ChatAnalysisRequest {
   message: string;
@@ -13,88 +10,144 @@ interface ChatAnalysisRequest {
 
 interface ChatAnalysisResponse {
   analysis: string;
-  uploadIds: string[];
+  uploadIds?: string[];
   batchId?: string;
 }
 
-export const useChatAnalysis = () => {
-  const { toast } = useToast();
-  const batchUpload = useBatchUploadDesign();
-  const { getCategoryForUseCase } = useChatUseCaseMapping();
+const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAnalysisResponse> => {
+  console.log('Starting chat analysis with:', {
+    messageLength: request.message.length,
+    attachmentsCount: request.attachments.length
+  });
 
-  const analyzeWithChat = useMutation({
-    mutationFn: async ({ message, attachments }: ChatAnalysisRequest): Promise<ChatAnalysisResponse> => {
-      // Map the user's message to a proper use case ID
-      const useCaseId = getCategoryForUseCase(message);
-      
-      // Get the optimized prompt for this category
-      const category = ClaudePromptOptimizer.getCategoryForUseCase(message);
-      const optimizedPrompt = await ClaudePromptOptimizer.getBestPromptForContext({
-        category,
-        useCase: useCaseId,
-        userGoals: message,
-        analysisType: 'chat_analysis'
-      });
-      
-      console.log(`Using optimized prompt for category: ${category}`, optimizedPrompt);
-      
-      // Extract files and URLs from attachments
-      const files = attachments
-        .filter(att => att.type === 'file' && att.file)
-        .map(att => att.file!);
-      
-      const urls = attachments
-        .filter(att => att.type === 'url' && att.url)
-        .map(att => att.url!);
+  // Get current user
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    throw new Error('User not authenticated');
+  }
 
-      // If we have attachments, process them for analysis
-      if (files.length > 0 || urls.length > 0) {
-        const batchName = `Chat Analysis - ${new Date().toLocaleDateString()}`;
-        const analysisGoals = optimizedPrompt || `User Request: ${message}`;
+  // Process file attachments - upload them if they haven't been uploaded yet
+  const uploadIds: string[] = [];
+  const processedAttachments: ChatAttachment[] = [];
 
-        // Use existing batch upload system
-        const result = await batchUpload.mutateAsync({
-          files,
-          urls,
-          contextFiles: [],
-          useCase: useCaseId,
-          batchName,
-          analysisGoals,
-          analysisPreferences: {
-            auto_comparative: files.length > 1 || urls.length > 1,
-            context_integration: true,
-            analysis_depth: 'detailed'
-          }
+  for (const attachment of request.attachments) {
+    if (attachment.type === 'file' && attachment.file && attachment.status === 'uploaded') {
+      try {
+        // Generate file path
+        const fileExt = attachment.file.name.split('.').pop();
+        const fileName = `chat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+
+        console.log('Uploading file for analysis:', fileName);
+
+        // Upload to storage
+        const { error: uploadError } = await supabase.storage
+          .from('design-uploads')
+          .upload(filePath, attachment.file);
+
+        if (uploadError) {
+          console.error('Failed to upload file:', uploadError);
+          throw new Error(`Failed to upload ${attachment.name}: ${uploadError.message}`);
+        }
+
+        // Create database record
+        const { data: uploadRecord, error: dbError } = await supabase
+          .from('design_uploads')
+          .insert({
+            user_id: user.id,
+            file_name: attachment.file.name,
+            file_path: filePath,
+            file_size: attachment.file.size,
+            mime_type: attachment.file.type,
+            use_case: 'chat_analysis'
+          })
+          .select('id')
+          .single();
+
+        if (dbError || !uploadRecord) {
+          console.error('Failed to create upload record:', dbError);
+          throw new Error(`Failed to create upload record for ${attachment.name}`);
+        }
+
+        uploadIds.push(uploadRecord.id);
+        processedAttachments.push({
+          ...attachment,
+          uploadPath: filePath
         });
 
-        return {
-          analysis: `I've successfully uploaded and started analyzing your ${files.length + urls.length} item(s). Based on your request: "${message}", I'll provide detailed insights tailored to ${useCaseId} optimization using our advanced prompt system. The analysis results are now available below.`,
-          uploadIds: result.uploads.map(u => u.id),
-          batchId: result.batchId
-        };
-      } else {
-        // Handle text-only queries with helpful guidance
-        return {
-          analysis: `I'd be happy to help with "${message}". To provide specific analysis and recommendations, please upload some designs (images, PDFs) or share website URLs. I can analyze them for conversion optimization, user experience improvements, visual hierarchy, and more using our specialized prompt system.`,
-          uploadIds: []
-        };
+        console.log('File uploaded successfully:', uploadRecord.id);
+      } catch (error) {
+        console.error('Error processing file attachment:', error);
+        // Continue with other attachments even if one fails
       }
-    },
-    onSuccess: () => {
-      toast({
-        title: "Analysis Complete",
-        description: "Your design analysis is ready! Check the results below.",
-      });
-    },
-    onError: (error) => {
-      console.error('Chat analysis failed:', error);
-      toast({
-        variant: "destructive",
-        title: "Analysis Failed",
-        description: "I encountered an error while processing your request. Please try again.",
-      });
+    } else {
+      // For URL attachments or already processed files
+      processedAttachments.push(attachment);
+    }
+  }
+
+  // Get Claude settings
+  const { data: settingsData, error: settingsError } = await supabase
+    .rpc('get_claude_settings');
+
+  if (settingsError) {
+    console.error('Failed to get Claude settings:', settingsError);
+    throw new Error('Failed to get Claude AI configuration');
+  }
+
+  const settings = Array.isArray(settingsData) ? settingsData[0] : settingsData;
+  
+  if (!settings?.claude_ai_enabled) {
+    throw new Error('Claude AI is not enabled. Please contact your administrator.');
+  }
+
+  console.log('Claude settings retrieved:', {
+    enabled: settings.claude_ai_enabled,
+    model: settings.claude_model
+  });
+
+  // Call the Claude AI edge function
+  const { data, error } = await supabase.functions.invoke('claude-ai', {
+    body: {
+      message: request.message,
+      attachments: processedAttachments,
+      uploadIds,
+      model: settings.claude_model,
+      systemPrompt: settings.claude_system_prompt
     }
   });
 
-  return { analyzeWithChat };
+  if (error) {
+    console.error('Claude AI function error:', error);
+    throw new Error(`Analysis failed: ${error.message}`);
+  }
+
+  if (!data?.success) {
+    console.error('Claude AI analysis failed:', data);
+    throw new Error(data?.error || 'Analysis failed');
+  }
+
+  console.log('Chat analysis completed successfully');
+
+  return {
+    analysis: data.analysis,
+    uploadIds: uploadIds.length > 0 ? uploadIds : undefined
+  };
+};
+
+export const useChatAnalysis = () => {
+  return {
+    analyzeWithChat: useMutation({
+      mutationFn: analyzeWithChatAPI,
+      onError: (error) => {
+        console.error('Chat analysis mutation error:', error);
+      },
+      onSuccess: (data) => {
+        console.log('Chat analysis completed:', {
+          analysisLength: data.analysis.length,
+          uploadIds: data.uploadIds?.length || 0
+        });
+      }
+    })
+  };
 };
