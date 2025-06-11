@@ -207,9 +207,12 @@ export type Database = {
           created_at: string
           id: string
           key_metrics: Json | null
+          modification_summary: string | null
+          parent_analysis_id: string | null
           prompt_used: string
           recommendations: Json | null
           user_id: string
+          version_number: number | null
           winner_upload_id: string | null
         }
         Insert: {
@@ -222,9 +225,12 @@ export type Database = {
           created_at?: string
           id?: string
           key_metrics?: Json | null
+          modification_summary?: string | null
+          parent_analysis_id?: string | null
           prompt_used: string
           recommendations?: Json | null
           user_id: string
+          version_number?: number | null
           winner_upload_id?: string | null
         }
         Update: {
@@ -237,12 +243,23 @@ export type Database = {
           created_at?: string
           id?: string
           key_metrics?: Json | null
+          modification_summary?: string | null
+          parent_analysis_id?: string | null
           prompt_used?: string
           recommendations?: Json | null
           user_id?: string
+          version_number?: number | null
           winner_upload_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_parent_analysis_id"
+            columns: ["parent_analysis_id"]
+            isOneToOne: false
+            referencedRelation: "design_batch_analysis"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       design_context_files: {
         Row: {
@@ -300,6 +317,9 @@ export type Database = {
           file_size: number | null
           file_type: string | null
           id: string
+          is_replacement: boolean | null
+          original_batch_id: string | null
+          replaced_upload_id: string | null
           source_type: string
           source_url: string | null
           status: string
@@ -318,6 +338,9 @@ export type Database = {
           file_size?: number | null
           file_type?: string | null
           id?: string
+          is_replacement?: boolean | null
+          original_batch_id?: string | null
+          replaced_upload_id?: string | null
           source_type?: string
           source_url?: string | null
           status?: string
@@ -336,6 +359,9 @@ export type Database = {
           file_size?: number | null
           file_type?: string | null
           id?: string
+          is_replacement?: boolean | null
+          original_batch_id?: string | null
+          replaced_upload_id?: string | null
           source_type?: string
           source_url?: string | null
           status?: string
@@ -349,6 +375,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_replaced_upload_id"
+            columns: ["replaced_upload_id"]
+            isOneToOne: false
+            referencedRelation: "design_uploads"
             referencedColumns: ["id"]
           },
         ]

@@ -154,6 +154,11 @@ export const RecentAnalyses = ({
                             <p className="font-medium text-sm flex items-center gap-2">
                               <BarChart3 className="h-4 w-4 text-blue-600" />
                               Batch Analysis
+                              {batchAnalysis.version_number > 1 && (
+                                <Badge variant="outline" className="text-xs">
+                                  v{batchAnalysis.version_number}
+                                </Badge>
+                              )}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {batchAnalysis.analysis_type} • {formatDistanceToNow(new Date(batchAnalysis.created_at))} ago
@@ -236,7 +241,14 @@ export const RecentAnalyses = ({
                   <div className="flex items-center gap-3">
                     <BarChart3 className="h-8 w-8 text-blue-600" />
                     <div>
-                      <p className="font-medium text-sm">Batch Comparative Analysis</p>
+                      <p className="font-medium text-sm flex items-center gap-2">
+                        Batch Comparative Analysis
+                        {batchAnalysis.version_number > 1 && (
+                          <Badge variant="outline" className="text-xs">
+                            v{batchAnalysis.version_number}
+                          </Badge>
+                        )}
+                      </p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span>{batchAnalysis.analysis_type}</span>
                         <span>•</span>

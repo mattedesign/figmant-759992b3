@@ -9,7 +9,7 @@ import { RecentAnalyses } from '@/components/dashboard/RecentAnalyses';
 import { Navigation } from '@/components/layout/Navigation';
 import { DesignUpload, DesignBatchAnalysis } from '@/types/design';
 import { AnalysisViewer } from '@/components/design/AnalysisViewer';
-import { BatchAnalysisViewer } from '@/components/design/BatchAnalysisViewer';
+import { EnhancedBatchAnalysisViewer } from '@/components/design/EnhancedBatchAnalysisViewer';
 import { Upload, History, BarChart3, FileText } from 'lucide-react';
 import { UploadProgress } from '@/components/dashboard/UploadProgress';
 import { ClaudeConnectionTest } from '@/components/dashboard/ClaudeConnectionTest';
@@ -39,7 +39,7 @@ const Dashboard = () => {
       <div className="min-h-screen bg-background">
         <Navigation />
         <main className="container mx-auto px-4 py-8">
-          <BatchAnalysisViewer
+          <EnhancedBatchAnalysisViewer
             batchAnalysis={selectedBatchAnalysis}
             onBack={() => setSelectedBatchAnalysis(null)}
           />
