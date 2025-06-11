@@ -22,11 +22,11 @@ interface UserProfile {
   full_name: string | null;
   role: 'owner' | 'subscriber';
   created_at: string;
-  subscriptions?: Array<{
+  subscriptions?: {
     status: string;
     current_period_end: string | null;
     stripe_customer_id: string | null;
-  }>;
+  } | null;
 }
 
 export const UserManagement = () => {
@@ -131,7 +131,7 @@ export const UserManagement = () => {
   };
 
   const getUserActivityStatus = (user: UserProfile) => {
-    const subscription = user.subscriptions?.[0];
+    const subscription = user.subscriptions;
     const credits = creditsMap?.get(user.id);
     
     if (user.role === 'owner') return 'Active (Owner)';
