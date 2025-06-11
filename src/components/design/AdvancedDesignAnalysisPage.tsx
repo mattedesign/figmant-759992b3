@@ -1,196 +1,148 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Upload, History, MessageSquare, BarChart3, ArrowLeft } from 'lucide-react';
+import { Upload, MessageSquare, BarChart3, History, Sparkles, RefreshCw } from 'lucide-react';
 import { EnhancedDesignUploader } from './EnhancedDesignUploader';
-import { DesignList } from './DesignList';
-import { AnalysisViewer } from './AnalysisViewer';
 import { DesignChatInterface } from './DesignChatInterface';
-import { EnhancedBatchAnalysisViewer } from './EnhancedBatchAnalysisViewer';
+import { DesignList } from './DesignList';
 import { BatchAnalysisViewer } from './BatchAnalysisViewer';
-import { useDesignBatchAnalyses } from '@/hooks/useDesignBatchAnalyses';
-import { DesignUpload, DesignBatchAnalysis } from '@/types/design';
+import { ClaudeAISetupPrompt } from './ClaudeAISetupPrompt';
+import { useClaudeSettings } from '@/hooks/useClaudeSettings';
+import { useDesignUploads } from '@/hooks/useDesignUploads';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const AdvancedDesignAnalysisPage = () => {
-  const [selectedUpload, setSelectedUpload] = useState<DesignUpload | null>(null);
-  const [selectedBatchAnalysis, setSelectedBatchAnalysis] = useState<DesignBatchAnalysis | null>(null);
   const [activeTab, setActiveTab] = useState('upload');
-  const { data: batchAnalyses = [] } = useDesignBatchAnalyses();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { data: claudeSettings, isLoading: claudeLoading } = useClaudeSettings();
+  const { data: uploads, refetch: refetchUploads } = useDesignUploads();
+  const { toast } = useToast();
 
-  const handleViewUpload = (upload: DesignUpload) => {
-    setSelectedUpload(upload);
-    setSelectedBatchAnalysis(null);
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1);
+    refetchUploads();
+    toast({
+      title: "Refreshed",
+      description: "Design analysis data has been refreshed.",
+    });
   };
 
-  const handleViewBatchAnalysis = (batch: DesignBatchAnalysis) => {
-    setSelectedBatchAnalysis(batch);
-    setSelectedUpload(null);
+  const retryFailedAnalyses = async () => {
+    if (!uploads) return;
+
+    const failedUploads = uploads.filter(upload => upload.status === 'failed');
+    
+    if (failedUploads.length === 0) {
+      toast({
+        title: "No Failed Analyses",
+        description: "All uploads have been processed successfully.",
+      });
+      return;
+    }
+
+    try {
+      // Update failed uploads to retry status
+      for (const upload of failedUploads) {
+        await supabase
+          .from('design_uploads')
+          .update({ status: 'pending' })
+          .eq('id', upload.id);
+      }
+
+      toast({
+        title: "Retrying Failed Analyses",
+        description: `${failedUploads.length} failed uploads will be retried.`,
+      });
+
+      // Refresh data
+      refetchUploads();
+    } catch (error) {
+      console.error('Error retrying failed analyses:', error);
+      toast({
+        variant: "destructive",
+        title: "Retry Failed",
+        description: "Failed to retry the analyses. Please try again.",
+      });
+    }
   };
 
-  const handleBack = () => {
-    setSelectedUpload(null);
-    setSelectedBatchAnalysis(null);
-  };
-
-  // If viewing a specific upload analysis
-  if (selectedUpload) {
-    return (
-      <AnalysisViewer
-        upload={selectedUpload}
-        onBack={handleBack}
-      />
-    );
-  }
-
-  // If viewing a batch analysis
-  if (selectedBatchAnalysis) {
-    return (
-      <EnhancedBatchAnalysisViewer
-        batchAnalysis={selectedBatchAnalysis}
-        onBack={handleBack}
-      />
-    );
-  }
+  const showClaudeSetup = !claudeLoading && (!claudeSettings?.claude_ai_enabled);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-          <Sparkles className="h-8 w-8 text-primary" />
-          Advanced Design Analysis
-        </h1>
-        <p className="text-muted-foreground">
-          Upload multiple designs, analyze websites, chat with AI, and get comprehensive insights to improve user experience and conversion rates
-        </p>
+    <div className="container mx-auto px-4 py-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Advanced Design Analysis</h1>
+          <p className="text-muted-foreground">
+            Upload designs, chat with AI, and get comprehensive UX insights
+          </p>
+        </div>
+        <div className="flex space-x-2">
+          <Button variant="outline" onClick={retryFailedAnalyses}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry Failed
+          </Button>
+          <Button variant="outline" onClick={handleRefresh}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
+
+      {showClaudeSetup && (
+        <ClaudeAISetupPrompt onSetupComplete={() => window.location.reload()} />
+      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="upload" className="flex items-center gap-2">
+          <TabsTrigger value="upload" className="flex items-center space-x-2">
             <Upload className="h-4 w-4" />
-            Enhanced Upload
+            <span>Upload & Analyze</span>
           </TabsTrigger>
-          <TabsTrigger value="chat" className="flex items-center gap-2">
+          <TabsTrigger value="chat" className="flex items-center space-x-2">
             <MessageSquare className="h-4 w-4" />
-            AI Chat Analysis
+            <span>AI Chat Analysis</span>
           </TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center gap-2">
-            <History className="h-4 w-4" />
-            Analysis History
-          </TabsTrigger>
-          <TabsTrigger value="batch" className="flex items-center gap-2">
+          <TabsTrigger value="batch" className="flex items-center space-x-2">
             <BarChart3 className="h-4 w-4" />
-            Batch Analyses
-            {batchAnalyses.length > 0 && (
-              <Badge variant="secondary" className="ml-1">
-                {batchAnalyses.length}
-              </Badge>
-            )}
+            <span>Batch Analysis</span>
+          </TabsTrigger>
+          <TabsTrigger value="history" className="flex items-center space-x-2">
+            <History className="h-4 w-4" />
+            <span>Analysis History</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="upload" className="mt-6">
-          <EnhancedDesignUploader />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Sparkles className="h-5 w-5" />
+                <span>Enhanced Design Uploader</span>
+              </CardTitle>
+              <CardDescription>
+                Upload multiple designs with advanced analysis options and batch processing
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EnhancedDesignUploader key={refreshKey} />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="chat" className="mt-6">
-          <Card className="h-[800px]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                AI Design Analysis Chat
-              </CardTitle>
-              <CardDescription>
-                Upload designs or share URLs, then chat with our AI to get instant insights and recommendations
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="h-full p-0">
-              <DesignChatInterface 
-                onViewUpload={handleViewUpload}
-                onViewBatchAnalysis={handleViewBatchAnalysis}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="history" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <History className="h-5 w-5" />
-                Individual Design History
-              </CardTitle>
-              <CardDescription>
-                View and manage your uploaded designs and their individual analyses
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DesignList onViewAnalysis={handleViewUpload} />
-            </CardContent>
-          </Card>
+          <DesignChatInterface key={refreshKey} />
         </TabsContent>
 
         <TabsContent value="batch" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Batch Comparative Analyses
-              </CardTitle>
-              <CardDescription>
-                View comprehensive comparative analyses of multiple designs
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {batchAnalyses.length === 0 ? (
-                <div className="text-center py-12">
-                  <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-medium mb-2">No Batch Analyses Yet</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Upload multiple designs to generate comparative analyses
-                  </p>
-                  <Button onClick={() => setActiveTab('upload')}>
-                    Start Batch Upload
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {batchAnalyses.map((analysis) => (
-                    <div
-                      key={analysis.id}
-                      className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => handleViewBatchAnalysis(analysis)}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium mb-1">
-                            Batch Analysis #{analysis.version_number || 1}
-                          </h4>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {analysis.analysis_type} • {new Date(analysis.created_at).toLocaleDateString()}
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">
-                              Confidence: {Math.round(analysis.confidence_score * 100)}%
-                            </Badge>
-                            {analysis.context_summary && (
-                              <Badge variant="secondary">Context Enhanced</Badge>
-                            )}
-                          </div>
-                        </div>
-                        <Button variant="outline" size="sm">
-                          View Analysis
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <BatchAnalysisViewer key={refreshKey} />
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-6">
+          <DesignList key={refreshKey} />
         </TabsContent>
       </Tabs>
     </div>
