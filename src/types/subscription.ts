@@ -10,6 +10,8 @@ export interface SubscriptionPlan {
   created_at: string;
   updated_at: string;
   created_by: string | null;
+  plan_type: 'recurring' | 'credits';
+  credit_price: number | null;
 }
 
 export interface CreateSubscriptionPlanData {
@@ -19,8 +21,39 @@ export interface CreateSubscriptionPlanData {
   price_monthly?: number;
   price_annual?: number;
   is_active?: boolean;
+  plan_type: 'recurring' | 'credits';
+  credit_price?: number;
 }
 
 export interface UpdateSubscriptionPlanData extends Partial<CreateSubscriptionPlanData> {
   id: string;
+}
+
+export interface UserCredits {
+  id: string;
+  user_id: string;
+  current_balance: number;
+  total_purchased: number;
+  total_used: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreditTransaction {
+  id: string;
+  user_id: string;
+  transaction_type: 'purchase' | 'usage' | 'refund' | 'admin_adjustment';
+  amount: number;
+  description: string | null;
+  reference_id: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
+export interface CreateCreditTransactionData {
+  user_id: string;
+  transaction_type: 'purchase' | 'usage' | 'refund' | 'admin_adjustment';
+  amount: number;
+  description?: string;
+  reference_id?: string;
 }

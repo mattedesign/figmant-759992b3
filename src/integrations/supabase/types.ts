@@ -315,6 +315,39 @@ export type Database = {
           },
         ]
       }
+      credit_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          reference_id: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       design_analysis: {
         Row: {
           analysis_results: Json
@@ -650,11 +683,13 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          credit_price: number | null
           credits: number
           description: string | null
           id: string
           is_active: boolean
           name: string
+          plan_type: string
           price_annual: number | null
           price_monthly: number | null
           updated_at: string
@@ -662,11 +697,13 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          credit_price?: number | null
           credits?: number
           description?: string | null
           id?: string
           is_active?: boolean
           name: string
+          plan_type?: string
           price_annual?: number | null
           price_monthly?: number | null
           updated_at?: string
@@ -674,11 +711,13 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          credit_price?: number | null
           credits?: number
           description?: string | null
           id?: string
           is_active?: boolean
           name?: string
+          plan_type?: string
           price_annual?: number | null
           price_monthly?: number | null
           updated_at?: string
@@ -728,6 +767,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_credits: {
+        Row: {
+          created_at: string
+          current_balance: number
+          id: string
+          total_purchased: number
+          total_used: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_balance?: number
+          id?: string
+          total_purchased?: number
+          total_used?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_balance?: number
+          id?: string
+          total_purchased?: number
+          total_used?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_management_logs: {
         Row: {

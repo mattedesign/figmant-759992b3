@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SubscriptionPlan, CreateSubscriptionPlanData } from '@/types/subscription';
 
 interface SubscriptionPlanDialogProps {
@@ -29,7 +30,9 @@ export const SubscriptionPlanDialog = ({
     credits: 0,
     price_monthly: undefined,
     price_annual: undefined,
-    is_active: true
+    is_active: true,
+    plan_type: 'recurring',
+    credit_price: undefined
   });
 
   useEffect(() => {
@@ -40,7 +43,9 @@ export const SubscriptionPlanDialog = ({
         credits: plan.credits,
         price_monthly: plan.price_monthly || undefined,
         price_annual: plan.price_annual || undefined,
-        is_active: plan.is_active
+        is_active: plan.is_active,
+        plan_type: plan.plan_type,
+        credit_price: plan.credit_price || undefined
       });
     } else {
       setFormData({
@@ -49,7 +54,9 @@ export const SubscriptionPlanDialog = ({
         credits: 0,
         price_monthly: undefined,
         price_annual: undefined,
-        is_active: true
+        is_active: true,
+        plan_type: 'recurring',
+        credit_price: undefined
       });
     }
   }, [plan, open]);
@@ -60,10 +67,11 @@ export const SubscriptionPlanDialog = ({
   };
 
   const isEditing = !!plan;
+  const isRecurring = formData.plan_type === 'recurring';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? 'Edit Subscription Plan' : 'Create Subscription Plan'}
@@ -98,7 +106,34 @@ export const SubscriptionPlanDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="credits">Credits</Label>
+            <Label htmlFor="plan_type">Plan Type</Label>
+            <Select
+              value={formData.plan_type}
+              onValueChange={(value: 'recurring' | 'credits') => 
+                setFormData({ 
+                  ...formData, 
+                  plan_type: value,
+                  // Clear irrelevant pricing fields when switching types
+                  price_monthly: value === 'credits' ? undefined : formData.price_monthly,
+                  price_annual: value === 'credits' ? undefined : formData.price_annual,
+                  credit_price: value === 'recurring' ? undefined : formData.credit_price
+                })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recurring">Recurring Subscription</SelectItem>
+                <SelectItem value="credits">Credit Pack</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="credits">
+              {isRecurring ? 'Monthly/Annual Credit Allowance' : 'Credits in Pack'}
+            </Label>
             <Input
               id="credits"
               type="number"
@@ -109,39 +144,58 @@ export const SubscriptionPlanDialog = ({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="price_monthly">Monthly Price ($)</Label>
-              <Input
-                id="price_monthly"
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.price_monthly || ''}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  price_monthly: e.target.value ? parseFloat(e.target.value) : undefined 
-                })}
-                placeholder="0.00"
-              />
-            </div>
+          {isRecurring ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="price_monthly">Monthly Price ($)</Label>
+                <Input
+                  id="price_monthly"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.price_monthly || ''}
+                  onChange={(e) => setFormData({ 
+                    ...formData, 
+                    price_monthly: e.target.value ? parseFloat(e.target.value) : undefined 
+                  })}
+                  placeholder="0.00"
+                />
+              </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="price_annual">Annual Price ($)</Label>
+                <Input
+                  id="price_annual"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.price_annual || ''}
+                  onChange={(e) => setFormData({ 
+                    ...formData, 
+                    price_annual: e.target.value ? parseFloat(e.target.value) : undefined 
+                  })}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          ) : (
             <div className="space-y-2">
-              <Label htmlFor="price_annual">Annual Price ($)</Label>
+              <Label htmlFor="credit_price">Credit Pack Price ($)</Label>
               <Input
-                id="price_annual"
+                id="credit_price"
                 type="number"
                 min="0"
                 step="0.01"
-                value={formData.price_annual || ''}
+                value={formData.credit_price || ''}
                 onChange={(e) => setFormData({ 
                   ...formData, 
-                  price_annual: e.target.value ? parseFloat(e.target.value) : undefined 
+                  credit_price: e.target.value ? parseFloat(e.target.value) : undefined 
                 })}
                 placeholder="0.00"
+                required={!isRecurring}
               />
             </div>
-          </div>
+          )}
 
           <div className="flex items-center space-x-2">
             <Switch

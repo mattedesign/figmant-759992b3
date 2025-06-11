@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, DollarSign, CreditCard } from 'lucide-react';
+import { Plus, Edit, Trash2, CreditCard, Coins } from 'lucide-react';
 import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans';
 import { SubscriptionPlanDialog } from './SubscriptionPlanDialog';
 import { SubscriptionPlan, CreateSubscriptionPlanData } from '@/types/subscription';
@@ -61,6 +61,14 @@ export const SubscriptionPlansManager = () => {
     return price ? `$${price.toFixed(2)}` : 'N/A';
   };
 
+  const getPlanTypeIcon = (planType: string) => {
+    return planType === 'credits' ? <Coins className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />;
+  };
+
+  const getPlanTypeLabel = (planType: string) => {
+    return planType === 'credits' ? 'Credit Pack' : 'Recurring';
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -115,23 +123,48 @@ export const SubscriptionPlansManager = () => {
                         <Badge variant={plan.is_active ? "default" : "secondary"}>
                           {plan.is_active ? "Active" : "Inactive"}
                         </Badge>
+                        <Badge variant="outline" className="flex items-center space-x-1">
+                          {getPlanTypeIcon(plan.plan_type)}
+                          <span>{getPlanTypeLabel(plan.plan_type)}</span>
+                        </Badge>
                       </div>
                       {plan.description && (
                         <p className="text-sm text-muted-foreground mb-3">{plan.description}</p>
                       )}
-                      <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div className="grid grid-cols-4 gap-4 text-sm">
                         <div>
                           <p className="font-medium">Credits</p>
                           <p className="text-muted-foreground">{plan.credits.toLocaleString()}</p>
                         </div>
-                        <div>
-                          <p className="font-medium">Monthly</p>
-                          <p className="text-muted-foreground">{formatPrice(plan.price_monthly)}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium">Annual</p>
-                          <p className="text-muted-foreground">{formatPrice(plan.price_annual)}</p>
-                        </div>
+                        {plan.plan_type === 'recurring' ? (
+                          <>
+                            <div>
+                              <p className="font-medium">Monthly</p>
+                              <p className="text-muted-foreground">{formatPrice(plan.price_monthly)}</p>
+                            </div>
+                            <div>
+                              <p className="font-medium">Annual</p>
+                              <p className="text-muted-foreground">{formatPrice(plan.price_annual)}</p>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div>
+                              <p className="font-medium">Pack Price</p>
+                              <p className="text-muted-foreground">{formatPrice(plan.credit_price)}</p>
+                            </div>
+                            <div>
+                              <p className="font-medium">Price per Credit</p>
+                              <p className="text-muted-foreground">
+                                {plan.credit_price && plan.credits > 0 
+                                  ? `$${(plan.credit_price / plan.credits).toFixed(3)}`
+                                  : 'N/A'
+                                }
+                              </p>
+                            </div>
+                          </>
+                        )}
+                        <div></div> {/* Empty div to maintain grid alignment */}
                       </div>
                     </div>
                     <div className="flex space-x-2 ml-4">
