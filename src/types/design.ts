@@ -40,7 +40,7 @@ export interface DesignUseCase {
 }
 
 export interface BatchUpload {
-  batchId: string;
+  batchId?: string;
   batchName: string;
   files: File[];
   urls: string[];
