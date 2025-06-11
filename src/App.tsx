@@ -1,82 +1,72 @@
 
-import React from 'react';
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { AuthGuard } from "@/components/auth/AuthGuard";
-import { RoleRedirect } from "@/components/auth/RoleRedirect";
-import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import OwnerDashboard from "./pages/OwnerDashboard";
-import DesignAnalysis from "./pages/DesignAnalysis";
-import Subscription from "./pages/Subscription";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
+import { Suspense, lazy } from 'react';
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthGuard } from '@/components/auth/AuthGuard';
+import { RoleRedirect } from '@/components/auth/RoleRedirect';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+// Lazy load components
+const Index = lazy(() => import('./pages/Index'));
+const Auth = lazy(() => import('./pages/Auth'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const OwnerDashboard = lazy(() => import('./pages/OwnerDashboard'));
+const DesignAnalysis = lazy(() => import('./pages/DesignAnalysis'));
+const Subscription = lazy(() => import('./pages/Subscription'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const ProcessingPage = lazy(() => import('./components/design/ProcessingPage').then(module => ({ default: module.ProcessingPage })));
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route 
-                path="/dashboard" 
-                element={
-                  <AuthGuard requiresSubscription={true}>
-                    <RoleRedirect>
-                      <Dashboard />
-                    </RoleRedirect>
-                  </AuthGuard>
-                } 
-              />
-              <Route 
-                path="/design-analysis" 
-                element={
-                  <AuthGuard requiresSubscription={true}>
-                    <DesignAnalysis />
-                  </AuthGuard>
-                } 
-              />
-              <Route 
-                path="/subscription" 
-                element={
-                  <AuthGuard>
-                    <Subscription />
-                  </AuthGuard>
-                } 
-              />
-              <Route 
-                path="/owner-dashboard" 
-                element={
-                  <AuthGuard>
-                    <RoleRedirect ownerOnly={true}>
+        <BrowserRouter>
+          <AuthProvider>
+            <div className="min-h-screen bg-background font-sans antialiased">
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/dashboard" element={
+                    <AuthGuard>
+                      <RoleRedirect>
+                        <Dashboard />
+                      </RoleRedirect>
+                    </AuthGuard>
+                  } />
+                  <Route path="/processing/:batchId" element={
+                    <AuthGuard>
+                      <ProcessingPage />
+                    </AuthGuard>
+                  } />
+                  <Route path="/owner" element={
+                    <AuthGuard requiredRole="owner">
                       <OwnerDashboard />
-                    </RoleRedirect>
-                  </AuthGuard>
-                } 
-              />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
+                    </AuthGuard>
+                  } />
+                  <Route path="/design-analysis" element={
+                    <AuthGuard>
+                      <DesignAnalysis />
+                    </AuthGuard>
+                  } />
+                  <Route path="/subscription" element={
+                    <AuthGuard>
+                      <Subscription />
+                    </AuthGuard>
+                  } />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+              <Toaster />
+              <Sonner />
+            </div>
+          </AuthProvider>
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );

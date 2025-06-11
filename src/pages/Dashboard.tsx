@@ -1,5 +1,5 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EnhancedDesignUploader } from '@/components/design/EnhancedDesignUploader';
@@ -16,9 +16,23 @@ import { ClaudeConnectionTest } from '@/components/dashboard/ClaudeConnectionTes
 import { ClaudeInsights } from '@/components/dashboard/ClaudeInsights';
 
 const Dashboard = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('upload');
   const [selectedUpload, setSelectedUpload] = useState<DesignUpload | null>(null);
   const [selectedBatchAnalysis, setSelectedBatchAnalysis] = useState<DesignBatchAnalysis | null>(null);
+
+  // Handle navigation from processing page
+  useEffect(() => {
+    if (location.state) {
+      if (location.state.viewBatchAnalysis) {
+        setSelectedBatchAnalysis(location.state.viewBatchAnalysis);
+      } else if (location.state.viewUpload) {
+        setSelectedUpload(location.state.viewUpload);
+      }
+      // Clear the state to prevent repeated navigation
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   if (selectedUpload) {
     return (

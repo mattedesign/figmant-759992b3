@@ -2,12 +2,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useProcessingRedirect } from '@/hooks/useProcessingRedirect';
 import { DesignUseCase } from '@/types/design';
 import { triggerAnalysis } from './designAnalysisHelpers';
 
 export const useUploadDesign = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { redirectToProcessing } = useProcessingRedirect();
 
   return useMutation({
     mutationFn: async ({ file, useCase, analysisGoals }: { file: File; useCase: string; analysisGoals?: string }) => {
@@ -32,6 +34,9 @@ export const useUploadDesign = () => {
 
       console.log('File uploaded successfully to:', filePath);
 
+      // Create a unique batch ID for single uploads
+      const batchId = crypto.randomUUID();
+
       // Create database record
       const { data, error } = await supabase
         .from('design_uploads')
@@ -43,6 +48,8 @@ export const useUploadDesign = () => {
           file_type: file.type,
           use_case: useCase,
           status: 'pending',
+          batch_id: batchId,
+          batch_name: `Single Upload - ${file.name}`,
           analysis_goals: analysisGoals || null
         })
         .select()
@@ -54,13 +61,16 @@ export const useUploadDesign = () => {
       }
 
       console.log('Upload record created:', data);
-      return data;
+      return { ...data, batchId };
     },
     onSuccess: async (uploadData, variables) => {
-      console.log('Upload successful, triggering analysis...');
+      console.log('Upload successful, redirecting to processing...');
       queryClient.invalidateQueries({ queryKey: ['design-uploads'] });
       
-      // Automatically trigger analysis
+      // Redirect to processing page
+      redirectToProcessing(uploadData.batchId, `Successfully uploaded ${uploadData.file_name} for analysis.`);
+      
+      // Automatically trigger analysis in the background
       try {
         const { data: useCases } = await supabase
           .from('design_use_cases')
@@ -74,10 +84,6 @@ export const useUploadDesign = () => {
         }
       } catch (error) {
         console.error('Auto-analysis failed:', error);
-        toast({
-          title: "Upload Complete",
-          description: "Design uploaded successfully. You can manually trigger analysis from the history tab.",
-        });
       }
     },
     onError: (error) => {
