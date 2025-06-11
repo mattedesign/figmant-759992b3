@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ImageProcessor, ProcessedImage, validateImageFile, shouldCompressImage } from '@/utils/imageProcessing';
-import { Image, Compress, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
+import { Image, Minimize2, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface EnhancedImageUploadProps {
@@ -157,7 +157,7 @@ export const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
             {processedInfo.compressionRatio > 0 && (
               <>
                 <div className="flex items-center gap-1">
-                  <Compress className="h-3 w-3" />
+                  <Minimize2 className="h-3 w-3" />
                   Compressed: {processedInfo.compressionRatio}%
                 </div>
                 <div>Format: {processedInfo.format.toUpperCase()}</div>
