@@ -7,7 +7,7 @@ import { Upload, MessageSquare, BarChart3, History, Sparkles, RefreshCw } from '
 import { EnhancedDesignUploader } from './EnhancedDesignUploader';
 import { DesignChatInterface } from './DesignChatInterface';
 import { DesignList } from './DesignList';
-import { EnhancedBatchAnalysisViewer } from './EnhancedBatchAnalysisViewer';
+import { BatchAnalysisDashboard } from './BatchAnalysisDashboard';
 import { ClaudeAISetupPrompt } from './ClaudeAISetupPrompt';
 import { useClaudeSettings } from '@/hooks/useClaudeSettings';
 import { useDesignUploads } from '@/hooks/useDesignUploads';
@@ -144,7 +144,7 @@ export const AdvancedDesignAnalysisPage = () => {
         </TabsContent>
 
         <TabsContent value="batch" className="mt-6">
-          <EnhancedBatchAnalysisViewer key={refreshKey} />
+          <BatchAnalysisDashboard key={refreshKey} />
         </TabsContent>
 
         <TabsContent value="history" className="mt-6">
