@@ -242,14 +242,14 @@ export const useAnalyzeDesign = () => {
         description: "Your design analysis is ready!",
       });
     },
-    onError: (error) => {
+    onError: (error, variables) => {
       console.error('Analysis failed:', error);
       
-      // Update status to failed
+      // Update status to failed using the uploadId from variables
       supabase
         .from('design_uploads')
         .update({ status: 'failed' })
-        .eq('id', error.uploadId);
+        .eq('id', variables.uploadId);
 
       toast({
         variant: "destructive",
