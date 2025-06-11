@@ -22,7 +22,7 @@ export const UserMenu = () => {
 
   const handleDashboardClick = () => {
     if (isOwner) {
-      navigate('/owner-dashboard');
+      navigate('/owner');
     } else {
       navigate('/dashboard');
     }

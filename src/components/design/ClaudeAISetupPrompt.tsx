@@ -15,8 +15,8 @@ export const ClaudeAISetupPrompt = ({ onSetupComplete }: ClaudeAISetupPromptProp
   const { toast } = useToast();
 
   const handleGoToSettings = () => {
-    // Navigate to Claude settings
-    window.location.href = '/owner-dashboard?tab=claude';
+    // Navigate to Claude settings - fixed URL
+    window.location.href = '/owner?tab=claude';
   };
 
   const handleAPIKeySetup = () => {

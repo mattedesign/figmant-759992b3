@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navigation } from '@/components/layout/Navigation';
@@ -9,9 +9,27 @@ import { AdminSettings } from '@/components/owner/AdminSettings';
 import { ClaudeSettings } from '@/components/owner/ClaudeSettings';
 import { SubscriptionPlansManager } from '@/components/owner/SubscriptionPlansManager';
 import { AdvancedDesignAnalysisPage } from '@/components/design/AdvancedDesignAnalysisPage';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const OwnerDashboard = () => {
-  const [activeTab, setActiveTab] = useState('analytics');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  
+  // Get the tab from URL parameters, default to 'analytics'
+  const tabFromUrl = searchParams.get('tab') || 'analytics';
+  const [activeTab, setActiveTab] = useState(tabFromUrl);
+
+  // Update URL when tab changes
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab);
+    setSearchParams({ tab: newTab });
+  };
+
+  // Sync tab state with URL changes
+  useEffect(() => {
+    const currentTab = searchParams.get('tab') || 'analytics';
+    setActiveTab(currentTab);
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,7 +43,7 @@ const OwnerDashboard = () => {
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="design">Design Analysis</TabsTrigger>

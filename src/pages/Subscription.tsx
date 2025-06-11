@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -107,7 +106,7 @@ const Subscription = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-center">
-                <Button onClick={() => navigate('/owner-dashboard')}>
+                <Button onClick={() => navigate('/owner')}>
                   Go to Owner Dashboard
                 </Button>
               </CardContent>
