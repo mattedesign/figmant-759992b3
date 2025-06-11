@@ -3,7 +3,7 @@ import React from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { User, Bot, Info, Image, Globe } from 'lucide-react';
+import { User, Bot, Image, Globe } from 'lucide-react';
 import { ChatMessage as ChatMessageType } from '../DesignChatInterface';
 
 interface ChatMessageProps {
@@ -12,20 +12,19 @@ interface ChatMessageProps {
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   const isUser = message.role === 'user';
-  const isSystem = message.role === 'system';
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} space-x-2`}>
       {!isUser && (
         <Avatar className="h-8 w-8 mt-1">
           <AvatarFallback>
-            {isSystem ? <Info className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+            <Bot className="h-4 w-4" />
           </AvatarFallback>
         </Avatar>
       )}
       
       <div className={`max-w-[80%] ${isUser ? 'order-first' : ''}`}>
-        <Card className={`${isUser ? 'bg-primary text-primary-foreground' : isSystem ? 'bg-muted' : 'bg-background'}`}>
+        <Card className={`${isUser ? 'bg-primary text-primary-foreground' : 'bg-background'}`}>
           <CardContent className="p-3">
             {/* Attachments */}
             {message.attachments && message.attachments.length > 0 && (

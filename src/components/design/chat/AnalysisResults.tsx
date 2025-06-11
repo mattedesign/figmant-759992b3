@@ -43,9 +43,9 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
             {recentBatches.map((batch) => (
               <div key={batch.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                 <div>
-                  <h4 className="font-medium">{batch.batch_name || 'Batch Analysis'}</h4>
+                  <h4 className="font-medium">Batch Analysis</h4>
                   <p className="text-sm text-muted-foreground">
-                    {batch.use_case} • Created {new Date(batch.created_at).toLocaleDateString()}
+                    {batch.analysis_type} • Created {new Date(batch.created_at).toLocaleDateString()}
                   </p>
                 </div>
                 {onViewBatchAnalysis && (
