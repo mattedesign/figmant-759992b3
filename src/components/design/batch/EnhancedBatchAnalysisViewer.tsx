@@ -23,7 +23,7 @@ export const EnhancedBatchAnalysisViewer = () => {
       if (!batchId) throw new Error('No batch ID provided');
       
       const { data, error } = await supabase
-        .from('design_batch_analyses')
+        .from('design_batch_analysis')
         .select('*')
         .eq('id', batchId)
         .single();
@@ -40,7 +40,7 @@ export const EnhancedBatchAnalysisViewer = () => {
       if (!batchId) return [];
       
       const { data, error } = await supabase
-        .from('design_analyses')
+        .from('design_analysis')
         .select('*')
         .eq('batch_id', batchId)
         .order('created_at', { ascending: false });
@@ -80,7 +80,6 @@ export const EnhancedBatchAnalysisViewer = () => {
   if (selectedAnalysisId) {
     return (
       <AnalysisViewer
-        analysisId={selectedAnalysisId}
         onBack={() => setSelectedAnalysisId(null)}
       />
     );
@@ -125,8 +124,11 @@ export const EnhancedBatchAnalysisViewer = () => {
 
   const avgProcessingTime = analyses?.length
     ? analyses
-        .filter(a => a.status === 'completed' && a.processing_time)
-        .reduce((sum, a) => sum + (a.processing_time || 0), 0) / analyses.length
+        .filter(a => a.analysis_results && typeof a.analysis_results === 'object')
+        .reduce((sum, a) => {
+          const results = a.analysis_results as any;
+          return sum + (results?.processing_time || 0);
+        }, 0) / analyses.length
     : undefined;
 
   return (
@@ -148,7 +150,13 @@ export const EnhancedBatchAnalysisViewer = () => {
         <div className="lg:col-span-2">
           {analyses && (
             <BatchAnalysisResults
-              results={analyses}
+              results={analyses.map(analysis => ({
+                id: analysis.id,
+                design_name: `Analysis ${analysis.id.slice(0, 8)}`,
+                status: 'completed',
+                created_at: analysis.created_at,
+                error_message: null
+              }))}
               onViewAnalysis={handleViewAnalysis}
               onViewDashboard={handleViewDashboard}
               batchId={batchId!}

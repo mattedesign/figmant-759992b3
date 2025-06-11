@@ -26,6 +26,27 @@ export const SettingsContainer = () => {
     weeklyDigest: true,
   });
 
+  // State for API keys
+  const [apiKeys, setApiKeys] = useState({
+    claude: '',
+    analytics: '',
+    heatmap: ''
+  });
+
+  // State for notifications
+  const [notifications, setNotifications] = useState({
+    realTimeAlerts: true,
+    weeklyReports: true,
+    anomalyDetection: true,
+    emailNotifications: false
+  });
+
+  // State for data settings
+  const [dataRetention, setDataRetention] = useState('90');
+  
+  // State for analysis settings
+  const [analysisFrequency, setAnalysisFrequency] = useState('daily');
+
   const handleUpdateProfile = async (data: any) => {
     try {
       const { error } = await supabase
@@ -134,11 +155,17 @@ export const SettingsContainer = () => {
         </TabsContent>
 
         <TabsContent value="notifications">
-          <NotificationsTab />
+          <NotificationsTab 
+            notifications={notifications}
+            setNotifications={setNotifications}
+          />
         </TabsContent>
 
         <TabsContent value="api-keys">
-          <ApiKeysTab />
+          <ApiKeysTab 
+            apiKeys={apiKeys}
+            setApiKeys={setApiKeys}
+          />
         </TabsContent>
 
         <TabsContent value="credits">
@@ -146,11 +173,17 @@ export const SettingsContainer = () => {
         </TabsContent>
 
         <TabsContent value="analysis">
-          <AnalysisTab />
+          <AnalysisTab 
+            analysisFrequency={analysisFrequency}
+            setAnalysisFrequency={setAnalysisFrequency}
+          />
         </TabsContent>
 
         <TabsContent value="data">
-          <DataSettingsTab />
+          <DataSettingsTab 
+            dataRetention={dataRetention}
+            setDataRetention={setDataRetention}
+          />
         </TabsContent>
       </Tabs>
     </div>
