@@ -24,7 +24,8 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
     if (!upload) throw new Error('Upload not found');
 
     // Parse analysis preferences safely
-    const analysisPreferences = upload.analysis_preferences as AnalysisPreferences | null;
+    const analysisPreferences = upload.analysis_preferences ? 
+      upload.analysis_preferences as unknown as AnalysisPreferences : null;
 
     // Get context files if context integration is enabled
     let contextContent = '';
@@ -326,7 +327,8 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
       null;
 
     // Parse analysis preferences from first upload for settings
-    const firstUploadPreferences = uploads[0]?.analysis_preferences as AnalysisPreferences | null;
+    const firstUploadPreferences = uploads[0]?.analysis_preferences ? 
+      uploads[0].analysis_preferences as unknown as AnalysisPreferences : null;
 
     // Save batch analysis results with enhanced metadata
     const { data: batchAnalysis, error: saveError } = await supabase

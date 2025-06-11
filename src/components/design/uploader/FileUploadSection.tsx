@@ -8,7 +8,7 @@ import { Upload, FileImage, X } from 'lucide-react';
 
 interface FileUploadSectionProps {
   selectedFiles: File[];
-  setSelectedFiles: (files: File[]) => void;
+  setSelectedFiles: (files: File[] | ((prev: File[]) => File[])) => void;
 }
 
 export const FileUploadSection = ({

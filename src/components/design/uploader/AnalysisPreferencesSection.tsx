@@ -8,7 +8,7 @@ import { AnalysisPreferences } from '@/types/design';
 
 interface AnalysisPreferencesSectionProps {
   analysisPreferences: AnalysisPreferences;
-  setAnalysisPreferences: (value: AnalysisPreferences) => void;
+  setAnalysisPreferences: (value: AnalysisPreferences | ((prev: AnalysisPreferences) => AnalysisPreferences)) => void;
 }
 
 export const AnalysisPreferencesSection = ({

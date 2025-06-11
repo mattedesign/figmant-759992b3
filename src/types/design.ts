@@ -25,6 +25,18 @@ export interface AnalysisPreferences {
   focus_areas?: string[];
 }
 
+export interface FigmantPromptVariables {
+  designType?: string;
+  industry?: string;
+  targetAudience?: string;
+  businessGoals?: string;
+  competitorUrls?: string[];
+  brandGuidelines?: string;
+  currentMetrics?: string;
+  testHypothesis?: string;
+  conversionGoals?: string;
+}
+
 export interface DesignContextFile {
   id: string;
   upload_id: string;

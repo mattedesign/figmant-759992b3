@@ -5,13 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileImage, Globe } from 'lucide-react';
 import { useBatchUploadDesign } from '@/hooks/useBatchUploadDesign';
-import { AnalysisPreferences } from '@/types/design';
+import { AnalysisPreferences, FigmantPromptVariables } from '@/types/design';
 import { BatchInfoSection } from './uploader/BatchInfoSection';
 import { AnalysisPreferencesSection } from './uploader/AnalysisPreferencesSection';
 import { FileUploadSection } from './uploader/FileUploadSection';
 import { URLUploadSection } from './uploader/URLUploadSection';
 import { ContextFilesSection } from './uploader/ContextFilesSection';
-import { UseCaseSelector } from './uploader/UseCaseSelector';
+import { EnhancedUseCaseSelector } from './uploader/EnhancedUseCaseSelector';
 import { UploadSummary } from './uploader/UploadSummary';
 
 export const EnhancedDesignUploader = () => {
@@ -22,6 +22,8 @@ export const EnhancedDesignUploader = () => {
   const [batchName, setBatchName] = useState<string>('');
   const [analysisGoals, setAnalysisGoals] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'files' | 'urls'>('files');
+  const [customInstructions, setCustomInstructions] = useState<string>('');
+  const [promptVariables, setPromptVariables] = useState<FigmantPromptVariables>({});
   const [analysisPreferences, setAnalysisPreferences] = useState<AnalysisPreferences>({
     auto_comparative: true,
     context_integration: true,
@@ -34,6 +36,33 @@ export const EnhancedDesignUploader = () => {
   const hasValidContent = selectedFiles.length > 0 || validUrls.length > 0;
   const totalItems = selectedFiles.length + validUrls.length;
 
+  const buildEnhancedAnalysisGoals = () => {
+    let enhancedGoals = analysisGoals;
+    
+    if (customInstructions) {
+      enhancedGoals += `\n\nAdditional Instructions: ${customInstructions}`;
+    }
+
+    // Add prompt variables context
+    const variableContext = [];
+    if (promptVariables.designType) variableContext.push(`Design Type: ${promptVariables.designType}`);
+    if (promptVariables.industry) variableContext.push(`Industry: ${promptVariables.industry}`);
+    if (promptVariables.targetAudience) variableContext.push(`Target Audience: ${promptVariables.targetAudience}`);
+    if (promptVariables.businessGoals) variableContext.push(`Business Goals: ${promptVariables.businessGoals}`);
+    if (promptVariables.conversionGoals) variableContext.push(`Conversion Goals: ${promptVariables.conversionGoals}`);
+    if (promptVariables.testHypothesis) variableContext.push(`Test Hypothesis: ${promptVariables.testHypothesis}`);
+    
+    if (promptVariables.competitorUrls && promptVariables.competitorUrls.length > 0) {
+      variableContext.push(`Competitors: ${promptVariables.competitorUrls.join(', ')}`);
+    }
+
+    if (variableContext.length > 0) {
+      enhancedGoals += `\n\nContext Variables:\n${variableContext.join('\n')}`;
+    }
+
+    return enhancedGoals.trim() || undefined;
+  };
+
   const handleUpload = async () => {
     if (!hasValidContent || !selectedUseCase) return;
 
@@ -43,7 +72,7 @@ export const EnhancedDesignUploader = () => {
       contextFiles: contextFiles,
       useCase: selectedUseCase,
       batchName: batchName || `Batch ${new Date().toLocaleDateString()}`,
-      analysisGoals: analysisGoals.trim() || undefined,
+      analysisGoals: buildEnhancedAnalysisGoals(),
       analysisPreferences: analysisPreferences
     });
 
@@ -53,6 +82,8 @@ export const EnhancedDesignUploader = () => {
     setUrls(['']);
     setBatchName('');
     setAnalysisGoals('');
+    setCustomInstructions('');
+    setPromptVariables({});
     setSelectedUseCase('');
     setAnalysisPreferences({
       auto_comparative: true,
@@ -62,11 +93,11 @@ export const EnhancedDesignUploader = () => {
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full max-w-6xl mx-auto">
       <CardHeader>
-        <CardTitle>Enhanced Design Analysis</CardTitle>
+        <CardTitle>Figmant.ai Enhanced Design Analysis</CardTitle>
         <CardDescription>
-          Upload multiple design files or analyze website URLs with optional context files for comprehensive AI-powered insights
+          Upload multiple design files or analyze website URLs with AI-powered insights using professional UX analysis frameworks
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -75,6 +106,15 @@ export const EnhancedDesignUploader = () => {
           setBatchName={setBatchName}
           analysisGoals={analysisGoals}
           setAnalysisGoals={setAnalysisGoals}
+        />
+
+        <EnhancedUseCaseSelector
+          selectedUseCase={selectedUseCase}
+          setSelectedUseCase={setSelectedUseCase}
+          promptVariables={promptVariables}
+          setPromptVariables={setPromptVariables}
+          customInstructions={customInstructions}
+          setCustomInstructions={setCustomInstructions}
         />
 
         <AnalysisPreferencesSection
@@ -116,16 +156,11 @@ export const EnhancedDesignUploader = () => {
           isEnabled={analysisPreferences.context_integration}
         />
 
-        <UseCaseSelector
-          selectedUseCase={selectedUseCase}
-          setSelectedUseCase={setSelectedUseCase}
-        />
-
         <UploadSummary
           selectedFiles={selectedFiles}
           validUrls={validUrls}
           contextFiles={contextFiles}
-          analysisGoals={analysisGoals}
+          analysisGoals={buildEnhancedAnalysisGoals() || ''}
           analysisPreferences={analysisPreferences}
           hasValidContent={hasValidContent}
         />

@@ -17,7 +17,8 @@ export const useDesignUploads = () => {
       // Transform the data to ensure analysis_preferences is properly typed
       return (data || []).map(upload => ({
         ...upload,
-        analysis_preferences: upload.analysis_preferences as AnalysisPreferences | null
+        analysis_preferences: upload.analysis_preferences ? 
+          upload.analysis_preferences as unknown as AnalysisPreferences : null
       })) as DesignUpload[];
     }
   });

@@ -8,7 +8,7 @@ import { FileText, X } from 'lucide-react';
 
 interface ContextFilesSectionProps {
   contextFiles: File[];
-  setContextFiles: (files: File[]) => void;
+  setContextFiles: (files: File[] | ((prev: File[]) => File[])) => void;
   isEnabled: boolean;
 }
 

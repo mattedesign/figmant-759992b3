@@ -8,7 +8,7 @@ import { Globe, X, Plus } from 'lucide-react';
 
 interface URLUploadSectionProps {
   urls: string[];
-  setUrls: (urls: string[]) => void;
+  setUrls: (urls: string[] | ((prev: string[]) => string[])) => void;
 }
 
 export const URLUploadSection = ({
