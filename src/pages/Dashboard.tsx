@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EnhancedDesignUploader } from '@/components/design/EnhancedDesignUploader';
+import { DesignChatInterface } from '@/components/design/DesignChatInterface';
 import { DesignList } from '@/components/design/DesignList';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { RecentAnalyses } from '@/components/dashboard/RecentAnalyses';
@@ -11,14 +12,14 @@ import { Navigation } from '@/components/layout/Navigation';
 import { DesignUpload, DesignBatchAnalysis } from '@/types/design';
 import { AnalysisViewer } from '@/components/design/AnalysisViewer';
 import { EnhancedBatchAnalysisViewer } from '@/components/design/EnhancedBatchAnalysisViewer';
-import { Upload, History, BarChart3, FileText } from 'lucide-react';
+import { MessageSquare, Upload, History, BarChart3, FileText } from 'lucide-react';
 import { UploadProgress } from '@/components/dashboard/UploadProgress';
 import { ClaudeConnectionTest } from '@/components/dashboard/ClaudeConnectionTest';
 import { ClaudeInsights } from '@/components/dashboard/ClaudeInsights';
 
 const Dashboard = () => {
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState('upload');
+  const [activeTab, setActiveTab] = useState('chat');
   const [selectedUpload, setSelectedUpload] = useState<DesignUpload | null>(null);
   const [selectedBatchAnalysis, setSelectedBatchAnalysis] = useState<DesignBatchAnalysis | null>(null);
 
@@ -69,7 +70,11 @@ const Dashboard = () => {
       
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="chat" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Chat Analysis
+            </TabsTrigger>
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <Upload className="h-4 w-4" />
               Upload
@@ -87,6 +92,40 @@ const Dashboard = () => {
               Actions
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="chat" className="mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>UX Analysis Assistant</CardTitle>
+                    <CardDescription>
+                      Chat with our AI to get instant design analysis and recommendations
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <DesignChatInterface />
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Analyses</CardTitle>
+                    <CardDescription>Your latest results</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <RecentAnalyses 
+                      onViewAnalysis={setSelectedUpload}
+                      onViewBatchAnalysis={setSelectedBatchAnalysis}
+                      limit={3} 
+                    />
+                  </CardContent>
+                </Card>
+                <UploadProgress />
+              </div>
+            </div>
+          </TabsContent>
 
           <TabsContent value="upload" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
