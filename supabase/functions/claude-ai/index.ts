@@ -1,285 +1,249 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+}
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+interface ClaudeRequest {
+  prompt: string;
+  userId: string;
+  requestType: 'insights' | 'analysis' | 'test';
+  context?: {
+    useCase?: string;
+    category?: string;
+    businessDomain?: string;
+    analysisGoals?: string;
+  };
+}
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { prompt, userId, requestType = 'analysis' } = await req.json();
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-    if (!prompt || !userId) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields: prompt and userId' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
+    // Get Claude settings
+    const { data: settings, error: settingsError } = await supabase.rpc('get_claude_settings')
+    if (settingsError) throw settingsError
+    
+    const claudeSettings = settings[0]
+    if (!claudeSettings?.claude_ai_enabled) {
+      throw new Error('Claude AI is not enabled')
     }
 
-    console.log('Processing request:', { requestType, userId: userId.substring(0, 8) + '...' });
-
-    // Get Claude settings from admin_settings
-    const { data: settings, error: settingsError } = await supabase
-      .rpc('get_claude_settings');
-
-    if (settingsError || !settings || settings.length === 0) {
-      console.error('Failed to get Claude settings:', settingsError);
-      return new Response(
-        JSON.stringify({ error: 'Claude AI is not configured' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
-    }
-
-    const claudeSettings = settings[0];
-
-    if (!claudeSettings.claude_ai_enabled) {
-      return new Response(
-        JSON.stringify({ error: 'Claude AI is disabled' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
-      );
-    }
-
-    // Get Claude API key from admin settings with proper parsing
+    // Get API key
     const { data: apiKeyData, error: apiKeyError } = await supabase
       .from('admin_settings')
       .select('setting_value')
       .eq('setting_key', 'claude_api_key')
-      .single();
+      .single()
 
     if (apiKeyError || !apiKeyData?.setting_value) {
-      console.error('Claude API key not found:', apiKeyError);
-      return new Response(
-        JSON.stringify({ error: 'Claude API key not configured' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
+      throw new Error('Claude API key not configured')
     }
 
-    // Parse the API key - handle both old format (direct value) and new format (JSON with value property)
-    let claudeApiKey;
-    if (typeof apiKeyData.setting_value === 'object' && apiKeyData.setting_value && 'value' in apiKeyData.setting_value) {
-      claudeApiKey = (apiKeyData.setting_value as any).value;
-    } else {
-      claudeApiKey = apiKeyData.setting_value as string;
+    const apiKey = typeof apiKeyData.setting_value === 'object' && apiKeyData.setting_value !== null
+      ? (apiKeyData.setting_value as any).value
+      : apiKeyData.setting_value
+
+    if (!apiKey) {
+      throw new Error('Invalid Claude API key format')
     }
 
-    console.log('Using Claude API key:', claudeApiKey ? claudeApiKey.substring(0, 10) + '...' : 'undefined');
+    const requestBody: ClaudeRequest = await req.json()
+    let optimizedPrompt = requestBody.prompt
+    let exampleId: string | null = null
 
-    // Enhanced prompt for design analysis
-    let enhancedPrompt = prompt;
-    if (requestType === 'design_analysis') {
-      enhancedPrompt = `${claudeSettings.claude_system_prompt}
+    // Try to get optimized prompt if context is provided
+    if (requestBody.context?.category) {
+      try {
+        const { data: bestPrompt, error: promptError } = await supabase.rpc('get_best_prompt_for_category', {
+          category_name: requestBody.context.category
+        })
 
-As a UX/UI design expert, please provide a comprehensive analysis of the design. Structure your response with clear sections:
-
-1. **Overall Assessment** - First impressions and general observations
-2. **Strengths** - What works well in the current design
-3. **Areas for Improvement** - Specific issues and their impact
-4. **Actionable Recommendations** - Concrete steps to improve the design
-5. **Priority Actions** - Top 3 most important changes to make
-
-User request: ${prompt}`;
-    } else {
-      enhancedPrompt = `${claudeSettings.claude_system_prompt}\n\nUser request: ${prompt}`;
+        if (!promptError && bestPrompt && bestPrompt.length > 0) {
+          optimizedPrompt = bestPrompt[0].original_prompt
+          exampleId = bestPrompt[0].example_id
+          
+          // Replace variables in the prompt
+          if (requestBody.context.useCase) {
+            optimizedPrompt = optimizedPrompt.replace(/\{\{useCase\}\}/g, requestBody.context.useCase)
+          }
+          if (requestBody.context.businessDomain) {
+            optimizedPrompt = optimizedPrompt.replace(/\{\{businessDomain\}\}/g, requestBody.context.businessDomain)
+          }
+          if (requestBody.context.analysisGoals) {
+            optimizedPrompt = optimizedPrompt.replace(/\{\{analysisGoals\}\}/g, requestBody.context.analysisGoals)
+          }
+          
+          console.log('Using optimized prompt from example:', bestPrompt[0].title)
+        }
+      } catch (error) {
+        console.warn('Failed to get optimized prompt, using original:', error)
+      }
     }
+
+    const startTime = Date.now()
 
     // Make request to Claude API
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': claudeApiKey,
+        'x-api-key': apiKey,
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
         model: claudeSettings.claude_model,
-        max_tokens: requestType === 'design_analysis' ? 2048 : 1024,
-        messages: [
-          {
-            role: 'user',
-            content: enhancedPrompt
-          }
-        ]
+        max_tokens: 4000,
+        system: claudeSettings.claude_system_prompt,
+        messages: [{
+          role: 'user',
+          content: optimizedPrompt
+        }]
       })
-    });
+    })
+
+    const responseTime = Date.now() - startTime
 
     if (!claudeResponse.ok) {
-      const errorData = await claudeResponse.text();
-      console.error('Claude API error:', errorData);
-      
-      // Log failed request
-      await supabase.from('claude_usage_logs').insert({
-        user_id: userId,
-        request_type: requestType,
-        request_data: { prompt, model: claudeSettings.claude_model },
-        success: false,
-        error_message: `Claude API error: ${claudeResponse.status} ${errorData}`
-      });
-
-      return new Response(
-        JSON.stringify({ error: 'Failed to get response from Claude AI' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
+      const errorText = await claudeResponse.text()
+      console.error('Claude API Error:', errorText)
+      throw new Error(`Claude API error: ${claudeResponse.status} ${errorText}`)
     }
 
-    const claudeData = await claudeResponse.json();
-    const responseText = claudeData.content[0]?.text || '';
-    const tokensUsed = claudeData.usage?.input_tokens + claudeData.usage?.output_tokens || 0;
-    
-    // Estimate cost (rough estimation based on Claude pricing)
-    const costPerToken = 0.00001; // Approximate cost per token
-    const estimatedCost = tokensUsed * costPerToken;
+    const claudeData = await claudeResponse.json()
+    const responseText = claudeData.content?.[0]?.text || 'No response generated'
+    const tokensUsed = claudeData.usage?.input_tokens + claudeData.usage?.output_tokens || 0
 
-    console.log('Claude response received:', {
-      tokensUsed,
-      estimatedCost: estimatedCost.toFixed(4),
-      responseLength: responseText.length
-    });
-
-    // Log successful request
+    // Track usage in logs
     await supabase.from('claude_usage_logs').insert({
-      user_id: userId,
-      request_type: requestType,
-      tokens_used: tokensUsed,
-      cost_usd: estimatedCost,
-      request_data: { prompt, model: claudeSettings.claude_model },
+      user_id: requestBody.userId,
+      request_type: requestBody.requestType,
+      request_data: {
+        prompt: optimizedPrompt,
+        context: requestBody.context,
+        model: claudeSettings.claude_model
+      },
       response_data: claudeData,
+      tokens_used: tokensUsed,
       success: true
-    });
+    })
 
-    // Parse response if it's an insights request
-    if (requestType === 'insights') {
+    // Track prompt performance if we used an optimized prompt
+    if (exampleId) {
+      await supabase.from('claude_prompt_analytics').insert({
+        example_id: exampleId,
+        user_id: requestBody.userId,
+        usage_context: requestBody.requestType,
+        response_time_ms: responseTime,
+        tokens_used: tokensUsed,
+        business_outcome_data: { success: true, context: requestBody.context }
+      })
+    }
+
+    // For insights, parse and store the structured data
+    if (requestBody.requestType === 'insights') {
       try {
-        // Try to parse structured insights from Claude's response
-        const insights = parseInsightsFromResponse(responseText);
+        // Attempt to extract structured insights from the response
+        const insights = extractInsightsFromResponse(responseText)
         
-        // Store insights in database
         for (const insight of insights) {
           await supabase.from('claude_insights').insert({
-            user_id: userId,
+            user_id: requestBody.userId,
             title: insight.title,
             description: insight.description,
-            insight_type: insight.type,
-            priority: insight.priority,
-            impact_area: insight.impact,
+            insight_type: insight.type || 'general',
+            priority: insight.priority || 'medium',
+            impact_area: insight.impact_area,
             confidence_score: insight.confidence || 0.8,
-            data_source: { prompt, model: claudeSettings.claude_model },
-            recommendations: insight.recommendations || []
-          });
+            recommendations: insight.recommendations ? { items: insight.recommendations } : null,
+            data_source: { 
+              prompt_used: optimizedPrompt,
+              response_source: 'claude_ai',
+              example_id: exampleId 
+            }
+          })
         }
-      } catch (parseError) {
-        console.error('Failed to parse insights:', parseError);
+      } catch (insightError) {
+        console.warn('Failed to parse insights:', insightError)
       }
     }
 
-    return new Response(
-      JSON.stringify({ 
-        response: responseText,
-        tokensUsed,
-        estimatedCost: estimatedCost.toFixed(4)
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({
+      success: true,
+      response: responseText,
+      metadata: {
+        model: claudeSettings.claude_model,
+        tokens_used: tokensUsed,
+        response_time_ms: responseTime,
+        optimized_prompt_used: !!exampleId
+      }
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
 
   } catch (error) {
-    console.error('Error in claude-ai function:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    );
+    console.error('Error in claude-ai function:', error)
+    
+    return new Response(JSON.stringify({
+      error: error.message || 'Internal server error'
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
-});
+})
 
-function parseInsightsFromResponse(response: string) {
-  // Simple parser to extract structured insights from Claude's response
-  // This is a basic implementation - you might want to improve this based on Claude's response format
-  const insights = [];
+function extractInsightsFromResponse(responseText: string) {
+  const insights = []
   
-  try {
-    // Look for common insight patterns in the response
-    const lines = response.split('\n').filter(line => line.trim());
+  // Simple parsing logic - this could be enhanced with more sophisticated parsing
+  const lines = responseText.split('\n').filter(line => line.trim())
+  
+  let currentInsight: any = null
+  
+  for (const line of lines) {
+    const trimmed = line.trim()
     
-    let currentInsight = null;
-    
-    for (const line of lines) {
-      const trimmedLine = line.trim();
+    // Look for insight headers (lines that might indicate new insights)
+    if (trimmed.match(/^(insight|recommendation|finding|issue|opportunity):/i)) {
+      if (currentInsight) {
+        insights.push(currentInsight)
+      }
       
-      // Check if this line starts a new insight
-      if (trimmedLine.includes('improvement') || trimmedLine.includes('issue') || 
-          trimmedLine.includes('trend') || trimmedLine.includes('recommendation')) {
-        
-        if (currentInsight) {
-          insights.push(currentInsight);
-        }
-        
-        currentInsight = {
-          title: trimmedLine.substring(0, 100),
-          description: trimmedLine,
-          type: detectInsightType(trimmedLine),
-          priority: detectPriority(trimmedLine),
-          impact: detectImpactArea(trimmedLine),
-          confidence: 0.8
-        };
-      } else if (currentInsight && trimmedLine.length > 20) {
-        // Add to description if we have a current insight
-        currentInsight.description += ' ' + trimmedLine;
+      currentInsight = {
+        title: trimmed.replace(/^(insight|recommendation|finding|issue|opportunity):\s*/i, ''),
+        description: '',
+        type: 'general',
+        priority: 'medium'
       }
+    } else if (currentInsight && trimmed) {
+      // Add to current insight description
+      currentInsight.description += (currentInsight.description ? ' ' : '') + trimmed
     }
-    
-    if (currentInsight) {
-      insights.push(currentInsight);
-    }
-    
-    // If no structured insights found, create a general one
-    if (insights.length === 0) {
-      insights.push({
-        title: 'AI Analysis Result',
-        description: response.substring(0, 500),
-        type: 'analysis',
-        priority: 'medium',
-        impact: 'general',
-        confidence: 0.7
-      });
-    }
-    
-  } catch (error) {
-    console.error('Error parsing insights:', error);
   }
   
-  return insights;
-}
-
-function detectInsightType(text: string): string {
-  const lowerText = text.toLowerCase();
-  if (lowerText.includes('issue') || lowerText.includes('problem')) return 'issue';
-  if (lowerText.includes('improve') || lowerText.includes('enhance')) return 'improvement';
-  if (lowerText.includes('trend') || lowerText.includes('pattern')) return 'trend';
-  return 'analysis';
-}
-
-function detectPriority(text: string): string {
-  const lowerText = text.toLowerCase();
-  if (lowerText.includes('critical') || lowerText.includes('urgent')) return 'critical';
-  if (lowerText.includes('high') || lowerText.includes('important')) return 'high';
-  if (lowerText.includes('low') || lowerText.includes('minor')) return 'low';
-  return 'medium';
-}
-
-function detectImpactArea(text: string): string {
-  const lowerText = text.toLowerCase();
-  if (lowerText.includes('conversion') || lowerText.includes('sale')) return 'conversion';
-  if (lowerText.includes('engagement') || lowerText.includes('interaction')) return 'engagement';
-  if (lowerText.includes('revenue') || lowerText.includes('money')) return 'revenue';
-  return 'ux';
+  if (currentInsight) {
+    insights.push(currentInsight)
+  }
+  
+  // If no structured insights found, create a general one
+  if (insights.length === 0) {
+    insights.push({
+      title: 'AI Analysis Results',
+      description: responseText.substring(0, 500),
+      type: 'general',
+      priority: 'medium'
+    })
+  }
+  
+  return insights
 }

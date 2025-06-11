@@ -95,6 +95,179 @@ export type Database = {
           },
         ]
       }
+      claude_prompt_analytics: {
+        Row: {
+          business_outcome_data: Json | null
+          created_at: string
+          example_id: string | null
+          id: string
+          response_quality_score: number | null
+          response_time_ms: number | null
+          tokens_used: number | null
+          usage_context: string
+          user_feedback: string | null
+          user_id: string | null
+          variation_id: string | null
+        }
+        Insert: {
+          business_outcome_data?: Json | null
+          created_at?: string
+          example_id?: string | null
+          id?: string
+          response_quality_score?: number | null
+          response_time_ms?: number | null
+          tokens_used?: number | null
+          usage_context: string
+          user_feedback?: string | null
+          user_id?: string | null
+          variation_id?: string | null
+        }
+        Update: {
+          business_outcome_data?: Json | null
+          created_at?: string
+          example_id?: string | null
+          id?: string
+          response_quality_score?: number | null
+          response_time_ms?: number | null
+          tokens_used?: number | null
+          usage_context?: string
+          user_feedback?: string | null
+          user_id?: string | null
+          variation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claude_prompt_analytics_example_id_fkey"
+            columns: ["example_id"]
+            isOneToOne: false
+            referencedRelation: "claude_prompt_examples"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claude_prompt_analytics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claude_prompt_analytics_variation_id_fkey"
+            columns: ["variation_id"]
+            isOneToOne: false
+            referencedRelation: "claude_prompt_variations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      claude_prompt_examples: {
+        Row: {
+          business_domain: string | null
+          category: string
+          claude_response: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          effectiveness_rating: number | null
+          id: string
+          is_active: boolean | null
+          is_template: boolean | null
+          metadata: Json | null
+          original_prompt: string
+          prompt_variables: Json | null
+          title: string
+          updated_at: string
+          use_case_context: string | null
+        }
+        Insert: {
+          business_domain?: string | null
+          category: string
+          claude_response: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          effectiveness_rating?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_template?: boolean | null
+          metadata?: Json | null
+          original_prompt: string
+          prompt_variables?: Json | null
+          title: string
+          updated_at?: string
+          use_case_context?: string | null
+        }
+        Update: {
+          business_domain?: string | null
+          category?: string
+          claude_response?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          effectiveness_rating?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_template?: boolean | null
+          metadata?: Json | null
+          original_prompt?: string
+          prompt_variables?: Json | null
+          title?: string
+          updated_at?: string
+          use_case_context?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claude_prompt_examples_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      claude_prompt_variations: {
+        Row: {
+          base_example_id: string | null
+          created_at: string
+          id: string
+          modified_prompt: string
+          performance_data: Json | null
+          success_metrics: Json | null
+          test_status: string | null
+          updated_at: string
+          variation_name: string
+        }
+        Insert: {
+          base_example_id?: string | null
+          created_at?: string
+          id?: string
+          modified_prompt: string
+          performance_data?: Json | null
+          success_metrics?: Json | null
+          test_status?: string | null
+          updated_at?: string
+          variation_name: string
+        }
+        Update: {
+          base_example_id?: string | null
+          created_at?: string
+          id?: string
+          modified_prompt?: string
+          performance_data?: Json | null
+          success_metrics?: Json | null
+          test_status?: string | null
+          updated_at?: string
+          variation_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claude_prompt_variations_base_example_id_fkey"
+            columns: ["base_example_id"]
+            isOneToOne: false
+            referencedRelation: "claude_prompt_examples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claude_usage_logs: {
         Row: {
           cost_usd: number | null
@@ -556,6 +729,16 @@ export type Database = {
           p_role?: Database["public"]["Enums"]["user_role"]
         }
         Returns: Json
+      }
+      get_best_prompt_for_category: {
+        Args: { category_name: string }
+        Returns: {
+          example_id: string
+          title: string
+          original_prompt: string
+          avg_quality_score: number
+          usage_count: number
+        }[]
       }
       get_claude_settings: {
         Args: Record<PropertyKey, never>

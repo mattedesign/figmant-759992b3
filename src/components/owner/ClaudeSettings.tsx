@@ -13,6 +13,8 @@ import { ClaudeConfigurationForm } from './claude/ClaudeConfigurationForm';
 import { ClaudeActionButtons } from './claude/ClaudeActionButtons';
 import { ClaudeUsageStatsCard } from './claude/ClaudeUsageStatsCard';
 import { ClaudeLoadingState } from './claude/ClaudeLoadingState';
+import { ClaudePromptManager } from './claude/ClaudePromptManager';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export const ClaudeSettings = () => {
   const { toast } = useToast();
@@ -136,33 +138,46 @@ export const ClaudeSettings = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <ClaudeHeader connectionStatus={connectionStatus} />
-        <CardContent>
-          <ClaudeConfigurationForm
-            formData={formData}
-            isEditing={isEditing}
-            onFormDataChange={setFormData}
-          />
-          
-          <div className="mt-6">
-            <ClaudeActionButtons
-              isEditing={isEditing}
-              formData={formData}
-              isTestingConnection={isTestingConnection}
-              isSaving={updateSettingMutation.isPending}
-              onEditClick={() => setIsEditing(true)}
-              onTestConnection={testConnection}
-              onSave={handleSave}
-              onCancel={handleCancel}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="settings" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="prompts">Prompt Manager</TabsTrigger>
+        </TabsList>
 
-      {usageStats && formData.enabled && (
-        <ClaudeUsageStatsCard usageStats={usageStats} />
-      )}
+        <TabsContent value="settings" className="space-y-6">
+          <Card>
+            <ClaudeHeader connectionStatus={connectionStatus} />
+            <CardContent>
+              <ClaudeConfigurationForm
+                formData={formData}
+                isEditing={isEditing}
+                onFormDataChange={setFormData}
+              />
+              
+              <div className="mt-6">
+                <ClaudeActionButtons
+                  isEditing={isEditing}
+                  formData={formData}
+                  isTestingConnection={isTestingConnection}
+                  isSaving={updateSettingMutation.isPending}
+                  onEditClick={() => setIsEditing(true)}
+                  onTestConnection={testConnection}
+                  onSave={handleSave}
+                  onCancel={handleCancel}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {usageStats && formData.enabled && (
+            <ClaudeUsageStatsCard usageStats={usageStats} />
+          )}
+        </TabsContent>
+
+        <TabsContent value="prompts">
+          <ClaudePromptManager />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
