@@ -10,23 +10,36 @@ import { BatchAnalysisResults } from './BatchAnalysisResults';
 import { BatchAnalysisSettings } from './BatchAnalysisSettings';
 import { Skeleton } from '@/components/ui/skeleton';
 
-interface BatchData {
-  id: string;
-  batch_name: string;
-  status: string;
-  created_at: string;
-  use_case?: string;
-  description?: string;
-  context_files?: any[];
-  analysis_type?: string;
-  priority?: string;
-}
-
-interface AnalysisData {
+interface BatchAnalysisData {
   id: string;
   batch_id: string;
+  analysis_type: string;
   created_at: string;
-  analysis_results?: any;
+  analysis_results: any;
+  analysis_settings?: any;
+  context_summary?: string;
+  confidence_score?: number;
+  key_metrics?: any;
+  recommendations?: any;
+  winner_upload_id?: string;
+  prompt_used: string;
+  user_id: string;
+  version_number?: number;
+  modification_summary?: string;
+  parent_analysis_id?: string;
+}
+
+interface DesignAnalysisData {
+  id: string;
+  design_upload_id: string;
+  created_at: string;
+  analysis_results: any;
+  analysis_type: string;
+  confidence_score?: number;
+  improvement_areas?: string[];
+  prompt_used: string;
+  suggestions?: any;
+  user_id: string;
 }
 
 export const EnhancedBatchAnalysisViewer = () => {
@@ -37,34 +50,39 @@ export const EnhancedBatchAnalysisViewer = () => {
 
   const { data: batch, isLoading: batchLoading } = useQuery({
     queryKey: ['batch-analysis', batchId],
-    queryFn: async (): Promise<BatchData | null> => {
+    queryFn: async (): Promise<BatchAnalysisData | null> => {
       if (!batchId) throw new Error('No batch ID provided');
       
       const { data, error } = await supabase
         .from('design_batch_analysis')
         .select('*')
-        .eq('id', batchId)
-        .single();
+        .eq('batch_id', batchId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
       
       if (error) throw error;
-      return data as BatchData;
+      return data as BatchAnalysisData | null;
     },
     enabled: !!batchId
   });
 
   const { data: analyses, isLoading: analysesLoading } = useQuery({
     queryKey: ['batch-analyses-results', batchId],
-    queryFn: async (): Promise<AnalysisData[]> => {
+    queryFn: async (): Promise<DesignAnalysisData[]> => {
       if (!batchId) return [];
       
       const { data, error } = await supabase
         .from('design_analysis')
-        .select('*')
-        .eq('batch_id', batchId)
+        .select(`
+          *,
+          design_uploads!inner(batch_id)
+        `)
+        .eq('design_uploads.batch_id', batchId)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return (data as AnalysisData[]) || [];
+      return (data as DesignAnalysisData[]) || [];
     },
     enabled: !!batchId
   });
@@ -162,17 +180,30 @@ export const EnhancedBatchAnalysisViewer = () => {
         }, 0) / analyses.length
     : undefined;
 
+  // Create a mock batch object for the components that expect batch properties
+  const mockBatch = {
+    id: batch.batch_id,
+    batch_name: `Batch ${batch.batch_id.slice(0, 8)}`,
+    status: 'completed',
+    created_at: batch.created_at,
+    use_case: batch.analysis_type,
+    description: batch.context_summary,
+    context_files: [],
+    analysis_type: batch.analysis_type,
+    priority: 'normal'
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       <BatchAnalysisHeader
-        batch={batch}
+        batch={mockBatch}
         onBack={handleBack}
         onExport={handleExport}
         onShare={handleShare}
       />
 
       <BatchAnalysisMetrics
-        batch={batch}
+        batch={mockBatch}
         analysisCount={analyses?.length || 0}
         avgProcessingTime={avgProcessingTime}
       />
@@ -195,7 +226,7 @@ export const EnhancedBatchAnalysisViewer = () => {
           )}
         </div>
         <div>
-          <BatchAnalysisSettings batch={batch} />
+          <BatchAnalysisSettings batch={mockBatch} />
         </div>
       </div>
     </div>
