@@ -35,6 +35,17 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
       </CardHeader>
       {isOpen && (
         <CardContent className="space-y-4">
+          {/* Claude Settings Source */}
+          <div>
+            <h4 className="font-medium text-sm mb-2">Claude Configuration</h4>
+            <div className="grid grid-cols-2 gap-2">
+              <Badge variant={lastAnalysisResult?.debugInfo?.settingsSource === 'admin_settings' ? 'default' : 'destructive'}>
+                Settings Source: {lastAnalysisResult?.debugInfo?.settingsSource || 'Unknown'}
+              </Badge>
+              <Badge variant="outline">API Key: From Admin Settings</Badge>
+            </div>
+          </div>
+
           {/* Attachments Debug */}
           <div>
             <h4 className="font-medium text-sm mb-2">Attachments Status</h4>
@@ -77,7 +88,7 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({
             <h4 className="font-medium text-sm mb-2">System Status</h4>
             <div className="grid grid-cols-2 gap-2">
               <Badge variant="outline">Storage: Ready</Badge>
-              <Badge variant="outline">Claude AI: Enabled</Badge>
+              <Badge variant="outline">Claude AI: Admin Settings</Badge>
               <Badge variant="outline">Auth: Connected</Badge>
               <Badge variant="outline">Edge Function: Active</Badge>
             </div>

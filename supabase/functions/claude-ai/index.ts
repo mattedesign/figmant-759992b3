@@ -28,6 +28,63 @@ interface AttachmentData {
   uploadPath?: string;
 }
 
+async function getClaudeSettings(supabase: any): Promise<{ apiKey: string; model: string; systemPrompt: string }> {
+  console.log('=== FETCHING CLAUDE SETTINGS FROM ADMIN SETTINGS ===');
+  
+  try {
+    const { data: settingsData, error: settingsError } = await supabase
+      .rpc('get_claude_settings');
+
+    if (settingsError) {
+      console.error('Failed to get Claude settings:', settingsError);
+      throw new Error('Failed to get Claude AI configuration');
+    }
+
+    const settings = Array.isArray(settingsData) ? settingsData[0] : settingsData;
+    
+    if (!settings?.claude_ai_enabled) {
+      console.error('Claude AI is not enabled in admin settings');
+      throw new Error('Claude AI is not enabled. Please contact your administrator.');
+    }
+
+    console.log('Claude settings retrieved:', {
+      enabled: settings.claude_ai_enabled,
+      model: settings.claude_model,
+      systemPromptLength: settings.claude_system_prompt?.length || 0,
+      hasApiKey: false // Don't log the actual API key
+    });
+
+    // Get the API key from admin settings
+    const { data: apiKeyData, error: apiKeyError } = await supabase
+      .from('admin_settings')
+      .select('setting_value')
+      .eq('setting_key', 'claude_api_key')
+      .single();
+
+    if (apiKeyError || !apiKeyData) {
+      console.error('Failed to get Claude API key from admin settings:', apiKeyError);
+      throw new Error('Claude API key not configured in admin settings');
+    }
+
+    const apiKey = apiKeyData.setting_value?.value;
+    if (!apiKey) {
+      console.error('Claude API key is empty in admin settings');
+      throw new Error('Claude API key not set in admin settings');
+    }
+
+    console.log('Claude API key retrieved from admin settings successfully');
+
+    return {
+      apiKey,
+      model: settings.claude_model || 'claude-3-5-haiku-20241022',
+      systemPrompt: settings.claude_system_prompt || 'You are a UX analytics expert that provides insights on user behavior and experience patterns. When analyzing designs or images, provide detailed feedback on usability, visual hierarchy, accessibility, and conversion optimization opportunities.'
+    };
+  } catch (error) {
+    console.error('Error getting Claude settings:', error);
+    throw error;
+  }
+}
+
 async function testStorageAccess(supabase: any): Promise<void> {
   console.log('=== TESTING STORAGE ACCESS ===');
   try {
@@ -259,14 +316,12 @@ serve(async (req) => {
 
   try {
     const requestBody = await req.json();
-    const { message, attachments = [], uploadIds = [], model, systemPrompt } = requestBody;
+    const { message, attachments = [], uploadIds = [] } = requestBody;
     
     console.log('Request data received:', { 
       messageLength: message?.length, 
       attachmentsCount: attachments.length,
       uploadIdsCount: uploadIds.length,
-      model,
-      systemPromptLength: systemPrompt?.length,
       attachmentSummary: attachments.map((att: any) => ({
         type: att.type,
         name: att.name,
@@ -277,16 +332,9 @@ serve(async (req) => {
 
     // Environment check
     console.log('Environment check:', {
-      hasClaudeApiKey: !!Deno.env.get('CLAUDE_API_KEY'),
       hasSupabaseUrl: !!Deno.env.get('SUPABASE_URL'),
       hasSupabaseServiceKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     });
-
-    // Get Claude API key from environment
-    const claudeApiKey = Deno.env.get('CLAUDE_API_KEY');
-    if (!claudeApiKey) {
-      throw new Error('Claude API key not configured');
-    }
 
     // Get Supabase credentials
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -302,6 +350,10 @@ serve(async (req) => {
 
     // Test storage access
     await testStorageAccess(supabase);
+    
+    // Get Claude settings from admin settings
+    console.log('Fetching Claude settings from admin settings...');
+    const claudeSettings = await getClaudeSettings(supabase);
     
     // Process attachments for vision analysis
     console.log('Starting attachment processing...');
@@ -330,16 +382,16 @@ serve(async (req) => {
     ];
 
     console.log('Sending request to Claude API...', {
-      model: model || 'claude-3-5-haiku-20241022',
+      model: claudeSettings.model,
       messageContentLength: messageContent.length,
       hasImages: messageContent.some(item => item.type === 'image')
     });
 
     // Call Claude API
     const claudePayload = {
-      model: model || 'claude-3-5-haiku-20241022',
+      model: claudeSettings.model,
       max_tokens: 4000,
-      system: systemPrompt || 'You are a UX analytics expert that provides insights on user behavior and experience patterns. When analyzing designs or images, provide detailed feedback on usability, visual hierarchy, accessibility, and conversion optimization opportunities.',
+      system: claudeSettings.systemPrompt,
       messages: messages
     };
 
@@ -355,7 +407,7 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': claudeApiKey,
+        'x-api-key': claudeSettings.apiKey,
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify(claudePayload)
@@ -401,7 +453,8 @@ serve(async (req) => {
         totalAttachments: attachments.length,
         processedContent: visionContent.length,
         imagesProcessed: visionContent.filter(item => item.type === 'image').length,
-        textItemsProcessed: visionContent.filter(item => item.type === 'text').length
+        textItemsProcessed: visionContent.filter(item => item.type === 'text').length,
+        settingsSource: 'admin_settings'
       }
     };
 
@@ -429,7 +482,8 @@ serve(async (req) => {
         success: false,
         debugInfo: {
           errorType: error.name,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          settingsSource: 'admin_settings'
         }
       }),
       {

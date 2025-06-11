@@ -71,7 +71,7 @@ const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAna
             file_name: attachment.file.name,
             file_path: attachment.uploadPath,
             file_size: attachment.file.size,
-            mime_type: attachment.file.type,
+            file_type: attachment.file.type,
             use_case: 'chat_analysis'
           })
           .select('id')
@@ -113,43 +113,17 @@ const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAna
     attachmentTypes: processedAttachments.map(att => att.type)
   });
 
-  // Get Claude settings
-  console.log('Fetching Claude settings...');
-  const { data: settingsData, error: settingsError } = await supabase
-    .rpc('get_claude_settings');
-
-  if (settingsError) {
-    console.error('Failed to get Claude settings:', settingsError);
-    throw new Error('Failed to get Claude AI configuration');
-  }
-
-  const settings = Array.isArray(settingsData) ? settingsData[0] : settingsData;
-  
-  if (!settings?.claude_ai_enabled) {
-    console.error('Claude AI is not enabled');
-    throw new Error('Claude AI is not enabled. Please contact your administrator.');
-  }
-
-  console.log('Claude settings retrieved:', {
-    enabled: settings.claude_ai_enabled,
-    model: settings.claude_model,
-    systemPromptLength: settings.claude_system_prompt?.length || 0
-  });
-
-  // Prepare the payload for Claude AI
+  // Prepare the payload for Claude AI (simplified - edge function will get settings)
   const claudePayload = {
     message: request.message,
     attachments: processedAttachments,
-    uploadIds,
-    model: settings.claude_model,
-    systemPrompt: settings.claude_system_prompt
+    uploadIds
   };
 
   console.log('Calling Claude AI edge function with payload:', {
     messageLength: claudePayload.message.length,
     attachmentsCount: claudePayload.attachments.length,
     uploadIdsCount: claudePayload.uploadIds.length,
-    model: claudePayload.model,
     attachmentDetails: claudePayload.attachments.map(att => ({
       type: att.type,
       name: att.name,
@@ -168,7 +142,8 @@ const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAna
     hasData: !!data,
     error: error,
     dataKeys: data ? Object.keys(data) : [],
-    success: data?.success
+    success: data?.success,
+    settingsSource: data?.debugInfo?.settingsSource
   });
 
   if (error) {
@@ -183,7 +158,8 @@ const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAna
 
   console.log('Chat analysis completed successfully:', {
     analysisLength: data.analysis?.length || 0,
-    attachmentsProcessed: data.attachmentsProcessed || 0
+    attachmentsProcessed: data.attachmentsProcessed || 0,
+    settingsSource: data.debugInfo?.settingsSource
   });
 
   console.log('=== CHAT ANALYSIS END ===');
