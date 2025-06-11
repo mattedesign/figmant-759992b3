@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { DesignUseCase } from '@/types/design';
+import { DesignUseCase, AnalysisPreferences } from '@/types/design';
 
 export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) => {
   console.log('Triggering analysis for upload:', uploadId);
@@ -23,9 +23,12 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
 
     if (!upload) throw new Error('Upload not found');
 
+    // Parse analysis preferences safely
+    const analysisPreferences = upload.analysis_preferences as AnalysisPreferences | null;
+
     // Get context files if context integration is enabled
     let contextContent = '';
-    if (upload.analysis_preferences?.context_integration) {
+    if (analysisPreferences?.context_integration) {
       const { data: contextFiles } = await supabase
         .from('design_context_files')
         .select('*')
@@ -102,7 +105,7 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
     let enhancedPrompt = useCase.prompt_template;
     
     // Add analysis depth preference
-    const analysisDepth = upload.analysis_preferences?.analysis_depth || 'detailed';
+    const analysisDepth = analysisPreferences?.analysis_depth || 'detailed';
     if (analysisDepth === 'comprehensive') {
       enhancedPrompt += '\n\nPlease provide a comprehensive analysis with detailed explanations, multiple perspectives, and thorough recommendations.';
     } else if (analysisDepth === 'basic') {
@@ -322,6 +325,9 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
       `Analysis enhanced with ${contextFiles.length} context files: ${contextFiles.map(f => f.file_name).join(', ')}` : 
       null;
 
+    // Parse analysis preferences from first upload for settings
+    const firstUploadPreferences = uploads[0]?.analysis_preferences as AnalysisPreferences | null;
+
     // Save batch analysis results with enhanced metadata
     const { data: batchAnalysis, error: saveError } = await supabase
       .from('design_batch_analysis')
@@ -335,7 +341,7 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
         analysis_settings: {
           uploads_count: uploads.length,
           context_files_count: contextFiles?.length || 0,
-          analysis_depth: uploads[0]?.analysis_preferences?.analysis_depth || 'detailed'
+          analysis_depth: firstUploadPreferences?.analysis_depth || 'detailed'
         },
         confidence_score: 0.85
       })

@@ -58,7 +58,7 @@ export const useBatchUploadDesign = () => {
             batch_id: batchId,
             batch_name: batchName,
             analysis_goals: analysisGoals || null,
-            analysis_preferences: analysisPreferences || null
+            analysis_preferences: analysisPreferences ? JSON.parse(JSON.stringify(analysisPreferences)) : null
           })
           .select()
           .single();
@@ -96,7 +96,7 @@ export const useBatchUploadDesign = () => {
             batch_id: batchId,
             batch_name: batchName,
             analysis_goals: analysisGoals || null,
-            analysis_preferences: analysisPreferences || null
+            analysis_preferences: analysisPreferences ? JSON.parse(JSON.stringify(analysisPreferences)) : null
           })
           .select()
           .single();

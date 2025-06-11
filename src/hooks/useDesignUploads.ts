@@ -1,7 +1,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { DesignUpload } from '@/types/design';
+import { DesignUpload, AnalysisPreferences } from '@/types/design';
 
 export const useDesignUploads = () => {
   return useQuery({
@@ -14,8 +14,11 @@ export const useDesignUploads = () => {
       
       if (error) throw error;
       
-      // Type assertion to ensure the data matches our DesignUpload interface
-      return (data || []) as DesignUpload[];
+      // Transform the data to ensure analysis_preferences is properly typed
+      return (data || []).map(upload => ({
+        ...upload,
+        analysis_preferences: upload.analysis_preferences as AnalysisPreferences | null
+      })) as DesignUpload[];
     }
   });
 };
