@@ -15,6 +15,8 @@ CREATE TABLE public.design_batch_analysis (
   key_metrics JSONB,
   recommendations JSONB,
   confidence_score NUMERIC DEFAULT 0.8,
+  context_summary TEXT,
+  analysis_settings JSONB,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 

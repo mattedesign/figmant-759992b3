@@ -7,8 +7,9 @@ import { DesignList } from '@/components/design/DesignList';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { RecentAnalyses } from '@/components/dashboard/RecentAnalyses';
 import { Navigation } from '@/components/layout/Navigation';
-import { DesignUpload } from '@/types/design';
+import { DesignUpload, DesignBatchAnalysis } from '@/types/design';
 import { AnalysisViewer } from '@/components/design/AnalysisViewer';
+import { BatchAnalysisViewer } from '@/components/design/BatchAnalysisViewer';
 import { Upload, History, BarChart3, FileText } from 'lucide-react';
 import { UploadProgress } from '@/components/dashboard/UploadProgress';
 import { ClaudeConnectionTest } from '@/components/dashboard/ClaudeConnectionTest';
@@ -17,6 +18,7 @@ import { ClaudeInsights } from '@/components/dashboard/ClaudeInsights';
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('upload');
   const [selectedUpload, setSelectedUpload] = useState<DesignUpload | null>(null);
+  const [selectedBatchAnalysis, setSelectedBatchAnalysis] = useState<DesignBatchAnalysis | null>(null);
 
   if (selectedUpload) {
     return (
@@ -26,6 +28,20 @@ const Dashboard = () => {
           <AnalysisViewer
             upload={selectedUpload}
             onBack={() => setSelectedUpload(null)}
+          />
+        </main>
+      </div>
+    );
+  }
+
+  if (selectedBatchAnalysis) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <main className="container mx-auto px-4 py-8">
+          <BatchAnalysisViewer
+            batchAnalysis={selectedBatchAnalysis}
+            onBack={() => setSelectedBatchAnalysis(null)}
           />
         </main>
       </div>
@@ -70,7 +86,11 @@ const Dashboard = () => {
                     <CardDescription>Your latest design analysis results</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <RecentAnalyses onViewAnalysis={setSelectedUpload} limit={3} />
+                    <RecentAnalyses 
+                      onViewAnalysis={setSelectedUpload}
+                      onViewBatchAnalysis={setSelectedBatchAnalysis}
+                      limit={3} 
+                    />
                   </CardContent>
                 </Card>
               </div>
@@ -85,7 +105,11 @@ const Dashboard = () => {
             <div className="space-y-6">
               <ClaudeConnectionTest />
               <ClaudeInsights />
-              <RecentAnalyses onViewAnalysis={setSelectedUpload} showInsights={true} />
+              <RecentAnalyses 
+                onViewAnalysis={setSelectedUpload}
+                onViewBatchAnalysis={setSelectedBatchAnalysis}
+                showInsights={true} 
+              />
             </div>
           </TabsContent>
 

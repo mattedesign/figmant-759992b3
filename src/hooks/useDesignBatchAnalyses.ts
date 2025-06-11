@@ -18,6 +18,6 @@ export const useDesignBatchAnalyses = (batchId?: string) => {
       if (error) throw error;
       return (data || []) as DesignBatchAnalysis[];
     },
-    enabled: !!batchId
+    enabled: true // Always enabled, will fetch all if no batchId provided
   });
 };

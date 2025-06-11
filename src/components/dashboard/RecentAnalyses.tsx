@@ -3,23 +3,34 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useDesignUploads, useDesignUseCases } from '@/hooks/useDesignAnalysis';
-import { DesignUpload } from '@/types/design';
-import { Eye, FileImage, Clock } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useDesignUploads, useDesignUseCases, useDesignBatchAnalyses } from '@/hooks/useDesignAnalysis';
+import { DesignUpload, DesignBatchAnalysis } from '@/types/design';
+import { Eye, FileImage, BarChart3 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface RecentAnalysesProps {
   onViewAnalysis: (upload: DesignUpload) => void;
+  onViewBatchAnalysis?: (batchAnalysis: DesignBatchAnalysis) => void;
   limit?: number;
   showInsights?: boolean;
 }
 
-export const RecentAnalyses = ({ onViewAnalysis, limit = 5, showInsights = false }: RecentAnalysesProps) => {
+export const RecentAnalyses = ({ 
+  onViewAnalysis, 
+  onViewBatchAnalysis,
+  limit = 5, 
+  showInsights = false 
+}: RecentAnalysesProps) => {
   const { data: uploads = [], isLoading } = useDesignUploads();
   const { data: useCases = [] } = useDesignUseCases();
+  const { data: batchAnalyses = [] } = useDesignBatchAnalyses();
 
   const recentUploads = uploads
     .filter(upload => upload.status === 'completed')
+    .slice(0, limit);
+
+  const recentBatchAnalyses = batchAnalyses
     .slice(0, limit);
 
   const getUseCaseName = (useCaseId: string) => {
@@ -48,7 +59,7 @@ export const RecentAnalyses = ({ onViewAnalysis, limit = 5, showInsights = false
     );
   }
 
-  if (recentUploads.length === 0) {
+  if (recentUploads.length === 0 && recentBatchAnalyses.length === 0) {
     return (
       <Card>
         <CardContent className="py-8 text-center">
@@ -79,23 +90,23 @@ export const RecentAnalyses = ({ onViewAnalysis, limit = 5, showInsights = false
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Most Analyzed Type</CardTitle>
+                    <CardTitle className="text-base">Total Analyses</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-2xl font-bold">Landing Pages</p>
+                    <p className="text-2xl font-bold">{uploads.length}</p>
                     <p className="text-sm text-muted-foreground">
-                      {Math.round((recentUploads.length / uploads.length) * 100)}% of your uploads
+                      {recentBatchAnalyses.length} batch analyses
                     </p>
                   </CardContent>
                 </Card>
                 
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Analysis Completion Rate</CardTitle>
+                    <CardTitle className="text-base">Completion Rate</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-2xl font-bold">
-                      {Math.round((recentUploads.length / uploads.length) * 100)}%
+                      {uploads.length > 0 ? Math.round((recentUploads.length / uploads.length) * 100) : 0}%
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Successful analyses
@@ -106,26 +117,63 @@ export const RecentAnalyses = ({ onViewAnalysis, limit = 5, showInsights = false
               
               <div className="border-t pt-4">
                 <h4 className="font-medium mb-3">Recent Analysis Results</h4>
-                <div className="space-y-2">
-                  {recentUploads.slice(0, 3).map((upload) => (
-                    <div key={upload.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-sm">{upload.file_name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {getUseCaseName(upload.use_case)} • {formatDistanceToNow(new Date(upload.created_at))} ago
-                        </p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onViewAnalysis(upload)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
+                <Tabs defaultValue="individual" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="individual">Individual</TabsTrigger>
+                    <TabsTrigger value="batch">Batch</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="individual" className="mt-4">
+                    <div className="space-y-2">
+                      {recentUploads.slice(0, 3).map((upload) => (
+                        <div key={upload.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                          <div>
+                            <p className="font-medium text-sm">{upload.file_name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {getUseCaseName(upload.use_case)} • {formatDistanceToNow(new Date(upload.created_at))} ago
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onViewAnalysis(upload)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="batch" className="mt-4">
+                    <div className="space-y-2">
+                      {recentBatchAnalyses.slice(0, 3).map((batchAnalysis) => (
+                        <div key={batchAnalysis.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                          <div>
+                            <p className="font-medium text-sm flex items-center gap-2">
+                              <BarChart3 className="h-4 w-4 text-blue-600" />
+                              Batch Analysis
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {batchAnalysis.analysis_type} • {formatDistanceToNow(new Date(batchAnalysis.created_at))} ago
+                            </p>
+                          </div>
+                          {onViewBatchAnalysis && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onViewBatchAnalysis(batchAnalysis)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
           </CardContent>
@@ -135,37 +183,90 @@ export const RecentAnalyses = ({ onViewAnalysis, limit = 5, showInsights = false
   }
 
   return (
-    <div className="space-y-3">
-      {recentUploads.map((upload) => (
-        <div key={upload.id} className="flex items-center justify-between p-3 border rounded-lg">
-          <div className="flex items-center gap-3">
-            <FileImage className="h-8 w-8 text-muted-foreground" />
-            <div>
-              <p className="font-medium text-sm">{upload.file_name}</p>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{getUseCaseName(upload.use_case)}</span>
-                <span>•</span>
-                <span>{formatDistanceToNow(new Date(upload.created_at))} ago</span>
+    <div className="space-y-4">
+      <Tabs defaultValue="individual" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="individual">Individual ({recentUploads.length})</TabsTrigger>
+          <TabsTrigger value="batch">Batch ({recentBatchAnalyses.length})</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="individual" className="mt-4">
+          <div className="space-y-3">
+            {recentUploads.map((upload) => (
+              <div key={upload.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center gap-3">
+                  <FileImage className="h-8 w-8 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium text-sm">{upload.file_name}</p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{getUseCaseName(upload.use_case)}</span>
+                      <span>•</span>
+                      <span>{formatDistanceToNow(new Date(upload.created_at))} ago</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant={getStatusColor(upload.status)}>
+                    {upload.status}
+                  </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onViewAnalysis(upload)}
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    View
+                  </Button>
+                </div>
               </div>
-            </div>
+            ))}
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant={getStatusColor(upload.status)}>
-              {upload.status}
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onViewAnalysis(upload)}
-            >
-              <Eye className="h-4 w-4 mr-1" />
-              View
-            </Button>
+        </TabsContent>
+        
+        <TabsContent value="batch" className="mt-4">
+          <div className="space-y-3">
+            {recentBatchAnalyses.length === 0 ? (
+              <div className="text-center py-4">
+                <BarChart3 className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">No batch analyses yet</p>
+              </div>
+            ) : (
+              recentBatchAnalyses.map((batchAnalysis) => (
+                <div key={batchAnalysis.id} className="flex items-center justify-between p-3 border rounded-lg border-l-4 border-l-blue-500">
+                  <div className="flex items-center gap-3">
+                    <BarChart3 className="h-8 w-8 text-blue-600" />
+                    <div>
+                      <p className="font-medium text-sm">Batch Comparative Analysis</p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{batchAnalysis.analysis_type}</span>
+                        <span>•</span>
+                        <span>{formatDistanceToNow(new Date(batchAnalysis.created_at))} ago</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default" className="bg-blue-100 text-blue-800">
+                      Batch
+                    </Badge>
+                    {onViewBatchAnalysis && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onViewBatchAnalysis(batchAnalysis)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-        </div>
-      ))}
+        </TabsContent>
+      </Tabs>
       
-      {uploads.length > limit && (
+      {(uploads.length > limit || recentBatchAnalyses.length > limit) && (
         <div className="text-center pt-2">
           <Button variant="outline" size="sm">
             View All Analyses
