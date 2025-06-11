@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,10 @@ import { ChatMessage } from './chat/ChatMessage';
 import { ChatAttachments } from './chat/ChatAttachments';
 import { SuggestedPrompts } from './chat/SuggestedPrompts';
 import { AnalysisResults } from './chat/AnalysisResults';
+import { StorageStatus } from './chat/StorageStatus';
+import { FileUploadDropzone } from './chat/FileUploadDropzone';
+import { URLInput } from './chat/URLInput';
+import { MessageInput } from './chat/MessageInput';
 import { verifyStorageAccess } from '@/utils/storageUtils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -24,7 +29,7 @@ export interface ChatAttachment {
   errorMessage?: string;
 }
 
-interface ChatMessage {
+export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
@@ -252,34 +257,6 @@ export const DesignChatInterface = () => {
     setMessage(prompt);
   };
 
-  // Show storage status indicator
-  const renderStorageStatus = () => {
-    if (storageStatus === 'checking') {
-      return (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-          <div className="h-4 w-4 bg-muted rounded animate-pulse" />
-          <span>Checking storage configuration...</span>
-        </div>
-      );
-    }
-    
-    if (storageStatus === 'error') {
-      return (
-        <div className="flex items-center gap-2 text-sm text-red-600 mb-4 p-3 bg-red-50 rounded-lg border border-red-200">
-          <AlertTriangle className="h-4 w-4" />
-          <span>File uploads are currently unavailable. Please contact your administrator.</span>
-        </div>
-      );
-    }
-
-    return (
-      <div className="flex items-center gap-2 text-sm text-green-600 mb-4">
-        <CheckCircle className="h-4 w-4" />
-        <span>Ready for file uploads</span>
-      </div>
-    );
-  };
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
       {/* Chat Interface */}
@@ -287,7 +264,7 @@ export const DesignChatInterface = () => {
         <Card className="flex-1 flex flex-col">
           <CardHeader>
             <CardTitle>Design Analysis Chat</CardTitle>
-            {renderStorageStatus()}
+            <StorageStatus status={storageStatus} />
           </CardHeader>
           <CardContent className="flex-1 flex flex-col">
             {/* Messages */}
@@ -312,25 +289,12 @@ export const DesignChatInterface = () => {
             </div>
 
             {/* File Upload Area */}
-            {storageStatus === 'ready' && (
-              <div
-                {...getRootProps()}
-                className={`border-2 border-dashed rounded-lg p-4 text-center mb-4 transition-colors cursor-pointer ${
-                  isDragActive 
-                    ? 'border-primary bg-primary/5' 
-                    : 'border-muted-foreground/25 hover:border-primary/50'
-                }`}
-              >
-                <input {...getInputProps()} />
-                <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  {isDragActive 
-                    ? 'Drop files here...' 
-                    : 'Drag & drop images or PDFs, or click to select'
-                  }
-                </p>
-              </div>
-            )}
+            <FileUploadDropzone 
+              storageStatus={storageStatus}
+              getRootProps={getRootProps}
+              getInputProps={getInputProps}
+              isDragActive={isDragActive}
+            />
 
             {/* Attachments */}
             {attachments.length > 0 && (
@@ -341,61 +305,23 @@ export const DesignChatInterface = () => {
             )}
 
             {/* URL Input */}
-            {showUrlInput && (
-              <div className="flex gap-2 mb-4">
-                <input
-                  type="url"
-                  placeholder="https://example.com"
-                  value={urlInput}
-                  onChange={(e) => setUrlInput(e.target.value)}
-                  className="flex-1 px-3 py-2 border rounded-md"
-                  onKeyPress={(e) => e.key === 'Enter' && addUrlAttachment()}
-                />
-                <Button onClick={addUrlAttachment} size="sm">
-                  Add
-                </Button>
-                <Button 
-                  onClick={() => setShowUrlInput(false)} 
-                  variant="outline" 
-                  size="sm"
-                >
-                  Cancel
-                </Button>
-              </div>
-            )}
+            <URLInput 
+              showUrlInput={showUrlInput}
+              urlInput={urlInput}
+              onUrlInputChange={setUrlInput}
+              onAddUrl={addUrlAttachment}
+              onCancel={() => setShowUrlInput(false)}
+            />
 
             {/* Message Input */}
-            <div className="flex gap-2">
-              <Textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Ask me about your designs..."
-                className="flex-1 min-h-[80px] resize-none"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-              />
-              <div className="flex flex-col gap-2">
-                <Button
-                  onClick={() => setShowUrlInput(!showUrlInput)}
-                  variant="outline"
-                  size="icon"
-                  title="Add website URL"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={(!message.trim() && attachments.length === 0) || analyzeWithChat.isPending}
-                  size="icon"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <MessageInput 
+              message={message}
+              onMessageChange={setMessage}
+              onSendMessage={handleSendMessage}
+              onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
+              isLoading={analyzeWithChat.isPending}
+              hasContent={message.trim().length > 0 || attachments.length > 0}
+            />
           </CardContent>
         </Card>
       </div>
@@ -405,9 +331,7 @@ export const DesignChatInterface = () => {
         <SuggestedPrompts onSelectPrompt={handleSuggestedPrompt} />
         
         {messages.length > 0 && (
-          <AnalysisResults 
-            onUploadMore={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
-          />
+          <AnalysisResults />
         )}
       </div>
     </div>
