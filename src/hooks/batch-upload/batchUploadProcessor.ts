@@ -100,7 +100,13 @@ export const processBatchUpload = async (options: BatchUploadOptions): Promise<B
   const { generateBatchMetadata, logBatchInfo } = useBatchMetadataGenerator();
   
   const user = await validateUserAuthentication();
-  const metadata = generateBatchMetadata(files, urls, contextFiles, batchName);
+  
+  // Handle continuation analysis naming
+  const finalBatchName = useCase === 'continuation-analysis' 
+    ? batchName || `Continuation Analysis - ${new Date().toISOString().slice(0, 10)}`
+    : batchName;
+  
+  const metadata = generateBatchMetadata(files, urls, contextFiles, finalBatchName);
   
   logBatchInfo(metadata, analysisGoals, analysisPreferences);
 

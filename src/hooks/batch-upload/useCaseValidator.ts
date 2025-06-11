@@ -1,45 +1,30 @@
 
 import { fetchUseCase, fetchUseCaseByName } from './databaseHelpers';
-import { getFigmantTemplate } from '@/data/figmantPromptTemplates';
 
-export const useUseCaseValidator = () => {
-  const validateAndFetchUseCase = async (useCaseId: string) => {
-    // Handle Figmant template IDs by fetching from database using name matching
-    if (useCaseId.startsWith('figmant_')) {
-      const templateId = useCaseId.replace('figmant_', '');
-      const template = getFigmantTemplate(templateId);
+export const useCaseValidator = () => {
+  const validateUseCase = async (useCaseId: string) => {
+    // Handle special continuation use case
+    if (useCaseId === 'continuation-analysis') {
+      // Try to find existing continuation use case
+      let useCase = await fetchUseCaseByName('Continuation Analysis');
       
-      if (template) {
-        // Fetch from database using the template name (templates names now match database names)
-        console.log(`Looking for template in database: "${template.name}"`);
-        const useCase = await fetchUseCaseByName(template.name);
-        if (!useCase) {
-          console.error(`Template "${template.name}" not found in database. This template should be available.`);
-          throw new Error(`Figmant template "${template.name}" not found in database`);
-        }
-        console.log(`Successfully found template "${template.name}" in database with ID: ${useCase.id}`);
-        return useCase;
-      } else {
-        throw new Error(`Figmant template not found: ${templateId}`);
+      if (!useCase) {
+        // If it doesn't exist, fall back to a general analysis use case
+        useCase = await fetchUseCaseByName('Landing Page Analysis');
+        console.log('Using fallback use case for continuation analysis');
       }
+      
+      return useCase;
     }
-    
-    // Handle regular UUID-based use case IDs
+
+    // Regular use case validation
     const useCase = await fetchUseCase(useCaseId);
-    
     if (!useCase) {
       throw new Error(`Use case not found: ${useCaseId}`);
     }
-
+    
     return useCase;
   };
 
-  const validateUseCaseExists = (useCaseId: string): boolean => {
-    return Boolean(useCaseId && useCaseId.trim().length > 0);
-  };
-
-  return {
-    validateAndFetchUseCase,
-    validateUseCaseExists
-  };
+  return { validateUseCase };
 };

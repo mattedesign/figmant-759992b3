@@ -9,6 +9,7 @@ import { useDesignUploads } from '@/hooks/useDesignUploads';
 import { useBatchModifications } from '@/hooks/useBatchModifications';
 import { BatchModificationDialog } from './BatchModificationDialog';
 import { BatchVersionHistory } from './BatchVersionHistory';
+import { ContinueAnalysisUploader } from './ContinueAnalysisUploader';
 import { formatDistanceToNow } from 'date-fns';
 
 interface EnhancedBatchAnalysisViewerProps {
@@ -21,6 +22,7 @@ export const EnhancedBatchAnalysisViewer = ({ batchAnalysis, onBack }: EnhancedB
   const { modificationHistory, createBatchModification, isCreatingModification } = useBatchModifications(batchAnalysis.batch_id);
   const [showModificationDialog, setShowModificationDialog] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<DesignBatchAnalysis>(batchAnalysis);
+  const [activeTab, setActiveTab] = useState('results');
   
   const batchUploads = allUploads.filter(upload => upload.batch_id === batchAnalysis.batch_id);
   const analysisResults = selectedVersion.analysis_results?.response || 'No analysis results available.';
@@ -65,6 +67,10 @@ export const EnhancedBatchAnalysisViewer = ({ batchAnalysis, onBack }: EnhancedB
     } catch (error) {
       console.error('Failed to create batch modification:', error);
     }
+  };
+
+  const handleContinueAnalysisStarted = () => {
+    setActiveTab('continue');
   };
 
   return (
@@ -156,8 +162,14 @@ export const EnhancedBatchAnalysisViewer = ({ batchAnalysis, onBack }: EnhancedB
         </CardContent>
       </Card>
 
+      {/* Continue Analysis Section */}
+      <ContinueAnalysisUploader 
+        batchAnalysis={selectedVersion}
+        onAnalysisStarted={handleContinueAnalysisStarted}
+      />
+
       {/* Tabbed Content */}
-      <Tabs defaultValue="results" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList>
           <TabsTrigger value="results">Analysis Results</TabsTrigger>
           <TabsTrigger value="designs">Designs ({batchUploads.length})</TabsTrigger>
@@ -165,6 +177,7 @@ export const EnhancedBatchAnalysisViewer = ({ batchAnalysis, onBack }: EnhancedB
             Version History ({modificationHistory.length})
           </TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="continue">Continue Analysis</TabsTrigger>
         </TabsList>
 
         <TabsContent value="results" className="mt-6">
@@ -250,6 +263,23 @@ export const EnhancedBatchAnalysisViewer = ({ batchAnalysis, onBack }: EnhancedB
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="continue" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Continue Analysis</CardTitle>
+              <CardDescription>
+                Add more screenshots to extend your batch analysis with additional insights
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ContinueAnalysisUploader 
+                batchAnalysis={selectedVersion}
+                onAnalysisStarted={handleContinueAnalysisStarted}
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
