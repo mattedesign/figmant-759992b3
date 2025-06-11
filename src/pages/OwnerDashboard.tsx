@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,6 +7,7 @@ import { UserManagement } from '@/components/owner/UserManagement';
 import { AdminSettings } from '@/components/owner/AdminSettings';
 import { SubscriptionManagement } from '@/components/owner/SubscriptionManagement';
 import { ClaudeSettings } from '@/components/owner/ClaudeSettings';
+import { SubscriptionPlansManager } from '@/components/owner/SubscriptionPlansManager';
 
 const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -25,10 +25,11 @@ const OwnerDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+            <TabsTrigger value="plans">Plans</TabsTrigger>
             <TabsTrigger value="claude">Claude AI</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
@@ -43,6 +44,10 @@ const OwnerDashboard = () => {
 
           <TabsContent value="subscriptions" className="mt-6">
             <SubscriptionManagement />
+          </TabsContent>
+
+          <TabsContent value="plans" className="mt-6">
+            <SubscriptionPlansManager />
           </TabsContent>
 
           <TabsContent value="claude" className="mt-6">

@@ -146,100 +146,102 @@ export const AdminSettings = () => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Settings className="h-5 w-5" />
-          <span>System Configuration</span>
-        </CardTitle>
-        <CardDescription>
-          Manage global system settings and configurations
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          <div className="flex items-center space-x-2">
-            <Switch 
-              id="stripeWebhook"
-              checked={formData.stripeWebhook}
-              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, stripeWebhook: checked }))}
-              disabled={!isEditing}
-            />
-            <Label htmlFor="stripeWebhook">Enable Stripe Webhook Processing</Label>
-          </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Settings className="h-5 w-5" />
+            <span>System Configuration</span>
+          </CardTitle>
+          <CardDescription>
+            Manage global system settings and configurations
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="stripeWebhook"
+                checked={formData.stripeWebhook}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, stripeWebhook: checked }))}
+                disabled={!isEditing}
+              />
+              <Label htmlFor="stripeWebhook">Enable Stripe Webhook Processing</Label>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="maxSubscribers">Maximum Subscribers Limit</Label>
-            <Input
-              id="maxSubscribers"
-              type="number"
-              min="1"
-              value={formData.maxSubscribers}
-              onChange={(e) => setFormData(prev => ({ ...prev, maxSubscribers: parseInt(e.target.value) || 1000 }))}
-              disabled={!isEditing}
-            />
-            <p className="text-xs text-muted-foreground">
-              Maximum number of subscribers allowed on the platform
-            </p>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="maxSubscribers">Maximum Subscribers Limit</Label>
+              <Input
+                id="maxSubscribers"
+                type="number"
+                min="1"
+                value={formData.maxSubscribers}
+                onChange={(e) => setFormData(prev => ({ ...prev, maxSubscribers: parseInt(e.target.value) || 1000 }))}
+                disabled={!isEditing}
+              />
+              <p className="text-xs text-muted-foreground">
+                Maximum number of subscribers allowed on the platform
+              </p>
+            </div>
 
-          <div className="flex items-center space-x-2">
-            <Switch 
-              id="claudeEnabled"
-              checked={formData.claudeEnabled}
-              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, claudeEnabled: checked }))}
-              disabled={!isEditing}
-            />
-            <Label htmlFor="claudeEnabled">Enable Claude AI Features</Label>
-          </div>
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="claudeEnabled"
+                checked={formData.claudeEnabled}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, claudeEnabled: checked }))}
+                disabled={!isEditing}
+              />
+              <Label htmlFor="claudeEnabled">Enable Claude AI Features</Label>
+            </div>
 
-          <div className="flex space-x-4">
-            {!isEditing ? (
-              <Button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className="flex items-center space-x-2"
-              >
-                <Settings className="h-4 w-4" />
-                <span>Edit Settings</span>
-              </Button>
-            ) : (
-              <>
+            <div className="flex space-x-4">
+              {!isEditing ? (
                 <Button
                   type="button"
-                  onClick={handleSave}
-                  disabled={updateSettingMutation.isPending}
+                  onClick={() => setIsEditing(true)}
                   className="flex items-center space-x-2"
                 >
-                  {updateSettingMutation.isPending ? (
-                    <RefreshCw className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  <span>
-                    {updateSettingMutation.isPending ? 'Saving...' : 'Save Changes'}
-                  </span>
+                  <Settings className="h-4 w-4" />
+                  <span>Edit Settings</span>
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setIsEditing(false);
-                    // Reset form data to current settings
-                    setFormData({
-                      stripeWebhook: settings?.stripe_webhook_enabled === true,
-                      maxSubscribers: parseInt(settings?.max_subscribers_limit) || 1000,
-                      claudeEnabled: settings?.claude_ai_enabled === true
-                    });
-                  }}
-                >
-                  Cancel
-                </Button>
-              </>
-            )}
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    onClick={handleSave}
+                    disabled={updateSettingMutation.isPending}
+                    className="flex items-center space-x-2"
+                  >
+                    {updateSettingMutation.isPending ? (
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                    <span>
+                      {updateSettingMutation.isPending ? 'Saving...' : 'Save Changes'}
+                    </span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditing(false);
+                      // Reset form data to current settings
+                      setFormData({
+                        stripeWebhook: settings?.stripe_webhook_enabled === true,
+                        maxSubscribers: parseInt(settings?.max_subscribers_limit) || 1000,
+                        claudeEnabled: settings?.claude_ai_enabled === true
+                      });
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };

@@ -646,6 +646,45 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          credits: number
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price_annual: number | null
+          price_monthly: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          credits?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price_annual?: number | null
+          price_monthly?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          credits?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_annual?: number | null
+          price_monthly?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string | null
