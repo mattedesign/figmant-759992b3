@@ -1,7 +1,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Mail, Calendar, Coins } from 'lucide-react';
+import { Crown, Mail, Calendar, Coins, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import { UserManagementProfile, UserCreditsData } from '@/types/userManagement';
 import { UserStatusBadge } from './UserStatusBadge';
@@ -31,6 +31,7 @@ export const UserTable = ({
           <TableHead>User</TableHead>
           <TableHead>Role</TableHead>
           <TableHead>Status</TableHead>
+          <TableHead>Subscription</TableHead>
           <TableHead>Credits</TableHead>
           <TableHead>Joined</TableHead>
           <TableHead>Actions</TableHead>
@@ -39,6 +40,8 @@ export const UserTable = ({
       <TableBody>
         {userList?.map((userProfile) => {
           const credits = creditsMap?.get(userProfile.id);
+          const subscription = userProfile.subscriptions?.[0];
+          
           return (
             <TableRow key={userProfile.id}>
               <TableCell>
@@ -60,11 +63,41 @@ export const UserTable = ({
                 <UserStatusBadge user={userProfile} creditsMap={creditsMap} />
               </TableCell>
               <TableCell>
+                <div className="flex items-center space-x-2">
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    {subscription ? (
+                      <>
+                        <div className="text-sm font-medium">
+                          <Badge variant={subscription.status === 'active' ? 'default' : 'outline'}>
+                            {subscription.status}
+                          </Badge>
+                        </div>
+                        {subscription.current_period_end && (
+                          <div className="text-xs text-muted-foreground">
+                            Ends {format(new Date(subscription.current_period_end), 'MMM dd, yyyy')}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">No subscription</span>
+                    )}
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
                 <div className="flex items-center space-x-1">
                   <Coins className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">
-                    {credits?.current_balance || 0}
-                  </span>
+                  <div>
+                    <span className="text-sm font-medium">
+                      {credits?.current_balance || 0}
+                    </span>
+                    {credits && credits.total_used > 0 && (
+                      <div className="text-xs text-muted-foreground">
+                        {credits.total_used} used
+                      </div>
+                    )}
+                  </div>
                 </div>
               </TableCell>
               <TableCell>
@@ -88,10 +121,10 @@ export const UserTable = ({
         })}
         {userList?.length === 0 && (
           <TableRow>
-            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
               No {userType === 'owner' ? 'owners' : 'subscribers'} found
             </TableCell>
-          </TableRow>
+          </Row>
         )}
       </TableBody>
     </Table>
