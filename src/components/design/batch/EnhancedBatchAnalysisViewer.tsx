@@ -10,6 +10,25 @@ import { BatchAnalysisResults } from './BatchAnalysisResults';
 import { BatchAnalysisSettings } from './BatchAnalysisSettings';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface BatchData {
+  id: string;
+  batch_name: string;
+  status: string;
+  created_at: string;
+  use_case?: string;
+  description?: string;
+  context_files?: any[];
+  analysis_type?: string;
+  priority?: string;
+}
+
+interface AnalysisData {
+  id: string;
+  batch_id: string;
+  created_at: string;
+  analysis_results?: any;
+}
+
 export const EnhancedBatchAnalysisViewer = () => {
   const { batchId } = useParams<{ batchId: string }>();
   const navigate = useNavigate();
@@ -18,7 +37,7 @@ export const EnhancedBatchAnalysisViewer = () => {
 
   const { data: batch, isLoading: batchLoading } = useQuery({
     queryKey: ['batch-analysis', batchId],
-    queryFn: async () => {
+    queryFn: async (): Promise<BatchData | null> => {
       if (!batchId) throw new Error('No batch ID provided');
       
       const { data, error } = await supabase
@@ -28,14 +47,14 @@ export const EnhancedBatchAnalysisViewer = () => {
         .single();
       
       if (error) throw error;
-      return data;
+      return data as BatchData;
     },
     enabled: !!batchId
   });
 
   const { data: analyses, isLoading: analysesLoading } = useQuery({
     queryKey: ['batch-analyses-results', batchId],
-    queryFn: async (): Promise<any[]> => {
+    queryFn: async (): Promise<AnalysisData[]> => {
       if (!batchId) return [];
       
       const { data, error } = await supabase
@@ -45,7 +64,7 @@ export const EnhancedBatchAnalysisViewer = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data || [];
+      return (data as AnalysisData[]) || [];
     },
     enabled: !!batchId
   });
