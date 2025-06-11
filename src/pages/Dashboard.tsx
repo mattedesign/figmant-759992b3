@@ -6,7 +6,7 @@ import { AnalyticsOverview } from '@/components/dashboard/AnalyticsOverview';
 import { Settings } from '@/components/dashboard/Settings';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreditStatus } from '@/components/dashboard/CreditStatus';
-import { DesignAnalysisPage } from '@/components/design/DesignAnalysisPage';
+import { AdvancedDesignAnalysisPage } from '@/components/design/AdvancedDesignAnalysisPage';
 import { DesignUpload } from '@/types/design';
 
 const Dashboard = () => {
@@ -46,7 +46,7 @@ const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="design" className="mt-6">
-            <DesignAnalysisPage />
+            <AdvancedDesignAnalysisPage />
           </TabsContent>
 
           <TabsContent value="analytics" className="mt-6">

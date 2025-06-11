@@ -1,8 +1,8 @@
 
-import { DesignAnalysisPage } from '@/components/design/DesignAnalysisPage';
+import { AdvancedDesignAnalysisPage } from '@/components/design/AdvancedDesignAnalysisPage';
 
 const DesignAnalysis = () => {
-  return <DesignAnalysisPage />;
+  return <AdvancedDesignAnalysisPage />;
 };
 
 export default DesignAnalysis;

@@ -8,7 +8,7 @@ import { UserManagement } from '@/components/owner/UserManagement';
 import { AdminSettings } from '@/components/owner/AdminSettings';
 import { ClaudeSettings } from '@/components/owner/ClaudeSettings';
 import { SubscriptionPlansManager } from '@/components/owner/SubscriptionPlansManager';
-import { DesignAnalysisPage } from '@/components/design/DesignAnalysisPage';
+import { AdvancedDesignAnalysisPage } from '@/components/design/AdvancedDesignAnalysisPage';
 
 const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -40,7 +40,7 @@ const OwnerDashboard = () => {
           </TabsContent>
 
           <TabsContent value="design" className="mt-6">
-            <DesignAnalysisPage />
+            <AdvancedDesignAnalysisPage />
           </TabsContent>
 
           <TabsContent value="users" className="mt-6">

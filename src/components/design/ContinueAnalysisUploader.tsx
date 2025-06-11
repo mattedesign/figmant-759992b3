@@ -2,96 +2,74 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useDropzone } from 'react-dropzone';
-import { Upload, FileImage, X, Plus, Loader2 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Plus, Upload, Sparkles } from 'lucide-react';
 import { useBatchUploadDesign } from '@/hooks/useBatchUploadDesign';
 import { DesignBatchAnalysis } from '@/types/design';
-import { useToast } from '@/hooks/use-toast';
+import { FileUploadSection } from './uploader/FileUploadSection';
 
 interface ContinueAnalysisUploaderProps {
   batchAnalysis: DesignBatchAnalysis;
   onAnalysisStarted?: () => void;
 }
 
-export const ContinueAnalysisUploader = ({ batchAnalysis, onAnalysisStarted }: ContinueAnalysisUploaderProps) => {
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+export const ContinueAnalysisUploader = ({ 
+  batchAnalysis, 
+  onAnalysisStarted 
+}: ContinueAnalysisUploaderProps) => {
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [analysisGoals, setAnalysisGoals] = useState<string>('');
   const [isExpanded, setIsExpanded] = useState(false);
-  const { mutate: uploadBatch, isPending } = useBatchUploadDesign();
-  const { toast } = useToast();
+  
+  const batchUpload = useBatchUploadDesign();
 
-  const onDrop = React.useCallback((acceptedFiles: File[]) => {
-    setSelectedFiles(prev => [...prev, ...acceptedFiles]);
-  }, []);
+  const handleContinueAnalysis = async () => {
+    if (newFiles.length === 0) return;
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
-      'application/pdf': ['.pdf']
-    },
-    maxSize: 10 * 1024 * 1024 // 10MB
-  });
+    const continuationGoals = analysisGoals || `Continue analysis from batch ${batchAnalysis.batch_id} with additional screenshots`;
 
-  const removeFile = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleContinueAnalysis = () => {
-    if (selectedFiles.length === 0) {
-      toast({
-        variant: "destructive",
-        title: "No Files Selected",
-        description: "Please select at least one file to continue the analysis.",
-      });
-      return;
-    }
-
-    const batchName = `${batchAnalysis.batch_id.slice(0, 8)} - Continuation`;
-    
-    uploadBatch({
-      batchName,
-      files: selectedFiles,
+    await batchUpload.mutateAsync({
+      files: newFiles,
       urls: [],
       contextFiles: [],
-      useCase: 'continuation-analysis', // We'll need to create this use case or use existing one
-      analysisGoals: `Continue analysis from previous batch: ${batchAnalysis.id}`,
+      useCase: 'continuation-analysis',
+      batchName: `Continuation - ${new Date().toLocaleDateString()}`,
+      analysisGoals: continuationGoals,
       analysisPreferences: {
         auto_comparative: true,
         context_integration: true,
         analysis_depth: 'detailed'
       }
-    }, {
-      onSuccess: () => {
-        setSelectedFiles([]);
-        setIsExpanded(false);
-        onAnalysisStarted?.();
-        toast({
-          title: "Analysis Continued",
-          description: "Additional screenshots uploaded successfully. Analysis is starting...",
-        });
-      }
     });
+
+    // Reset form
+    setNewFiles([]);
+    setAnalysisGoals('');
+    setIsExpanded(false);
+    
+    if (onAnalysisStarted) {
+      onAnalysisStarted();
+    }
   };
 
   if (!isExpanded) {
     return (
-      <Card className="border-blue-200 bg-blue-50/50">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Plus className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="font-medium text-blue-900">Continue Analysis</p>
-                <p className="text-sm text-blue-700">Upload additional screenshots to extend this analysis</p>
-              </div>
-            </div>
+      <Card className="border-dashed border-2 border-muted-foreground/25 bg-muted/10">
+        <CardContent className="py-6">
+          <div className="text-center">
+            <Plus className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
+            <h3 className="font-medium mb-2">Add More Screenshots</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Upload additional designs to extend this analysis with deeper insights
+            </p>
             <Button 
-              variant="outline" 
               onClick={() => setIsExpanded(true)}
-              className="border-blue-300 text-blue-700 hover:bg-blue-100"
+              variant="outline"
+              className="flex items-center gap-2"
             >
-              Add Screenshots
+              <Plus className="h-4 w-4" />
+              Continue Analysis
             </Button>
           </div>
         </CardContent>
@@ -100,112 +78,61 @@ export const ContinueAnalysisUploader = ({ batchAnalysis, onAnalysisStarted }: C
   }
 
   return (
-    <Card className="border-blue-200">
+    <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-blue-900">
-              <Plus className="h-5 w-5" />
-              Continue Analysis
-            </CardTitle>
-            <CardDescription>
-              Upload additional screenshots to extend this batch analysis
-            </CardDescription>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={() => {
-              setIsExpanded(false);
-              setSelectedFiles([]);
-            }}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+        <CardTitle className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5" />
+          Continue Analysis
+        </CardTitle>
+        <CardDescription>
+          Add more screenshots to extend your batch analysis with additional insights
+        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* File Upload Area */}
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
-            ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
-            ${selectedFiles.length > 0 ? 'border-green-500 bg-green-50' : ''}
-          `}
-        >
-          <input {...getInputProps()} />
-          <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
-          <p className="text-sm mb-2">
-            {isDragActive
-              ? 'Drop your additional screenshots here'
-              : 'Drag & drop additional screenshots, or click to select'}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Supports: PNG, JPG, PDF (max 10MB each)
-          </p>
+      <CardContent className="space-y-6">
+        <FileUploadSection
+          selectedFiles={newFiles}
+          setSelectedFiles={setNewFiles}
+        />
+
+        <div className="space-y-2">
+          <Label htmlFor="continuation-goals">
+            Analysis Goals for New Screenshots (Optional)
+          </Label>
+          <Textarea
+            id="continuation-goals"
+            placeholder="Describe what specific insights you want from these additional screenshots..."
+            value={analysisGoals}
+            onChange={(e) => setAnalysisGoals(e.target.value)}
+            className="min-h-[80px]"
+          />
         </div>
 
-        {/* Selected Files */}
-        {selectedFiles.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-sm font-medium">Additional Files ({selectedFiles.length})</p>
-            <div className="flex flex-wrap gap-2">
-              {selectedFiles.map((file, index) => (
-                <Badge key={index} variant="secondary" className="px-3 py-1">
-                  <FileImage className="h-3 w-3 mr-1" />
-                  {file.name}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-4 w-4 p-0 ml-2"
-                    onClick={() => removeFile(index)}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="flex gap-2 pt-2">
-          <Button 
+        <div className="flex gap-3">
+          <Button
             onClick={handleContinueAnalysis}
-            disabled={selectedFiles.length === 0 || isPending}
+            disabled={newFiles.length === 0 || batchUpload.isPending}
             className="flex-1"
           >
-            {isPending ? (
+            {batchUpload.isPending ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Starting Analysis...
+                <Upload className="h-4 w-4 mr-2 animate-spin" />
+                Processing...
               </>
             ) : (
               <>
-                <Plus className="h-4 w-4 mr-2" />
-                Continue Analysis ({selectedFiles.length} files)
+                <Sparkles className="h-4 w-4 mr-2" />
+                Analyze {newFiles.length} New Screenshot(s)
               </>
             )}
           </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              setIsExpanded(false);
-              setSelectedFiles([]);
-            }}
-            disabled={isPending}
+          
+          <Button
+            variant="outline"
+            onClick={() => setIsExpanded(false)}
+            disabled={batchUpload.isPending}
           >
             Cancel
           </Button>
-        </div>
-
-        <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
-          <p className="font-medium mb-1">How it works:</p>
-          <ul className="list-disc list-inside space-y-1">
-            <li>Upload additional screenshots or designs</li>
-            <li>Analysis will include both original and new files</li>
-            <li>Results will be delivered to your dashboard</li>
-          </ul>
         </div>
       </CardContent>
     </Card>
