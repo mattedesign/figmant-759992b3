@@ -2,13 +2,16 @@
 import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Clock, AlertCircle, Loader2, Globe, FileImage, Layers } from 'lucide-react';
+import { CheckCircle, Clock, AlertCircle, Loader2, Globe, FileImage, Layers, RefreshCw } from 'lucide-react';
 import { useDesignUploads } from '@/hooks/useDesignUploads';
+import { useRetryAnalysis } from '@/hooks/useAnalyzeDesign';
 import { formatDistanceToNow } from 'date-fns';
 
 export const UploadProgress = () => {
   const { data: uploads = [], refetch } = useDesignUploads();
+  const retryAnalysis = useRetryAnalysis();
 
   // Auto-refresh every 10 seconds to check for status updates
   useEffect(() => {
@@ -87,6 +90,10 @@ export const UploadProgress = () => {
     return 'pending';
   };
 
+  const handleRetry = async (uploadId: string) => {
+    await retryAnalysis.mutateAsync(uploadId);
+  };
+
   if (recentBatches.length === 0) {
     return (
       <Card>
@@ -114,6 +121,7 @@ export const UploadProgress = () => {
           const batchStatus = getBatchStatus(batch.uploads);
           const progress = getBatchProgress(batch.uploads);
           const isBatch = batch.uploads.length > 1;
+          const failedUploads = batch.uploads.filter(u => u.status === 'failed' || u.status === 'pending');
           
           return (
             <div key={batch.batch_id || batch.uploads[0].id} className="space-y-3">
@@ -129,9 +137,27 @@ export const UploadProgress = () => {
                     </Badge>
                   )}
                 </div>
-                <Badge variant="outline" className={getStatusColor(batchStatus)}>
-                  {batchStatus}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className={getStatusColor(batchStatus)}>
+                    {batchStatus}
+                  </Badge>
+                  {failedUploads.length > 0 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleRetry(failedUploads[0].id)}
+                      disabled={retryAnalysis.isPending}
+                      className="h-6 px-2 text-xs"
+                    >
+                      {retryAnalysis.isPending ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-3 w-3" />
+                      )}
+                      Retry
+                    </Button>
+                  )}
+                </div>
               </div>
               
               <Progress value={progress} className="h-2" />
@@ -169,7 +195,13 @@ export const UploadProgress = () => {
               
               {batchStatus === 'failed' && (
                 <p className="text-xs text-red-600">
-                  ❌ Analysis failed. Try re-analyzing from the History tab.
+                  ❌ Analysis failed. Click retry to try again or check the logs for details.
+                </p>
+              )}
+
+              {batchStatus === 'pending' && (
+                <p className="text-xs text-yellow-600">
+                  ⏳ Upload pending analysis. Click retry to start analysis manually.
                 </p>
               )}
             </div>

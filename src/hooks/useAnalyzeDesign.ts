@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DesignUseCase } from '@/types/design';
-import { triggerAnalysis } from './designAnalysisHelpers';
+import { triggerAnalysis, retryFailedAnalysis } from './designAnalysisHelpers';
 
 export const useAnalyzeDesign = () => {
   const queryClient = useQueryClient();
@@ -27,15 +27,38 @@ export const useAnalyzeDesign = () => {
     onError: (error, variables) => {
       console.error('Analysis failed:', error);
       
-      // Update status to failed using the uploadId from variables
-      supabase
-        .from('design_uploads')
-        .update({ status: 'failed' })
-        .eq('id', variables.uploadId);
+      queryClient.invalidateQueries({ queryKey: ['design-uploads'] });
 
       toast({
         variant: "destructive",
         title: "Analysis Failed",
+        description: error.message,
+      });
+    }
+  });
+};
+
+export const useRetryAnalysis = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (uploadId: string) => {
+      return await retryFailedAnalysis(uploadId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['design-uploads'] });
+      queryClient.invalidateQueries({ queryKey: ['design-analyses'] });
+      toast({
+        title: "Analysis Retried Successfully",
+        description: "Your design analysis has been completed!",
+      });
+    },
+    onError: (error) => {
+      console.error('Retry failed:', error);
+      toast({
+        variant: "destructive",
+        title: "Retry Failed", 
         description: error.message,
       });
     }

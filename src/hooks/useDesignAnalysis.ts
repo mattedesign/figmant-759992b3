@@ -4,5 +4,5 @@ export { useDesignUploads } from './useDesignUploads';
 export { useDesignUseCases } from './useDesignUseCases';
 export { useDesignAnalyses } from './useDesignAnalyses';
 export { useUploadDesign } from './useUploadDesign';
-export { useAnalyzeDesign } from './useAnalyzeDesign';
+export { useAnalyzeDesign, useRetryAnalysis } from './useAnalyzeDesign';
 export { useBatchUploadDesign } from './useBatchUploadDesign';
