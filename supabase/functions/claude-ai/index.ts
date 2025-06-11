@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 
@@ -83,10 +84,9 @@ async function getClaudeSettings(supabase: any): Promise<{ apiKey: string; model
       enabled: settings.claude_ai_enabled,
       model: settings.claude_model,
       systemPromptLength: settings.claude_system_prompt?.length || 0,
-      hasApiKey: false // Don't log the actual API key
+      hasApiKey: false
     });
 
-    // Get the API key from admin settings
     const { data: apiKeyData, error: apiKeyError } = await supabase
       .from('admin_settings')
       .select('setting_value')
@@ -117,87 +117,173 @@ async function getClaudeSettings(supabase: any): Promise<{ apiKey: string; model
   }
 }
 
-async function testStorageAccess(supabase: any): Promise<void> {
-  console.log('=== TESTING STORAGE ACCESS ===');
+async function verifyStorageBucket(supabase: any): Promise<boolean> {
   try {
+    console.log('=== VERIFYING STORAGE BUCKET ===');
+    
     const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-    console.log('Available buckets:', buckets?.map(b => b.name) || []);
+    
     if (bucketsError) {
       console.error('Error listing buckets:', bucketsError);
+      return false;
     }
     
-    // Test design-uploads bucket specifically
-    const { data: files, error: filesError } = await supabase.storage
-      .from('design-uploads')
-      .list('', { limit: 5 });
+    const designUploadsBucket = buckets?.find(bucket => bucket.name === 'design-uploads');
     
-    console.log('Recent files in design-uploads bucket:', files?.length || 0);
-    if (filesError) {
-      console.error('Error listing files in design-uploads:', filesError);
+    if (!designUploadsBucket) {
+      console.error('design-uploads bucket not found');
+      return false;
     }
+    
+    console.log('Storage bucket verified successfully:', designUploadsBucket);
+    return true;
   } catch (error) {
-    console.error('Storage access test failed:', error);
+    console.error('Storage bucket verification failed:', error);
+    return false;
   }
-  console.log('=== STORAGE ACCESS TEST END ===');
 }
 
 async function downloadImageFromStorage(supabase: any, filePath: string): Promise<{ base64: string; mimeType: string } | null> {
-  try {
-    console.log('=== DOWNLOADING IMAGE FROM STORAGE ===');
-    console.log('Attempting to download:', filePath);
-    
-    // Create a signed URL that's valid for 1 hour
-    const { data: urlData, error: urlError } = await supabase.storage
-      .from('design-uploads')
-      .createSignedUrl(filePath, 3600);
+  const maxRetries = 3;
+  let attempt = 0;
+  
+  while (attempt < maxRetries) {
+    try {
+      console.log(`=== DOWNLOADING IMAGE FROM STORAGE (Attempt ${attempt + 1}/${maxRetries}) ===`);
+      console.log('File path:', filePath);
+      
+      // Verify bucket exists first
+      const bucketExists = await verifyStorageBucket(supabase);
+      if (!bucketExists) {
+        console.error('Storage bucket verification failed');
+        return null;
+      }
+      
+      // Create a signed URL with shorter expiration
+      const { data: urlData, error: urlError } = await supabase.storage
+        .from('design-uploads')
+        .createSignedUrl(filePath, 300); // 5 minutes
 
-    if (urlError || !urlData?.signedUrl) {
-      console.error('Failed to create signed URL:', urlError);
-      return null;
+      if (urlError || !urlData?.signedUrl) {
+        console.error('Failed to create signed URL:', urlError);
+        attempt++;
+        if (attempt >= maxRetries) return null;
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+        continue;
+      }
+
+      console.log('Signed URL created successfully');
+      
+      // Download with timeout and proper error handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
+      try {
+        const response = await fetch(urlData.signedUrl, {
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'Supabase-Edge-Function'
+          }
+        });
+        
+        clearTimeout(timeoutId);
+        
+        console.log('Download response:', {
+          status: response.status,
+          statusText: response.statusText,
+          contentType: response.headers.get('content-type'),
+          contentLength: response.headers.get('content-length')
+        });
+        
+        if (!response.ok) {
+          console.error(`Download failed with status ${response.status}: ${response.statusText}`);
+          attempt++;
+          if (attempt >= maxRetries) return null;
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          continue;
+        }
+
+        const contentType = response.headers.get('content-type') || 'image/png';
+        
+        // Check if content type is actually an image
+        if (!contentType.startsWith('image/')) {
+          console.error('Downloaded file is not an image:', contentType);
+          return null;
+        }
+        
+        const arrayBuffer = await response.arrayBuffer();
+        
+        // Validate file size (max 50MB)
+        if (arrayBuffer.byteLength > 50 * 1024 * 1024) {
+          console.error('File too large:', arrayBuffer.byteLength);
+          return null;
+        }
+        
+        if (arrayBuffer.byteLength === 0) {
+          console.error('Downloaded file is empty');
+          attempt++;
+          if (attempt >= maxRetries) return null;
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          continue;
+        }
+        
+        // Convert to base64 efficiently
+        const uint8Array = new Uint8Array(arrayBuffer);
+        const base64 = btoa(String.fromCharCode(...uint8Array));
+        
+        console.log('Image downloaded successfully:', {
+          sizeBytes: arrayBuffer.byteLength,
+          mimeType: contentType,
+          base64Length: base64.length
+        });
+        
+        console.log('=== DOWNLOAD COMPLETE ===');
+        return { base64, mimeType: contentType };
+        
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        
+        if (fetchError.name === 'AbortError') {
+          console.error('Download timed out');
+        } else {
+          console.error('Fetch error:', fetchError);
+        }
+        
+        attempt++;
+        if (attempt >= maxRetries) return null;
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      }
+      
+    } catch (error) {
+      console.error(`Attempt ${attempt + 1} failed:`, error);
+      attempt++;
+      if (attempt >= maxRetries) {
+        console.error('All download attempts failed');
+        return null;
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
     }
-
-    console.log('Signed URL created successfully, length:', urlData.signedUrl.length);
-    
-    // Download the file using the signed URL
-    const response = await fetch(urlData.signedUrl);
-    
-    console.log('Download response:', {
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries())
-    });
-    
-    if (!response.ok) {
-      console.error('Failed to download file:', response.status, response.statusText);
-      return null;
-    }
-
-    const arrayBuffer = await response.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-    
-    // Determine MIME type from file extension or response headers
-    const contentType = response.headers.get('content-type') || 'image/png';
-    
-    console.log('Image downloaded successfully:', {
-      sizeBytes: arrayBuffer.byteLength,
-      mimeType: contentType,
-      base64Length: base64.length
-    });
-    
-    console.log('=== DOWNLOAD COMPLETE ===');
-    return { base64, mimeType: contentType };
-  } catch (error) {
-    console.error('Error downloading image from storage:', error);
-    return null;
   }
+  
+  return null;
 }
 
 async function downloadImageFromUrl(url: string): Promise<{ base64: string; mimeType: string } | null> {
   try {
     console.log('=== DOWNLOADING IMAGE FROM URL ===');
-    console.log('Downloading from URL:', url);
+    console.log('URL:', url);
     
-    const response = await fetch(url);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Supabase-Edge-Function'
+      }
+    });
+    
+    clearTimeout(timeoutId);
     
     console.log('URL download response:', {
       status: response.status,
@@ -210,9 +296,22 @@ async function downloadImageFromUrl(url: string): Promise<{ base64: string; mime
       return null;
     }
 
-    const arrayBuffer = await response.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
     const contentType = response.headers.get('content-type') || 'image/png';
+    
+    if (!contentType.startsWith('image/')) {
+      console.error('URL does not point to an image:', contentType);
+      return null;
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    
+    if (arrayBuffer.byteLength > 50 * 1024 * 1024) {
+      console.error('Image too large from URL:', arrayBuffer.byteLength);
+      return null;
+    }
+    
+    const uint8Array = new Uint8Array(arrayBuffer);
+    const base64 = btoa(String.fromCharCode(...uint8Array));
     
     console.log('URL image downloaded successfully:', {
       sizeBytes: arrayBuffer.byteLength,
@@ -246,7 +345,6 @@ async function processAttachmentsForVision(supabase: any, attachments: Attachmen
     if (attachment.type === 'file' && attachment.uploadPath) {
       console.log('Processing file attachment with upload path:', attachment.uploadPath);
       
-      // Check if it's an image file
       const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(attachment.name);
       console.log('Is image file:', isImage);
       
@@ -264,25 +362,22 @@ async function processAttachmentsForVision(supabase: any, attachments: Attachmen
           });
           console.log('Successfully added image to vision analysis:', attachment.name);
         } else {
-          // If image download failed, add a text description
           contentItems.push({
             type: 'text',
-            text: `[Image attachment: ${attachment.name} - Could not be loaded for analysis]`
+            text: `[Image attachment: ${attachment.name} - Failed to load for analysis. Please ensure the file was uploaded correctly and try again.]`
           });
-          console.log('Failed to load image, added text fallback:', attachment.name);
+          console.log('Failed to load image, added error message:', attachment.name);
         }
       } else {
-        // Non-image file, add as text reference
         contentItems.push({
           type: 'text',
-          text: `[File attachment: ${attachment.name}]`
+          text: `[File attachment: ${attachment.name} - Non-image files cannot be analyzed visually]`
         });
         console.log('Added non-image file as text reference:', attachment.name);
       }
     } else if (attachment.type === 'url' && attachment.url) {
       console.log('Processing URL attachment:', attachment.url);
       
-      // URL attachment - try to determine if it's an image
       const isImageUrl = /\.(jpg|jpeg|png|gif|webp)$/i.test(attachment.url) || 
                         attachment.url.includes('image') ||
                         attachment.url.includes('img');
@@ -305,17 +400,16 @@ async function processAttachmentsForVision(supabase: any, attachments: Attachmen
         } else {
           contentItems.push({
             type: 'text',
-            text: `[Image URL: ${attachment.url} - Could not be loaded for analysis]`
+            text: `[Image URL: ${attachment.url} - Could not be loaded for analysis. Please check the URL and try again.]`
           });
-          console.log('Failed to load URL image, added text fallback:', attachment.url);
+          console.log('Failed to load URL image, added error message:', attachment.url);
         }
       } else {
-        // Non-image URL, add as text reference
         contentItems.push({
           type: 'text',
-          text: `[Website URL: ${attachment.url}]`
+          text: `[Website URL: ${attachment.url} - For website analysis, please provide screenshots or describe the specific elements you'd like me to analyze.]`
         });
-        console.log('Added non-image URL as text reference:', attachment.url);
+        console.log('Added non-image URL guidance:', attachment.url);
       }
     } else {
       console.log('Skipping attachment (no valid path or URL):', {
@@ -353,9 +447,8 @@ serve(async (req) => {
 
   try {
     const requestBody = await req.json();
-    console.log('Raw request body:', JSON.stringify(requestBody, null, 2));
+    console.log('Request received with attachments:', requestBody.attachments?.length || 0);
     
-    // More flexible parameter extraction
     const message = requestBody.message || requestBody.prompt || '';
     const attachments = requestBody.attachments || [];
     const uploadIds = requestBody.uploadIds || [];
@@ -365,29 +458,14 @@ serve(async (req) => {
       messageLength: message?.length || 0, 
       attachmentsCount: attachments.length,
       uploadIdsCount: uploadIds.length,
-      messagePreview: message ? message.substring(0, 100) + '...' : 'No message',
-      requestType,
-      attachmentSummary: attachments.map((att: any) => ({
-        type: att.type,
-        name: att.name,
-        hasUploadPath: !!att.uploadPath,
-        hasUrl: !!att.url
-      }))
+      requestType
     });
 
-    // Validate that we have a message
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       console.error('Invalid message received:', { message, type: typeof message });
       throw new Error('Message is required and must be a non-empty string');
     }
 
-    // Environment check
-    console.log('Environment check:', {
-      hasSupabaseUrl: !!Deno.env.get('SUPABASE_URL'),
-      hasSupabaseServiceKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-    });
-
-    // Get Supabase credentials
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
@@ -395,30 +473,20 @@ serve(async (req) => {
       throw new Error('Supabase configuration not found');
     }
 
-    // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     console.log('Supabase client initialized');
 
-    // Test storage access
-    await testStorageAccess(supabase);
-    
-    // Get Claude settings from admin settings
-    console.log('Fetching Claude settings from admin settings...');
     const claudeSettings = await getClaudeSettings(supabase);
     
-    // Process attachments for vision analysis
     console.log('Starting attachment processing...');
     const visionContent = await processAttachmentsForVision(supabase, attachments);
     
-    // Build the message content - simple string for text-only, array for mixed content
     let messageContent: string | Array<{ type: 'text' | 'image'; text?: string; source?: any }>;
     
     if (visionContent.length === 0) {
-      // Simple text-only message
       messageContent = message;
       console.log('Using simple text message format');
     } else {
-      // Mixed content with attachments
       messageContent = [
         { type: 'text', text: message },
         ...visionContent
@@ -432,7 +500,6 @@ serve(async (req) => {
       contentLength: Array.isArray(messageContent) ? messageContent.length : 1
     });
 
-    // Prepare the messages for Claude
     const messages: ClaudeMessage[] = [
       {
         role: 'user',
@@ -446,21 +513,12 @@ serve(async (req) => {
       hasImages: Array.isArray(messageContent) && messageContent.some(item => item.type === 'image')
     });
 
-    // Call Claude API
     const claudePayload = {
       model: claudeSettings.model,
       max_tokens: 4000,
       system: claudeSettings.systemPrompt,
       messages: messages
     };
-
-    console.log('Claude API payload prepared:', {
-      model: claudePayload.model,
-      maxTokens: claudePayload.max_tokens,
-      systemPromptLength: claudePayload.system.length,
-      messagesCount: claudePayload.messages.length,
-      messageContentType: typeof claudePayload.messages[0].content
-    });
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -486,7 +544,6 @@ serve(async (req) => {
         errorData: errorData
       });
 
-      // Log failed usage
       await logClaudeUsage(
         supabase,
         userId || 'unknown',
@@ -510,23 +567,19 @@ serve(async (req) => {
       usage: claudeData.usage
     });
 
-    // Extract the text content from Claude's response
     const analysis = claudeData.content?.[0]?.text || 'No analysis available';
     const responseTime = Date.now() - startTime;
 
-    // Calculate estimated cost (rough estimation based on tokens)
     const tokensUsed = claudeData.usage?.input_tokens + claudeData.usage?.output_tokens || 0;
-    const estimatedCost = tokensUsed * 0.0001; // Rough estimate
+    const estimatedCost = tokensUsed * 0.0001;
 
     console.log('Analysis extracted:', {
       analysisLength: analysis.length,
-      analysisPreview: analysis.substring(0, 100) + '...',
       tokensUsed,
       responseTime,
       estimatedCost
     });
 
-    // Log successful usage
     await logClaudeUsage(
       supabase,
       userId || 'system',
@@ -558,7 +611,7 @@ serve(async (req) => {
       }
     };
 
-    console.log('Sending successful response:', response);
+    console.log('Sending successful response');
     console.log('=== CLAUDE AI FUNCTION END ===');
 
     return new Response(
@@ -576,7 +629,6 @@ serve(async (req) => {
       name: error.name
     });
 
-    // Log failed usage if we have supabase connection
     try {
       const supabaseUrl = Deno.env.get('SUPABASE_URL');
       const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');

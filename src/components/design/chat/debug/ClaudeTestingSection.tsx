@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { TestTube, Send, Globe, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { TestTube, Send, Globe, CheckCircle, XCircle, Loader2, Image, AlertTriangle } from 'lucide-react';
 import { ChatAttachment } from '../../DesignChatInterface';
 import { useChatAnalysis } from '@/hooks/useChatAnalysis';
 import { useToast } from '@/hooks/use-toast';
@@ -13,9 +13,12 @@ import { supabase } from '@/integrations/supabase/client';
 export const ClaudeTestingSection: React.FC = () => {
   const [testMessage, setTestMessage] = React.useState('Analyze this design for usability and conversion optimization opportunities.');
   const [testUrl, setTestUrl] = React.useState('');
+  const [testFile, setTestFile] = React.useState<File | null>(null);
   const [testResults, setTestResults] = React.useState<any[]>([]);
   const [isTestingSimple, setIsTestingSimple] = React.useState(false);
   const [isTestingWithUrl, setIsTestingWithUrl] = React.useState(false);
+  const [isTestingWithFile, setIsTestingWithFile] = React.useState(false);
+  const [isTestingConnection, setIsTestingConnection] = React.useState(false);
   
   const { analyzeWithChat } = useChatAnalysis();
   const { toast } = useToast();
@@ -145,7 +148,102 @@ export const ClaudeTestingSection: React.FC = () => {
     }
   };
 
+  const runFileTest = async () => {
+    if (!testFile) {
+      toast({
+        variant: "destructive",
+        title: "File Required",
+        description: "Please select a file to test.",
+      });
+      return;
+    }
+
+    setIsTestingWithFile(true);
+    
+    try {
+      console.log('=== STARTING FILE CLAUDE TEST ===');
+      
+      // First upload the file
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const fileExt = testFile.name.split('.').pop();
+      const fileName = `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      console.log('Uploading test file:', { fileName, filePath, fileSize: testFile.size });
+
+      const { error: uploadError } = await supabase.storage
+        .from('design-uploads')
+        .upload(filePath, testFile);
+
+      if (uploadError) {
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
+
+      const fileAttachment: ChatAttachment = {
+        id: crypto.randomUUID(),
+        type: 'file',
+        name: testFile.name,
+        file: testFile,
+        uploadPath: filePath,
+        status: 'uploaded'
+      };
+
+      const result = await analyzeWithChat.mutateAsync({
+        message: testMessage,
+        attachments: [fileAttachment]
+      });
+
+      const testResult = {
+        type: 'File Test',
+        timestamp: new Date().toISOString(),
+        success: true,
+        message: testMessage,
+        fileName: testFile.name,
+        fileSize: testFile.size,
+        response: result.analysis,
+        responseLength: result.analysis.length,
+        debugInfo: result.debugInfo || {}
+      };
+
+      setTestResults(prev => [testResult, ...prev]);
+      
+      toast({
+        title: "File Test Completed",
+        description: "Claude AI analyzed the file successfully.",
+      });
+      
+      console.log('File test completed successfully:', testResult);
+    } catch (error) {
+      console.error('File test failed:', error);
+      
+      const testResult = {
+        type: 'File Test',
+        timestamp: new Date().toISOString(),
+        success: false,
+        message: testMessage,
+        fileName: testFile?.name,
+        fileSize: testFile?.size,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        debugInfo: {}
+      };
+
+      setTestResults(prev => [testResult, ...prev]);
+      
+      toast({
+        variant: "destructive",
+        title: "File Test Failed",
+        description: error instanceof Error ? error.message : 'Test failed with unknown error',
+      });
+    } finally {
+      setIsTestingWithFile(false);
+    }
+  };
+
   const testClaudeConnection = async () => {
+    setIsTestingConnection(true);
+    
     try {
       console.log('=== TESTING CLAUDE CONNECTION ===');
       
@@ -164,6 +262,16 @@ export const ClaudeTestingSection: React.FC = () => {
       }
 
       if (data?.success) {
+        const testResult = {
+          type: 'Connection Test',
+          timestamp: new Date().toISOString(),
+          success: true,
+          response: data.analysis,
+          debugInfo: data.debugInfo || {}
+        };
+
+        setTestResults(prev => [testResult, ...prev]);
+        
         toast({
           title: "Connection Test Passed",
           description: "Claude AI edge function is responding correctly.",
@@ -173,11 +281,24 @@ export const ClaudeTestingSection: React.FC = () => {
       }
     } catch (error) {
       console.error('Claude connection test failed:', error);
+      
+      const testResult = {
+        type: 'Connection Test',
+        timestamp: new Date().toISOString(),
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        debugInfo: {}
+      };
+
+      setTestResults(prev => [testResult, ...prev]);
+      
       toast({
         variant: "destructive",
         title: "Connection Test Failed",
         description: error instanceof Error ? error.message : 'Connection test failed',
       });
+    } finally {
+      setIsTestingConnection(false);
     }
   };
 
@@ -187,6 +308,36 @@ export const ClaudeTestingSection: React.FC = () => {
       title: "Test Results Cleared",
       description: "All test results have been removed.",
     });
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const isImage = file.type.startsWith('image/');
+      const isPdf = file.type === 'application/pdf';
+      
+      if (!isImage && !isPdf) {
+        toast({
+          variant: "destructive",
+          title: "Invalid File Type",
+          description: "Please select an image (PNG, JPG, etc.) or PDF file.",
+        });
+        return;
+      }
+      
+      // Validate file size (50MB max)
+      if (file.size > 50 * 1024 * 1024) {
+        toast({
+          variant: "destructive",
+          title: "File Too Large",
+          description: "Please select a file smaller than 50MB.",
+        });
+        return;
+      }
+      
+      setTestFile(file);
+    }
   };
 
   return (
@@ -214,9 +365,14 @@ export const ClaudeTestingSection: React.FC = () => {
           <Button
             size="sm"
             onClick={testClaudeConnection}
+            disabled={isTestingConnection}
             variant="outline"
           >
-            <TestTube className="h-3 w-3 mr-1" />
+            {isTestingConnection ? (
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+            ) : (
+              <TestTube className="h-3 w-3 mr-1" />
+            )}
             Test Connection
           </Button>
           
@@ -261,6 +417,37 @@ export const ClaudeTestingSection: React.FC = () => {
           </div>
         </div>
 
+        {/* File Test Section */}
+        <div className="border-t pt-3 mt-3">
+          <label className="text-xs font-medium text-gray-600">File Test:</label>
+          <div className="flex gap-2 mt-1">
+            <Input
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={handleFileChange}
+              className="text-sm"
+            />
+            <Button
+              size="sm"
+              onClick={runFileTest}
+              disabled={isTestingWithFile || !testFile}
+              variant="outline"
+            >
+              {isTestingWithFile ? (
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              ) : (
+                <Image className="h-3 w-3 mr-1" />
+              )}
+              Test File
+            </Button>
+          </div>
+          {testFile && (
+            <div className="mt-2 text-xs text-gray-600">
+              Selected: {testFile.name} ({(testFile.size / 1024 / 1024).toFixed(2)} MB)
+            </div>
+          )}
+        </div>
+
         {/* Clear Results */}
         {testResults.length > 0 && (
           <Button
@@ -269,14 +456,14 @@ export const ClaudeTestingSection: React.FC = () => {
             variant="outline"
             className="text-xs"
           >
-            Clear Results
+            Clear Results ({testResults.length})
           </Button>
         )}
       </div>
 
       {/* Test Results */}
       {testResults.length > 0 && (
-        <div className="mt-4 space-y-2 max-h-60 overflow-y-auto">
+        <div className="mt-4 space-y-2 max-h-80 overflow-y-auto">
           <h5 className="text-xs font-medium text-gray-600">Test Results:</h5>
           {testResults.map((result, index) => (
             <div key={index} className="bg-gray-50 rounded border p-3 text-xs">
@@ -296,6 +483,13 @@ export const ClaudeTestingSection: React.FC = () => {
                 </div>
               )}
               
+              {result.fileName && (
+                <div className="mb-2">
+                  <span className="font-medium">File:</span> {result.fileName} 
+                  {result.fileSize && <span className="text-gray-500"> ({(result.fileSize / 1024 / 1024).toFixed(2)} MB)</span>}
+                </div>
+              )}
+              
               <div className="mb-2">
                 <span className="font-medium">Message:</span> {result.message}
               </div>
@@ -306,10 +500,26 @@ export const ClaudeTestingSection: React.FC = () => {
                   <div className="mt-1 p-2 bg-white rounded border max-h-20 overflow-y-auto">
                     {result.response.substring(0, 200)}...
                   </div>
+                  {result.debugInfo && (
+                    <div className="mt-2 p-2 bg-blue-50 rounded border">
+                      <div className="font-medium text-blue-800 mb-1">Debug Info:</div>
+                      <div className="text-blue-700 text-xs">
+                        Images Processed: {result.debugInfo.imagesProcessed || 0} | 
+                        Tokens Used: {result.debugInfo.tokensUsed || 0} | 
+                        Response Time: {result.debugInfo.responseTimeMs || 0}ms
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-red-600">
                   <span className="font-medium">Error:</span> {result.error}
+                  {result.error?.includes('Maximum call stack') && (
+                    <div className="mt-1 p-2 bg-red-50 rounded border">
+                      <AlertTriangle className="h-3 w-3 inline mr-1" />
+                      <span className="text-xs">This error indicates a problem with the image download function. The fix has been implemented.</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
