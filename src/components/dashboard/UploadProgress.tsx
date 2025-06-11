@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
-import { useDesignUploads } from '@/hooks/useDesignAnalysis';
+import { useDesignUploads } from '@/hooks/useDesignUploads';
 import { formatDistanceToNow } from 'date-fns';
 
 export const UploadProgress = () => {

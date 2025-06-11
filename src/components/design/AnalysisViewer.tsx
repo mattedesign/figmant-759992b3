@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, FileText, Brain } from 'lucide-react';
-import { useDesignAnalyses } from '@/hooks/useDesignAnalysis';
+import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { DesignUpload } from '@/types/design';
 import { formatDistanceToNow } from 'date-fns';
 

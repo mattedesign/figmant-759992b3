@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, FileImage } from 'lucide-react';
-import { useDesignUseCases, useUploadDesign } from '@/hooks/useDesignAnalysis';
+import { useDesignUseCases } from '@/hooks/useDesignUseCases';
+import { useUploadDesign } from '@/hooks/useUploadDesign';
 import { useState } from 'react';
 
 export const DesignUploader = () => {

@@ -4,7 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FileImage, Eye, RotateCcw } from 'lucide-react';
-import { useDesignUploads, useDesignUseCases, useAnalyzeDesign } from '@/hooks/useDesignAnalysis';
+import { useDesignUploads } from '@/hooks/useDesignUploads';
+import { useDesignUseCases } from '@/hooks/useDesignUseCases';
+import { useAnalyzeDesign } from '@/hooks/useAnalyzeDesign';
 import { DesignUpload } from '@/types/design';
 import { formatDistanceToNow } from 'date-fns';
 
