@@ -8,7 +8,6 @@ import { BatchAnalysisHeader } from './BatchAnalysisHeader';
 import { BatchAnalysisMetrics } from './BatchAnalysisMetrics';
 import { BatchAnalysisResults } from './BatchAnalysisResults';
 import { BatchAnalysisSettings } from './BatchAnalysisSettings';
-import { AnalysisViewer } from '../AnalysisViewer';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const EnhancedBatchAnalysisViewer = () => {
@@ -36,7 +35,7 @@ export const EnhancedBatchAnalysisViewer = () => {
 
   const { data: analyses, isLoading: analysesLoading } = useQuery({
     queryKey: ['batch-analyses-results', batchId],
-    queryFn: async () => {
+    queryFn: async (): Promise<any[]> => {
       if (!batchId) return [];
       
       const { data, error } = await supabase
@@ -46,7 +45,7 @@ export const EnhancedBatchAnalysisViewer = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!batchId
   });
@@ -79,9 +78,22 @@ export const EnhancedBatchAnalysisViewer = () => {
 
   if (selectedAnalysisId) {
     return (
-      <AnalysisViewer
-        onBack={() => setSelectedAnalysisId(null)}
-      />
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-4">
+          <button 
+            onClick={() => setSelectedAnalysisId(null)}
+            className="text-primary hover:underline"
+          >
+            ← Back to Batch Analysis
+          </button>
+        </div>
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-4">Analysis Details</h2>
+          <p className="text-muted-foreground">
+            Analysis ID: {selectedAnalysisId}
+          </p>
+        </div>
+      </div>
     );
   }
 
