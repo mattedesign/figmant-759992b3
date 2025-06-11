@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, AlertTriangle } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Zap, Target } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { 
   useClaudePromptExamplesByCategory, 
@@ -113,19 +113,124 @@ Provide your analysis in this format:
 
 Remember: Your analysis should empower the team to make data-driven design decisions that directly impact business metrics while improving user satisfaction.`;
 
+const ENHANCED_COMPETITOR_PROMPT = `You are an expert market positioning strategist and competitive intelligence analyst. Analyze the provided competitor screenshots and identify market positioning opportunities for the client's business.
+
+**CONTEXT:**
+- Client Industry: [INDUSTRY - e.g., "Project Management SaaS"]
+- Client's Current Position: [POSITIONING - e.g., "Budget-friendly tool for small teams"]
+- Target Audience: [AUDIENCE - e.g., "Small business owners, 10-50 employees"]
+- Business Goals: [GOALS - e.g., "Increase trial signups by 25%, move upmarket"]
+
+**COMPETITOR ANALYSIS FRAMEWORK:**
+
+### 1. MARKET POSITIONING MAP
+For each competitor, identify:
+- **Value Proposition**: How do they position themselves? (Premium/Budget, Simple/Feature-rich, etc.)
+- **Target Market**: Who are they clearly targeting?
+- **Unique Selling Points**: What makes them different?
+- **Pricing Strategy**: Premium, mid-market, or budget positioning?
+- **Brand Personality**: Professional, friendly, innovative, trustworthy, etc.
+
+### 2. POSITIONING GAPS ANALYSIS
+Identify market opportunities:
+- **Underserved Segments**: What customer groups are competitors missing?
+- **Feature Gaps**: What needs aren't being addressed?
+- **Messaging Gaps**: What emotional or rational appeals are unused?
+- **Price Point Gaps**: Are there open pricing tiers?
+
+### 3. DIFFERENTIATION OPPORTUNITIES
+Recommend positioning strategies:
+- **Blue Ocean Opportunities**: Uncontested market spaces
+- **Head-to-Head Advantages**: Where client could compete directly and win
+- **Niche Specialization**: Specific segments to dominate
+- **Value Innovation**: Combine benefits competitors offer separately
+
+**DELIVERABLE FORMAT:**
+
+### Executive Summary (2-3 sentences)
+Brief overview of competitive landscape and #1 positioning recommendation
+
+### Competitor Positioning Matrix
+| Competitor | Target Market | Value Prop | Price Tier | Differentiator |
+|------------|---------------|------------|------------|----------------|
+| [Name] | [Segment] | [Core benefit] | [High/Mid/Low] | [Unique element] |
+
+### Market Positioning Recommendations (Ranked by Impact)
+
+#### 🎯 PRIMARY RECOMMENDATION: [Strategy Name]
+- **Positioning Statement**: "[Client] is the only [category] that [unique benefit] for [target audience] who [specific need/pain]"
+- **Target Segment**: [Specific audience description]
+- **Key Messages**: 
+  - Primary: [Main value proposition]
+  - Secondary: [Supporting benefits]
+  - Proof Points: [Evidence/features that support claims]
+- **Competitive Advantage**: Why this positioning wins vs competitors
+- **Revenue Impact**: Estimated effect on conversions/pricing power
+- **Implementation Difficulty**: Easy/Medium/Hard + timeline
+
+#### 🥈 SECONDARY RECOMMENDATION: [Alternative Strategy]
+[Same format as above]
+
+#### 🥉 TERTIARY RECOMMENDATION: [Third Option]
+[Same format as above]
+
+### Market Messaging Framework
+- **Headline Options**: 3-5 positioning-based headlines
+- **Value Proposition Variants**: Different ways to communicate core benefit
+- **Competitive Responses**: How to handle competitor comparisons
+- **Proof Point Hierarchy**: Most compelling evidence first
+
+### Implementation Roadmap
+- **Week 1-2**: Immediate messaging changes
+- **Month 1**: Website/marketing material updates  
+- **Quarter 1**: Full positioning rollout
+
+**ANALYSIS CRITERIA:**
+- Focus on defensible competitive advantages
+- Prioritize positions that increase pricing power
+- Consider client's current capabilities and resources
+- Emphasize scalable positioning strategies
+- Include quantitative impact estimates where possible
+
+## Industry-Specific Considerations
+
+**SaaS Positioning Analysis:**
+- **Feature Positioning**: All-in-one vs. best-of-breed
+- **User Experience**: Technical vs. non-technical users
+- **Implementation**: Self-serve vs. white-glove onboarding
+- **Pricing Model**: Per-user, per-feature, or flat-rate positioning
+- **Integration Strategy**: Standalone vs. ecosystem player
+
+**E-commerce Positioning Analysis:**
+- **Price Positioning**: Luxury, premium, value, or budget
+- **Product Range**: Specialist vs. generalist
+- **Shopping Experience**: Convenience vs. discovery vs. service
+- **Trust Signals**: Security, reviews, guarantees, brand heritage
+- **Customer Journey**: High-consideration vs. impulse purchase
+
+Please provide specific, actionable recommendations that directly impact business metrics and can be implemented within the client's constraints.`;
+
 export const MasterPromptUpdater: React.FC = () => {
   const { toast } = useToast();
-  const { data: masterPrompts, isLoading } = useClaudePromptExamplesByCategory('master');
+  const { data: masterPrompts, isLoading: masterLoading } = useClaudePromptExamplesByCategory('master');
+  const { data: competitorPrompts, isLoading: competitorLoading } = useClaudePromptExamplesByCategory('competitor');
   const updatePromptMutation = useUpdatePromptExample();
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [updateStatus, setUpdateStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [isUpdatingMaster, setIsUpdatingMaster] = useState(false);
+  const [isUpdatingCompetitor, setIsUpdatingCompetitor] = useState(false);
+  const [masterStatus, setMasterStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [competitorStatus, setCompetitorStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const masterPrompt = masterPrompts?.find(p => 
     p.title.toLowerCase().includes('master') && 
     p.title.toLowerCase().includes('comprehensive')
   );
 
-  const handleUpdatePrompt = async () => {
+  const competitorPrompt = competitorPrompts?.find(p => 
+    p.title.toLowerCase().includes('competitor') && 
+    p.title.toLowerCase().includes('market')
+  );
+
+  const handleUpdateMasterPrompt = async () => {
     if (!masterPrompt) {
       toast({
         title: "Error",
@@ -135,7 +240,7 @@ export const MasterPromptUpdater: React.FC = () => {
       return;
     }
 
-    setIsUpdating(true);
+    setIsUpdatingMaster(true);
     try {
       await updatePromptMutation.mutateAsync({
         id: masterPrompt.id,
@@ -147,102 +252,215 @@ export const MasterPromptUpdater: React.FC = () => {
         }
       });
       
-      setUpdateStatus('success');
+      setMasterStatus('success');
       toast({
         title: "Success",
         description: "Master UX Analysis prompt has been updated with the enhanced framework",
       });
     } catch (error) {
-      setUpdateStatus('error');
+      setMasterStatus('error');
       toast({
         title: "Error",
         description: "Failed to update the master prompt",
         variant: "destructive",
       });
     } finally {
-      setIsUpdating(false);
+      setIsUpdatingMaster(false);
     }
   };
 
-  if (isLoading) {
+  const handleUpdateCompetitorPrompt = async () => {
+    if (!competitorPrompt) {
+      toast({
+        title: "Error",
+        description: "Competitor Analysis prompt not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUpdatingCompetitor(true);
+    try {
+      await updatePromptMutation.mutateAsync({
+        id: competitorPrompt.id,
+        updates: {
+          original_prompt: ENHANCED_COMPETITOR_PROMPT,
+          description: "Comprehensive market positioning analysis framework with competitive intelligence, positioning gaps analysis, and strategic recommendations",
+          effectiveness_rating: 5,
+          updated_at: new Date().toISOString()
+        }
+      });
+      
+      setCompetitorStatus('success');
+      toast({
+        title: "Success",
+        description: "Competitor Analysis prompt has been updated with the enhanced framework",
+      });
+    } catch (error) {
+      setCompetitorStatus('error');
+      toast({
+        title: "Error",
+        description: "Failed to update the competitor prompt",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingCompetitor(false);
+    }
+  };
+
+  if (masterLoading || competitorLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Master Prompt Update</CardTitle>
+          <CardTitle>Prompt Enhancement Updates</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Loading master prompt...</p>
+          <p className="text-muted-foreground">Loading prompts...</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <span>Master UX Analysis Prompt Update</span>
-          {updateStatus === 'success' && (
-            <Badge variant="default" className="bg-green-500">
-              <CheckCircle className="h-3 w-3 mr-1" />
-              Updated
-            </Badge>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {!masterPrompt && (
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              Master UX Analysis prompt not found. Please ensure the prompt exists in the system.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {masterPrompt && (
-          <div className="space-y-4">
-            <div className="p-4 bg-muted rounded-lg">
-              <h4 className="font-medium mb-2">Current Prompt: {masterPrompt.title}</h4>
-              <p className="text-sm text-muted-foreground mb-2">{masterPrompt.description}</p>
-              <div className="text-xs text-muted-foreground">
-                Rating: {masterPrompt.effectiveness_rating}/5 | 
-                Last updated: {new Date(masterPrompt.updated_at).toLocaleDateString()}
-              </div>
-            </div>
-
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="font-medium mb-2 text-blue-900">Enhancement Details</h4>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li>• Comprehensive analysis framework with 5 key areas</li>
-                <li>• Structured response format for consistency</li>
-                <li>• Prioritized recommendations with impact assessment</li>
-                <li>• Specific guidelines for actionable insights</li>
-                <li>• Focus on conversion optimization and user psychology</li>
-              </ul>
-            </div>
-
-            {updateStatus === 'success' && (
-              <Alert>
-                <CheckCircle className="h-4 w-4" />
-                <AlertDescription>
-                  The Master UX Analysis prompt has been successfully updated. Subscriber chat analysis will now use the enhanced framework for comprehensive analysis requests.
-                </AlertDescription>
-              </Alert>
+    <div className="space-y-6">
+      {/* Master Prompt Update */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Zap className="h-5 w-5" />
+            <span>Master UX Analysis Prompt Update</span>
+            {masterStatus === 'success' && (
+              <Badge variant="default" className="bg-green-500">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Updated
+              </Badge>
             )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!masterPrompt && (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Master UX Analysis prompt not found. Please ensure the prompt exists in the system.
+              </AlertDescription>
+            </Alert>
+          )}
 
-            <Button 
-              onClick={handleUpdatePrompt} 
-              disabled={isUpdating || updateStatus === 'success'}
-              className="w-full"
-            >
-              {isUpdating ? 'Updating Prompt...' : 
-               updateStatus === 'success' ? 'Prompt Updated Successfully' : 
-               'Update Master Prompt with Enhanced Framework'}
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          {masterPrompt && (
+            <div className="space-y-4">
+              <div className="p-4 bg-muted rounded-lg">
+                <h4 className="font-medium mb-2">Current Prompt: {masterPrompt.title}</h4>
+                <p className="text-sm text-muted-foreground mb-2">{masterPrompt.description}</p>
+                <div className="text-xs text-muted-foreground">
+                  Rating: {masterPrompt.effectiveness_rating}/5 | 
+                  Last updated: {new Date(masterPrompt.updated_at).toLocaleDateString()}
+                </div>
+              </div>
+
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="font-medium mb-2 text-blue-900">Enhancement Details</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Comprehensive analysis framework with 5 key areas</li>
+                  <li>• Structured response format for consistency</li>
+                  <li>• Prioritized recommendations with impact assessment</li>
+                  <li>• Specific guidelines for actionable insights</li>
+                  <li>• Focus on conversion optimization and user psychology</li>
+                </ul>
+              </div>
+
+              {masterStatus === 'success' && (
+                <Alert>
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    The Master UX Analysis prompt has been successfully updated. Subscriber chat analysis will now use the enhanced framework for comprehensive analysis requests.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <Button 
+                onClick={handleUpdateMasterPrompt} 
+                disabled={isUpdatingMaster || masterStatus === 'success'}
+                className="w-full"
+              >
+                {isUpdatingMaster ? 'Updating Prompt...' : 
+                 masterStatus === 'success' ? 'Prompt Updated Successfully' : 
+                 'Update Master Prompt with Enhanced Framework'}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Competitor Prompt Update */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Target className="h-5 w-5" />
+            <span>Competitor Analysis Prompt Update</span>
+            {competitorStatus === 'success' && (
+              <Badge variant="default" className="bg-green-500">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Updated
+              </Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!competitorPrompt && (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Competitor Analysis - Market Positioning prompt not found. Please ensure the prompt exists in the system.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {competitorPrompt && (
+            <div className="space-y-4">
+              <div className="p-4 bg-muted rounded-lg">
+                <h4 className="font-medium mb-2">Current Prompt: {competitorPrompt.title}</h4>
+                <p className="text-sm text-muted-foreground mb-2">{competitorPrompt.description}</p>
+                <div className="text-xs text-muted-foreground">
+                  Rating: {competitorPrompt.effectiveness_rating}/5 | 
+                  Last updated: {new Date(competitorPrompt.updated_at).toLocaleDateString()}
+                </div>
+              </div>
+
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h4 className="font-medium mb-2 text-green-900">Market Positioning Enhancement Details</h4>
+                <ul className="text-sm text-green-800 space-y-1">
+                  <li>• Comprehensive market positioning framework</li>
+                  <li>• Competitor positioning matrix with structured analysis</li>
+                  <li>• Strategic recommendations ranked by business impact</li>
+                  <li>• Industry-specific positioning considerations (SaaS, E-commerce)</li>
+                  <li>• Implementation roadmap with actionable timelines</li>
+                  <li>• Revenue impact estimates and competitive advantage focus</li>
+                </ul>
+              </div>
+
+              {competitorStatus === 'success' && (
+                <Alert>
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    The Competitor Analysis prompt has been successfully updated. Competitive analysis requests will now use the enhanced market positioning framework with strategic recommendations.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <Button 
+                onClick={handleUpdateCompetitorPrompt} 
+                disabled={isUpdatingCompetitor || competitorStatus === 'success'}
+                className="w-full"
+              >
+                {isUpdatingCompetitor ? 'Updating Prompt...' : 
+                 competitorStatus === 'success' ? 'Prompt Updated Successfully' : 
+                 'Update Competitor Prompt with Market Positioning Framework'}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
