@@ -3,29 +3,65 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const verifyStorageAccess = async () => {
   try {
-    console.log('Verifying storage bucket access...');
+    console.log('Verifying storage access with actual upload test...');
     
-    // Check if design-uploads bucket exists and is accessible
-    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+    // First check if user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    if (bucketsError) {
-      console.error('Failed to list buckets:', bucketsError);
-      return { success: false, error: 'Failed to access storage buckets' };
+    if (authError) {
+      console.error('Authentication error during storage verification:', authError);
+      return { success: false, error: 'User authentication failed' };
     }
 
-    const designUploadsBucket = buckets.find(bucket => bucket.id === 'design-uploads');
-    
-    if (!designUploadsBucket) {
-      console.error('design-uploads bucket not found');
-      return { success: false, error: 'design-uploads bucket not found' };
+    if (!user) {
+      console.error('No authenticated user found');
+      return { success: false, error: 'User not authenticated' };
     }
 
-    console.log('Storage bucket access verified successfully');
+    console.log('User authenticated, testing upload capability...');
+
+    // Test actual upload capability with a tiny test file
+    const testBlob = new Blob(['storage-test'], { type: 'text/plain' });
+    const testFile = new File([testBlob], 'storage-test.txt', { type: 'text/plain' });
+    
+    const testPath = `${user.id}/storage-verification-${Date.now()}.txt`;
+    
+    console.log('Testing upload to path:', testPath);
+    
+    // Try to upload the test file
+    const { error: uploadError } = await supabase.storage
+      .from('design-uploads')
+      .upload(testPath, testFile);
+
+    if (uploadError) {
+      console.error('Test upload failed:', uploadError);
+      return { 
+        success: false, 
+        error: `Storage upload test failed: ${uploadError.message}` 
+      };
+    }
+
+    console.log('Test upload successful, cleaning up...');
+
+    // Clean up the test file
+    const { error: deleteError } = await supabase.storage
+      .from('design-uploads')
+      .remove([testPath]);
+
+    if (deleteError) {
+      console.warn('Test file cleanup failed:', deleteError);
+      // Don't fail verification if cleanup fails
+    }
+
+    console.log('Storage verification completed successfully');
     return { success: true };
 
   } catch (error) {
-    console.error('Storage verification error:', error);
-    return { success: false, error: 'Unexpected error during storage verification' };
+    console.error('Unexpected error during storage verification:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unexpected error during storage verification' 
+    };
   }
 };
 

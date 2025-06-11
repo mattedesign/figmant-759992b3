@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,15 +52,33 @@ export const DesignChatInterface = () => {
   // Check storage access on component mount
   React.useEffect(() => {
     const checkStorage = async () => {
-      const result = await verifyStorageAccess();
-      if (result.success) {
-        setStorageStatus('ready');
-      } else {
+      try {
+        console.log('Starting storage verification...');
+        const result = await verifyStorageAccess();
+        
+        if (result.success) {
+          console.log('Storage verification successful');
+          setStorageStatus('ready');
+          toast({
+            title: "Storage Ready",
+            description: "File uploads are ready to use.",
+          });
+        } else {
+          console.error('Storage verification failed:', result.error);
+          setStorageStatus('error');
+          toast({
+            variant: "destructive",
+            title: "Storage Configuration Issue",
+            description: result.error || "Unable to access file storage. Please check your configuration.",
+          });
+        }
+      } catch (error) {
+        console.error('Storage verification error:', error);
         setStorageStatus('error');
         toast({
           variant: "destructive",
-          title: "Storage Configuration Issue",
-          description: result.error || "Unable to access file storage. Please check your configuration.",
+          title: "Storage Verification Error",
+          description: "An unexpected error occurred while checking storage access.",
         });
       }
     };
