@@ -1,29 +1,19 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Crown, Mail, Calendar, Settings, UserPlus, Coins, Edit } from 'lucide-react';
-import { format } from 'date-fns';
+import { UserPlus } from 'lucide-react';
 import { CreateUserDialog } from './CreateUserDialog';
 import { EditUserDialog } from './EditUserDialog';
 import { CreditManagementDialog } from './CreditManagementDialog';
 import { useUserManagementCredits } from '@/hooks/useUserManagementCredits';
-import { UserProfile } from '@/types/auth';
-
-// Extended interface for user management that includes subscription data
-interface UserManagementProfile extends UserProfile {
-  subscriptions?: Array<{
-    status: string;
-    current_period_end: string | null;
-    stripe_customer_id: string | null;
-  }>;
-}
+import { UserManagementProfile } from '@/types/userManagement';
+import { UserTable } from './UserTable';
 
 export const UserManagement = () => {
   const { user } = useAuth();
@@ -131,27 +121,6 @@ export const UserManagement = () => {
     setCreditManagementDialogOpen(true);
   };
 
-  const getUserActivityStatus = (user: UserManagementProfile) => {
-    const subscription = user.subscriptions?.[0];
-    const credits = creditsMap?.get(user.id);
-    
-    if (user.role === 'owner') return 'Active (Owner)';
-    if (subscription?.status === 'active') return 'Active (Subscribed)';
-    if (credits && credits.current_balance > 0) return `Active (${credits.current_balance} credits)`;
-    return 'Inactive';
-  };
-
-  const getActivityStatusBadge = (user: UserManagementProfile) => {
-    const status = getUserActivityStatus(user);
-    const isActive = status.startsWith('Active');
-    
-    return (
-      <Badge variant={isActive ? 'default' : 'outline'}>
-        {status}
-      </Badge>
-    );
-  };
-
   if (isLoading) {
     return (
       <Card>
@@ -172,109 +141,6 @@ export const UserManagement = () => {
 
   const ownerUsers = users?.filter(user => user.role === 'owner') || [];
   const subscriberUsers = users?.filter(user => user.role === 'subscriber') || [];
-
-  const renderUserTable = (userList: UserManagementProfile[], userType: 'owner' | 'subscriber') => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>User</TableHead>
-          <TableHead>Role</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Credits</TableHead>
-          <TableHead>Joined</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {userList?.map((userProfile) => {
-          const credits = creditsMap?.get(userProfile.id);
-          return (
-            <TableRow key={userProfile.id}>
-              <TableCell>
-                <div className="flex items-center space-x-2">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <div className="font-medium">{userProfile.full_name || 'Unnamed User'}</div>
-                    <div className="text-sm text-muted-foreground">{userProfile.email}</div>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge variant={userProfile.role === 'owner' ? 'default' : 'secondary'}>
-                  {userProfile.role === 'owner' && <Crown className="h-3 w-3 mr-1" />}
-                  {userProfile.role}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {getActivityStatusBadge(userProfile)}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center space-x-1">
-                  <Coins className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">
-                    {credits?.current_balance || 0}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center space-x-1">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    {userProfile.created_at ? format(new Date(userProfile.created_at), 'MMM dd, yyyy') : 'Unknown'}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex space-x-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEditUser(userProfile)}
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleManageCredits(userProfile)}
-                  >
-                    <Coins className="h-4 w-4 mr-1" />
-                    Credits
-                  </Button>
-                  {userProfile.role === 'subscriber' && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => updateUserRole(userProfile.id, 'owner')}
-                    >
-                      Make Owner
-                    </Button>
-                  )}
-                  {userProfile.role === 'owner' && userProfile.id !== user?.id && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => updateUserRole(userProfile.id, 'subscriber')}
-                    >
-                      Remove Owner
-                    </Button>
-                  )}
-                </div>
-              </TableCell>
-            </TableRow>
-          );
-        })}
-        {userList?.length === 0 && (
-          <TableRow>
-            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-              No {userType === 'owner' ? 'owners' : 'subscribers'} found
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
-  );
 
   return (
     <Card>
@@ -304,11 +170,25 @@ export const UserManagement = () => {
           </TabsList>
 
           <TabsContent value="subscribers" className="mt-6">
-            {renderUserTable(subscriberUsers, 'subscriber')}
+            <UserTable
+              userList={subscriberUsers}
+              userType="subscriber"
+              creditsMap={creditsMap}
+              onEditUser={handleEditUser}
+              onManageCredits={handleManageCredits}
+              onUpdateUserRole={updateUserRole}
+            />
           </TabsContent>
 
           <TabsContent value="owners" className="mt-6">
-            {renderUserTable(ownerUsers, 'owner')}
+            <UserTable
+              userList={ownerUsers}
+              userType="owner"
+              creditsMap={creditsMap}
+              onEditUser={handleEditUser}
+              onManageCredits={handleManageCredits}
+              onUpdateUserRole={updateUserRole}
+            />
           </TabsContent>
         </Tabs>
       </CardContent>

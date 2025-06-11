@@ -1,13 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-
-interface UserCreditsData {
-  user_id: string;
-  current_balance: number;
-  total_purchased: number;
-  total_used: number;
-}
+import { UserCreditsData } from '@/types/userManagement';
 
 export const useUserManagementCredits = () => {
   return useQuery({
