@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 
@@ -83,8 +82,7 @@ async function getClaudeSettings(supabase: any): Promise<{ apiKey: string; model
     console.log('Claude settings retrieved:', {
       enabled: settings.claude_ai_enabled,
       model: settings.claude_model,
-      systemPromptLength: settings.claude_system_prompt?.length || 0,
-      hasApiKey: false
+      systemPromptLength: settings.claude_system_prompt?.length || 0
     });
 
     const { data: apiKeyData, error: apiKeyError } = await supabase
@@ -108,7 +106,7 @@ async function getClaudeSettings(supabase: any): Promise<{ apiKey: string; model
 
     return {
       apiKey,
-      model: settings.claude_model || 'claude-3-5-haiku-20241022',
+      model: settings.claude_model || 'claude-sonnet-4-20250514',
       systemPrompt: settings.claude_system_prompt || 'You are a UX analytics expert that provides insights on user behavior and experience patterns. When analyzing designs or images, provide detailed feedback on usability, visual hierarchy, accessibility, and conversion optimization opportunities.'
     };
   } catch (error) {
@@ -144,7 +142,7 @@ async function verifyStorageBucket(supabase: any): Promise<boolean> {
 }
 
 async function downloadImageFromStorage(supabase: any, filePath: string): Promise<{ base64: string; mimeType: string } | null> {
-  const maxRetries = 3;
+  const maxRetries = 2; // Reduced retries for faster failure detection
   let attempt = 0;
   
   while (attempt < maxRetries) {
@@ -156,27 +154,27 @@ async function downloadImageFromStorage(supabase: any, filePath: string): Promis
       const bucketExists = await verifyStorageBucket(supabase);
       if (!bucketExists) {
         console.error('Storage bucket verification failed');
-        return null;
+        throw new Error('Storage bucket not accessible');
       }
       
-      // Create a signed URL with shorter expiration
+      // Create a signed URL with appropriate timeout
       const { data: urlData, error: urlError } = await supabase.storage
         .from('design-uploads')
         .createSignedUrl(filePath, 300); // 5 minutes
 
       if (urlError || !urlData?.signedUrl) {
         console.error('Failed to create signed URL:', urlError);
-        attempt++;
-        if (attempt >= maxRetries) return null;
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
-        continue;
+        throw new Error(`Signed URL creation failed: ${urlError?.message || 'Unknown error'}`);
       }
 
       console.log('Signed URL created successfully');
       
-      // Download with timeout and proper error handling
+      // Download with enhanced error handling and timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        console.log('Download timeout after 20 seconds');
+      }, 20000); // 20 second timeout for URLs
       
       try {
         const response = await fetch(urlData.signedUrl, {
@@ -197,41 +195,42 @@ async function downloadImageFromStorage(supabase: any, filePath: string): Promis
         
         if (!response.ok) {
           console.error(`Download failed with status ${response.status}: ${response.statusText}`);
-          attempt++;
-          if (attempt >= maxRetries) return null;
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-          continue;
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
         const contentType = response.headers.get('content-type') || 'image/png';
         
-        // Check if content type is actually an image
+        // Enhanced content type validation
         if (!contentType.startsWith('image/')) {
           console.error('Downloaded file is not an image:', contentType);
-          return null;
+          throw new Error(`Invalid content type: ${contentType}`);
         }
         
         const arrayBuffer = await response.arrayBuffer();
         
-        // Validate file size (max 50MB)
-        if (arrayBuffer.byteLength > 50 * 1024 * 1024) {
+        // Enhanced size validation
+        const maxSize = 20 * 1024 * 1024; // 20MB limit
+        if (arrayBuffer.byteLength > maxSize) {
           console.error('File too large:', arrayBuffer.byteLength);
-          return null;
+          throw new Error(`File size ${Math.round(arrayBuffer.byteLength / 1024 / 1024)}MB exceeds 20MB limit`);
         }
         
         if (arrayBuffer.byteLength === 0) {
           console.error('Downloaded file is empty');
-          attempt++;
-          if (attempt >= maxRetries) return null;
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-          continue;
+          throw new Error('Downloaded file is empty');
         }
         
-        // Convert to base64 efficiently
+        // Convert to base64 with memory efficiency
         const uint8Array = new Uint8Array(arrayBuffer);
-        const base64 = btoa(String.fromCharCode(...uint8Array));
+        const chunkSize = 8192;
+        let base64 = '';
         
-        console.log('Image downloaded successfully:', {
+        for (let i = 0; i < uint8Array.length; i += chunkSize) {
+          const chunk = uint8Array.slice(i, i + chunkSize);
+          base64 += btoa(String.fromCharCode(...chunk));
+        }
+        
+        console.log('Image downloaded and converted successfully:', {
           sizeBytes: arrayBuffer.byteLength,
           mimeType: contentType,
           base64Length: base64.length
@@ -245,23 +244,25 @@ async function downloadImageFromStorage(supabase: any, filePath: string): Promis
         
         if (fetchError.name === 'AbortError') {
           console.error('Download timed out');
+          throw new Error('Download timeout - file may be too large or connection is slow');
         } else {
           console.error('Fetch error:', fetchError);
+          throw fetchError;
         }
-        
-        attempt++;
-        if (attempt >= maxRetries) return null;
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
       }
       
     } catch (error) {
-      console.error(`Attempt ${attempt + 1} failed:`, error);
+      console.error(`Download attempt ${attempt + 1} failed:`, error);
       attempt++;
+      
       if (attempt >= maxRetries) {
         console.error('All download attempts failed');
         return null;
       }
-      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      
+      // Exponential backoff with jitter
+      const backoffMs = Math.min(1000 * Math.pow(2, attempt) + Math.random() * 1000, 5000);
+      await new Promise(resolve => setTimeout(resolve, backoffMs));
     }
   }
   
@@ -273,13 +274,32 @@ async function downloadImageFromUrl(url: string): Promise<{ base64: string; mime
     console.log('=== DOWNLOADING IMAGE FROM URL ===');
     console.log('URL:', url);
     
+    // Enhanced URL validation
+    let urlObj;
+    try {
+      urlObj = new URL(url);
+    } catch {
+      console.error('Invalid URL format');
+      return null;
+    }
+    
+    // Basic security check
+    if (!['http:', 'https:'].includes(urlObj.protocol)) {
+      console.error('Unsupported protocol:', urlObj.protocol);
+      return null;
+    }
+    
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      console.log('URL download timeout after 15 seconds');
+    }, 15000); // 15 second timeout for URLs
     
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Supabase-Edge-Function'
+        'User-Agent': 'Supabase-Edge-Function',
+        'Accept': 'image/*'
       }
     });
     
@@ -305,7 +325,7 @@ async function downloadImageFromUrl(url: string): Promise<{ base64: string; mime
 
     const arrayBuffer = await response.arrayBuffer();
     
-    if (arrayBuffer.byteLength > 50 * 1024 * 1024) {
+    if (arrayBuffer.byteLength > 20 * 1024 * 1024) {
       console.error('Image too large from URL:', arrayBuffer.byteLength);
       return null;
     }
@@ -323,6 +343,11 @@ async function downloadImageFromUrl(url: string): Promise<{ base64: string; mime
     return { base64, mimeType: contentType };
   } catch (error) {
     console.error('Error downloading image from URL:', error);
+    
+    if (error.name === 'AbortError') {
+      console.error('URL download timed out');
+    }
+    
     return null;
   }
 }
@@ -332,6 +357,8 @@ async function processAttachmentsForVision(supabase: any, attachments: Attachmen
   console.log('Processing', attachments.length, 'attachments');
   
   const contentItems: Array<{ type: 'text' | 'image'; text?: string; source?: any }> = [];
+  let successfulImages = 0;
+  let failedImages = 0;
   
   for (let i = 0; i < attachments.length; i++) {
     const attachment = attachments[i];
@@ -349,29 +376,40 @@ async function processAttachmentsForVision(supabase: any, attachments: Attachmen
       console.log('Is image file:', isImage);
       
       if (isImage) {
-        const imageData = await downloadImageFromStorage(supabase, attachment.uploadPath);
-        
-        if (imageData) {
-          contentItems.push({
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: imageData.mimeType,
-              data: imageData.base64
-            }
-          });
-          console.log('Successfully added image to vision analysis:', attachment.name);
-        } else {
+        try {
+          const imageData = await downloadImageFromStorage(supabase, attachment.uploadPath);
+          
+          if (imageData) {
+            contentItems.push({
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: imageData.mimeType,
+                data: imageData.base64
+              }
+            });
+            successfulImages++;
+            console.log('Successfully added image to vision analysis:', attachment.name);
+          } else {
+            failedImages++;
+            contentItems.push({
+              type: 'text',
+              text: `[Image attachment: ${attachment.name} - Failed to load for analysis. The image may be corrupted, too large, or in an unsupported format. Please try uploading a smaller JPEG or PNG file.]`
+            });
+            console.log('Failed to load image, added detailed error message:', attachment.name);
+          }
+        } catch (error) {
+          failedImages++;
+          console.error('Image processing error:', error);
           contentItems.push({
             type: 'text',
-            text: `[Image attachment: ${attachment.name} - Failed to load for analysis. Please ensure the file was uploaded correctly and try again.]`
+            text: `[Image attachment: ${attachment.name} - Processing error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try re-uploading the image.]`
           });
-          console.log('Failed to load image, added error message:', attachment.name);
         }
       } else {
         contentItems.push({
           type: 'text',
-          text: `[File attachment: ${attachment.name} - Non-image files cannot be analyzed visually]`
+          text: `[File attachment: ${attachment.name} - Non-image files cannot be analyzed visually. For document analysis, please describe the content or provide screenshots.]`
         });
         console.log('Added non-image file as text reference:', attachment.name);
       }
@@ -385,31 +423,42 @@ async function processAttachmentsForVision(supabase: any, attachments: Attachmen
       console.log('Is image URL:', isImageUrl);
       
       if (isImageUrl) {
-        const imageData = await downloadImageFromUrl(attachment.url);
-        
-        if (imageData) {
-          contentItems.push({
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: imageData.mimeType,
-              data: imageData.base64
-            }
-          });
-          console.log('Successfully added URL image to vision analysis:', attachment.url);
-        } else {
+        try {
+          const imageData = await downloadImageFromUrl(attachment.url);
+          
+          if (imageData) {
+            contentItems.push({
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: imageData.mimeType,
+                data: imageData.base64
+              }
+            });
+            successfulImages++;
+            console.log('Successfully added URL image to vision analysis:', attachment.url);
+          } else {
+            failedImages++;
+            contentItems.push({
+              type: 'text',
+              text: `[Image URL: ${attachment.url} - Could not be loaded for analysis. The URL may be inaccessible, the image may be too large, or it may not be a valid image. Please check the URL and try again.]`
+            });
+            console.log('Failed to load URL image, added detailed error message:', attachment.url);
+          }
+        } catch (error) {
+          failedImages++;
+          console.error('URL image processing error:', error);
           contentItems.push({
             type: 'text',
-            text: `[Image URL: ${attachment.url} - Could not be loaded for analysis. Please check the URL and try again.]`
+            text: `[Image URL: ${attachment.url} - Processing error: ${error instanceof Error ? error.message : 'Unknown error'}]`
           });
-          console.log('Failed to load URL image, added error message:', attachment.url);
         }
       } else {
         contentItems.push({
           type: 'text',
-          text: `[Website URL: ${attachment.url} - For website analysis, please provide screenshots or describe the specific elements you'd like me to analyze.]`
+          text: `[Website URL: ${attachment.url} - For website analysis, I cannot directly access live websites. Please provide screenshots of the specific pages or elements you'd like me to analyze.]`
         });
-        console.log('Added non-image URL guidance:', attachment.url);
+        console.log('Added enhanced non-image URL guidance:', attachment.url);
       }
     } else {
       console.log('Skipping attachment (no valid path or URL):', {
@@ -424,7 +473,9 @@ async function processAttachmentsForVision(supabase: any, attachments: Attachmen
   console.log('Vision processing complete:', {
     totalContentItems: contentItems.length,
     imageItems: contentItems.filter(item => item.type === 'image').length,
-    textItems: contentItems.filter(item => item.type === 'text').length
+    textItems: contentItems.filter(item => item.type === 'text').length,
+    successfulImages,
+    failedImages
   });
   
   console.log('=== VISION PROCESSING END ===');
@@ -478,7 +529,7 @@ serve(async (req) => {
 
     const claudeSettings = await getClaudeSettings(supabase);
     
-    console.log('Starting attachment processing...');
+    console.log('Starting enhanced attachment processing...');
     const visionContent = await processAttachmentsForVision(supabase, attachments);
     
     let messageContent: string | Array<{ type: 'text' | 'image'; text?: string; source?: any }>;
@@ -607,11 +658,12 @@ serve(async (req) => {
         messageLength: message.length,
         tokensUsed,
         responseTimeMs: responseTime,
-        estimatedCost
+        estimatedCost,
+        enhancedProcessing: true
       }
     };
 
-    console.log('Sending successful response');
+    console.log('Sending successful response with enhanced processing');
     console.log('=== CLAUDE AI FUNCTION END ===');
 
     return new Response(
@@ -659,7 +711,8 @@ serve(async (req) => {
           errorType: error.name,
           timestamp: new Date().toISOString(),
           settingsSource: 'admin_settings',
-          responseTimeMs: Date.now() - startTime
+          responseTimeMs: Date.now() - startTime,
+          enhancedProcessing: true
         }
       }),
       {

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { TestTube, Send, Globe, Image, Loader2 } from 'lucide-react';
@@ -7,6 +6,7 @@ import { useChatAnalysis } from '@/hooks/useChatAnalysis';
 import { useToast } from '@/hooks/use-toast';
 import { useLogUserActivity } from '@/hooks/useAnalytics';
 import { supabase } from '@/integrations/supabase/client';
+import { ImageProcessor, validateImageFile, ProcessedImage } from '@/utils/imageProcessing';
 
 interface TestRunnerProps {
   testMessage: string;
@@ -65,6 +65,51 @@ export const TestRunner: React.FC<TestRunnerProps> = ({
       });
     } catch (error) {
       console.warn('Failed to log Claude usage:', error);
+    }
+  };
+
+  const processFileForTesting = async (file: File): Promise<{ file: File; processingInfo: ProcessedImage | null }> => {
+    try {
+      console.log('=== PROCESSING FILE FOR TESTING ===');
+      console.log('Original file:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      });
+
+      // Validate file first
+      const validation = validateImageFile(file);
+      if (!validation.isValid) {
+        throw new Error(validation.error || 'Invalid file');
+      }
+
+      // Only process if it's an image and needs compression
+      if (file.type.startsWith('image/') && file.size > 2 * 1024 * 1024) {
+        console.log('Image is large, processing...');
+        
+        const processed = await ImageProcessor.processImage(file, {
+          maxWidth: 1600,
+          maxHeight: 1200,
+          quality: 0.8,
+          targetFormat: 'jpeg'
+        });
+
+        console.log('Image processed successfully:', {
+          originalSize: processed.originalSize,
+          processedSize: processed.processedSize,
+          compressionRatio: processed.compressionRatio,
+          dimensions: processed.dimensions
+        });
+
+        return { file: processed.file, processingInfo: processed };
+      }
+
+      console.log('File does not need processing, using original');
+      return { file, processingInfo: null };
+
+    } catch (error) {
+      console.error('File processing failed:', error);
+      throw new Error(`File processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -264,20 +309,29 @@ export const TestRunner: React.FC<TestRunnerProps> = ({
     const startTime = Date.now();
     
     try {
-      console.log('=== STARTING FILE CLAUDE TEST ===');
+      console.log('=== STARTING ENHANCED FILE CLAUDE TEST ===');
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const fileExt = testFile.name.split('.').pop();
+      // Process the file with enhanced error handling
+      const { file: processedFile, processingInfo } = await processFileForTesting(testFile);
+
+      const fileExt = processedFile.name.split('.').pop();
       const fileName = `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
-      console.log('Uploading test file:', { fileName, filePath, fileSize: testFile.size });
+      console.log('Uploading processed file:', { 
+        fileName, 
+        filePath, 
+        originalSize: testFile.size,
+        processedSize: processedFile.size,
+        wasProcessed: !!processingInfo
+      });
 
       const { error: uploadError } = await supabase.storage
         .from('design-uploads')
-        .upload(filePath, testFile);
+        .upload(filePath, processedFile);
 
       if (uploadError) {
         throw new Error(`Upload failed: ${uploadError.message}`);
@@ -286,8 +340,8 @@ export const TestRunner: React.FC<TestRunnerProps> = ({
       const fileAttachment: ChatAttachment = {
         id: crypto.randomUUID(),
         type: 'file',
-        name: testFile.name,
-        file: testFile,
+        name: processedFile.name,
+        file: processedFile,
         uploadPath: filePath,
         status: 'uploaded'
       };
@@ -299,12 +353,15 @@ export const TestRunner: React.FC<TestRunnerProps> = ({
 
       const responseTime = Date.now() - startTime;
       const testResult = {
-        type: 'File Test',
+        type: 'Enhanced File Test',
         timestamp: new Date().toISOString(),
         success: true,
         message: testMessage,
-        fileName: testFile.name,
-        fileSize: testFile.size,
+        fileName: processedFile.name,
+        fileSize: processedFile.size,
+        originalFileSize: testFile.size,
+        wasProcessed: !!processingInfo,
+        compressionRatio: processingInfo?.compressionRatio || 0,
         response: result.analysis,
         responseLength: result.analysis.length,
         responseTime,
@@ -313,38 +370,44 @@ export const TestRunner: React.FC<TestRunnerProps> = ({
 
       onTestResult(testResult);
       
-      await logTestActivity('file_test', true, {
-        file_name: testFile.name,
-        file_size: testFile.size,
-        file_type: testFile.type,
+      await logTestActivity('enhanced_file_test', true, {
+        file_name: processedFile.name,
+        file_size: processedFile.size,
+        original_file_size: testFile.size,
+        file_type: processedFile.type,
+        was_processed: !!processingInfo,
+        compression_ratio: processingInfo?.compressionRatio || 0,
         response_length: result.analysis.length,
         response_time_ms: responseTime
       });
 
-      await logClaudeUsage('file_analysis_test', true, responseTime, {
+      await logClaudeUsage('enhanced_file_analysis_test', true, responseTime, {
         tokensUsed: result.debugInfo?.tokensUsed,
         cost: result.debugInfo?.cost,
         requestData: { 
           message: testMessage, 
-          file_name: testFile.name,
-          file_size: testFile.size,
-          file_type: testFile.type
+          file_name: processedFile.name,
+          file_size: processedFile.size,
+          file_type: processedFile.type,
+          was_processed: !!processingInfo
         },
         responseData: { analysis: result.analysis.substring(0, 500) }
       });
       
       toast({
-        title: "File Test Completed",
-        description: "Claude AI analyzed the file successfully.",
+        title: "Enhanced File Test Completed",
+        description: processingInfo 
+          ? `File processed and analyzed successfully (${processingInfo.compressionRatio}% compression)`
+          : "File analyzed successfully",
       });
       
-      console.log('File test completed successfully:', testResult);
+      console.log('Enhanced file test completed successfully:', testResult);
     } catch (error) {
       const responseTime = Date.now() - startTime;
-      console.error('File test failed:', error);
+      console.error('Enhanced file test failed:', error);
       
       const testResult = {
-        type: 'File Test',
+        type: 'Enhanced File Test',
         timestamp: new Date().toISOString(),
         success: false,
         message: testMessage,
@@ -357,7 +420,7 @@ export const TestRunner: React.FC<TestRunnerProps> = ({
 
       onTestResult(testResult);
       
-      await logTestActivity('file_test', false, {
+      await logTestActivity('enhanced_file_test', false, {
         file_name: testFile?.name,
         file_size: testFile?.size,
         file_type: testFile?.type,
@@ -365,7 +428,7 @@ export const TestRunner: React.FC<TestRunnerProps> = ({
         response_time_ms: responseTime
       });
 
-      await logClaudeUsage('file_analysis_test', false, responseTime, {
+      await logClaudeUsage('enhanced_file_analysis_test', false, responseTime, {
         error: error instanceof Error ? error.message : 'Unknown error',
         requestData: { 
           message: testMessage,
@@ -376,7 +439,7 @@ export const TestRunner: React.FC<TestRunnerProps> = ({
       
       toast({
         variant: "destructive",
-        title: "File Test Failed",
+        title: "Enhanced File Test Failed",
         description: error instanceof Error ? error.message : 'Test failed with unknown error',
       });
     } finally {
@@ -525,7 +588,7 @@ export const TestRunner: React.FC<TestRunnerProps> = ({
         ) : (
           <Image className="h-3 w-3 mr-1" />
         )}
-        Test File
+        Enhanced File Test
       </Button>
     </div>
   );

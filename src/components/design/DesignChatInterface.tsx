@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,9 @@ import { FileUploadDropzone } from './chat/FileUploadDropzone';
 import { URLInput } from './chat/URLInput';
 import { MessageInput } from './chat/MessageInput';
 import { DebugPanel } from './chat/DebugPanel';
+import { EnhancedImageUpload } from './chat/EnhancedImageUpload';
 import { verifyStorageAccess } from '@/utils/storageUtils';
+import { validateImageFile, ProcessedImage } from '@/utils/imageProcessing';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ChatAttachment {
@@ -27,8 +28,9 @@ export interface ChatAttachment {
   file?: File;
   url?: string;
   uploadPath?: string;
-  status?: 'pending' | 'uploading' | 'uploaded' | 'error';
+  status?: 'pending' | 'uploading' | 'uploaded' | 'error' | 'processing';
   errorMessage?: string;
+  processingInfo?: ProcessedImage;
 }
 
 export interface ChatMessage {
@@ -50,6 +52,7 @@ export const DesignChatInterface = () => {
   const [storageStatus, setStorageStatus] = useState<'checking' | 'ready' | 'error'>('checking');
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [pendingImageProcessing, setPendingImageProcessing] = useState<Set<string>>(new Set());
   
   const { toast } = useToast();
   const { analyzeWithChat } = useChatAnalysis();
@@ -114,12 +117,69 @@ export const DesignChatInterface = () => {
     return filePath;
   };
 
-  const updateAttachmentStatus = (id: string, status: ChatAttachment['status'], errorMessage?: string, uploadPath?: string) => {
+  const updateAttachmentStatus = (id: string, status: ChatAttachment['status'], errorMessage?: string, uploadPath?: string, processingInfo?: ProcessedImage) => {
     setAttachments(prev => prev.map(att => 
       att.id === id 
-        ? { ...att, status, errorMessage, uploadPath }
+        ? { ...att, status, errorMessage, uploadPath, processingInfo }
         : att
     ));
+  };
+
+  const handleImageProcessed = async (attachmentId: string, processedFile: File, processingInfo: ProcessedImage) => {
+    try {
+      console.log('Image processed, uploading to storage:', {
+        attachmentId,
+        originalSize: processingInfo.originalSize,
+        processedSize: processingInfo.processedSize,
+        compressionRatio: processingInfo.compressionRatio
+      });
+
+      updateAttachmentStatus(attachmentId, 'uploading', undefined, undefined, processingInfo);
+
+      const uploadPath = await uploadFileToStorage(processedFile);
+      updateAttachmentStatus(attachmentId, 'uploaded', undefined, uploadPath, processingInfo);
+
+      setPendingImageProcessing(prev => {
+        const updated = new Set(prev);
+        updated.delete(attachmentId);
+        return updated;
+      });
+
+      toast({
+        title: "Image Ready",
+        description: processingInfo.compressionRatio > 0 
+          ? `Image processed and uploaded (${processingInfo.compressionRatio}% compression)`
+          : "Image uploaded successfully",
+      });
+
+    } catch (error) {
+      console.error('Failed to upload processed image:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+      updateAttachmentStatus(attachmentId, 'error', errorMessage);
+      
+      setPendingImageProcessing(prev => {
+        const updated = new Set(prev);
+        updated.delete(attachmentId);
+        return updated;
+      });
+
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
+        description: errorMessage,
+      });
+    }
+  };
+
+  const handleImageProcessingError = (attachmentId: string, error: string) => {
+    console.error('Image processing failed:', { attachmentId, error });
+    updateAttachmentStatus(attachmentId, 'error', error);
+    
+    setPendingImageProcessing(prev => {
+      const updated = new Set(prev);
+      updated.delete(attachmentId);
+      return updated;
+    });
   };
 
   const onDrop = async (acceptedFiles: File[]) => {
@@ -132,42 +192,77 @@ export const DesignChatInterface = () => {
       return;
     }
 
-    const newAttachments: ChatAttachment[] = acceptedFiles.map(file => ({
-      id: crypto.randomUUID(),
-      type: 'file',
-      name: file.name,
-      file,
-      status: 'pending'
-    }));
+    const newAttachments: ChatAttachment[] = [];
+    const imageFiles: File[] = [];
+    const nonImageFiles: File[] = [];
 
-    setAttachments(prev => [...prev, ...newAttachments]);
+    // Separate image and non-image files
+    acceptedFiles.forEach(file => {
+      if (file.type.startsWith('image/')) {
+        imageFiles.push(file);
+      } else {
+        nonImageFiles.push(file);
+      }
+    });
 
-    // Upload files one by one with proper error handling
-    for (const attachment of newAttachments) {
+    // Handle non-image files with traditional upload
+    for (const file of nonImageFiles) {
+      const attachment: ChatAttachment = {
+        id: crypto.randomUUID(),
+        type: 'file',
+        name: file.name,
+        file,
+        status: 'pending'
+      };
+
+      newAttachments.push(attachment);
+
       try {
         updateAttachmentStatus(attachment.id, 'uploading');
+        const uploadPath = await uploadFileToStorage(file);
+        updateAttachmentStatus(attachment.id, 'uploaded', undefined, uploadPath);
         
-        if (attachment.file) {
-          const uploadPath = await uploadFileToStorage(attachment.file);
-          updateAttachmentStatus(attachment.id, 'uploaded', undefined, uploadPath);
-          
-          toast({
-            title: "File Uploaded",
-            description: `${attachment.name} has been uploaded successfully.`,
-          });
-        }
+        toast({
+          title: "File Uploaded",
+          description: `${file.name} has been uploaded successfully.`,
+        });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Upload failed';
         updateAttachmentStatus(attachment.id, 'error', errorMessage);
         
-        console.error('File upload failed:', error);
         toast({
           variant: "destructive",
           title: "Upload Failed",
-          description: `Failed to upload ${attachment.name}: ${errorMessage}`,
+          description: `Failed to upload ${file.name}: ${errorMessage}`,
         });
       }
     }
+
+    // Handle image files with enhanced processing
+    for (const file of imageFiles) {
+      const validation = validateImageFile(file);
+      if (!validation.isValid) {
+        toast({
+          variant: "destructive",
+          title: "Invalid Image",
+          description: validation.error,
+        });
+        continue;
+      }
+
+      const attachment: ChatAttachment = {
+        id: crypto.randomUUID(),
+        type: 'file',
+        name: file.name,
+        file,
+        status: 'processing'
+      };
+
+      newAttachments.push(attachment);
+      setPendingImageProcessing(prev => new Set(prev).add(attachment.id));
+    }
+
+    setAttachments(prev => [...prev, ...newAttachments]);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -202,18 +297,25 @@ export const DesignChatInterface = () => {
 
   const removeAttachment = (id: string) => {
     setAttachments(prev => prev.filter(att => att.id !== id));
+    setPendingImageProcessing(prev => {
+      const updated = new Set(prev);
+      updated.delete(id);
+      return updated;
+    });
   };
 
   const handleSendMessage = async () => {
     if (!message.trim() && attachments.length === 0) return;
 
-    // Check if any attachments are still uploading
-    const uploadingAttachments = attachments.filter(att => att.status === 'uploading');
-    if (uploadingAttachments.length > 0) {
+    // Check if any attachments are still processing
+    const processingAttachments = attachments.filter(att => 
+      att.status === 'uploading' || att.status === 'processing'
+    );
+    if (processingAttachments.length > 0) {
       toast({
         variant: "destructive",
         title: "Upload in Progress",
-        description: "Please wait for all files to finish uploading before sending.",
+        description: "Please wait for all files to finish processing and uploading before sending.",
       });
       return;
     }
@@ -338,10 +440,22 @@ export const DesignChatInterface = () => {
               isDragActive={isDragActive}
             />
 
+            {/* Enhanced Image Processing Display */}
+            {attachments.filter(att => att.status === 'processing').map(attachment => (
+              <EnhancedImageUpload
+                key={attachment.id}
+                file={attachment.file!}
+                onProcessed={(processedFile, processingInfo) => 
+                  handleImageProcessed(attachment.id, processedFile, processingInfo)
+                }
+                onError={(error) => handleImageProcessingError(attachment.id, error)}
+              />
+            ))}
+
             {/* Attachments */}
-            {attachments.length > 0 && (
+            {attachments.filter(att => att.status !== 'processing').length > 0 && (
               <ChatAttachments 
-                attachments={attachments} 
+                attachments={attachments.filter(att => att.status !== 'processing')} 
                 onRemove={removeAttachment} 
               />
             )}
