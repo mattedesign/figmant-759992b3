@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +12,7 @@ const Index = () => {
 
   const features = [
     {
-      icon: Brain,
+      icon: Zap,
       title: 'AI-Powered Insights',
       description: 'Claude AI analyzes your UX data to provide intelligent recommendations and identify patterns.',
     },
