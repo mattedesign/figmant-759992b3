@@ -316,12 +316,18 @@ serve(async (req) => {
 
   try {
     const requestBody = await req.json();
-    const { message, attachments = [], uploadIds = [] } = requestBody;
+    console.log('Raw request body:', JSON.stringify(requestBody, null, 2));
     
-    console.log('Request data received:', { 
-      messageLength: message?.length, 
+    // More flexible parameter extraction
+    const message = requestBody.message || requestBody.prompt || '';
+    const attachments = requestBody.attachments || [];
+    const uploadIds = requestBody.uploadIds || [];
+    
+    console.log('Extracted parameters:', { 
+      messageLength: message?.length || 0, 
       attachmentsCount: attachments.length,
       uploadIdsCount: uploadIds.length,
+      messagePreview: message ? message.substring(0, 100) + '...' : 'No message',
       attachmentSummary: attachments.map((att: any) => ({
         type: att.type,
         name: att.name,
@@ -331,8 +337,9 @@ serve(async (req) => {
     });
 
     // Validate that we have a message
-    if (!message || typeof message !== 'string') {
-      throw new Error('Message is required and must be a string');
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      console.error('Invalid message received:', { message, type: typeof message });
+      throw new Error('Message is required and must be a non-empty string');
     }
 
     // Environment check
@@ -467,7 +474,10 @@ serve(async (req) => {
         processedContent: visionContent.length,
         imagesProcessed: visionContent.filter(item => item.type === 'image').length,
         textItemsProcessed: visionContent.filter(item => item.type === 'text').length,
-        settingsSource: 'admin_settings'
+        settingsSource: 'admin_settings',
+        model: claudeSettings.model,
+        messageReceived: !!message,
+        messageLength: message.length
       }
     };
 
