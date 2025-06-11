@@ -13,7 +13,7 @@ import {
 import { CreatePromptForm } from './CreatePromptForm';
 import { PromptCategoryList } from './PromptCategoryList';
 import { PromptSeeder } from './PromptSeeder';
-import { MasterPromptUpdater } from './MasterPromptUpdater';
+import { PromptEnhancementManager } from './PromptEnhancementManager';
 
 export const ClaudePromptManager = () => {
   const { toast } = useToast();
@@ -125,7 +125,7 @@ export const ClaudePromptManager = () => {
             </TabsList>
 
             <TabsContent value="enhance" className="space-y-4">
-              <MasterPromptUpdater />
+              <PromptEnhancementManager />
             </TabsContent>
 
             <TabsContent value="examples" className="space-y-4">
