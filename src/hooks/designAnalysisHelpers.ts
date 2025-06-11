@@ -14,7 +14,7 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
 
     console.log('Status updated to processing');
 
-    // Get the uploaded design details
+    // Get the uploaded design details and context files
     const { data: upload } = await supabase
       .from('design_uploads')
       .select('*')
@@ -23,11 +23,35 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
 
     if (!upload) throw new Error('Upload not found');
 
+    // Get context files if context integration is enabled
+    let contextContent = '';
+    if (upload.analysis_preferences?.context_integration) {
+      const { data: contextFiles } = await supabase
+        .from('design_context_files')
+        .select('*')
+        .eq('upload_id', uploadId);
+
+      if (contextFiles && contextFiles.length > 0) {
+        console.log('Found context files:', contextFiles.length);
+        contextContent = '\n\nAdditional Context Files:\n';
+        
+        for (const contextFile of contextFiles) {
+          contextContent += `\n--- ${contextFile.file_name} ---\n`;
+          if (contextFile.content_preview) {
+            contextContent += contextFile.content_preview + '\n';
+          } else {
+            contextContent += `[File: ${contextFile.file_name}, Type: ${contextFile.file_type}]\n`;
+          }
+        }
+      }
+    }
+
     console.log('Upload details:', { 
       source_type: upload.source_type, 
       file_path: upload.file_path, 
       source_url: upload.source_url,
-      analysis_goals: upload.analysis_goals
+      analysis_goals: upload.analysis_goals,
+      has_context: contextContent.length > 0
     });
 
     let analysisTarget = '';
@@ -74,12 +98,26 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    // Build enhanced prompt with user context
+    // Build enhanced prompt with user context and analysis preferences
     let enhancedPrompt = useCase.prompt_template;
+    
+    // Add analysis depth preference
+    const analysisDepth = upload.analysis_preferences?.analysis_depth || 'detailed';
+    if (analysisDepth === 'comprehensive') {
+      enhancedPrompt += '\n\nPlease provide a comprehensive analysis with detailed explanations, multiple perspectives, and thorough recommendations.';
+    } else if (analysisDepth === 'basic') {
+      enhancedPrompt += '\n\nPlease provide a concise, focused analysis highlighting the most critical points.';
+    }
     
     if (upload.analysis_goals) {
       enhancedPrompt += `\n\nSpecific Analysis Goals & Context: ${upload.analysis_goals}`;
       enhancedPrompt += '\n\nPlease tailor your analysis to address these specific goals and provide insights that directly relate to the user\'s objectives.';
+    }
+
+    // Add context files content if available
+    if (contextContent) {
+      enhancedPrompt += contextContent;
+      enhancedPrompt += '\n\nPlease incorporate insights from the provided context files into your analysis where relevant.';
     }
 
     enhancedPrompt += `\n\n${analysisTarget}`;
@@ -199,6 +237,27 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
       throw new Error('No completed uploads found in batch');
     }
 
+    // Get context files for the batch
+    let batchContextContent = '';
+    const { data: contextFiles } = await supabase
+      .from('design_context_files')
+      .select('*')
+      .in('upload_id', uploads.map(u => u.id));
+
+    if (contextFiles && contextFiles.length > 0) {
+      console.log('Found batch context files:', contextFiles.length);
+      batchContextContent = '\n\nBatch Context Files:\n';
+      
+      for (const contextFile of contextFiles) {
+        batchContextContent += `\n--- ${contextFile.file_name} ---\n`;
+        if (contextFile.content_preview) {
+          batchContextContent += contextFile.content_preview + '\n';
+        } else {
+          batchContextContent += `[File: ${contextFile.file_name}, Type: ${contextFile.file_type}]\n`;
+        }
+      }
+    }
+
     // Get all individual analyses for this batch
     const analysisPromises = uploads.map(upload => 
       supabase
@@ -218,18 +277,21 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
       throw new Error('No individual analyses found for batch comparison');
     }
 
-    // Create comparative analysis prompt
+    // Create comparative analysis prompt with context
     const batchPrompt = `
       ${useCase.prompt_template}
       
-      BATCH ANALYSIS REQUEST:
-      You are analyzing a batch of ${uploads.length} designs for comparative insights.
+      COMPARATIVE BATCH ANALYSIS REQUEST:
+      You are analyzing a batch of ${uploads.length} designs for comprehensive comparative insights.
       
       Please provide:
-      1. A comparative analysis highlighting key differences and similarities
-      2. Identify the strongest performing design and explain why
-      3. Key metrics and patterns across all designs
-      4. Actionable recommendations for improvement
+      1. A detailed comparative analysis highlighting key differences, similarities, and patterns
+      2. Identify the strongest performing design(s) and explain why with specific criteria
+      3. Key metrics, trends, and insights across all designs
+      4. Actionable recommendations for improvement and optimization
+      5. Best practices identified from the comparison
+      
+      ${batchContextContent}
       
       Individual Analysis Results:
       ${successfulAnalyses.map((analysis, index) => `
@@ -237,6 +299,8 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
         ${analysis.analysis_results?.response}
         ---
       `).join('\n')}
+      
+      Please incorporate any relevant context from the provided files and focus on delivering actionable, data-driven insights for decision making.
     `;
 
     // Call Claude AI for batch analysis
@@ -253,7 +317,12 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
       throw new Error(`Batch analysis failed: ${claudeError.message}`);
     }
 
-    // Save batch analysis results
+    // Prepare context summary
+    const contextSummary = contextFiles && contextFiles.length > 0 ? 
+      `Analysis enhanced with ${contextFiles.length} context files: ${contextFiles.map(f => f.file_name).join(', ')}` : 
+      null;
+
+    // Save batch analysis results with enhanced metadata
     const { data: batchAnalysis, error: saveError } = await supabase
       .from('design_batch_analysis')
       .insert({
@@ -262,6 +331,12 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
         analysis_type: useCase.name,
         prompt_used: batchPrompt,
         analysis_results: { response: batchAnalysisResponse.response },
+        context_summary: contextSummary,
+        analysis_settings: {
+          uploads_count: uploads.length,
+          context_files_count: contextFiles?.length || 0,
+          analysis_depth: uploads[0]?.analysis_preferences?.analysis_depth || 'detailed'
+        },
         confidence_score: 0.85
       })
       .select()

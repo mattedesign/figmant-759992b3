@@ -199,9 +199,11 @@ export type Database = {
       design_batch_analysis: {
         Row: {
           analysis_results: Json
+          analysis_settings: Json | null
           analysis_type: string
           batch_id: string
           confidence_score: number | null
+          context_summary: string | null
           created_at: string
           id: string
           key_metrics: Json | null
@@ -212,9 +214,11 @@ export type Database = {
         }
         Insert: {
           analysis_results: Json
+          analysis_settings?: Json | null
           analysis_type: string
           batch_id: string
           confidence_score?: number | null
+          context_summary?: string | null
           created_at?: string
           id?: string
           key_metrics?: Json | null
@@ -225,9 +229,11 @@ export type Database = {
         }
         Update: {
           analysis_results?: Json
+          analysis_settings?: Json | null
           analysis_type?: string
           batch_id?: string
           confidence_score?: number | null
+          context_summary?: string | null
           created_at?: string
           id?: string
           key_metrics?: Json | null
@@ -238,9 +244,54 @@ export type Database = {
         }
         Relationships: []
       }
+      design_context_files: {
+        Row: {
+          content_preview: string | null
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          upload_id: string
+          user_id: string
+        }
+        Insert: {
+          content_preview?: string | null
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          upload_id: string
+          user_id: string
+        }
+        Update: {
+          content_preview?: string | null
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          upload_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "design_context_files_upload_id_fkey"
+            columns: ["upload_id"]
+            isOneToOne: false
+            referencedRelation: "design_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       design_uploads: {
         Row: {
           analysis_goals: string | null
+          analysis_preferences: Json | null
           batch_id: string | null
           batch_name: string | null
           created_at: string
@@ -258,6 +309,7 @@ export type Database = {
         }
         Insert: {
           analysis_goals?: string | null
+          analysis_preferences?: Json | null
           batch_id?: string | null
           batch_name?: string | null
           created_at?: string
@@ -275,6 +327,7 @@ export type Database = {
         }
         Update: {
           analysis_goals?: string | null
+          analysis_preferences?: Json | null
           batch_id?: string | null
           batch_name?: string | null
           created_at?: string

@@ -13,8 +13,28 @@ export interface DesignUpload {
   batch_id: string | null;
   batch_name: string | null;
   analysis_goals: string | null;
+  analysis_preferences: AnalysisPreferences | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface AnalysisPreferences {
+  auto_comparative: boolean;
+  context_integration: boolean;
+  analysis_depth?: 'basic' | 'detailed' | 'comprehensive';
+  focus_areas?: string[];
+}
+
+export interface DesignContextFile {
+  id: string;
+  upload_id: string;
+  user_id: string;
+  file_name: string;
+  file_path: string;
+  file_type: string;
+  file_size: number | null;
+  content_preview: string | null;
+  created_at: string;
 }
 
 export interface DesignAnalysis {
@@ -41,6 +61,8 @@ export interface DesignBatchAnalysis {
   key_metrics?: any;
   recommendations?: any;
   confidence_score: number;
+  context_summary?: string;
+  analysis_settings?: any;
   created_at: string;
 }
 
@@ -59,6 +81,8 @@ export interface BatchUpload {
   batchName: string;
   files: File[];
   urls: string[];
+  contextFiles?: File[];
   useCase: string;
   analysisGoals?: string;
+  analysisPreferences?: AnalysisPreferences;
 }
