@@ -15,6 +15,23 @@ export const Step2UploadFiles: React.FC<Step2UploadFilesProps> = ({
   data,
   onUpdate
 }) => {
+  // Wrapper functions to handle setState pattern conversion
+  const handleSelectedFilesChange = (files: File[] | ((prev: File[]) => File[])) => {
+    if (typeof files === 'function') {
+      onUpdate({ selectedFiles: files(data.selectedFiles) });
+    } else {
+      onUpdate({ selectedFiles: files });
+    }
+  };
+
+  const handleUrlsChange = (urls: string[] | ((prev: string[]) => string[])) => {
+    if (typeof urls === 'function') {
+      onUpdate({ urls: urls(data.urls) });
+    } else {
+      onUpdate({ urls });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -43,14 +60,14 @@ export const Step2UploadFiles: React.FC<Step2UploadFilesProps> = ({
         <TabsContent value="files" className="space-y-4">
           <FileUploadSection
             selectedFiles={data.selectedFiles}
-            setSelectedFiles={(files) => onUpdate({ selectedFiles: files })}
+            setSelectedFiles={handleSelectedFilesChange}
           />
         </TabsContent>
 
         <TabsContent value="urls" className="space-y-4">
           <URLUploadSection
             urls={data.urls}
-            setUrls={(urls) => onUpdate({ urls })}
+            setUrls={handleUrlsChange}
           />
         </TabsContent>
       </Tabs>

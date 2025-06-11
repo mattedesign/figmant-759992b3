@@ -2,6 +2,7 @@
 import React from 'react';
 import { WizardData } from '../types';
 import { AnalysisPreferencesSection } from '../../uploader/AnalysisPreferencesSection';
+import { AnalysisPreferences } from '@/types/design';
 
 interface Step5ConfigureAnalysisProps {
   data: WizardData;
@@ -12,6 +13,15 @@ export const Step5ConfigureAnalysis: React.FC<Step5ConfigureAnalysisProps> = ({
   data,
   onUpdate
 }) => {
+  // Wrapper function to handle setState pattern conversion
+  const handleAnalysisPreferencesChange = (prefs: AnalysisPreferences | ((prev: AnalysisPreferences) => AnalysisPreferences)) => {
+    if (typeof prefs === 'function') {
+      onUpdate({ analysisPreferences: prefs(data.analysisPreferences) });
+    } else {
+      onUpdate({ analysisPreferences: prefs });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -23,7 +33,7 @@ export const Step5ConfigureAnalysis: React.FC<Step5ConfigureAnalysisProps> = ({
 
       <AnalysisPreferencesSection
         analysisPreferences={data.analysisPreferences}
-        setAnalysisPreferences={(prefs) => onUpdate({ analysisPreferences: prefs })}
+        setAnalysisPreferences={handleAnalysisPreferencesChange}
       />
     </div>
   );

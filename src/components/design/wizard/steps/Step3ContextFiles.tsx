@@ -12,6 +12,15 @@ export const Step3ContextFiles: React.FC<Step3ContextFilesProps> = ({
   data,
   onUpdate
 }) => {
+  // Wrapper function to handle setState pattern conversion
+  const handleContextFilesChange = (files: File[] | ((prev: File[]) => File[])) => {
+    if (typeof files === 'function') {
+      onUpdate({ contextFiles: files(data.contextFiles) });
+    } else {
+      onUpdate({ contextFiles: files });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -23,7 +32,7 @@ export const Step3ContextFiles: React.FC<Step3ContextFilesProps> = ({
 
       <ContextFilesSection
         contextFiles={data.contextFiles}
-        setContextFiles={(files) => onUpdate({ contextFiles: files })}
+        setContextFiles={handleContextFilesChange}
         isEnabled={data.analysisPreferences.context_integration}
       />
     </div>
