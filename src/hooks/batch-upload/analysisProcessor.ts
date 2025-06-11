@@ -1,6 +1,6 @@
 
 import { triggerAnalysis, triggerBatchAnalysis } from '@/hooks/designAnalysisHelpers';
-import { useUseCaseValidator } from './useCaseValidator';
+import { useCaseValidator } from './useCaseValidator';
 import { useAnalysisDecisionEngine } from './analysisDecisionEngine';
 
 export const processAnalysis = async (
@@ -9,10 +9,10 @@ export const processAnalysis = async (
   useCaseId: string,
   shouldTriggerBatchAnalysis: boolean
 ) => {
-  const { validateAndFetchUseCase } = useUseCaseValidator();
+  const { validateUseCase } = useCaseValidator();
   
   // Get the use case details for analysis
-  const useCase = await validateAndFetchUseCase(useCaseId);
+  const useCase = await validateUseCase(useCaseId);
 
   // Trigger individual analyses for each upload
   const analysisPromises = uploads.map(upload => 
