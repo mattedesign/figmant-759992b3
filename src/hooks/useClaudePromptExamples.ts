@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -122,6 +123,35 @@ export const useCreatePromptExample = () => {
       toast({
         title: "Error",
         description: error.message || "Failed to create prompt example",
+        variant: "destructive",
+      });
+    }
+  });
+};
+
+export const useUpdatePromptExample = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<ClaudePromptExample> }) => {
+      const { data, error } = await supabase
+        .from('claude_prompt_examples')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['claude-prompt-examples'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update prompt example",
         variant: "destructive",
       });
     }

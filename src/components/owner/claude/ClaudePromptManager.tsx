@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Brain, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -13,6 +12,7 @@ import {
 } from '@/hooks/useClaudePromptExamples';
 import { CreatePromptForm } from './CreatePromptForm';
 import { PromptCategoryList } from './PromptCategoryList';
+import { PromptSeeder } from './PromptSeeder';
 
 export const ClaudePromptManager = () => {
   const { toast } = useToast();
@@ -71,6 +71,8 @@ export const ClaudePromptManager = () => {
     return acc;
   }, {} as Record<string, ClaudePromptExample[]>) || {};
 
+  const isEmpty = !promptExamples || promptExamples.length === 0;
+
   if (isLoading) {
     return (
       <Card>
@@ -110,15 +112,34 @@ export const ClaudePromptManager = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="examples" className="space-y-4">
+          <Tabs defaultValue={isEmpty ? "seed" : "examples"} className="space-y-4">
             <TabsList>
-              <TabsTrigger value="examples">Prompt Examples</TabsTrigger>
+              <TabsTrigger value="examples">Prompt Examples ({promptExamples?.length || 0})</TabsTrigger>
+              {isEmpty && <TabsTrigger value="seed">Seed Database</TabsTrigger>}
               {isCreating && <TabsTrigger value="create">Create New</TabsTrigger>}
             </TabsList>
 
             <TabsContent value="examples" className="space-y-4">
-              <PromptCategoryList groupedPrompts={groupedPrompts} />
+              {isEmpty ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">
+                    No prompts found. Seed the database with initial templates to get started.
+                  </p>
+                  <Button onClick={() => setIsCreating(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Your First Prompt
+                  </Button>
+                </div>
+              ) : (
+                <PromptCategoryList groupedPrompts={groupedPrompts} />
+              )}
             </TabsContent>
+
+            {isEmpty && (
+              <TabsContent value="seed" className="space-y-4">
+                <PromptSeeder />
+              </TabsContent>
+            )}
 
             {isCreating && (
               <TabsContent value="create" className="space-y-4">

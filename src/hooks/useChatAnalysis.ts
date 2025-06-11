@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useBatchUploadDesign } from './useBatchUploadDesign';
 import { useChatUseCaseMapping } from './useChatUseCaseMapping';
+import { ClaudePromptOptimizer } from '@/utils/claudePromptOptimizer';
 
 interface ChatAnalysisRequest {
   message: string;
@@ -26,6 +27,17 @@ export const useChatAnalysis = () => {
       // Map the user's message to a proper use case ID
       const useCaseId = getCategoryForUseCase(message);
       
+      // Get the optimized prompt for this category
+      const category = ClaudePromptOptimizer.getCategoryForUseCase(message);
+      const optimizedPrompt = await ClaudePromptOptimizer.getBestPromptForContext({
+        category,
+        useCase: useCaseId,
+        userGoals: message,
+        analysisType: 'chat_analysis'
+      });
+      
+      console.log(`Using optimized prompt for category: ${category}`, optimizedPrompt);
+      
       // Extract files and URLs from attachments
       const files = attachments
         .filter(att => att.type === 'file' && att.file)
@@ -38,7 +50,7 @@ export const useChatAnalysis = () => {
       // If we have attachments, process them for analysis
       if (files.length > 0 || urls.length > 0) {
         const batchName = `Chat Analysis - ${new Date().toLocaleDateString()}`;
-        const analysisGoals = `User Request: ${message}`;
+        const analysisGoals = optimizedPrompt || `User Request: ${message}`;
 
         // Use existing batch upload system
         const result = await batchUpload.mutateAsync({
@@ -56,14 +68,14 @@ export const useChatAnalysis = () => {
         });
 
         return {
-          analysis: `I've successfully uploaded and started analyzing your ${files.length + urls.length} item(s). Based on your request: "${message}", I'll provide detailed insights tailored to ${useCaseId} optimization. The analysis results are now available below.`,
+          analysis: `I've successfully uploaded and started analyzing your ${files.length + urls.length} item(s). Based on your request: "${message}", I'll provide detailed insights tailored to ${useCaseId} optimization using our advanced prompt system. The analysis results are now available below.`,
           uploadIds: result.uploads.map(u => u.id),
           batchId: result.batchId
         };
       } else {
         // Handle text-only queries with helpful guidance
         return {
-          analysis: `I'd be happy to help with "${message}". To provide specific analysis and recommendations, please upload some designs (images, PDFs) or share website URLs. I can analyze them for conversion optimization, user experience improvements, visual hierarchy, and more.`,
+          analysis: `I'd be happy to help with "${message}". To provide specific analysis and recommendations, please upload some designs (images, PDFs) or share website URLs. I can analyze them for conversion optimization, user experience improvements, visual hierarchy, and more using our specialized prompt system.`,
           uploadIds: []
         };
       }
