@@ -15,6 +15,8 @@ interface PromptExampleCardProps {
   prompt: ClaudePromptExample;
 }
 
+type CategoryType = 'master' | 'competitor' | 'visual_hierarchy' | 'copy_messaging' | 'ecommerce_revenue' | 'ab_testing' | 'general';
+
 const CATEGORY_OPTIONS = [
   { value: 'master', label: 'Master UX Analysis' },
   { value: 'competitor', label: 'Competitor Analysis' },
@@ -23,7 +25,7 @@ const CATEGORY_OPTIONS = [
   { value: 'ecommerce_revenue', label: 'E-commerce Revenue' },
   { value: 'ab_testing', label: 'A/B Testing' },
   { value: 'general', label: 'General' }
-];
+] as const;
 
 export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) => {
   const { toast } = useToast();
@@ -119,7 +121,7 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
             <Label htmlFor="category">Category</Label>
             <Select
               value={editedPrompt.category}
-              onValueChange={(value) => setEditedPrompt({ ...editedPrompt, category: value })}
+              onValueChange={(value: string) => setEditedPrompt({ ...editedPrompt, category: value as CategoryType })}
             >
               <SelectTrigger>
                 <SelectValue />
