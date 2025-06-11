@@ -28,9 +28,34 @@ interface AttachmentData {
   uploadPath?: string;
 }
 
+async function testStorageAccess(supabase: any): Promise<void> {
+  console.log('=== TESTING STORAGE ACCESS ===');
+  try {
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+    console.log('Available buckets:', buckets?.map(b => b.name) || []);
+    if (bucketsError) {
+      console.error('Error listing buckets:', bucketsError);
+    }
+    
+    // Test design-uploads bucket specifically
+    const { data: files, error: filesError } = await supabase.storage
+      .from('design-uploads')
+      .list('', { limit: 5 });
+    
+    console.log('Recent files in design-uploads bucket:', files?.length || 0);
+    if (filesError) {
+      console.error('Error listing files in design-uploads:', filesError);
+    }
+  } catch (error) {
+    console.error('Storage access test failed:', error);
+  }
+  console.log('=== STORAGE ACCESS TEST END ===');
+}
+
 async function downloadImageFromStorage(supabase: any, filePath: string): Promise<{ base64: string; mimeType: string } | null> {
   try {
-    console.log('Downloading image from storage:', filePath);
+    console.log('=== DOWNLOADING IMAGE FROM STORAGE ===');
+    console.log('Attempting to download:', filePath);
     
     // Create a signed URL that's valid for 1 hour
     const { data: urlData, error: urlError } = await supabase.storage
@@ -42,10 +67,16 @@ async function downloadImageFromStorage(supabase: any, filePath: string): Promis
       return null;
     }
 
-    console.log('Signed URL created, downloading file...');
+    console.log('Signed URL created successfully, length:', urlData.signedUrl.length);
     
     // Download the file using the signed URL
     const response = await fetch(urlData.signedUrl);
+    
+    console.log('Download response:', {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries())
+    });
     
     if (!response.ok) {
       console.error('Failed to download file:', response.status, response.statusText);
@@ -58,7 +89,13 @@ async function downloadImageFromStorage(supabase: any, filePath: string): Promis
     // Determine MIME type from file extension or response headers
     const contentType = response.headers.get('content-type') || 'image/png';
     
-    console.log('Image downloaded successfully, size:', arrayBuffer.byteLength, 'bytes');
+    console.log('Image downloaded successfully:', {
+      sizeBytes: arrayBuffer.byteLength,
+      mimeType: contentType,
+      base64Length: base64.length
+    });
+    
+    console.log('=== DOWNLOAD COMPLETE ===');
     return { base64, mimeType: contentType };
   } catch (error) {
     console.error('Error downloading image from storage:', error);
@@ -66,15 +103,63 @@ async function downloadImageFromStorage(supabase: any, filePath: string): Promis
   }
 }
 
+async function downloadImageFromUrl(url: string): Promise<{ base64: string; mimeType: string } | null> {
+  try {
+    console.log('=== DOWNLOADING IMAGE FROM URL ===');
+    console.log('Downloading from URL:', url);
+    
+    const response = await fetch(url);
+    
+    console.log('URL download response:', {
+      status: response.status,
+      statusText: response.statusText,
+      contentType: response.headers.get('content-type')
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to download from URL:', response.status, response.statusText);
+      return null;
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    const contentType = response.headers.get('content-type') || 'image/png';
+    
+    console.log('URL image downloaded successfully:', {
+      sizeBytes: arrayBuffer.byteLength,
+      mimeType: contentType,
+      base64Length: base64.length
+    });
+    
+    console.log('=== URL DOWNLOAD COMPLETE ===');
+    return { base64, mimeType: contentType };
+  } catch (error) {
+    console.error('Error downloading image from URL:', error);
+    return null;
+  }
+}
+
 async function processAttachmentsForVision(supabase: any, attachments: AttachmentData[]): Promise<Array<{ type: 'text' | 'image'; text?: string; source?: any }>> {
+  console.log('=== PROCESSING ATTACHMENTS FOR VISION ===');
+  console.log('Processing', attachments.length, 'attachments');
+  
   const contentItems: Array<{ type: 'text' | 'image'; text?: string; source?: any }> = [];
   
-  for (const attachment of attachments) {
+  for (let i = 0; i < attachments.length; i++) {
+    const attachment = attachments[i];
+    console.log(`Processing attachment ${i + 1}/${attachments.length}:`, {
+      type: attachment.type,
+      name: attachment.name,
+      hasUploadPath: !!attachment.uploadPath,
+      hasUrl: !!attachment.url
+    });
+
     if (attachment.type === 'file' && attachment.uploadPath) {
-      console.log('Processing file attachment:', attachment.name, 'at path:', attachment.uploadPath);
+      console.log('Processing file attachment with upload path:', attachment.uploadPath);
       
       // Check if it's an image file
       const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(attachment.name);
+      console.log('Is image file:', isImage);
       
       if (isImage) {
         const imageData = await downloadImageFromStorage(supabase, attachment.uploadPath);
@@ -88,13 +173,14 @@ async function processAttachmentsForVision(supabase: any, attachments: Attachmen
               data: imageData.base64
             }
           });
-          console.log('Added image to vision analysis:', attachment.name);
+          console.log('Successfully added image to vision analysis:', attachment.name);
         } else {
           // If image download failed, add a text description
           contentItems.push({
             type: 'text',
             text: `[Image attachment: ${attachment.name} - Could not be loaded for analysis]`
           });
+          console.log('Failed to load image, added text fallback:', attachment.name);
         }
       } else {
         // Non-image file, add as text reference
@@ -102,44 +188,37 @@ async function processAttachmentsForVision(supabase: any, attachments: Attachmen
           type: 'text',
           text: `[File attachment: ${attachment.name}]`
         });
+        console.log('Added non-image file as text reference:', attachment.name);
       }
     } else if (attachment.type === 'url' && attachment.url) {
+      console.log('Processing URL attachment:', attachment.url);
+      
       // URL attachment - try to determine if it's an image
       const isImageUrl = /\.(jpg|jpeg|png|gif|webp)$/i.test(attachment.url) || 
                         attachment.url.includes('image') ||
                         attachment.url.includes('img');
       
+      console.log('Is image URL:', isImageUrl);
+      
       if (isImageUrl) {
-        try {
-          console.log('Downloading image from URL:', attachment.url);
-          const response = await fetch(attachment.url);
-          
-          if (response.ok) {
-            const arrayBuffer = await response.arrayBuffer();
-            const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-            const contentType = response.headers.get('content-type') || 'image/png';
-            
-            contentItems.push({
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: contentType,
-                data: base64
-              }
-            });
-            console.log('Added URL image to vision analysis:', attachment.url);
-          } else {
-            contentItems.push({
-              type: 'text',
-              text: `[Image URL: ${attachment.url} - Could not be loaded for analysis]`
-            });
-          }
-        } catch (error) {
-          console.error('Error downloading image from URL:', error);
+        const imageData = await downloadImageFromUrl(attachment.url);
+        
+        if (imageData) {
+          contentItems.push({
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: imageData.mimeType,
+              data: imageData.base64
+            }
+          });
+          console.log('Successfully added URL image to vision analysis:', attachment.url);
+        } else {
           contentItems.push({
             type: 'text',
-            text: `[Image URL: ${attachment.url} - Error loading for analysis]`
+            text: `[Image URL: ${attachment.url} - Could not be loaded for analysis]`
           });
+          console.log('Failed to load URL image, added text fallback:', attachment.url);
         }
       } else {
         // Non-image URL, add as text reference
@@ -147,29 +226,60 @@ async function processAttachmentsForVision(supabase: any, attachments: Attachmen
           type: 'text',
           text: `[Website URL: ${attachment.url}]`
         });
+        console.log('Added non-image URL as text reference:', attachment.url);
       }
+    } else {
+      console.log('Skipping attachment (no valid path or URL):', {
+        type: attachment.type,
+        name: attachment.name,
+        hasUploadPath: !!attachment.uploadPath,
+        hasUrl: !!attachment.url
+      });
     }
   }
   
+  console.log('Vision processing complete:', {
+    totalContentItems: contentItems.length,
+    imageItems: contentItems.filter(item => item.type === 'image').length,
+    textItems: contentItems.filter(item => item.type === 'text').length
+  });
+  
+  console.log('=== VISION PROCESSING END ===');
   return contentItems;
 }
 
 serve(async (req) => {
-  console.log('Claude AI function called with method:', req.method);
+  console.log('=== CLAUDE AI FUNCTION START ===');
+  console.log('Request method:', req.method);
 
   if (req.method === 'OPTIONS') {
+    console.log('Handling CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { message, attachments = [], uploadIds = [], model, systemPrompt } = await req.json();
+    const requestBody = await req.json();
+    const { message, attachments = [], uploadIds = [], model, systemPrompt } = requestBody;
     
-    console.log('Request data:', { 
+    console.log('Request data received:', { 
       messageLength: message?.length, 
       attachmentsCount: attachments.length,
       uploadIdsCount: uploadIds.length,
       model,
-      systemPromptLength: systemPrompt?.length 
+      systemPromptLength: systemPrompt?.length,
+      attachmentSummary: attachments.map((att: any) => ({
+        type: att.type,
+        name: att.name,
+        hasUploadPath: !!att.uploadPath,
+        hasUrl: !!att.url
+      }))
+    });
+
+    // Environment check
+    console.log('Environment check:', {
+      hasClaudeApiKey: !!Deno.env.get('CLAUDE_API_KEY'),
+      hasSupabaseUrl: !!Deno.env.get('SUPABASE_URL'),
+      hasSupabaseServiceKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     });
 
     // Get Claude API key from environment
@@ -188,15 +298,13 @@ serve(async (req) => {
 
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    console.log('Supabase client initialized');
 
-    // The attachments now come with uploadPath already set from the UI
-    console.log('Processing attachments:', attachments.map(att => ({ 
-      type: att.type, 
-      name: att.name, 
-      hasUploadPath: !!att.uploadPath 
-    })));
+    // Test storage access
+    await testStorageAccess(supabase);
     
     // Process attachments for vision analysis
+    console.log('Starting attachment processing...');
     const visionContent = await processAttachmentsForVision(supabase, attachments);
     
     // Build the message content
@@ -204,6 +312,14 @@ serve(async (req) => {
       { type: 'text', text: message },
       ...visionContent
     ];
+
+    console.log('Final message content structure:', {
+      totalItems: messageContent.length,
+      itemTypes: messageContent.map(item => item.type),
+      hasImages: messageContent.some(item => item.type === 'image'),
+      textItems: messageContent.filter(item => item.type === 'text').length,
+      imageItems: messageContent.filter(item => item.type === 'image').length
+    });
 
     // Prepare the messages for Claude
     const messages: ClaudeMessage[] = [
@@ -213,10 +329,28 @@ serve(async (req) => {
       }
     ];
 
-    console.log('Sending request to Claude with', messageContent.length, 'content items');
-    console.log('Content types:', messageContent.map(item => item.type));
+    console.log('Sending request to Claude API...', {
+      model: model || 'claude-3-5-haiku-20241022',
+      messageContentLength: messageContent.length,
+      hasImages: messageContent.some(item => item.type === 'image')
+    });
 
     // Call Claude API
+    const claudePayload = {
+      model: model || 'claude-3-5-haiku-20241022',
+      max_tokens: 4000,
+      system: systemPrompt || 'You are a UX analytics expert that provides insights on user behavior and experience patterns. When analyzing designs or images, provide detailed feedback on usability, visual hierarchy, accessibility, and conversion optimization opportunities.',
+      messages: messages
+    };
+
+    console.log('Claude API payload prepared:', {
+      model: claudePayload.model,
+      maxTokens: claudePayload.max_tokens,
+      systemPromptLength: claudePayload.system.length,
+      messagesCount: claudePayload.messages.length,
+      messageContentTypes: claudePayload.messages[0].content.map((item: any) => item.type)
+    });
+
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -224,44 +358,79 @@ serve(async (req) => {
         'x-api-key': claudeApiKey,
         'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify({
-        model: model || 'claude-3-5-haiku-20241022',
-        max_tokens: 4000,
-        system: systemPrompt || 'You are a UX analytics expert that provides insights on user behavior and experience patterns. When analyzing designs or images, provide detailed feedback on usability, visual hierarchy, accessibility, and conversion optimization opportunities.',
-        messages: messages
-      })
+      body: JSON.stringify(claudePayload)
+    });
+
+    console.log('Claude API response received:', {
+      status: claudeResponse.status,
+      statusText: claudeResponse.statusText,
+      ok: claudeResponse.ok
     });
 
     if (!claudeResponse.ok) {
       const errorData = await claudeResponse.text();
-      console.error('Claude API error:', claudeResponse.status, errorData);
+      console.error('Claude API error response:', {
+        status: claudeResponse.status,
+        statusText: claudeResponse.statusText,
+        errorData: errorData
+      });
       throw new Error(`Claude API error: ${claudeResponse.status} - ${errorData}`);
     }
 
     const claudeData = await claudeResponse.json();
-    console.log('Claude response received successfully');
+    console.log('Claude API response data:', {
+      hasContent: !!claudeData.content,
+      contentLength: claudeData.content?.length || 0,
+      contentType: claudeData.content?.[0]?.type,
+      usage: claudeData.usage
+    });
 
     // Extract the text content from Claude's response
     const analysis = claudeData.content?.[0]?.text || 'No analysis available';
 
+    console.log('Analysis extracted:', {
+      analysisLength: analysis.length,
+      analysisPreview: analysis.substring(0, 100) + '...'
+    });
+
+    const response = {
+      analysis,
+      success: true,
+      attachmentsProcessed: visionContent.length,
+      debugInfo: {
+        totalAttachments: attachments.length,
+        processedContent: visionContent.length,
+        imagesProcessed: visionContent.filter(item => item.type === 'image').length,
+        textItemsProcessed: visionContent.filter(item => item.type === 'text').length
+      }
+    };
+
+    console.log('Sending successful response:', response);
+    console.log('=== CLAUDE AI FUNCTION END ===');
+
     return new Response(
-      JSON.stringify({
-        analysis,
-        success: true,
-        attachmentsProcessed: visionContent.length
-      }),
+      JSON.stringify(response),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
 
   } catch (error) {
-    console.error('Error in Claude AI function:', error);
+    console.error('=== ERROR IN CLAUDE AI FUNCTION ===');
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     
     return new Response(
       JSON.stringify({
         error: error.message || 'An unexpected error occurred',
-        success: false
+        success: false,
+        debugInfo: {
+          errorType: error.name,
+          timestamp: new Date().toISOString()
+        }
       }),
       {
         status: 500,

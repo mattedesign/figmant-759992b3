@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useChatAnalysis } from '@/hooks/useChatAnalysis';
 import { useDropzone } from 'react-dropzone';
-import { Send, Upload, Plus, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Send, Upload, Plus, AlertTriangle, CheckCircle, Bug } from 'lucide-react';
 import { ChatMessage } from './chat/ChatMessage';
 import { ChatAttachments } from './chat/ChatAttachments';
 import { SuggestedPrompts } from './chat/SuggestedPrompts';
@@ -16,6 +16,7 @@ import { StorageStatus } from './chat/StorageStatus';
 import { FileUploadDropzone } from './chat/FileUploadDropzone';
 import { URLInput } from './chat/URLInput';
 import { MessageInput } from './chat/MessageInput';
+import { DebugPanel } from './chat/DebugPanel';
 import { verifyStorageAccess } from '@/utils/storageUtils';
 import { supabase } from '@/integrations/supabase/client';
 

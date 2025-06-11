@@ -15,25 +15,53 @@ interface ChatAnalysisResponse {
 }
 
 const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAnalysisResponse> => {
+  console.log('=== CHAT ANALYSIS START ===');
   console.log('Starting chat analysis with:', {
     messageLength: request.message.length,
-    attachmentsCount: request.attachments.length
+    attachmentsCount: request.attachments.length,
+    attachments: request.attachments.map(att => ({
+      id: att.id,
+      type: att.type,
+      name: att.name,
+      status: att.status,
+      hasUploadPath: !!att.uploadPath,
+      hasUrl: !!att.url,
+      uploadPath: att.uploadPath
+    }))
   });
 
   // Get current user
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
+    console.error('Authentication error:', authError);
     throw new Error('User not authenticated');
   }
+
+  console.log('User authenticated:', user.id);
 
   // Process attachments - create database records for files that have upload paths
   const uploadIds: string[] = [];
   const processedAttachments: ChatAttachment[] = [];
 
+  console.log('Processing attachments...');
   for (const attachment of request.attachments) {
+    console.log('Processing attachment:', {
+      id: attachment.id,
+      type: attachment.type,
+      name: attachment.name,
+      status: attachment.status,
+      hasUploadPath: !!attachment.uploadPath,
+      hasUrl: !!attachment.url
+    });
+
     if (attachment.type === 'file' && attachment.file && attachment.uploadPath && attachment.status === 'uploaded') {
       try {
-        console.log('Creating database record for uploaded file:', attachment.name);
+        console.log('Creating database record for uploaded file:', {
+          name: attachment.name,
+          uploadPath: attachment.uploadPath,
+          fileSize: attachment.file.size,
+          mimeType: attachment.file.type
+        });
 
         // Create database record for the already uploaded file
         const { data: uploadRecord, error: dbError } = await supabase
@@ -60,18 +88,33 @@ const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAna
           uploadPath: attachment.uploadPath
         });
 
-        console.log('Database record created successfully:', uploadRecord.id);
+        console.log('Database record created successfully:', {
+          uploadId: uploadRecord.id,
+          fileName: attachment.name
+        });
       } catch (error) {
         console.error('Error processing file attachment:', error);
         // Continue with other attachments even if one fails
       }
     } else {
       // For URL attachments or files without upload paths
+      console.log('Adding non-file attachment:', {
+        type: attachment.type,
+        name: attachment.name,
+        url: attachment.url
+      });
       processedAttachments.push(attachment);
     }
   }
 
+  console.log('Processed attachments summary:', {
+    totalProcessed: processedAttachments.length,
+    uploadIds: uploadIds,
+    attachmentTypes: processedAttachments.map(att => att.type)
+  });
+
   // Get Claude settings
+  console.log('Fetching Claude settings...');
   const { data: settingsData, error: settingsError } = await supabase
     .rpc('get_claude_settings');
 
@@ -83,23 +126,49 @@ const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAna
   const settings = Array.isArray(settingsData) ? settingsData[0] : settingsData;
   
   if (!settings?.claude_ai_enabled) {
+    console.error('Claude AI is not enabled');
     throw new Error('Claude AI is not enabled. Please contact your administrator.');
   }
 
   console.log('Claude settings retrieved:', {
     enabled: settings.claude_ai_enabled,
-    model: settings.claude_model
+    model: settings.claude_model,
+    systemPromptLength: settings.claude_system_prompt?.length || 0
+  });
+
+  // Prepare the payload for Claude AI
+  const claudePayload = {
+    message: request.message,
+    attachments: processedAttachments,
+    uploadIds,
+    model: settings.claude_model,
+    systemPrompt: settings.claude_system_prompt
+  };
+
+  console.log('Calling Claude AI edge function with payload:', {
+    messageLength: claudePayload.message.length,
+    attachmentsCount: claudePayload.attachments.length,
+    uploadIdsCount: claudePayload.uploadIds.length,
+    model: claudePayload.model,
+    attachmentDetails: claudePayload.attachments.map(att => ({
+      type: att.type,
+      name: att.name,
+      hasUploadPath: !!att.uploadPath,
+      hasUrl: !!att.url
+    }))
   });
 
   // Call the Claude AI edge function
   const { data, error } = await supabase.functions.invoke('claude-ai', {
-    body: {
-      message: request.message,
-      attachments: processedAttachments,
-      uploadIds,
-      model: settings.claude_model,
-      systemPrompt: settings.claude_system_prompt
-    }
+    body: claudePayload
+  });
+
+  console.log('Claude AI function response:', {
+    hasError: !!error,
+    hasData: !!data,
+    error: error,
+    dataKeys: data ? Object.keys(data) : [],
+    success: data?.success
   });
 
   if (error) {
@@ -112,7 +181,12 @@ const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAna
     throw new Error(data?.error || 'Analysis failed');
   }
 
-  console.log('Chat analysis completed successfully');
+  console.log('Chat analysis completed successfully:', {
+    analysisLength: data.analysis?.length || 0,
+    attachmentsProcessed: data.attachmentsProcessed || 0
+  });
+
+  console.log('=== CHAT ANALYSIS END ===');
 
   return {
     analysis: data.analysis,
@@ -128,7 +202,7 @@ export const useChatAnalysis = () => {
         console.error('Chat analysis mutation error:', error);
       },
       onSuccess: (data) => {
-        console.log('Chat analysis completed:', {
+        console.log('Chat analysis mutation success:', {
           analysisLength: data.analysis.length,
           uploadIds: data.uploadIds?.length || 0
         });
