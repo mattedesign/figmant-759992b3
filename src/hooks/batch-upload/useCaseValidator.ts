@@ -1,5 +1,5 @@
 
-import { fetchUseCase } from './databaseHelpers';
+import { fetchUseCase, fetchUseCaseByName } from './databaseHelpers';
 import { getFigmantTemplate } from '@/data/figmantPromptTemplates';
 
 export const useUseCaseValidator = () => {
@@ -10,7 +10,7 @@ export const useUseCaseValidator = () => {
       const template = getFigmantTemplate(templateId);
       
       if (template) {
-        // Fetch from database using the template name
+        // Fetch from database using the template name (without "Figmant:" prefix)
         const useCase = await fetchUseCaseByName(template.name);
         if (!useCase) {
           throw new Error(`Figmant template "${template.name}" not found in database`);
@@ -39,22 +39,4 @@ export const useUseCaseValidator = () => {
     validateAndFetchUseCase,
     validateUseCaseExists
   };
-};
-
-// Helper function to fetch use case by name
-const fetchUseCaseByName = async (name: string) => {
-  const { supabase } = await import('@/integrations/supabase/client');
-  
-  const { data, error } = await supabase
-    .from('design_use_cases')
-    .select('*')
-    .eq('name', name)
-    .single();
-
-  if (error) {
-    console.error('Error fetching use case by name:', error);
-    return null;
-  }
-
-  return data;
 };

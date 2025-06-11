@@ -31,7 +31,7 @@ export const EnhancedUseCaseSelector = ({
     const template = getFigmantTemplate(templateId);
     if (!template) return null;
     
-    // Find the corresponding use case in the database by name
+    // Find the corresponding use case in the database by name (now without "Figmant:" prefix)
     const useCase = useCases.find(uc => uc.name === template.name);
     return useCase?.id || null;
   };
@@ -44,10 +44,12 @@ export const EnhancedUseCaseSelector = ({
       // Get the actual database UUID for this template
       const useCaseId = getFigmantUseCaseId(templateId);
       if (useCaseId) {
+        // Use the actual database UUID
         setSelectedUseCase(useCaseId);
       } else {
         // Fallback to the figmant_ prefix if not found in database yet
         setSelectedUseCase(`figmant_${templateId}`);
+        console.warn(`Template "${template.name}" not found in database, using fallback ID`);
       }
     }
   };
@@ -59,11 +61,11 @@ export const EnhancedUseCaseSelector = ({
     });
   };
 
-  // Update the selected use case when switching modes
+  // Update the selected use case when switching modes or when use cases data loads
   useEffect(() => {
-    if (analysisMode === 'figmant' && selectedTemplate) {
+    if (analysisMode === 'figmant' && selectedTemplate && useCases.length > 0) {
       const useCaseId = getFigmantUseCaseId(selectedTemplate.id);
-      if (useCaseId) {
+      if (useCaseId && selectedUseCase !== useCaseId) {
         setSelectedUseCase(useCaseId);
       }
     }
