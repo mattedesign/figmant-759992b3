@@ -33,7 +33,14 @@ export const useBatchModifications = (originalBatchId?: string) => {
       modificationSummary
     }: {
       originalBatchId: string;
-      newUploads: Partial<DesignUpload>[];
+      newUploads: {
+        file_name: string;
+        file_size: number;
+        file_type: string;
+        use_case: string;
+        batch_name: string;
+        replaced_upload_id?: string;
+      }[];
       replacementMap: Record<string, string>; // old upload id -> new upload id
       modificationSummary: string;
     }) => {
@@ -45,10 +52,17 @@ export const useBatchModifications = (originalBatchId?: string) => {
 
       // Insert new uploads with modification metadata
       const uploadsWithMetadata = newUploads.map(upload => ({
-        ...upload,
+        file_name: upload.file_name,
+        file_size: upload.file_size,
+        file_type: upload.file_type,
+        use_case: upload.use_case,
+        status: 'pending' as const,
+        source_type: 'file' as const,
         batch_id: newBatchId,
+        batch_name: upload.batch_name,
         original_batch_id: originalBatchId,
         is_replacement: !!upload.replaced_upload_id,
+        replaced_upload_id: upload.replaced_upload_id || null,
         user_id: user.data.user!.id
       }));
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,15 +32,13 @@ export const EnhancedBatchAnalysisViewer = ({ batchAnalysis, onBack }: EnhancedB
   }) => {
     try {
       // Create upload objects for new files and replacements
-      const newUploads: Partial<DesignUpload>[] = [
+      const newUploads = [
         // New files
         ...modifications.newFiles.map(file => ({
           file_name: file.name,
           file_size: file.size,
           file_type: file.type,
           use_case: batchUploads[0]?.use_case || '',
-          status: 'pending' as const,
-          source_type: 'file' as const,
           batch_name: `${batchUploads[0]?.batch_name || 'Batch'} - Modified`
         })),
         // Replacement files
@@ -50,8 +47,6 @@ export const EnhancedBatchAnalysisViewer = ({ batchAnalysis, onBack }: EnhancedB
           file_size: file.size,
           file_type: file.type,
           use_case: batchUploads[0]?.use_case || '',
-          status: 'pending' as const,
-          source_type: 'file' as const,
           batch_name: `${batchUploads[0]?.batch_name || 'Batch'} - Modified`,
           replaced_upload_id: originalUploadId
         }))
