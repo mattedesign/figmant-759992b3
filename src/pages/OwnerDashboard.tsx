@@ -8,6 +8,7 @@ import { UserManagement } from '@/components/owner/UserManagement';
 import { AdminSettings } from '@/components/owner/AdminSettings';
 import { ClaudeSettings } from '@/components/owner/ClaudeSettings';
 import { SubscriptionPlansManager } from '@/components/owner/SubscriptionPlansManager';
+import { DesignAnalysisPage } from '@/components/design/DesignAnalysisPage';
 
 const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -25,8 +26,9 @@ const OwnerDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="design">Design Analysis</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="plans">Plans & Products</TabsTrigger>
             <TabsTrigger value="claude">Claude AI</TabsTrigger>
@@ -35,6 +37,10 @@ const OwnerDashboard = () => {
 
           <TabsContent value="analytics" className="mt-6">
             <OwnerAnalytics />
+          </TabsContent>
+
+          <TabsContent value="design" className="mt-6">
+            <DesignAnalysisPage />
           </TabsContent>
 
           <TabsContent value="users" className="mt-6">
