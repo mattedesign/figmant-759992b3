@@ -15,19 +15,7 @@ import { CreateUserDialog } from './CreateUserDialog';
 import { EditUserDialog } from './EditUserDialog';
 import { CreditManagementDialog } from './CreditManagementDialog';
 import { useUserManagementCredits } from '@/hooks/useUserManagementCredits';
-
-interface UserProfile {
-  id: string;
-  email: string;
-  full_name: string | null;
-  role: 'owner' | 'subscriber';
-  created_at: string;
-  subscriptions?: {
-    status: string;
-    current_period_end: string | null;
-    stripe_customer_id: string | null;
-  } | null;
-}
+import { UserProfile } from '@/types/auth';
 
 export const UserManagement = () => {
   const { user } = useAuth();
@@ -54,7 +42,12 @@ export const UserManagement = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as UserProfile[];
+      
+      // Transform the data to match the UserProfile type from auth.ts
+      return data.map(profile => ({
+        ...profile,
+        subscriptions: profile.subscriptions ? [profile.subscriptions] : []
+      })) as UserProfile[];
     }
   });
 
@@ -131,7 +124,7 @@ export const UserManagement = () => {
   };
 
   const getUserActivityStatus = (user: UserProfile) => {
-    const subscription = user.subscriptions;
+    const subscription = user.subscriptions?.[0];
     const credits = creditsMap?.get(user.id);
     
     if (user.role === 'owner') return 'Active (Owner)';
