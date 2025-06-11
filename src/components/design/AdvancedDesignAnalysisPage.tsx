@@ -7,12 +7,13 @@ import { Upload, MessageSquare, BarChart3, History, Sparkles, RefreshCw } from '
 import { EnhancedDesignUploader } from './EnhancedDesignUploader';
 import { DesignChatInterface } from './DesignChatInterface';
 import { DesignList } from './DesignList';
-import { BatchAnalysisViewer } from './BatchAnalysisViewer';
+import { EnhancedBatchAnalysisViewer } from './EnhancedBatchAnalysisViewer';
 import { ClaudeAISetupPrompt } from './ClaudeAISetupPrompt';
 import { useClaudeSettings } from '@/hooks/useClaudeSettings';
 import { useDesignUploads } from '@/hooks/useDesignUploads';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { DesignUpload } from '@/types/design';
 
 export const AdvancedDesignAnalysisPage = () => {
   const [activeTab, setActiveTab] = useState('upload');
@@ -67,6 +68,11 @@ export const AdvancedDesignAnalysisPage = () => {
         description: "Failed to retry the analyses. Please try again.",
       });
     }
+  };
+
+  const handleViewAnalysis = (upload: DesignUpload) => {
+    // Navigate to analysis view or open modal
+    console.log('Viewing analysis:', upload.id, upload.file_name);
   };
 
   const showClaudeSetup = !claudeLoading && (!claudeSettings?.claude_ai_enabled);
@@ -138,11 +144,11 @@ export const AdvancedDesignAnalysisPage = () => {
         </TabsContent>
 
         <TabsContent value="batch" className="mt-6">
-          <BatchAnalysisViewer key={refreshKey} />
+          <EnhancedBatchAnalysisViewer key={refreshKey} />
         </TabsContent>
 
         <TabsContent value="history" className="mt-6">
-          <DesignList key={refreshKey} />
+          <DesignList key={refreshKey} onViewAnalysis={handleViewAnalysis} />
         </TabsContent>
       </Tabs>
     </div>
