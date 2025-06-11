@@ -10,7 +10,7 @@ export const useUploadDesign = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ file, useCase }: { file: File; useCase: string }) => {
+    mutationFn: async ({ file, useCase, analysisGoals }: { file: File; useCase: string; analysisGoals?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -42,7 +42,8 @@ export const useUploadDesign = () => {
           file_size: file.size,
           file_type: file.type,
           use_case: useCase,
-          status: 'pending'
+          status: 'pending',
+          analysis_goals: analysisGoals || null
         })
         .select()
         .single();

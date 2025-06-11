@@ -10,7 +10,7 @@ export const useBatchUploadDesign = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ files, urls, useCase, batchName }: BatchUpload) => {
+    mutationFn: async ({ files, urls, useCase, batchName, analysisGoals }: BatchUpload) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -20,7 +20,8 @@ export const useBatchUploadDesign = () => {
       console.log('Starting batch upload...', { 
         filesCount: files.length, 
         urlsCount: urls.length, 
-        batchId 
+        batchId,
+        analysisGoals 
       });
 
       // Handle file uploads
@@ -53,7 +54,8 @@ export const useBatchUploadDesign = () => {
             source_type: 'file',
             source_url: null,
             batch_id: batchId,
-            batch_name: batchName
+            batch_name: batchName,
+            analysis_goals: analysisGoals || null
           })
           .select()
           .single();
@@ -89,7 +91,8 @@ export const useBatchUploadDesign = () => {
             source_type: 'url',
             source_url: url,
             batch_id: batchId,
-            batch_name: batchName
+            batch_name: batchName,
+            analysis_goals: analysisGoals || null
           })
           .select()
           .single();

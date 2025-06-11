@@ -12,6 +12,7 @@ export interface DesignUpload {
   source_url: string | null;
   batch_id: string | null;
   batch_name: string | null;
+  analysis_goals: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -26,6 +27,20 @@ export interface DesignAnalysis {
   confidence_score: number;
   suggestions?: any;
   improvement_areas?: string[];
+  created_at: string;
+}
+
+export interface DesignBatchAnalysis {
+  id: string;
+  batch_id: string;
+  user_id: string;
+  analysis_type: string;
+  prompt_used: string;
+  analysis_results: any;
+  winner_upload_id?: string;
+  key_metrics?: any;
+  recommendations?: any;
+  confidence_score: number;
   created_at: string;
 }
 
@@ -45,4 +60,5 @@ export interface BatchUpload {
   files: File[];
   urls: string[];
   useCase: string;
+  analysisGoals?: string;
 }

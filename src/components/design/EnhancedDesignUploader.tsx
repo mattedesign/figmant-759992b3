@@ -5,10 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Upload, FileImage, Globe, X, Plus } from 'lucide-react';
+import { Upload, FileImage, Globe, X, Plus, Target } from 'lucide-react';
 import { useDesignUseCases } from '@/hooks/useDesignUseCases';
 import { useBatchUploadDesign } from '@/hooks/useBatchUploadDesign';
 
@@ -17,6 +18,7 @@ export const EnhancedDesignUploader = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [urls, setUrls] = useState<string[]>(['']);
   const [batchName, setBatchName] = useState<string>('');
+  const [analysisGoals, setAnalysisGoals] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'files' | 'urls'>('files');
   
   const { data: useCases = [], isLoading: loadingUseCases } = useDesignUseCases();
@@ -61,13 +63,15 @@ export const EnhancedDesignUploader = () => {
       files: selectedFiles,
       urls: validUrls,
       useCase: selectedUseCase,
-      batchName: batchName || `Batch ${new Date().toLocaleDateString()}`
+      batchName: batchName || `Batch ${new Date().toLocaleDateString()}`,
+      analysisGoals: analysisGoals.trim() || undefined
     });
 
     // Reset form
     setSelectedFiles([]);
     setUrls(['']);
     setBatchName('');
+    setAnalysisGoals('');
     setSelectedUseCase('');
   };
 
@@ -89,6 +93,24 @@ export const EnhancedDesignUploader = () => {
             value={batchName}
             onChange={(e) => setBatchName(e.target.value)}
           />
+        </div>
+
+        {/* Analysis Goals */}
+        <div className="space-y-2">
+          <Label htmlFor="analysis-goals" className="flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            Analysis Goals & Context
+          </Label>
+          <Textarea
+            id="analysis-goals"
+            placeholder="Describe what you want to learn from this analysis. For example: 'Focus on conversion optimization for e-commerce checkout flow' or 'Compare mobile vs desktop user experience'"
+            value={analysisGoals}
+            onChange={(e) => setAnalysisGoals(e.target.value)}
+            className="min-h-[80px]"
+          />
+          <p className="text-xs text-muted-foreground">
+            Providing specific goals helps Claude deliver more targeted and actionable insights.
+          </p>
         </div>
 
         {/* Upload Tabs */}
@@ -230,6 +252,12 @@ export const EnhancedDesignUploader = () => {
                 <div>• {validUrls.length} URL(s) to analyze</div>
               )}
               <div>• Total items: {selectedFiles.length + validUrls.length}</div>
+              {analysisGoals && (
+                <div className="mt-2 p-2 bg-blue-50 rounded text-blue-800 border border-blue-200">
+                  <strong>Goals:</strong> {analysisGoals.slice(0, 100)}
+                  {analysisGoals.length > 100 && '...'}
+                </div>
+              )}
             </div>
           </div>
         )}

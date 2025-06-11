@@ -196,8 +196,51 @@ export type Database = {
           },
         ]
       }
+      design_batch_analysis: {
+        Row: {
+          analysis_results: Json
+          analysis_type: string
+          batch_id: string
+          confidence_score: number | null
+          created_at: string
+          id: string
+          key_metrics: Json | null
+          prompt_used: string
+          recommendations: Json | null
+          user_id: string
+          winner_upload_id: string | null
+        }
+        Insert: {
+          analysis_results: Json
+          analysis_type: string
+          batch_id: string
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          key_metrics?: Json | null
+          prompt_used: string
+          recommendations?: Json | null
+          user_id: string
+          winner_upload_id?: string | null
+        }
+        Update: {
+          analysis_results?: Json
+          analysis_type?: string
+          batch_id?: string
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          key_metrics?: Json | null
+          prompt_used?: string
+          recommendations?: Json | null
+          user_id?: string
+          winner_upload_id?: string | null
+        }
+        Relationships: []
+      }
       design_uploads: {
         Row: {
+          analysis_goals: string | null
           batch_id: string | null
           batch_name: string | null
           created_at: string
@@ -214,6 +257,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          analysis_goals?: string | null
           batch_id?: string | null
           batch_name?: string | null
           created_at?: string
@@ -230,6 +274,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          analysis_goals?: string | null
           batch_id?: string | null
           batch_name?: string | null
           created_at?: string
