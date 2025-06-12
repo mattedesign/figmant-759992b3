@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LogoConfig {
   activeLogoUrl: string;
@@ -27,7 +28,46 @@ export const useLogoConfig = () => {
     }
   }, []);
 
-  const updateActiveLogo = (newLogoUrl: string) => {
+  const testImageLoad = async (url: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const timeout = setTimeout(() => {
+        console.warn('Image load test timeout for:', url);
+        resolve(false);
+      }, 5000);
+
+      img.onload = () => {
+        console.log('Image load test successful for:', url);
+        clearTimeout(timeout);
+        resolve(true);
+      };
+
+      img.onerror = () => {
+        console.error('Image load test failed for:', url);
+        clearTimeout(timeout);
+        resolve(false);
+      };
+
+      img.src = url;
+    });
+  };
+
+  const updateActiveLogo = async (newLogoUrl: string) => {
+    console.log('Attempting to update active logo to:', newLogoUrl);
+    
+    // Test if the new logo URL is accessible
+    const isAccessible = await testImageLoad(newLogoUrl);
+    
+    if (!isAccessible) {
+      console.error('New logo URL is not accessible:', newLogoUrl);
+      toast({
+        variant: "destructive",
+        title: "Logo Update Failed",
+        description: "The new logo could not be loaded. Please check the file accessibility.",
+      });
+      return;
+    }
+
     const newConfig = {
       ...logoConfig,
       activeLogoUrl: newLogoUrl

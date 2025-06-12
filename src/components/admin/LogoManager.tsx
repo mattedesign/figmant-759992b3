@@ -10,6 +10,7 @@ import { useLogoConfig } from '@/hooks/useLogoConfig';
 import { ASSET_CATEGORIES } from '@/types/assets';
 import { Logo } from '@/components/common/Logo';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { LogoTestingPanel } from './LogoTestingPanel';
 
 export const LogoManager: React.FC = () => {
   const { uploadAsset, getAssetsByType, deleteAsset, isLoading } = useAssetManagement();
@@ -30,14 +31,14 @@ export const LogoManager: React.FC = () => {
         if (asset) {
           console.log('New logo uploaded:', asset.url);
           // Automatically set new uploads as active
-          updateActiveLogo(asset.url);
+          await updateActiveLogo(asset.url);
         }
       }
     }
   });
 
-  const handleSetActiveLogo = (url: string) => {
-    updateActiveLogo(url);
+  const handleSetActiveLogo = async (url: string) => {
+    await updateActiveLogo(url);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -126,6 +127,8 @@ export const LogoManager: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      <LogoTestingPanel />
 
       <Card>
         <CardHeader>
