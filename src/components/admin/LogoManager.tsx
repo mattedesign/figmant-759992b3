@@ -3,12 +3,13 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Upload, Check, Eye, Trash2 } from 'lucide-react';
+import { Upload, Check, Eye, Trash2, AlertCircle } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useAssetManagement } from '@/hooks/useAssetManagement';
 import { useLogoConfig } from '@/hooks/useLogoConfig';
 import { ASSET_CATEGORIES } from '@/types/assets';
 import { Logo } from '@/components/common/Logo';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const LogoManager: React.FC = () => {
   const { uploadAsset, getAssetsByType, deleteAsset, isLoading } = useAssetManagement();
@@ -16,13 +17,15 @@ export const LogoManager: React.FC = () => {
   
   const logoAssets = getAssetsByType('logo');
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     accept: {
       'image/*': ['.png', '.jpg', '.jpeg', '.svg', '.webp'],
     },
     maxSize: 5 * 1024 * 1024, // 5MB for logos
     onDrop: async (acceptedFiles) => {
+      console.log('Files dropped:', acceptedFiles);
       for (const file of acceptedFiles) {
+        console.log('Processing file:', file.name, 'Type:', file.type, 'Size:', file.size);
         const asset = await uploadAsset(file, 'logo', ASSET_CATEGORIES.BRANDING, ['main-logo']);
         if (asset) {
           console.log('New logo uploaded:', asset.url);
@@ -51,25 +54,38 @@ export const LogoManager: React.FC = () => {
         <CardHeader>
           <CardTitle>Logo Management</CardTitle>
           <CardDescription>
-            Upload and manage logos for your application. New uploads are automatically set as active.
+            Upload and manage logos for your application. Supported formats: PNG, JPG, SVG, WebP (up to 5MB).
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {fileRejections.length > 0 && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {fileRejections.map((rejection, index) => (
+                  <div key={index}>
+                    {rejection.file.name}: {rejection.errors.map(e => e.message).join(', ')}
+                  </div>
+                ))}
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
               isDragActive 
                 ? 'border-primary bg-primary/5' 
                 : 'border-muted-foreground/25 hover:border-primary/50'
-            }`}
+            } ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}
           >
             <input {...getInputProps()} />
             <Upload className="h-6 w-6 mx-auto mb-3 text-muted-foreground" />
             <p className="font-medium mb-1">
-              {isDragActive ? 'Drop logo here...' : 'Upload New Logo'}
+              {isDragActive ? 'Drop logo here...' : isLoading ? 'Uploading...' : 'Upload New Logo'}
             </p>
             <p className="text-sm text-muted-foreground">
-              PNG, JPG, SVG up to 5MB (Recommended: 200x50px)
+              PNG, JPG, SVG, WebP up to 5MB (Recommended: 200x50px for horizontal logos)
             </p>
           </div>
         </CardContent>
@@ -104,7 +120,7 @@ export const LogoManager: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground break-all">
               Active Logo URL: {logoConfig.activeLogoUrl}
             </div>
           </div>
@@ -128,17 +144,21 @@ export const LogoManager: React.FC = () => {
               {logoAssets.map((logo) => (
                 <Card key={logo.id} className="overflow-hidden">
                   <CardContent className="p-4">
-                    <div className="aspect-video bg-muted rounded-lg mb-3 overflow-hidden">
+                    <div className="aspect-video bg-muted rounded-lg mb-3 overflow-hidden flex items-center justify-center">
                       <img 
                         src={logo.url} 
                         alt={logo.name}
                         className="w-full h-full object-contain"
+                        onError={(e) => {
+                          console.error('Image failed to load:', logo.url);
+                          e.currentTarget.style.display = 'none';
+                        }}
                       />
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-medium truncate">{logo.name}</h4>
+                      <h4 className="font-medium truncate" title={logo.name}>{logo.name}</h4>
                       <div className="text-xs text-muted-foreground">
-                        {formatFileSize(logo.fileSize)}
+                        {formatFileSize(logo.fileSize)} • {logo.mimeType}
                       </div>
                       <div className="flex items-center justify-between">
                         <Badge variant={logoConfig.activeLogoUrl === logo.url ? "default" : "outline"}>
@@ -149,6 +169,7 @@ export const LogoManager: React.FC = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => window.open(logo.url, '_blank')}
+                            title="View full size"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -157,6 +178,7 @@ export const LogoManager: React.FC = () => {
                               size="sm"
                               onClick={() => handleSetActiveLogo(logo.url)}
                               disabled={isLoading}
+                              title="Set as active logo"
                             >
                               <Check className="h-4 w-4" />
                             </Button>
@@ -166,6 +188,7 @@ export const LogoManager: React.FC = () => {
                             size="sm"
                             onClick={() => deleteAsset(logo)}
                             disabled={isLoading || logoConfig.activeLogoUrl === logo.url}
+                            title={logoConfig.activeLogoUrl === logo.url ? "Cannot delete active logo" : "Delete logo"}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
