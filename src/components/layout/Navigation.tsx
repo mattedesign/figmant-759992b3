@@ -15,7 +15,7 @@ export const Navigation = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <Logo size="sm" />
+              <Logo size="md" />
               <h2 className="text-xl font-semibold">UX Analytics</h2>
             </div>
             <Badge variant="secondary" className="bg-green-100 text-green-800">
