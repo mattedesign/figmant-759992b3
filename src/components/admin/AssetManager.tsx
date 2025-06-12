@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ import { Asset, ASSET_CATEGORIES, ASSET_TYPES } from '@/types/assets';
 export const AssetManager: React.FC = () => {
   const { assets, isLoading, uploadAsset, deleteAsset, getAssetsByType } = useAssetManagement();
   const [selectedType, setSelectedType] = useState<Asset['type']>('logo');
-  const [selectedCategory, setSelectedCategory] = useState(ASSET_CATEGORIES.BRANDING);
+  const [selectedCategory, setSelectedCategory] = useState<string>(ASSET_CATEGORIES.BRANDING);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
