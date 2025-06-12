@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,12 +62,24 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				figmant: {
+					purple: 'hsl(var(--figmant-purple))',
+					blue: 'hsl(var(--figmant-blue))',
+					cyan: 'hsl(var(--figmant-cyan))',
+					green: 'hsl(var(--figmant-green))',
+					yellow: 'hsl(var(--figmant-yellow))',
+					orange: 'hsl(var(--figmant-orange))',
+					red: 'hsl(var(--figmant-red))'
 				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			backgroundImage: {
+				'figmant-gradient': 'var(--figmant-gradient)'
 			},
 			keyframes: {
 				'accordion-down': {
