@@ -56,8 +56,8 @@ export const CreditManagementDialog = ({
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) throw new Error('Not authenticated');
 
-      // Create credit transaction
-      const { error } = await supabase
+      // Create credit transaction first
+      const { error: transactionError } = await supabase
         .from('credit_transactions')
         .insert({
           user_id: user.id,
@@ -67,9 +67,9 @@ export const CreditManagementDialog = ({
           created_by: currentUser.id
         });
 
-      if (error) throw error;
+      if (transactionError) throw transactionError;
 
-      // Update user credits
+      // Calculate new values
       const currentBalance = credits?.current_balance || 0;
       const totalPurchased = credits?.total_purchased || 0;
       const totalUsed = credits?.total_used || 0;
@@ -84,16 +84,39 @@ export const CreditManagementDialog = ({
         }
       }
 
-      const { error: updateError } = await supabase
+      // Check if user_credits record exists first
+      const { data: existingCredits } = await supabase
         .from('user_credits')
-        .upsert({
-          user_id: user.id,
-          current_balance: newBalance,
-          total_purchased: newTotalPurchased,
-          total_used: totalUsed
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
 
-      if (updateError) throw updateError;
+      if (existingCredits) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('user_credits')
+          .update({
+            current_balance: newBalance,
+            total_purchased: newTotalPurchased,
+            total_used: totalUsed,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Insert new record if none exists
+        const { error: insertError } = await supabase
+          .from('user_credits')
+          .insert({
+            user_id: user.id,
+            current_balance: newBalance,
+            total_purchased: newTotalPurchased,
+            total_used: totalUsed
+          });
+
+        if (insertError) throw insertError;
+      }
 
       toast({
         title: "Credits Updated",
@@ -105,6 +128,7 @@ export const CreditManagementDialog = ({
       setAmount(0);
       setDescription('');
     } catch (error: any) {
+      console.error('Credit transaction error:', error);
       toast({
         variant: "destructive",
         title: "Transaction Failed",
