@@ -71,9 +71,7 @@ const Index = () => {
           <Badge variant="secondary" className="mb-4">
             Powered by Claude AI
           </Badge>
-          <h2 className="text-5xl font-bold mb-6">
-            AI-Powered UX Analytics Dashboard
-          </h2>
+          <h2 className="text-5xl font-bold mb-6">You're Not Dreaming.</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">Get AI-powered analysis of your designs with actionable recommendations. Qualitative and quantitative instant insights to help you measure and deliver impact your rationale – with data to prove it.</p>
           <div className="space-x-4">
             <Button size="lg" onClick={handleGetStarted}>
