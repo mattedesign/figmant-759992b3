@@ -15,8 +15,8 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
 
   return (
     <img
-      src="/lovable-uploads/febe6e50-cb1d-4a98-bfb3-71e8fa652802.png"
-      alt="Logo"
+      src="/lovable-uploads/b7882b31-a88e-4b28-9024-60c8a13a7c0a.png"
+      alt="Figmant Logo"
       className={`${sizeClasses[size]} ${className}`}
     />
   );

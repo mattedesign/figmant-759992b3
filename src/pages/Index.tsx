@@ -58,7 +58,6 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Logo size="md" />
-              <h1 className="text-2xl font-bold">UX Analytics AI</h1>
             </div>
             <div className="space-x-2">
               {loading ? (
