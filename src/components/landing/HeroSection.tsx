@@ -19,21 +19,18 @@ export const HeroSection = () => {
 
   return (
     <section className="relative py-20 lg:py-32 overflow-hidden">
-      {/* Enhanced background with Figmant accents */}
+      {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/10"></div>
-      <div className="absolute top-20 left-1/4 w-32 h-32 bg-figmant-purple/10 rounded-full blur-xl"></div>
-      <div className="absolute bottom-20 right-1/4 w-40 h-40 bg-figmant-cyan/10 rounded-full blur-xl"></div>
       
       <div className="container mx-auto px-4 relative">
         <div className="text-center max-w-5xl mx-auto">
-          <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium border-figmant-purple/20 bg-figmant-purple/5">
-            <span className="w-2 h-2 bg-figmant-purple rounded-full mr-2 inline-block"></span>
-            Powered by Claude AI
+          <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
+            ✨ Powered by Claude AI
           </Badge>
           
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-8 leading-tight">
             You're Not{' '}
-            <span className="figmant-text-gradient">
+            <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
               Dreaming
             </span>
             .
@@ -46,17 +43,17 @@ export const HeroSection = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-            <Button size="lg" onClick={handleGetStarted} className="px-8 py-4 text-lg group bg-figmant-purple hover:bg-figmant-purple/90 border-0">
+            <Button size="lg" onClick={handleGetStarted} className="px-8 py-4 text-lg group">
               Get Started for Free
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
-            <Button variant="outline" size="lg" className="px-8 py-4 text-lg border-figmant-cyan/30 hover:bg-figmant-cyan/5 hover:border-figmant-cyan/50">
+            <Button variant="outline" size="lg" className="px-8 py-4 text-lg">
               <Play className="mr-2 h-5 w-5" />
               Watch Demo
             </Button>
           </div>
           
-          {/* Enhanced social proof */}
+          {/* Social proof */}
           <div className="flex flex-col items-center space-y-4">
             <p className="text-sm text-muted-foreground">
               Trusted by designers at leading companies
