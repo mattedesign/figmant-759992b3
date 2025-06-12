@@ -1,16 +1,10 @@
 
-import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { Coins, Plus, Minus, RefreshCw, DollarSign } from 'lucide-react';
+import { Coins } from 'lucide-react';
+import { useCreditTransactionManager } from '@/hooks/useCreditTransactionManager';
+import { CreditStatusCard } from './credit-management/CreditStatusCard';
+import { CreditTransactionForm } from './credit-management/CreditTransactionForm';
 
 interface UserProfile {
   id: string;
@@ -40,104 +34,21 @@ export const CreditManagementDialog = ({
   credits, 
   onCreditsUpdated 
 }: CreditManagementDialogProps) => {
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [transactionType, setTransactionType] = useState<'purchase' | 'admin_adjustment' | 'refund'>('admin_adjustment');
-  const [amount, setAmount] = useState<number>(0);
-  const [description, setDescription] = useState('');
+  const { processTransaction, isLoading } = useCreditTransactionManager();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || amount <= 0) return;
+  const handleTransactionSubmit = async (
+    transactionType: 'purchase' | 'admin_adjustment' | 'refund',
+    amount: number,
+    description: string
+  ) => {
+    if (!user) return false;
 
-    setIsLoading(true);
-    try {
-      // Get current user for created_by
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (!currentUser) throw new Error('Not authenticated');
-
-      // Create credit transaction first
-      const { error: transactionError } = await supabase
-        .from('credit_transactions')
-        .insert({
-          user_id: user.id,
-          transaction_type: transactionType,
-          amount: amount,
-          description: description || `${transactionType} by admin`,
-          created_by: currentUser.id
-        });
-
-      if (transactionError) throw transactionError;
-
-      // Calculate new values
-      const currentBalance = credits?.current_balance || 0;
-      const totalPurchased = credits?.total_purchased || 0;
-      const totalUsed = credits?.total_used || 0;
-
-      let newBalance = currentBalance;
-      let newTotalPurchased = totalPurchased;
-
-      if (transactionType === 'purchase' || transactionType === 'admin_adjustment' || transactionType === 'refund') {
-        newBalance += amount;
-        if (transactionType === 'purchase') {
-          newTotalPurchased += amount;
-        }
-      }
-
-      // Update the existing user_credits record using UPDATE instead of upsert
-      const { error: updateError } = await supabase
-        .from('user_credits')
-        .update({
-          current_balance: newBalance,
-          total_purchased: newTotalPurchased,
-          total_used: totalUsed,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id);
-
-      if (updateError) {
-        console.error('Update error:', updateError);
-        
-        // If update failed because no record exists, create one
-        if (updateError.code === 'PGRST116') {
-          console.log('No existing record found, creating new user_credits record');
-          const { error: insertError } = await supabase
-            .from('user_credits')
-            .insert({
-              user_id: user.id,
-              current_balance: newBalance,
-              total_purchased: newTotalPurchased,
-              total_used: totalUsed
-            });
-
-          if (insertError) {
-            console.error('Insert error:', insertError);
-            throw new Error(`Failed to create user credits record: ${insertError.message}`);
-          }
-        } else {
-          throw new Error(`Failed to update user credits: ${updateError.message}`);
-        }
-      }
-
-      toast({
-        title: "Credits Updated",
-        description: `Successfully ${transactionType === 'admin_adjustment' ? 'adjusted' : transactionType}d ${amount} credits.`,
-      });
-
+    const success = await processTransaction(user, credits, transactionType, amount, description);
+    if (success) {
       onCreditsUpdated();
       onOpenChange(false);
-      setAmount(0);
-      setDescription('');
-    } catch (error: any) {
-      console.error('Credit transaction error:', error);
-      toast({
-        variant: "destructive",
-        title: "Transaction Failed",
-        description: error.message || "Failed to update credits.",
-      });
-    } finally {
-      setIsLoading(false);
     }
+    return success;
   };
 
   if (!user) return null;
@@ -156,109 +67,23 @@ export const CreditManagementDialog = ({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Current Credits Display */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Current Credit Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-primary">
-                    {credits?.current_balance || 0}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Current Balance</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-green-600">
-                    {credits?.total_purchased || 0}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Total Purchased</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-orange-600">
-                    {credits?.total_used || 0}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Total Used</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <CreditStatusCard credits={credits} />
+          
+          <CreditTransactionForm 
+            onSubmit={handleTransactionSubmit}
+            isLoading={isLoading}
+          />
 
-          {/* Credit Transaction Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="transaction_type">Transaction Type</Label>
-              <Select
-                value={transactionType}
-                onValueChange={(value: 'purchase' | 'admin_adjustment' | 'refund') => 
-                  setTransactionType(value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin_adjustment">
-                    <div className="flex items-center space-x-2">
-                      <RefreshCw className="h-4 w-4" />
-                      <span>Admin Adjustment</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="purchase">
-                    <div className="flex items-center space-x-2">
-                      <Plus className="h-4 w-4" />
-                      <span>Purchase Credits</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="refund">
-                    <div className="flex items-center space-x-2">
-                      <DollarSign className="h-4 w-4" />
-                      <span>Refund Credits</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="amount">Credit Amount</Label>
-              <Input
-                id="amount"
-                type="number"
-                min="1"
-                value={amount || ''}
-                onChange={(e) => setAmount(parseInt(e.target.value) || 0)}
-                placeholder="Enter credit amount"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (Optional)</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter transaction description..."
-                rows={3}
-              />
-            </div>
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => onOpenChange(false)}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isLoading || amount <= 0}>
-                {isLoading ? 'Processing...' : 'Apply Transaction'}
-              </Button>
-            </div>
-          </form>
+          <div className="flex justify-end">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
