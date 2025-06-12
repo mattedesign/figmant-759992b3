@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,11 +23,10 @@ export const useAuthState = () => {
       
       // If no subscription data exists, create a default 'inactive' subscription
       if (subscriptionData) {
-        // Filter out 'free' status and convert to 'inactive' if needed
-        const validStatus = subscriptionData.status === 'free' ? 'inactive' : subscriptionData.status;
+        // Convert to valid subscription status (removed 'free' check since it's no longer valid)
         const validSubscription: Subscription = {
           ...subscriptionData,
-          status: validStatus as 'active' | 'inactive' | 'cancelled' | 'expired'
+          status: subscriptionData.status as 'active' | 'inactive' | 'cancelled' | 'expired'
         };
         setSubscription(validSubscription);
       } else {
@@ -59,7 +57,7 @@ export const useAuthState = () => {
           } else {
             const validSubscription: Subscription = {
               ...data,
-              status: data.status === 'free' ? 'inactive' : data.status as 'active' | 'inactive' | 'cancelled' | 'expired'
+              status: data.status as 'active' | 'inactive' | 'cancelled' | 'expired'
             };
             setSubscription(validSubscription);
           }
