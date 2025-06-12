@@ -12,14 +12,14 @@ export default function Subscription() {
   const { profile, subscription } = useAuth();
   const { subscriptionStatus, createCheckoutSession, openCustomerPortal } = useStripeSubscription();
   const { credits } = useUserCredits();
-  const { data: plans } = useSubscriptionPlans();
+  const { plans } = useSubscriptionPlans();
 
   const isOwner = profile?.role === 'owner';
   const hasActiveSubscription = subscription?.status === 'active';
 
   const handleSubscribe = async (planId: string) => {
     try {
-      await createCheckoutSession.mutateAsync({ planId });
+      await createCheckoutSession('basic');
     } catch (error) {
       console.error('Subscription error:', error);
     }
@@ -169,11 +169,10 @@ export default function Subscription() {
                 <Button
                   className="w-full"
                   onClick={() => handleSubscribe(plan.id)}
-                  disabled={createCheckoutSession.isPending || hasActiveSubscription}
+                  disabled={hasActiveSubscription}
                   variant={plan.plan_type === 'recurring' ? 'default' : 'outline'}
                 >
-                  {createCheckoutSession.isPending ? 'Processing...' : 
-                   hasActiveSubscription ? 'Current Plan' : 
+                  {hasActiveSubscription ? 'Current Plan' : 
                    plan.plan_type === 'recurring' ? 'Subscribe' : 'Purchase Credits'}
                 </Button>
               </CardContent>

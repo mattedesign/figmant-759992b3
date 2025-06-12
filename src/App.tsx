@@ -46,7 +46,7 @@ function App() {
                     </AuthGuard>
                   } />
                   <Route path="/owner" element={
-                    <AuthGuard requiredRole="owner">
+                    <AuthGuard requireOwner>
                       <OwnerDashboard />
                     </AuthGuard>
                   } />

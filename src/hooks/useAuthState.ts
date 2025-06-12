@@ -24,7 +24,13 @@ export const useAuthState = () => {
       
       // If no subscription data exists, create a default 'inactive' subscription
       if (subscriptionData) {
-        setSubscription(subscriptionData);
+        // Filter out 'free' status and convert to 'inactive' if needed
+        const validStatus = subscriptionData.status === 'free' ? 'inactive' : subscriptionData.status;
+        const validSubscription: Subscription = {
+          ...subscriptionData,
+          status: validStatus as 'active' | 'inactive' | 'cancelled' | 'expired'
+        };
+        setSubscription(validSubscription);
       } else {
         console.log('No subscription found, creating inactive subscription for user:', userId);
         // Try to create an inactive subscription for this user
@@ -51,7 +57,11 @@ export const useAuthState = () => {
               current_period_end: null
             });
           } else {
-            setSubscription(data);
+            const validSubscription: Subscription = {
+              ...data,
+              status: data.status === 'free' ? 'inactive' : data.status as 'active' | 'inactive' | 'cancelled' | 'expired'
+            };
+            setSubscription(validSubscription);
           }
         } catch (createError) {
           console.error('Failed to create subscription:', createError);
