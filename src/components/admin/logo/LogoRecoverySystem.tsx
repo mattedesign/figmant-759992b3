@@ -198,8 +198,7 @@ export const LogoRecoverySystem: React.FC = () => {
     return status ? <Badge variant="default" className="bg-green-500">OK</Badge> : <Badge variant="destructive">Failed</Badge>;
   };
 
-  const needsRecovery = testResults.activeLogoAccessible === false || 
-                        (testResults.activeLogoAccessible === false && testResults.fallbackLogoAccessible === false);
+  const needsRecovery = testResults.activeLogoAccessible === false;
 
   return (
     <Card>
