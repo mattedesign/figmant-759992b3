@@ -1,9 +1,12 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Asset, AssetUploadConfig, ASSET_CATEGORIES } from '@/types/assets';
 import { useAuth } from '@/contexts/AuthContext';
+
+interface LogoConfigRow {
+  active_logo_url: string;
+}
 
 export const useAssetManagement = () => {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -28,10 +31,7 @@ export const useAssetManagement = () => {
       
       // Check if we have any logo configurations in the database
       const { data: logoConfig } = await supabase
-        .from('logo_configuration')
-        .select('active_logo_url')
-        .eq('user_id', user.id)
-        .single();
+        .rpc('get_logo_config', { user_id: user.id }) as { data: LogoConfigRow | null };
 
       if (logoConfig?.active_logo_url && logoConfig.active_logo_url.includes('supabase')) {
         // Create a mock asset for the stored logo

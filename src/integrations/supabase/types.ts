@@ -672,6 +672,33 @@ export type Database = {
         }
         Relationships: []
       }
+      logo_configuration: {
+        Row: {
+          active_logo_url: string
+          created_at: string
+          fallback_logo_url: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_logo_url: string
+          created_at?: string
+          fallback_logo_url: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active_logo_url?: string
+          created_at?: string
+          fallback_logo_url?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null

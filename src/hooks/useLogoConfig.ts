@@ -9,6 +9,11 @@ interface LogoConfig {
   fallbackLogoUrl: string;
 }
 
+interface LogoConfigRow {
+  active_logo_url: string;
+  fallback_logo_url: string;
+}
+
 export const useLogoConfig = () => {
   const [logoConfig, setLogoConfig] = useState<LogoConfig>({
     activeLogoUrl: '/lovable-uploads/aed59d55-5b0a-4b7b-b82d-340e25b8ca40.png',
@@ -30,10 +35,7 @@ export const useLogoConfig = () => {
       console.log('Loading logo configuration from database...');
       
       const { data, error } = await supabase
-        .from('logo_configuration')
-        .select('active_logo_url, fallback_logo_url')
-        .eq('user_id', user.id)
-        .single();
+        .rpc('get_logo_config', { user_id: user.id }) as { data: LogoConfigRow | null, error: any };
 
       if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
         console.error('Error loading logo config:', error);
@@ -67,8 +69,7 @@ export const useLogoConfig = () => {
       };
 
       const { error } = await supabase
-        .from('logo_configuration')
-        .insert(defaultConfig);
+        .rpc('create_logo_config', defaultConfig) as { error: any };
 
       if (error) {
         console.error('Error creating default logo config:', error);
@@ -131,16 +132,13 @@ export const useLogoConfig = () => {
     }
 
     try {
-      // Update in database
+      // Update in database using RPC function
       const { error } = await supabase
-        .from('logo_configuration')
-        .upsert({
+        .rpc('update_logo_config', {
           user_id: user.id,
-          active_logo_url: newLogoUrl,
-          fallback_logo_url: logoConfig.fallbackLogoUrl
-        }, {
-          onConflict: 'user_id'
-        });
+          new_active_logo_url: newLogoUrl,
+          new_fallback_logo_url: logoConfig.fallbackLogoUrl
+        }) as { error: any };
 
       if (error) {
         console.error('Error updating logo configuration in database:', error);
