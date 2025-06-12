@@ -1,105 +1,125 @@
 
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Lock } from 'lucide-react';
+import { Shield, CreditCard, AlertTriangle } from 'lucide-react';
 
 interface AuthGuardProps {
   children: React.ReactNode;
-  requiresSubscription?: boolean;
-  requiredRole?: 'owner' | 'subscriber';
+  requireAuth?: boolean;
+  requireOwner?: boolean;
+  requireActiveSubscription?: boolean;
 }
 
-export const AuthGuard: React.FC<AuthGuardProps> = ({ 
+export const AuthGuard = ({ 
   children, 
-  requiresSubscription = false,
-  requiredRole
-}) => {
-  const { user, loading, hasActiveSubscription, isOwner, subscription, profile } = useAuth();
+  requireAuth = false,
+  requireOwner = false,
+  requireActiveSubscription = false
+}: AuthGuardProps) => {
+  const { user, profile, subscription, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading) {
+      if (requireAuth && !user) {
+        navigate('/auth');
+        return;
+      }
+      
+      if (requireOwner && profile?.role !== 'owner') {
+        navigate('/dashboard');
+        return;
+      }
+    }
+  }, [user, profile, loading, navigate, requireAuth, requireOwner]);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  // Check for required role
-  if (requiredRole) {
-    if (requiredRole === 'owner' && !isOwner) {
-      return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
-          <Card className="max-w-md w-full">
-            <CardHeader className="text-center">
-              <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <CardTitle>Access Denied</CardTitle>
-              <CardDescription>
-                You don't have permission to access this area. Owner access is required.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button className="w-full" onClick={() => window.location.href = '/dashboard'}>
-                Back to Dashboard
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      );
-    }
-    
-    if (requiredRole === 'subscriber' && profile?.role !== 'subscriber' && !isOwner) {
-      return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
-          <Card className="max-w-md w-full">
-            <CardHeader className="text-center">
-              <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <CardTitle>Access Denied</CardTitle>
-              <CardDescription>
-                You don't have the required role to access this area.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button className="w-full" onClick={() => window.location.href = '/dashboard'}>
-                Back to Dashboard
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      );
-    }
-  }
-
-  // If subscription is required but user doesn't have access
-  if (requiresSubscription && !hasActiveSubscription) {
+  if (requireAuth && !user) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <Lock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <CardTitle>Premium Feature</CardTitle>
+            <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <CardTitle>Authentication Required</CardTitle>
             <CardDescription>
-              {subscription?.status === 'free' 
-                ? "This feature requires a paid subscription. Upgrade to unlock advanced UX analytics features."
-                : "You need an active subscription to access this feature."
-              }
+              Please sign in to access this page
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground text-center">
-              Upgrade to a paid plan to unlock premium features and advanced analytics.
-            </p>
-            <Button className="w-full" onClick={() => window.location.href = '/subscription'}>
+          <CardContent>
+            <Button 
+              onClick={() => navigate('/auth')} 
+              className="w-full"
+            >
+              Sign In
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (requireOwner && profile?.role !== 'owner') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <Shield className="h-12 w-12 mx-auto mb-4 text-destructive" />
+            <CardTitle>Access Denied</CardTitle>
+            <CardDescription>
+              You don't have permission to access this page
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={() => navigate('/dashboard')} 
+              className="w-full"
+            >
+              Go to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (requireActiveSubscription && subscription?.status !== 'active' && profile?.role !== 'owner') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-orange-500" />
+            <CardTitle>Subscription Required</CardTitle>
+            <CardDescription>
+              You need an active subscription to access this feature
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button 
+              onClick={() => navigate('/subscription')} 
+              className="w-full"
+            >
+              <CreditCard className="h-4 w-4 mr-2" />
               View Subscription Plans
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => window.location.href = '/dashboard'}>
-              Back to Dashboard
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/dashboard')} 
+              className="w-full"
+            >
+              Go to Dashboard
             </Button>
           </CardContent>
         </Card>

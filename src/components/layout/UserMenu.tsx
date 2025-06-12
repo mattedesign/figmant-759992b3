@@ -1,7 +1,7 @@
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { User, Settings, LogOut, CreditCard, Shield } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,105 +10,86 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/contexts/AuthContext';
-import { User, LogOut, Crown, Settings, LayoutDashboard, CreditCard, Gift, FileImage } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 export const UserMenu = () => {
-  const { profile, signOut, isOwner, subscription } = useAuth();
+  const { user, profile, subscription, signOut } = useAuth();
   const navigate = useNavigate();
 
-  if (!profile) return null;
-
-  const handleDashboardClick = () => {
-    if (isOwner) {
-      navigate('/owner');
-    } else {
-      navigate('/dashboard');
-    }
-  };
-
-  const handleDesignAnalysisClick = () => {
-    navigate('/design-analysis');
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
   };
 
   const getSubscriptionBadge = () => {
-    if (isOwner) {
-      return (
-        <Badge variant="default" className="text-xs">
-          <Crown className="h-3 w-3 mr-1" />
-          Owner
-        </Badge>
-      );
+    if (profile?.role === 'owner') {
+      return <Badge variant="default" className="ml-2">Owner</Badge>;
     }
+    
+    if (subscription?.status === 'active') {
+      return <Badge variant="default" className="ml-2">Pro</Badge>;
+    }
+    
+    return <Badge variant="secondary" className="ml-2">Free</Badge>;
+  };
 
-    switch (subscription?.status) {
-      case 'active':
-        return (
-          <Badge variant="default" className="text-xs">
-            Premium
-          </Badge>
-        );
-      case 'free':
-        return (
-          <Badge variant="secondary" className="text-xs">
-            <Gift className="h-3 w-3 mr-1" />
-            Free
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline" className="text-xs">
-            Inactive
-          </Badge>
-        );
+  const getInitials = () => {
+    if (profile?.full_name) {
+      return profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
     }
+    if (user?.email) {
+      return user.email.substring(0, 2).toUpperCase();
+    }
+    return 'U';
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <User className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">
-              {profile.full_name || 'User'}
-            </p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {profile.email}
-            </p>
-            <div className="flex items-center space-x-1 pt-1">
+        <div className="flex items-center space-x-2 cursor-pointer hover:bg-accent p-2 rounded-md transition-colors">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="text-xs">
+              {getInitials()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="hidden md:block text-left">
+            <div className="text-sm font-medium flex items-center">
+              {profile?.full_name || user?.email?.split('@')[0] || 'User'}
               {getSubscriptionBadge()}
             </div>
+            <div className="text-xs text-muted-foreground">
+              {user?.email}
+            </div>
           </div>
-        </DropdownMenuLabel>
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleDashboardClick}>
-          <LayoutDashboard className="mr-2 h-4 w-4" />
-          <span>{isOwner ? 'Owner Dashboard' : 'Dashboard'}</span>
+        
+        <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+          <User className="mr-2 h-4 w-4" />
+          Dashboard
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleDesignAnalysisClick}>
-          <FileImage className="mr-2 h-4 w-4" />
-          <span>Design Analysis</span>
+        
+        <DropdownMenuItem onClick={() => navigate('/subscription')}>
+          <CreditCard className="mr-2 h-4 w-4" />
+          Subscription
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Settings</span>
-        </DropdownMenuItem>
-        {!isOwner && (
-          <DropdownMenuItem onClick={() => navigate('/subscription')}>
-            <CreditCard className="mr-2 h-4 w-4" />
-            <span>Subscription</span>
+
+        {profile?.role === 'owner' && (
+          <DropdownMenuItem onClick={() => navigate('/owner')}>
+            <Shield className="mr-2 h-4 w-4" />
+            Owner Dashboard
           </DropdownMenuItem>
         )}
+        
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={signOut}>
+        
+        <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+          Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
