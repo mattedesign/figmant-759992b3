@@ -1,10 +1,14 @@
 
+import { validateImageDimensions, CLAUDE_MAX_DIMENSION } from './imageValidation';
+import { resizeImageForClaudeAI } from './imageResizer';
+
 export interface ImageProcessingOptions {
   maxWidth?: number;
   maxHeight?: number;
   quality?: number;
   maxSizeBytes?: number;
   targetFormat?: 'jpeg' | 'png' | 'webp';
+  enforceClaudeLimits?: boolean;
 }
 
 export interface ProcessedImage {
@@ -14,15 +18,17 @@ export interface ProcessedImage {
   compressionRatio: number;
   dimensions: { width: number; height: number };
   format: string;
+  wasResizedForAI?: boolean;
 }
 
 export class ImageProcessor {
-  private static readonly DEFAULT_OPTIONS: Required<ImageProcessingOptions> = {
+  private static readonly DEFAULT_OPTIONS: Required<Omit<ImageProcessingOptions, 'enforceClaudeLimits'>> & { enforceClaudeLimits: boolean } = {
     maxWidth: 1920,
     maxHeight: 1080,
     quality: 0.8,
     maxSizeBytes: 10 * 1024 * 1024, // 10MB
-    targetFormat: 'jpeg'
+    targetFormat: 'jpeg',
+    enforceClaudeLimits: true
   };
 
   static async processImage(
@@ -42,6 +48,33 @@ export class ImageProcessor {
     }
 
     try {
+      // First check if we need to enforce Claude AI dimension limits
+      if (config.enforceClaudeLimits) {
+        const dimensionValidation = await validateImageDimensions(file);
+        
+        if (!dimensionValidation.isValid && dimensionValidation.needsResize) {
+          // Use the specialized Claude AI resizer
+          const resizeResult = await resizeImageForClaudeAI(file, {
+            maxDimension: CLAUDE_MAX_DIMENSION,
+            quality: config.quality,
+            format: config.targetFormat === 'png' ? 'png' : 'jpeg'
+          });
+
+          return {
+            file: resizeResult.file,
+            originalSize: file.size,
+            processedSize: resizeResult.file.size,
+            compressionRatio: resizeResult.compressionRatio,
+            dimensions: resizeResult.newDimensions,
+            format: config.targetFormat,
+            wasResizedForAI: true
+          };
+        } else if (!dimensionValidation.isValid) {
+          throw new Error(dimensionValidation.error || 'Image validation failed');
+        }
+      }
+
+      // If no Claude AI resizing needed, use standard processing
       const image = await this.loadImage(file);
       const canvas = this.createCanvas(image, config);
       const processedFile = await this.canvasToFile(canvas, file.name, config);
@@ -52,7 +85,8 @@ export class ImageProcessor {
         processedSize: processedFile.size,
         compressionRatio: Math.round((1 - processedFile.size / file.size) * 100),
         dimensions: { width: canvas.width, height: canvas.height },
-        format: config.targetFormat
+        format: config.targetFormat,
+        wasResizedForAI: false
       };
     } catch (error) {
       console.error('Image processing failed:', error);
@@ -76,7 +110,7 @@ export class ImageProcessor {
 
   private static createCanvas(
     image: HTMLImageElement, 
-    config: Required<ImageProcessingOptions>
+    config: Required<Omit<ImageProcessingOptions, 'enforceClaudeLimits'>> & { enforceClaudeLimits: boolean }
   ): HTMLCanvasElement {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -129,7 +163,7 @@ export class ImageProcessor {
   private static canvasToFile(
     canvas: HTMLCanvasElement,
     originalName: string,
-    config: Required<ImageProcessingOptions>
+    config: Required<Omit<ImageProcessingOptions, 'enforceClaudeLimits'>> & { enforceClaudeLimits: boolean }
   ): Promise<File> {
     return new Promise((resolve, reject) => {
       canvas.toBlob(

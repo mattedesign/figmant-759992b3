@@ -1,10 +1,12 @@
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Upload, FileImage, X } from 'lucide-react';
+import { Upload, FileImage, X, AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { PreUploadValidator } from '@/components/design/chat/PreUploadValidator';
 
 interface FileUploadSectionProps {
   selectedFiles: File[];
@@ -15,9 +17,15 @@ export const FileUploadSection = ({
   selectedFiles,
   setSelectedFiles
 }: FileUploadSectionProps) => {
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [showValidator, setShowValidator] = useState(false);
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    setSelectedFiles(prev => [...prev, ...acceptedFiles]);
-  }, [setSelectedFiles]);
+    setPendingFiles(acceptedFiles);
+    setValidationErrors([]);
+    setShowValidator(true);
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -25,8 +33,19 @@ export const FileUploadSection = ({
       'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
       'application/pdf': ['.pdf']
     },
-    maxSize: 10 * 1024 * 1024 // 10MB
+    maxSize: 50 * 1024 * 1024 // 50MB
   });
+
+  const handleValidationComplete = (validFiles: File[], errors: string[]) => {
+    setSelectedFiles(prev => [...prev, ...validFiles]);
+    setValidationErrors(errors);
+    setShowValidator(false);
+    setPendingFiles([]);
+
+    if (errors.length > 0) {
+      console.warn('File validation errors:', errors);
+    }
+  };
 
   const removeFile = (index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
@@ -50,9 +69,39 @@ export const FileUploadSection = ({
             : 'Drag & drop multiple design files here, or click to select'}
         </p>
         <p className="text-xs text-muted-foreground">
-          Supports: PNG, JPG, PDF (max 10MB each)
+          Supports: PNG, JPG, PDF (max 50MB each)
+        </p>
+        <p className="text-xs text-blue-600 mt-1">
+          Images will be automatically validated and resized for AI analysis if needed
         </p>
       </div>
+
+      {/* Pre-Upload Validation */}
+      {showValidator && pendingFiles.length > 0 && (
+        <div className="border rounded-lg p-4 bg-blue-50">
+          <PreUploadValidator
+            files={pendingFiles}
+            onValidationComplete={handleValidationComplete}
+          />
+        </div>
+      )}
+
+      {/* Validation Errors */}
+      {validationErrors.length > 0 && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <div className="space-y-1">
+              <p className="font-medium">Some files couldn't be processed:</p>
+              <ul className="list-disc list-inside text-sm">
+                {validationErrors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Selected Files */}
       {selectedFiles.length > 0 && (

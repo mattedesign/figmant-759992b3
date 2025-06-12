@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ImageProcessor, ProcessedImage, validateImageFile, shouldCompressImage } from '@/utils/imageProcessing';
+import { validateImageDimensions } from '@/utils/imageValidation';
 import { Image, Minimize2, CheckCircle, AlertTriangle, Loader2, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useImageProcessingMonitor } from '@/hooks/useImageProcessingMonitor';
@@ -60,12 +61,26 @@ export const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
       setProcessingProgress(25);
       updateJobProgress(jobId, 'validating', 25);
 
-      // Check if compression is needed
-      const needsCompression = shouldCompressImage(file);
+      // Validate dimensions for Claude AI compatibility
+      updateJobProgress(jobId, 'validating', 40);
+      const dimensionValidation = await validateImageDimensions(file);
       
-      if (!needsCompression && !fallbackMethod) {
-        // File is small enough, use as-is
-        updateJobProgress(jobId, 'uploading', 75);
+      if (!dimensionValidation.isValid && !dimensionValidation.needsResize) {
+        // This is an error that can't be fixed by resizing
+        const errorMessage = dimensionValidation.error || 'Image validation failed';
+        logImageProcessing.validation.error(file.name, errorMessage);
+        setValidationError(errorMessage);
+        failJob(jobId, 'DIMENSION_VALIDATION_FAILED', errorMessage, 'validation');
+        onError(errorMessage);
+        return;
+      }
+
+      // Check if compression/resizing is needed
+      const needsProcessing = shouldCompressImage(file) || dimensionValidation.needsResize;
+      
+      if (!needsProcessing && !fallbackMethod) {
+        // File is already optimized and within Claude AI limits
+        updateJobProgress(jobId, 'completed', 100);
         const info = await ImageProcessor.getImageInfo(file);
         const processedInfo: ProcessedImage = {
           file,
@@ -73,12 +88,12 @@ export const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
           processedSize: file.size,
           compressionRatio: 0,
           dimensions: { width: info.width, height: info.height },
-          format: file.type.split('/')[1]
+          format: file.type.split('/')[1],
+          wasResizedForAI: false
         };
         
         setProcessedInfo(processedInfo);
         setProcessingProgress(100);
-        updateJobProgress(jobId, 'completed', 100);
         completeJob(jobId, {
           compressionRatio: 0,
           processingTime: 0,
@@ -90,28 +105,26 @@ export const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
         logImageProcessing.upload.success(file.name, 0, 'direct');
         toast({
           title: "Image Ready",
-          description: "Image is already optimized and ready for analysis.",
+          description: "Image is already optimized for AI analysis.",
         });
         
         return;
       }
 
-      // Process the image with compression
-      updateJobProgress(jobId, 'compressing', 50);
+      // Process the image with enhanced validation and Claude AI compatibility
+      updateJobProgress(jobId, 'compressing', 60);
       logImageProcessing.compression.start(file.name, file.size);
       
-      const compressionOptions = fallbackMethod === 'client-side-basic' 
-        ? { maxWidth: 1280, maxHeight: 720, quality: 0.6 }
-        : fallbackMethod === 'progressive-quality'
-        ? { maxWidth: 1920, maxHeight: 1080, quality: 0.7 }
-        : { maxWidth: 1920, maxHeight: 1080, quality: 0.85 };
-
+      // Use enforceClaudeLimits option to ensure compatibility
       const processed = await ImageProcessor.processImage(file, {
-        ...compressionOptions,
-        targetFormat: 'jpeg'
+        maxWidth: fallbackMethod === 'client-side-basic' ? 1280 : 1920,
+        maxHeight: fallbackMethod === 'client-side-basic' ? 720 : 1080,
+        quality: fallbackMethod === 'progressive-quality' ? 0.7 : 0.85,
+        targetFormat: 'jpeg',
+        enforceClaudeLimits: true // This ensures Claude AI dimension limits are enforced
       });
 
-      updateJobProgress(jobId, 'uploading', 100);
+      updateJobProgress(jobId, 'completed', 100);
       logImageProcessing.compression.success(
         file.name, 
         processed.compressionRatio, 
@@ -129,9 +142,13 @@ export const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
       
       onProcessed(processed.file, processed);
 
+      const resizeMessage = processed.wasResizedForAI 
+        ? " and resized for AI compatibility"
+        : "";
+
       toast({
         title: "Image Processed",
-        description: `Image compressed by ${processed.compressionRatio}% for optimal analysis.`,
+        description: `Image optimized${resizeMessage} (${processed.compressionRatio}% size reduction).`,
       });
 
     } catch (error) {
@@ -203,9 +220,17 @@ export const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
           <Image className="h-4 w-4" />
           <span className="text-sm font-medium">{file.name}</span>
           {processedInfo && (
-            <Badge variant="outline" className="text-xs">
-              {processedInfo.dimensions.width} × {processedInfo.dimensions.height}
-            </Badge>
+            <>
+              <Badge variant="outline" className="text-xs">
+                {processedInfo.dimensions.width} × {processedInfo.dimensions.height}
+              </Badge>
+              {processedInfo.wasResizedForAI && (
+                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                  <Shield className="h-2 w-2 mr-1" />
+                  AI Compatible
+                </Badge>
+              )}
+            </>
           )}
         </div>
 
@@ -213,7 +238,7 @@ export const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Loader2 className="h-3 w-3 animate-spin" />
-              Processing image...
+              Processing and validating image...
             </div>
             <Progress value={processingProgress} className="h-2" />
           </div>
@@ -232,7 +257,7 @@ export const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-green-600">
               <CheckCircle className="h-3 w-3" />
-              Ready for analysis
+              Ready for AI analysis
             </div>
             
             <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
@@ -242,12 +267,18 @@ export const EnhancedImageUpload: React.FC<EnhancedImageUploadProps> = ({
                 <>
                   <div className="flex items-center gap-1">
                     <Minimize2 className="h-3 w-3" />
-                    Compressed: {processedInfo.compressionRatio}%
+                    Optimized: {processedInfo.compressionRatio}%
                   </div>
                   <div>Format: {processedInfo.format.toUpperCase()}</div>
                 </>
               )}
             </div>
+            
+            {processedInfo.wasResizedForAI && (
+              <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                Image was resized to meet Claude AI's dimension requirements for optimal analysis.
+              </div>
+            )}
           </div>
         )}
       </div>

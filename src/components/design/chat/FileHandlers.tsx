@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { validateImageFile, ProcessedImage } from '@/utils/imageProcessing';
+import { validateImageDimensions } from '@/utils/imageValidation';
+import { resizeImageForClaudeAI } from '@/utils/imageResizer';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
 export const useFileHandlers = (storageStatus: 'checking' | 'ready' | 'error') => {
@@ -176,28 +178,95 @@ export const useFileHandlers = (storageStatus: 'checking' | 'ready' | 'error') =
       }
     }
 
-    // Handle image files with enhanced processing
+    // Handle image files with enhanced validation and processing
     for (const file of imageFiles) {
-      const validation = validateImageFile(file);
-      if (!validation.isValid) {
-        toast({
-          variant: "destructive",
-          title: "Invalid Image",
-          description: validation.error,
-        });
-        continue;
-      }
-
       const attachment: ChatAttachment = {
         id: crypto.randomUUID(),
         type: 'file',
         name: file.name,
         file,
-        status: 'processing'
+        status: 'validating'
       };
 
       newAttachments.push(attachment);
       setPendingImageProcessing(prev => new Set(prev).add(attachment.id));
+
+      try {
+        // First validate basic file properties
+        const basicValidation = validateImageFile(file);
+        if (!basicValidation.isValid) {
+          throw new Error(basicValidation.error);
+        }
+
+        // Then validate dimensions for Claude AI compatibility
+        const dimensionValidation = await validateImageDimensions(file);
+        
+        let fileToUpload = file;
+        let processingInfo: ProcessedImage | undefined;
+
+        if (!dimensionValidation.isValid && dimensionValidation.needsResize) {
+          // Image needs resizing for Claude AI
+          updateAttachmentStatus(attachments, setAttachments, attachment.id, 'processing');
+          
+          toast({
+            title: "Resizing Image",
+            description: `${file.name} is being resized for AI analysis compatibility.`,
+          });
+
+          const resizeResult = await resizeImageForClaudeAI(file);
+          fileToUpload = resizeResult.file;
+          processingInfo = {
+            file: resizeResult.file,
+            originalSize: file.size,
+            processedSize: resizeResult.file.size,
+            compressionRatio: resizeResult.compressionRatio,
+            dimensions: resizeResult.newDimensions,
+            format: 'jpeg'
+          };
+
+          toast({
+            title: "Image Resized",
+            description: `${file.name} has been resized from ${resizeResult.originalDimensions.width}x${resizeResult.originalDimensions.height} to ${resizeResult.newDimensions.width}x${resizeResult.newDimensions.height}.`,
+          });
+        } else if (!dimensionValidation.isValid) {
+          // Image has validation errors that can't be fixed by resizing
+          throw new Error(dimensionValidation.error);
+        }
+
+        // Upload the file (original or resized)
+        updateAttachmentStatus(attachments, setAttachments, attachment.id, 'uploading');
+        const uploadPath = await uploadFileToStorage(fileToUpload);
+        updateAttachmentStatus(attachments, setAttachments, attachment.id, 'uploaded', undefined, uploadPath, processingInfo);
+
+        setPendingImageProcessing(prev => {
+          const updated = new Set(prev);
+          updated.delete(attachment.id);
+          return updated;
+        });
+
+        toast({
+          title: "Image Ready",
+          description: processingInfo 
+            ? `${file.name} has been processed and uploaded successfully.`
+            : `${file.name} has been uploaded successfully.`,
+        });
+
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Processing failed';
+        updateAttachmentStatus(attachments, setAttachments, attachment.id, 'error', errorMessage);
+        
+        setPendingImageProcessing(prev => {
+          const updated = new Set(prev);
+          updated.delete(attachment.id);
+          return updated;
+        });
+
+        toast({
+          variant: "destructive",
+          title: "Processing Failed",
+          description: `Failed to process ${file.name}: ${errorMessage}`,
+        });
+      }
     }
 
     setAttachments(prev => [...prev, ...newAttachments]);
