@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -7,8 +7,7 @@ interface LogoProps {
 }
 
 export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
-  const [imageError, setImageError] = useState(false);
-  const [imageLoading, setImageLoading] = useState(true);
+  const [imageStatus, setImageStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
 
   const sizeClasses = {
     sm: 'h-6 w-20',
@@ -16,16 +15,31 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     lg: 'h-12 w-32'
   };
 
-  const handleImageError = () => {
-    console.error('Logo image failed to load');
-    setImageError(true);
-    setImageLoading(false);
-  };
+  useEffect(() => {
+    const img = new Image();
+    const timeoutId = setTimeout(() => {
+      console.warn('Logo image load timeout - using fallback');
+      setImageStatus('error');
+    }, 5000); // 5 second timeout
 
-  const handleImageLoad = () => {
-    console.log('Logo image loaded successfully');
-    setImageLoading(false);
-  };
+    img.onload = () => {
+      console.log('Logo image loaded successfully');
+      clearTimeout(timeoutId);
+      setImageStatus('loaded');
+    };
+
+    img.onerror = () => {
+      console.error('Logo image failed to load');
+      clearTimeout(timeoutId);
+      setImageStatus('error');
+    };
+
+    img.src = '/lovable-uploads/b7882b31-a88e-4b28-9024-60c8a13a7c0a.png';
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   // Fallback SVG logo
   const FallbackLogo = () => (
@@ -37,14 +51,14 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   );
 
   // Loading placeholder
-  if (imageLoading && !imageError) {
+  if (imageStatus === 'loading') {
     return (
       <div className={`${sizeClasses[size]} ${className} bg-muted animate-pulse rounded-lg`} />
     );
   }
 
-  // Show fallback if image failed to load
-  if (imageError) {
+  // Show fallback if image failed to load or timed out
+  if (imageStatus === 'error') {
     return <FallbackLogo />;
   }
 
@@ -53,9 +67,6 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
       src="/lovable-uploads/b7882b31-a88e-4b28-9024-60c8a13a7c0a.png"
       alt="Figmant Logo"
       className={`${sizeClasses[size]} ${className} object-contain`}
-      onError={handleImageError}
-      onLoad={handleImageLoad}
-      style={{ display: imageLoading ? 'none' : 'block' }}
     />
   );
 };
