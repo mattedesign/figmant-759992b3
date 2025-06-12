@@ -18,9 +18,36 @@ export const verifyStorageAccess = async () => {
       return { success: false, error: 'User not authenticated' };
     }
 
-    console.log('User authenticated, testing upload capability...');
+    console.log('User authenticated, testing bucket access...');
 
-    // Create a minimal PNG blob (1x1 transparent PNG)
+    // Test bucket existence and access
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+    
+    if (bucketsError) {
+      console.error('Failed to list buckets:', bucketsError);
+      return { success: false, error: 'Failed to access storage buckets' };
+    }
+
+    const designUploadsBucket = buckets?.find(bucket => bucket.id === 'design-uploads');
+    if (!designUploadsBucket) {
+      console.error('design-uploads bucket not found');
+      return { success: false, error: 'design-uploads bucket not found' };
+    }
+
+    console.log('Bucket found, testing file listing...');
+
+    // Test file listing in assets/branding/logo directory
+    const { data: logoFiles, error: listError } = await supabase.storage
+      .from('design-uploads')
+      .list('assets/branding/logo', { limit: 10 });
+
+    if (listError) {
+      console.warn('Failed to list logo files:', listError);
+    } else {
+      console.log('Logo files found:', logoFiles);
+    }
+
+    // Create a minimal PNG blob for testing upload
     const pngData = new Uint8Array([
       0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
       0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
@@ -71,6 +98,60 @@ export const verifyStorageAccess = async () => {
       success: false, 
       error: error instanceof Error ? error.message : 'Unexpected error during storage verification' 
     };
+  }
+};
+
+export const testImageUrl = async (url: string): Promise<boolean> => {
+  try {
+    console.log('Testing image URL accessibility:', url);
+    
+    // For Supabase storage URLs, try to fetch with proper headers
+    if (url.includes('supabase.co/storage')) {
+      const response = await fetch(url, {
+        method: 'HEAD',
+        mode: 'cors'
+      });
+      
+      console.log('Image URL response:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+      
+      return response.ok;
+    }
+    
+    // For other URLs or local assets, use image loading test
+    return new Promise((resolve) => {
+      const img = new Image();
+      const timeout = setTimeout(() => {
+        console.warn('Image URL test timeout for:', url);
+        resolve(false);
+      }, 5000);
+      
+      img.onload = () => {
+        clearTimeout(timeout);
+        console.log('Image URL test successful for:', url);
+        resolve(true);
+      };
+      
+      img.onerror = () => {
+        clearTimeout(timeout);
+        console.error('Image URL test failed for:', url);
+        resolve(false);
+      };
+      
+      // Set crossOrigin for Supabase storage URLs
+      if (url.includes('supabase')) {
+        img.crossOrigin = 'anonymous';
+      }
+      
+      img.src = url;
+    });
+    
+  } catch (error) {
+    console.error('Image URL test error:', error);
+    return false;
   }
 };
 
