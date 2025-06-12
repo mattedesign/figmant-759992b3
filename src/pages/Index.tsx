@@ -5,44 +5,37 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { BarChart3, Users, Target, Zap, Shield } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
-
 const Index = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
-
-  const features = [
-    {
-      icon: Zap,
-      title: 'AI-Powered Insights',
-      description: 'Claude AI analyzes your UX data to provide intelligent recommendations and identify patterns.',
-    },
-    {
-      icon: BarChart3,
-      title: 'Real-time Analytics',
-      description: 'Monitor user behavior, conversion funnels, and performance metrics in real-time.',
-    },
-    {
-      icon: Users,
-      title: 'User Journey Mapping',
-      description: 'Visualize complete user journeys and identify optimization opportunities.',
-    },
-    {
-      icon: Target,
-      title: 'Conversion Optimization',
-      description: 'Track conversion rates and get AI-driven suggestions to improve performance.',
-    },
-    {
-      icon: Zap,
-      title: 'Automated Reports',
-      description: 'Generate comprehensive UX reports with AI insights automatically.',
-    },
-    {
-      icon: Shield,
-      title: 'Privacy Compliant',
-      description: 'GDPR-compliant data collection with user privacy protection built-in.',
-    },
-  ];
-
+  const {
+    user,
+    loading
+  } = useAuth();
+  const features = [{
+    icon: Zap,
+    title: 'AI-Powered Insights',
+    description: 'Claude AI analyzes your UX data to provide intelligent recommendations and identify patterns.'
+  }, {
+    icon: BarChart3,
+    title: 'Real-time Analytics',
+    description: 'Monitor user behavior, conversion funnels, and performance metrics in real-time.'
+  }, {
+    icon: Users,
+    title: 'User Journey Mapping',
+    description: 'Visualize complete user journeys and identify optimization opportunities.'
+  }, {
+    icon: Target,
+    title: 'Conversion Optimization',
+    description: 'Track conversion rates and get AI-driven suggestions to improve performance.'
+  }, {
+    icon: Zap,
+    title: 'Automated Reports',
+    description: 'Generate comprehensive UX reports with AI insights automatically.'
+  }, {
+    icon: Shield,
+    title: 'Privacy Compliant',
+    description: 'GDPR-compliant data collection with user privacy protection built-in.'
+  }];
   const handleGetStarted = () => {
     if (user) {
       navigate('/dashboard');
@@ -50,9 +43,7 @@ const Index = () => {
       navigate('/auth');
     }
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
@@ -60,22 +51,16 @@ const Index = () => {
               <Logo size="md" />
             </div>
             <div className="space-x-2">
-              {loading ? (
-                <div className="h-10 w-24 bg-gray-200 animate-pulse rounded-md"></div>
-              ) : user ? (
-                <Button onClick={() => navigate('/dashboard')}>
+              {loading ? <div className="h-10 w-24 bg-gray-200 animate-pulse rounded-md"></div> : user ? <Button onClick={() => navigate('/dashboard')}>
                   Go to Dashboard
-                </Button>
-              ) : (
-                <>
+                </Button> : <>
                   <Button variant="outline" onClick={() => navigate('/auth')}>
                     Sign In
                   </Button>
                   <Button onClick={handleGetStarted}>
                     Get Started
                   </Button>
-                </>
-              )}
+                </>}
             </div>
           </div>
         </div>
@@ -89,10 +74,7 @@ const Index = () => {
           <h2 className="text-5xl font-bold mb-6">
             AI-Powered UX Analytics Dashboard
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Transform your user experience with intelligent analytics. Leverage Claude AI to gain deep insights 
-            into user behavior, optimize conversion funnels, and make data-driven UX decisions.
-          </p>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">Get AI-powered analysis of your designs with actionable recommendations. Qualitative and quantitative instant insights to help you measure and deliver impact your rationale – with data to prove it.</p>
           <div className="space-x-4">
             <Button size="lg" onClick={handleGetStarted}>
               Get Started
@@ -104,8 +86,7 @@ const Index = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {features.map((feature, index) => (
-            <Card key={index}>
+          {features.map((feature, index) => <Card key={index}>
               <CardHeader>
                 <feature.icon className="h-10 w-10 text-primary mb-2" />
                 <CardTitle>{feature.title}</CardTitle>
@@ -113,8 +94,7 @@ const Index = () => {
               <CardContent>
                 <CardDescription>{feature.description}</CardDescription>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
 
         <Card className="max-w-4xl mx-auto">
@@ -166,8 +146,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
