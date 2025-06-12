@@ -53,6 +53,22 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     console.log('Supabase client initialized');
 
+    // Get user ID from auth header
+    const authHeader = req.headers.get('authorization');
+    if (authHeader) {
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser(
+          authHeader.replace('Bearer ', '')
+        );
+        if (user && !authError) {
+          userId = user.id;
+          console.log('User authenticated:', userId);
+        }
+      } catch (error) {
+        console.log('Auth check failed, proceeding without user context');
+      }
+    }
+
     const claudeSettings = await getClaudeSettings(supabase);
     
     console.log('Starting enhanced attachment processing with website support...');
@@ -195,7 +211,8 @@ serve(async (req) => {
         responseTimeMs: responseTime,
         estimatedCost,
         enhancedProcessing: true,
-        websiteSupport: true
+        websiteSupport: true,
+        userId: userId
       }
     };
 
@@ -249,7 +266,8 @@ serve(async (req) => {
           settingsSource: 'admin_settings',
           responseTimeMs: Date.now() - startTime,
           enhancedProcessing: true,
-          websiteSupport: true
+          websiteSupport: true,
+          userId: userId
         }
       }),
       {
