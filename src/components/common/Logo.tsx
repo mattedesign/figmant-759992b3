@@ -9,8 +9,8 @@ interface LogoProps {
 
 export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   const [imageStatus, setImageStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
-  const [imageUrl, setImageUrl] = useState<string>('');
-  const { logoConfig } = useLogoConfig();
+  const [currentImageUrl, setCurrentImageUrl] = useState<string>('');
+  const { logoConfig, isLoading } = useLogoConfig();
 
   // Optimized size classes for horizontal logo
   const sizeClasses = {
@@ -20,77 +20,71 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   };
 
   useEffect(() => {
+    if (isLoading) return;
+    
     const loadImage = async () => {
-      console.log('Loading logo:', logoConfig.activeLogoUrl);
+      console.log('Loading logo with config:', logoConfig);
       setImageStatus('loading');
       
-      // First try the active logo URL
-      const img = new Image();
-      let loadTimeout: NodeJS.Timeout;
-      
-      const timeoutPromise = new Promise<void>((_, reject) => {
-        loadTimeout = setTimeout(() => {
-          reject(new Error('Image load timeout'));
-        }, 8000); // Increased timeout to 8 seconds
-      });
-
-      const loadPromise = new Promise<void>((resolve, reject) => {
-        img.onload = () => {
-          console.log('Logo loaded successfully:', logoConfig.activeLogoUrl);
-          resolve();
-        };
-        
-        img.onerror = (error) => {
-          console.error('Logo failed to load:', logoConfig.activeLogoUrl, error);
-          reject(new Error('Image load failed'));
-        };
-        
-        // Set crossOrigin for Supabase storage URLs
-        if (logoConfig.activeLogoUrl.includes('supabase')) {
-          img.crossOrigin = 'anonymous';
-        }
-        
-        img.src = logoConfig.activeLogoUrl;
-      });
-
-      try {
-        await Promise.race([loadPromise, timeoutPromise]);
-        clearTimeout(loadTimeout);
-        setImageUrl(logoConfig.activeLogoUrl);
-        setImageStatus('loaded');
-      } catch (error) {
-        console.warn('Active logo failed, trying fallback:', error);
-        clearTimeout(loadTimeout);
-        
-        // Try fallback logo
+      // Try active logo first
+      if (logoConfig.activeLogoUrl) {
         try {
-          const fallbackImg = new Image();
-          await new Promise<void>((resolve, reject) => {
-            const fallbackTimeout = setTimeout(() => reject(new Error('Fallback timeout')), 3000);
-            
-            fallbackImg.onload = () => {
-              clearTimeout(fallbackTimeout);
-              resolve();
-            };
-            fallbackImg.onerror = () => {
-              clearTimeout(fallbackTimeout);
-              reject(new Error('Fallback failed'));
-            };
-            fallbackImg.src = logoConfig.fallbackLogoUrl;
-          });
-          
-          console.log('Fallback logo loaded:', logoConfig.fallbackLogoUrl);
-          setImageUrl(logoConfig.fallbackLogoUrl);
+          await testImageLoad(logoConfig.activeLogoUrl);
+          setCurrentImageUrl(logoConfig.activeLogoUrl);
           setImageStatus('loaded');
-        } catch (fallbackError) {
-          console.error('Both active and fallback logos failed:', fallbackError);
-          setImageStatus('error');
+          console.log('Active logo loaded successfully:', logoConfig.activeLogoUrl);
+          return;
+        } catch (error) {
+          console.warn('Active logo failed to load:', logoConfig.activeLogoUrl, error);
         }
       }
+
+      // Try fallback logo
+      if (logoConfig.fallbackLogoUrl && logoConfig.fallbackLogoUrl !== logoConfig.activeLogoUrl) {
+        try {
+          await testImageLoad(logoConfig.fallbackLogoUrl);
+          setCurrentImageUrl(logoConfig.fallbackLogoUrl);
+          setImageStatus('loaded');
+          console.log('Fallback logo loaded successfully:', logoConfig.fallbackLogoUrl);
+          return;
+        } catch (error) {
+          console.warn('Fallback logo failed to load:', logoConfig.fallbackLogoUrl, error);
+        }
+      }
+
+      // Both failed, show error state
+      console.error('Both active and fallback logos failed to load');
+      setImageStatus('error');
     };
 
     loadImage();
-  }, [logoConfig.activeLogoUrl, logoConfig.fallbackLogoUrl]);
+  }, [logoConfig, isLoading]);
+
+  const testImageLoad = (url: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const timeout = setTimeout(() => {
+        reject(new Error('Image load timeout'));
+      }, 5000);
+
+      img.onload = () => {
+        clearTimeout(timeout);
+        resolve();
+      };
+      
+      img.onerror = () => {
+        clearTimeout(timeout);
+        reject(new Error('Image load failed'));
+      };
+      
+      // Set crossOrigin for Supabase storage URLs
+      if (url.includes('supabase')) {
+        img.crossOrigin = 'anonymous';
+      }
+      
+      img.src = url;
+    });
+  };
 
   // Enhanced fallback with FIGMANT branding and colored dots
   const FallbackLogo = () => (
@@ -109,7 +103,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   );
 
   // Loading placeholder
-  if (imageStatus === 'loading') {
+  if (isLoading || imageStatus === 'loading') {
     return (
       <div className={`${sizeClasses[size]} ${className} bg-muted animate-pulse rounded-lg flex items-center justify-center`}>
         <span className="text-xs text-muted-foreground">Loading...</span>
@@ -126,15 +120,15 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   // Display the actual logo
   return (
     <img
-      src={imageUrl}
+      src={currentImageUrl}
       alt="Figmant Logo"
       className={`${sizeClasses[size]} ${className} object-contain`}
       onError={() => {
-        console.error('Image onError triggered for:', imageUrl);
+        console.error('Image onError triggered for:', currentImageUrl);
         setImageStatus('error');
       }}
       onLoad={() => {
-        console.log('Image onLoad triggered for:', imageUrl);
+        console.log('Image onLoad triggered for:', currentImageUrl);
       }}
     />
   );

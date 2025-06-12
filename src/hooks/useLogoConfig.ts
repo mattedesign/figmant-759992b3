@@ -9,22 +9,22 @@ interface LogoConfig {
   fallbackLogoUrl: string;
 }
 
-interface LogoConfigRow {
-  active_logo_url: string;
-  fallback_logo_url: string;
-}
+const DEFAULT_FALLBACK_LOGO = '/lovable-uploads/aed59d55-5b0a-4b7b-b82d-340e25b8ca40.png';
 
 export const useLogoConfig = () => {
   const [logoConfig, setLogoConfig] = useState<LogoConfig>({
-    activeLogoUrl: '/lovable-uploads/aed59d55-5b0a-4b7b-b82d-340e25b8ca40.png',
-    fallbackLogoUrl: '/lovable-uploads/aed59d55-5b0a-4b7b-b82d-340e25b8ca40.png'
+    activeLogoUrl: DEFAULT_FALLBACK_LOGO,
+    fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
   });
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
 
   useEffect(() => {
     if (user) {
       loadLogoConfig();
+    } else {
+      setIsLoading(false);
     }
   }, [user]);
 
@@ -33,6 +33,7 @@ export const useLogoConfig = () => {
 
     try {
       console.log('Loading logo configuration from database...');
+      setIsLoading(true);
       
       const { data, error } = await supabase
         .from('logo_configuration')
@@ -48,49 +49,29 @@ export const useLogoConfig = () => {
       if (data) {
         console.log('Loaded logo config from database:', data);
         setLogoConfig({
-          activeLogoUrl: data.active_logo_url,
-          fallbackLogoUrl: data.fallback_logo_url
+          activeLogoUrl: data.active_logo_url || DEFAULT_FALLBACK_LOGO,
+          fallbackLogoUrl: data.fallback_logo_url || DEFAULT_FALLBACK_LOGO
         });
       } else {
-        // No configuration exists, create default one
-        console.log('No logo configuration found, creating default...');
-        await createDefaultLogoConfig();
+        console.log('No logo configuration found, using defaults');
+        // Don't create default config automatically - let the upload process handle it
+        setLogoConfig({
+          activeLogoUrl: DEFAULT_FALLBACK_LOGO,
+          fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
+        });
       }
     } catch (error) {
       console.error('Failed to load logo configuration:', error);
-    }
-  };
-
-  const createDefaultLogoConfig = async () => {
-    if (!user) return;
-
-    try {
-      const defaultConfig = {
-        user_id: user.id,
-        active_logo_url: '/lovable-uploads/aed59d55-5b0a-4b7b-b82d-340e25b8ca40.png',
-        fallback_logo_url: '/lovable-uploads/aed59d55-5b0a-4b7b-b82d-340e25b8ca40.png'
-      };
-
-      const { error } = await supabase
-        .from('logo_configuration')
-        .insert(defaultConfig);
-
-      if (error) {
-        console.error('Error creating default logo config:', error);
-        return;
-      }
-
-      console.log('Created default logo configuration');
-      setLogoConfig({
-        activeLogoUrl: defaultConfig.active_logo_url,
-        fallbackLogoUrl: defaultConfig.fallback_logo_url
-      });
-    } catch (error) {
-      console.error('Failed to create default logo configuration:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const testImageLoad = async (url: string): Promise<boolean> => {
+    if (!url || url === DEFAULT_FALLBACK_LOGO) {
+      return true; // Default fallback is always considered valid
+    }
+
     return new Promise((resolve) => {
       const img = new Image();
       const timeout = setTimeout(() => {
@@ -117,7 +98,12 @@ export const useLogoConfig = () => {
   const updateActiveLogo = async (newLogoUrl: string) => {
     if (!user) {
       console.error('User not authenticated');
-      return;
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "You must be logged in to update the logo.",
+      });
+      return false;
     }
 
     console.log('Attempting to update active logo to:', newLogoUrl);
@@ -132,18 +118,20 @@ export const useLogoConfig = () => {
         title: "Logo Update Failed",
         description: "The new logo could not be loaded. Please check the file accessibility.",
       });
-      return;
+      return false;
     }
 
     try {
-      // Update in database using direct table insert/update
+      // Update in database using upsert
       const { error } = await supabase
         .from('logo_configuration')
         .upsert({
           user_id: user.id,
           active_logo_url: newLogoUrl,
-          fallback_logo_url: logoConfig.fallbackLogoUrl,
+          fallback_logo_url: DEFAULT_FALLBACK_LOGO,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
         });
 
       if (error) {
@@ -153,13 +141,13 @@ export const useLogoConfig = () => {
           title: "Logo Update Failed",
           description: "Failed to save logo configuration. Please try again.",
         });
-        return;
+        return false;
       }
 
-      // Update local state
+      // Update local state immediately
       const newConfig = {
-        ...logoConfig,
-        activeLogoUrl: newLogoUrl
+        activeLogoUrl: newLogoUrl,
+        fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
       };
       
       setLogoConfig(newConfig);
@@ -169,7 +157,8 @@ export const useLogoConfig = () => {
         description: "The active logo has been updated successfully.",
       });
       
-      console.log('Active logo updated to:', newLogoUrl);
+      console.log('Active logo updated successfully to:', newLogoUrl);
+      return true;
     } catch (error) {
       console.error('Failed to update logo configuration:', error);
       toast({
@@ -177,11 +166,52 @@ export const useLogoConfig = () => {
         title: "Logo Update Failed",
         description: "An unexpected error occurred. Please try again.",
       });
+      return false;
+    }
+  };
+
+  const resetToDefault = async () => {
+    if (!user) return false;
+
+    try {
+      const { error } = await supabase
+        .from('logo_configuration')
+        .upsert({
+          user_id: user.id,
+          active_logo_url: DEFAULT_FALLBACK_LOGO,
+          fallback_logo_url: DEFAULT_FALLBACK_LOGO,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) {
+        console.error('Error resetting logo configuration:', error);
+        return false;
+      }
+
+      setLogoConfig({
+        activeLogoUrl: DEFAULT_FALLBACK_LOGO,
+        fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
+      });
+
+      toast({
+        title: "Logo Reset",
+        description: "Logo has been reset to default.",
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Failed to reset logo configuration:', error);
+      return false;
     }
   };
 
   return {
     logoConfig,
-    updateActiveLogo
+    isLoading,
+    updateActiveLogo,
+    resetToDefault,
+    reload: loadLogoConfig
   };
 };

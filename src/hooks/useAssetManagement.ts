@@ -2,27 +2,23 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Asset, AssetUploadConfig, ASSET_CATEGORIES } from '@/types/assets';
+import { Asset, ASSET_CATEGORIES } from '@/types/assets';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLogoConfig } from './useLogoConfig';
-
-interface LogoConfigRow {
-  active_logo_url: string;
-}
 
 export const useAssetManagement = () => {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { updateActiveLogo } = useLogoConfig();
+  const { updateActiveLogo, logoConfig } = useLogoConfig();
 
   // Load existing assets on mount
   useEffect(() => {
     if (user) {
       loadExistingAssets();
     }
-  }, [user]);
+  }, [user, logoConfig]);
 
   const loadExistingAssets = async () => {
     if (!user) return;
@@ -30,22 +26,15 @@ export const useAssetManagement = () => {
     try {
       console.log('Loading existing assets...');
       
-      // Check if we have any logo configurations in the database
-      const { data: logoConfig } = await supabase
-        .from('logo_configuration')
-        .select('active_logo_url')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (logoConfig?.active_logo_url && logoConfig.active_logo_url.includes('supabase')) {
-        // Create a mock asset for the stored logo
+      // If we have a logo configuration that's not the default, create a mock asset
+      if (logoConfig.activeLogoUrl && logoConfig.activeLogoUrl.includes('supabase')) {
         const mockAsset: Asset = {
-          id: 'stored-logo',
-          name: 'Stored Logo',
+          id: 'current-logo',
+          name: 'Current Active Logo',
           type: 'logo',
           category: ASSET_CATEGORIES.BRANDING,
-          url: logoConfig.active_logo_url,
-          uploadPath: logoConfig.active_logo_url,
+          url: logoConfig.activeLogoUrl,
+          uploadPath: logoConfig.activeLogoUrl,
           fileSize: 0,
           mimeType: 'image/png',
           uploadedAt: new Date().toISOString(),
@@ -54,6 +43,8 @@ export const useAssetManagement = () => {
           isActive: true
         };
         setAssets([mockAsset]);
+      } else {
+        setAssets([]);
       }
     } catch (error) {
       console.error('Failed to load existing assets:', error);
@@ -126,14 +117,29 @@ export const useAssetManagement = () => {
         isActive: true
       };
 
-      // Store in local state (in a real app, this would go to a database)
-      setAssets(prev => [...prev, newAsset]);
-
-      // If this is a logo asset, automatically update the logo configuration
+      // If this is a logo asset, update the logo configuration first
       if (type === 'logo') {
         console.log('Logo asset uploaded, updating logo configuration...');
-        await updateActiveLogo(publicUrl);
+        const updateSuccess = await updateActiveLogo(publicUrl);
+        
+        if (!updateSuccess) {
+          // If logo config update failed, clean up the uploaded file
+          await supabase.storage
+            .from('design-uploads')
+            .remove([organizedPath]);
+          
+          throw new Error('Failed to update logo configuration');
+        }
       }
+
+      // Store in local state
+      setAssets(prev => {
+        // Remove any existing logo assets if this is a new logo
+        if (type === 'logo') {
+          return [newAsset, ...prev.filter(asset => asset.type !== 'logo')];
+        }
+        return [newAsset, ...prev];
+      });
 
       toast({
         title: "Asset Uploaded",

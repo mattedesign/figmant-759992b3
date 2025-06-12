@@ -49,7 +49,7 @@ export const LogoGallerySection: React.FC = () => {
                       alt={logo.name}
                       className="w-full h-full object-contain"
                       onError={(e) => {
-                        console.error('Image failed to load:', logo.url);
+                        console.error('Gallery image failed to load:', logo.url);
                         e.currentTarget.style.display = 'none';
                       }}
                     />
