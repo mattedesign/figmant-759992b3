@@ -84,38 +84,39 @@ export const CreditManagementDialog = ({
         }
       }
 
-      // Check if user_credits record exists first
-      const { data: existingCredits } = await supabase
+      // Update the existing user_credits record using UPDATE instead of upsert
+      const { error: updateError } = await supabase
         .from('user_credits')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+        .update({
+          current_balance: newBalance,
+          total_purchased: newTotalPurchased,
+          total_used: totalUsed,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
 
-      if (existingCredits) {
-        // Update existing record
-        const { error: updateError } = await supabase
-          .from('user_credits')
-          .update({
-            current_balance: newBalance,
-            total_purchased: newTotalPurchased,
-            total_used: totalUsed,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
+      if (updateError) {
+        console.error('Update error:', updateError);
+        
+        // If update failed because no record exists, create one
+        if (updateError.code === 'PGRST116') {
+          console.log('No existing record found, creating new user_credits record');
+          const { error: insertError } = await supabase
+            .from('user_credits')
+            .insert({
+              user_id: user.id,
+              current_balance: newBalance,
+              total_purchased: newTotalPurchased,
+              total_used: totalUsed
+            });
 
-        if (updateError) throw updateError;
-      } else {
-        // Insert new record if none exists
-        const { error: insertError } = await supabase
-          .from('user_credits')
-          .insert({
-            user_id: user.id,
-            current_balance: newBalance,
-            total_purchased: newTotalPurchased,
-            total_used: totalUsed
-          });
-
-        if (insertError) throw insertError;
+          if (insertError) {
+            console.error('Insert error:', insertError);
+            throw new Error(`Failed to create user credits record: ${insertError.message}`);
+          }
+        } else {
+          throw new Error(`Failed to update user credits: ${updateError.message}`);
+        }
       }
 
       toast({
