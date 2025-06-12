@@ -54,11 +54,8 @@ export const useLogoConfig = () => {
         });
       } else {
         console.log('No logo configuration found, using defaults');
-        // Don't create default config automatically - let the upload process handle it
-        setLogoConfig({
-          activeLogoUrl: DEFAULT_FALLBACK_LOGO,
-          fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
-        });
+        // Reset to defaults and update database
+        await resetToDefault();
       }
     } catch (error) {
       console.error('Failed to load logo configuration:', error);
