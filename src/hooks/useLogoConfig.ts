@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LogoConfig {
   activeLogoUrl: string;
@@ -14,19 +15,75 @@ export const useLogoConfig = () => {
     fallbackLogoUrl: '/lovable-uploads/aed59d55-5b0a-4b7b-b82d-340e25b8ca40.png'
   });
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
-    // Load saved logo configuration from localStorage
-    const savedConfig = localStorage.getItem('figmant-logo-config');
-    if (savedConfig) {
-      try {
-        const config = JSON.parse(savedConfig);
-        setLogoConfig(config);
-      } catch (error) {
-        console.error('Failed to parse saved logo config:', error);
-      }
+    if (user) {
+      loadLogoConfig();
     }
-  }, []);
+  }, [user]);
+
+  const loadLogoConfig = async () => {
+    if (!user) return;
+
+    try {
+      console.log('Loading logo configuration from database...');
+      
+      const { data, error } = await supabase
+        .from('logo_configuration')
+        .select('active_logo_url, fallback_logo_url')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+        console.error('Error loading logo config:', error);
+        return;
+      }
+
+      if (data) {
+        console.log('Loaded logo config from database:', data);
+        setLogoConfig({
+          activeLogoUrl: data.active_logo_url,
+          fallbackLogoUrl: data.fallback_logo_url
+        });
+      } else {
+        // No configuration exists, create default one
+        console.log('No logo configuration found, creating default...');
+        await createDefaultLogoConfig();
+      }
+    } catch (error) {
+      console.error('Failed to load logo configuration:', error);
+    }
+  };
+
+  const createDefaultLogoConfig = async () => {
+    if (!user) return;
+
+    try {
+      const defaultConfig = {
+        user_id: user.id,
+        active_logo_url: '/lovable-uploads/aed59d55-5b0a-4b7b-b82d-340e25b8ca40.png',
+        fallback_logo_url: '/lovable-uploads/aed59d55-5b0a-4b7b-b82d-340e25b8ca40.png'
+      };
+
+      const { error } = await supabase
+        .from('logo_configuration')
+        .insert(defaultConfig);
+
+      if (error) {
+        console.error('Error creating default logo config:', error);
+        return;
+      }
+
+      console.log('Created default logo configuration');
+      setLogoConfig({
+        activeLogoUrl: defaultConfig.active_logo_url,
+        fallbackLogoUrl: defaultConfig.fallback_logo_url
+      });
+    } catch (error) {
+      console.error('Failed to create default logo configuration:', error);
+    }
+  };
 
   const testImageLoad = async (url: string): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -53,6 +110,11 @@ export const useLogoConfig = () => {
   };
 
   const updateActiveLogo = async (newLogoUrl: string) => {
+    if (!user) {
+      console.error('User not authenticated');
+      return;
+    }
+
     console.log('Attempting to update active logo to:', newLogoUrl);
     
     // Test if the new logo URL is accessible
@@ -68,20 +130,50 @@ export const useLogoConfig = () => {
       return;
     }
 
-    const newConfig = {
-      ...logoConfig,
-      activeLogoUrl: newLogoUrl
-    };
-    
-    setLogoConfig(newConfig);
-    localStorage.setItem('figmant-logo-config', JSON.stringify(newConfig));
-    
-    toast({
-      title: "Logo Updated",
-      description: "The active logo has been updated successfully.",
-    });
-    
-    console.log('Active logo updated to:', newLogoUrl);
+    try {
+      // Update in database
+      const { error } = await supabase
+        .from('logo_configuration')
+        .upsert({
+          user_id: user.id,
+          active_logo_url: newLogoUrl,
+          fallback_logo_url: logoConfig.fallbackLogoUrl
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) {
+        console.error('Error updating logo configuration in database:', error);
+        toast({
+          variant: "destructive",
+          title: "Logo Update Failed",
+          description: "Failed to save logo configuration. Please try again.",
+        });
+        return;
+      }
+
+      // Update local state
+      const newConfig = {
+        ...logoConfig,
+        activeLogoUrl: newLogoUrl
+      };
+      
+      setLogoConfig(newConfig);
+      
+      toast({
+        title: "Logo Updated",
+        description: "The active logo has been updated successfully.",
+      });
+      
+      console.log('Active logo updated to:', newLogoUrl);
+    } catch (error) {
+      console.error('Failed to update logo configuration:', error);
+      toast({
+        variant: "destructive",
+        title: "Logo Update Failed",
+        description: "An unexpected error occurred. Please try again.",
+      });
+    }
   };
 
   return {

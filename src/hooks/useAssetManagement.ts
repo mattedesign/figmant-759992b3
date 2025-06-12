@@ -1,13 +1,60 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Asset, AssetUploadConfig, ASSET_CATEGORIES } from '@/types/assets';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useAssetManagement = () => {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Load existing assets on mount
+  useEffect(() => {
+    if (user) {
+      loadExistingAssets();
+    }
+  }, [user]);
+
+  const loadExistingAssets = async () => {
+    if (!user) return;
+
+    try {
+      // For now, we'll simulate loading assets since we don't have a proper assets table
+      // In a real implementation, this would load from a database table
+      console.log('Loading existing assets...');
+      
+      // Check if we have any logo configurations in the database
+      const { data: logoConfig } = await supabase
+        .from('logo_configuration')
+        .select('active_logo_url')
+        .eq('user_id', user.id)
+        .single();
+
+      if (logoConfig?.active_logo_url && logoConfig.active_logo_url.includes('supabase')) {
+        // Create a mock asset for the stored logo
+        const mockAsset: Asset = {
+          id: 'stored-logo',
+          name: 'Stored Logo',
+          type: 'logo',
+          category: ASSET_CATEGORIES.BRANDING,
+          url: logoConfig.active_logo_url,
+          uploadPath: logoConfig.active_logo_url,
+          fileSize: 0,
+          mimeType: 'image/png',
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: user.id,
+          tags: ['main-logo'],
+          isActive: true
+        };
+        setAssets([mockAsset]);
+      }
+    } catch (error) {
+      console.error('Failed to load existing assets:', error);
+    }
+  };
 
   const uploadAsset = useCallback(async (
     file: File,
@@ -15,13 +62,17 @@ export const useAssetManagement = () => {
     category: string = ASSET_CATEGORIES.CONTENT,
     tags: string[] = []
   ): Promise<Asset | null> => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
+        description: "You must be logged in to upload assets.",
+      });
+      return null;
+    }
+
     try {
       setIsLoading(true);
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
 
       // Create organized file path with sanitized file name
       const fileExt = file.name.split('.').pop()?.toLowerCase();
@@ -92,9 +143,11 @@ export const useAssetManagement = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, user]);
 
   const deleteAsset = useCallback(async (asset: Asset): Promise<boolean> => {
+    if (!user) return false;
+
     try {
       setIsLoading(true);
 
@@ -131,7 +184,7 @@ export const useAssetManagement = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, user]);
 
   const getAssetsByType = useCallback((type: Asset['type']) => {
     return assets.filter(asset => asset.type === type && asset.isActive);
