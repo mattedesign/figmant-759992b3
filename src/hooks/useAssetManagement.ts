@@ -1,8 +1,10 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Asset, AssetUploadConfig, ASSET_CATEGORIES } from '@/types/assets';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLogoConfig } from './useLogoConfig';
 
 interface LogoConfigRow {
   active_logo_url: string;
@@ -13,6 +15,7 @@ export const useAssetManagement = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { updateActiveLogo } = useLogoConfig();
 
   // Load existing assets on mount
   useEffect(() => {
@@ -25,13 +28,14 @@ export const useAssetManagement = () => {
     if (!user) return;
 
     try {
-      // For now, we'll simulate loading assets since we don't have a proper assets table
-      // In a real implementation, this would load from a database table
       console.log('Loading existing assets...');
       
       // Check if we have any logo configurations in the database
       const { data: logoConfig } = await supabase
-        .rpc('get_logo_config', { user_id: user.id }) as { data: LogoConfigRow | null };
+        .from('logo_configuration')
+        .select('active_logo_url')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       if (logoConfig?.active_logo_url && logoConfig.active_logo_url.includes('supabase')) {
         // Create a mock asset for the stored logo
@@ -125,6 +129,12 @@ export const useAssetManagement = () => {
       // Store in local state (in a real app, this would go to a database)
       setAssets(prev => [...prev, newAsset]);
 
+      // If this is a logo asset, automatically update the logo configuration
+      if (type === 'logo') {
+        console.log('Logo asset uploaded, updating logo configuration...');
+        await updateActiveLogo(publicUrl);
+      }
+
       toast({
         title: "Asset Uploaded",
         description: `${file.name} has been uploaded successfully.`,
@@ -143,7 +153,7 @@ export const useAssetManagement = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [toast, user]);
+  }, [toast, user, updateActiveLogo]);
 
   const deleteAsset = useCallback(async (asset: Asset): Promise<boolean> => {
     if (!user) return false;

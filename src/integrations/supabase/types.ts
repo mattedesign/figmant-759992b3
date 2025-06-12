@@ -961,6 +961,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_logo_config: {
+        Args: {
+          user_id: string
+          active_logo_url: string
+          fallback_logo_url: string
+        }
+        Returns: undefined
+      }
       create_user_manual: {
         Args: {
           p_email: string
@@ -1008,6 +1016,13 @@ export type Database = {
           claude_system_prompt: string
         }[]
       }
+      get_logo_config: {
+        Args: { user_id: string }
+        Returns: {
+          active_logo_url: string
+          fallback_logo_url: string
+        }[]
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -1024,6 +1039,14 @@ export type Database = {
           p_metadata?: Json
         }
         Returns: string
+      }
+      update_logo_config: {
+        Args: {
+          user_id: string
+          new_active_logo_url: string
+          new_fallback_logo_url: string
+        }
+        Returns: undefined
       }
       upsert_admin_setting: {
         Args: {

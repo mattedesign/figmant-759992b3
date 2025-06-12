@@ -35,9 +35,12 @@ export const useLogoConfig = () => {
       console.log('Loading logo configuration from database...');
       
       const { data, error } = await supabase
-        .rpc('get_logo_config', { user_id: user.id }) as { data: LogoConfigRow | null, error: any };
+        .from('logo_configuration')
+        .select('active_logo_url, fallback_logo_url')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+      if (error && error.code !== 'PGRST116') {
         console.error('Error loading logo config:', error);
         return;
       }
@@ -69,7 +72,8 @@ export const useLogoConfig = () => {
       };
 
       const { error } = await supabase
-        .rpc('create_logo_config', defaultConfig) as { error: any };
+        .from('logo_configuration')
+        .insert(defaultConfig);
 
       if (error) {
         console.error('Error creating default logo config:', error);
@@ -132,13 +136,15 @@ export const useLogoConfig = () => {
     }
 
     try {
-      // Update in database using RPC function
+      // Update in database using direct table insert/update
       const { error } = await supabase
-        .rpc('update_logo_config', {
+        .from('logo_configuration')
+        .upsert({
           user_id: user.id,
-          new_active_logo_url: newLogoUrl,
-          new_fallback_logo_url: logoConfig.fallbackLogoUrl
-        }) as { error: any };
+          active_logo_url: newLogoUrl,
+          fallback_logo_url: logoConfig.fallbackLogoUrl,
+          updated_at: new Date().toISOString()
+        });
 
       if (error) {
         console.error('Error updating logo configuration in database:', error);
