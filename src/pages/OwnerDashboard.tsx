@@ -3,15 +3,28 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navigation } from '@/components/layout/Navigation';
-import { OwnerAnalytics } from '@/components/owner/OwnerAnalytics';
-import { UserManagement } from '@/components/owner/UserManagement';
-import { AdminSettings } from '@/components/owner/AdminSettings';
-import { ClaudeSettings } from '@/components/owner/ClaudeSettings';
-import { SubscriptionPlansManager } from '@/components/owner/SubscriptionPlansManager';
-import { AdvancedDesignAnalysisPage } from '@/components/design/AdvancedDesignAnalysisPage';
+import { OwnerDashboardErrorBoundary } from '@/components/owner/OwnerDashboardErrorBoundary';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
+// Lazy load heavy components to prevent loading issues
+import { lazy, Suspense } from 'react';
+
+const OwnerAnalytics = lazy(() => import('@/components/owner/OwnerAnalytics').then(module => ({ default: module.OwnerAnalytics })));
+const UserManagement = lazy(() => import('@/components/owner/UserManagement').then(module => ({ default: module.UserManagement })));
+const AdminSettings = lazy(() => import('@/components/owner/AdminSettings').then(module => ({ default: module.AdminSettings })));
+const ClaudeSettings = lazy(() => import('@/components/owner/ClaudeSettings').then(module => ({ default: module.ClaudeSettings })));
+const SubscriptionPlansManager = lazy(() => import('@/components/owner/SubscriptionPlansManager').then(module => ({ default: module.SubscriptionPlansManager })));
+const AdvancedDesignAnalysisPage = lazy(() => import('@/components/design/AdvancedDesignAnalysisPage').then(module => ({ default: module.AdvancedDesignAnalysisPage })));
+
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center p-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+);
+
 const OwnerDashboard = () => {
+  console.log('OwnerDashboard component mounting...');
+  
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   
@@ -19,8 +32,11 @@ const OwnerDashboard = () => {
   const tabFromUrl = searchParams.get('tab') || 'analytics';
   const [activeTab, setActiveTab] = useState(tabFromUrl);
 
+  console.log('Current tab:', activeTab);
+
   // Update URL when tab changes
   const handleTabChange = (newTab: string) => {
+    console.log('Changing tab to:', newTab);
     setActiveTab(newTab);
     setSearchParams({ tab: newTab });
   };
@@ -28,57 +44,74 @@ const OwnerDashboard = () => {
   // Sync tab state with URL changes
   useEffect(() => {
     const currentTab = searchParams.get('tab') || 'analytics';
+    console.log('URL tab changed to:', currentTab);
     setActiveTab(currentTab);
   }, [searchParams]);
 
+  console.log('Rendering OwnerDashboard with tab:', activeTab);
+
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Owner Dashboard</h1>
-          <p className="text-muted-foreground">
-            Manage your UX Analytics platform and monitor business metrics
-          </p>
-        </div>
+    <OwnerDashboardErrorBoundary>
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        
+        <main className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-2">Owner Dashboard</h1>
+            <p className="text-muted-foreground">
+              Manage your UX Analytics platform and monitor business metrics
+            </p>
+          </div>
 
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="design">Design Analysis</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="plans">Plans & Products</TabsTrigger>
-            <TabsTrigger value="claude">Claude AI</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <TabsList className="grid w-full grid-cols-6">
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="design">Design Analysis</TabsTrigger>
+              <TabsTrigger value="users">Users</TabsTrigger>
+              <TabsTrigger value="plans">Plans & Products</TabsTrigger>
+              <TabsTrigger value="claude">Claude AI</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="analytics" className="mt-6">
-            <OwnerAnalytics />
-          </TabsContent>
+            <TabsContent value="analytics" className="mt-6">
+              <Suspense fallback={<LoadingSpinner />}>
+                <OwnerAnalytics />
+              </Suspense>
+            </TabsContent>
 
-          <TabsContent value="design" className="mt-6">
-            <AdvancedDesignAnalysisPage />
-          </TabsContent>
+            <TabsContent value="design" className="mt-6">
+              <Suspense fallback={<LoadingSpinner />}>
+                <AdvancedDesignAnalysisPage />
+              </Suspense>
+            </TabsContent>
 
-          <TabsContent value="users" className="mt-6">
-            <UserManagement />
-          </TabsContent>
+            <TabsContent value="users" className="mt-6">
+              <Suspense fallback={<LoadingSpinner />}>
+                <UserManagement />
+              </Suspense>
+            </TabsContent>
 
-          <TabsContent value="plans" className="mt-6">
-            <SubscriptionPlansManager />
-          </TabsContent>
+            <TabsContent value="plans" className="mt-6">
+              <Suspense fallback={<LoadingSpinner />}>
+                <SubscriptionPlansManager />
+              </Suspense>
+            </TabsContent>
 
-          <TabsContent value="claude" className="mt-6">
-            <ClaudeSettings />
-          </TabsContent>
+            <TabsContent value="claude" className="mt-6">
+              <Suspense fallback={<LoadingSpinner />}>
+                <ClaudeSettings />
+              </Suspense>
+            </TabsContent>
 
-          <TabsContent value="settings" className="mt-6">
-            <AdminSettings />
-          </TabsContent>
-        </Tabs>
-      </main>
-    </div>
+            <TabsContent value="settings" className="mt-6">
+              <Suspense fallback={<LoadingSpinner />}>
+                <AdminSettings />
+              </Suspense>
+            </TabsContent>
+          </Tabs>
+        </main>
+      </div>
+    </OwnerDashboardErrorBoundary>
   );
 };
 

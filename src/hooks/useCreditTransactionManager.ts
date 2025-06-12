@@ -31,6 +31,8 @@ export const useCreditTransactionManager = () => {
 
     setIsLoading(true);
     try {
+      console.log('Processing transaction:', { transactionType, amount, userId: user.id });
+      
       // Get current user for created_by
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) throw new Error('Not authenticated');
@@ -46,7 +48,10 @@ export const useCreditTransactionManager = () => {
           created_by: currentUser.id
         });
 
-      if (transactionError) throw transactionError;
+      if (transactionError) {
+        console.error('Transaction insert error:', transactionError);
+        throw transactionError;
+      }
 
       // Calculate new values
       const currentBalance = credits?.current_balance || 0;
@@ -62,6 +67,12 @@ export const useCreditTransactionManager = () => {
           newTotalPurchased += amount;
         }
       }
+
+      console.log('Updating user credits:', { 
+        newBalance, 
+        newTotalPurchased, 
+        totalUsed 
+      });
 
       // Update the existing user_credits record using UPDATE instead of upsert
       const { error: updateError } = await supabase
@@ -103,6 +114,7 @@ export const useCreditTransactionManager = () => {
         description: `Successfully ${transactionType === 'admin_adjustment' ? 'adjusted' : transactionType}d ${amount} credits.`,
       });
 
+      console.log('Transaction completed successfully');
       return true;
     } catch (error: any) {
       console.error('Credit transaction error:', error);

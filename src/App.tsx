@@ -9,27 +9,83 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { RoleRedirect } from '@/components/auth/RoleRedirect';
 
-// Lazy load components
-const Index = lazy(() => import('./pages/Index'));
-const Auth = lazy(() => import('./pages/Auth'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const OwnerDashboard = lazy(() => import('./pages/OwnerDashboard'));
-const DesignAnalysis = lazy(() => import('./pages/DesignAnalysis'));
-const Subscription = lazy(() => import('./pages/Subscription'));
-const AdminAssets = lazy(() => import('./pages/AdminAssets'));
-const NotFound = lazy(() => import('./pages/NotFound'));
-const ProcessingPage = lazy(() => import('./components/design/ProcessingPage').then(module => ({ default: module.ProcessingPage })));
+// Lazy load components with better error handling
+const Index = lazy(() => import('./pages/Index').catch(err => {
+  console.error('Failed to load Index page:', err);
+  return { default: () => <div>Error loading home page</div> };
+}));
 
-const queryClient = new QueryClient();
+const Auth = lazy(() => import('./pages/Auth').catch(err => {
+  console.error('Failed to load Auth page:', err);
+  return { default: () => <div>Error loading auth page</div> };
+}));
+
+const Dashboard = lazy(() => import('./pages/Dashboard').catch(err => {
+  console.error('Failed to load Dashboard page:', err);
+  return { default: () => <div>Error loading dashboard</div> };
+}));
+
+const OwnerDashboard = lazy(() => import('./pages/OwnerDashboard').catch(err => {
+  console.error('Failed to load OwnerDashboard page:', err);
+  return { default: () => <div>Error loading owner dashboard. Please check console for details.</div> };
+}));
+
+const DesignAnalysis = lazy(() => import('./pages/DesignAnalysis').catch(err => {
+  console.error('Failed to load DesignAnalysis page:', err);
+  return { default: () => <div>Error loading design analysis page</div> };
+}));
+
+const Subscription = lazy(() => import('./pages/Subscription').catch(err => {
+  console.error('Failed to load Subscription page:', err);
+  return { default: () => <div>Error loading subscription page</div> };
+}));
+
+const AdminAssets = lazy(() => import('./pages/AdminAssets').catch(err => {
+  console.error('Failed to load AdminAssets page:', err);
+  return { default: () => <div>Error loading admin assets page</div> };
+}));
+
+const NotFound = lazy(() => import('./pages/NotFound').catch(err => {
+  console.error('Failed to load NotFound page:', err);
+  return { default: () => <div>Page not found</div> };
+}));
+
+const ProcessingPage = lazy(() => import('./components/design/ProcessingPage').then(module => ({ default: module.ProcessingPage })).catch(err => {
+  console.error('Failed to load ProcessingPage:', err);
+  return { default: () => <div>Error loading processing page</div> };
+}));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => {
+        console.error('Query failed:', error);
+        return failureCount < 3;
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
+
+const LoadingFallback = ({ message = "Loading..." }: { message?: string }) => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+      <p className="text-muted-foreground">{message}</p>
+    </div>
+  </div>
+);
 
 function App() {
+  console.log('App component mounting...');
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <BrowserRouter>
           <AuthProvider>
             <div className="min-h-screen bg-background font-sans antialiased">
-              <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+              <Suspense fallback={<LoadingFallback />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
@@ -47,7 +103,9 @@ function App() {
                   } />
                   <Route path="/owner" element={
                     <AuthGuard requireOwner>
-                      <OwnerDashboard />
+                      <Suspense fallback={<LoadingFallback message="Loading owner dashboard..." />}>
+                        <OwnerDashboard />
+                      </Suspense>
                     </AuthGuard>
                   } />
                   <Route path="/design-analysis" element={

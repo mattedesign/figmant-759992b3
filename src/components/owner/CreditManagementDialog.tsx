@@ -34,6 +34,8 @@ export const CreditManagementDialog = ({
   credits, 
   onCreditsUpdated 
 }: CreditManagementDialogProps) => {
+  console.log('CreditManagementDialog rendering:', { open, user: user?.id, credits });
+  
   const { processTransaction, isLoading } = useCreditTransactionManager();
 
   const handleTransactionSubmit = async (
@@ -41,17 +43,31 @@ export const CreditManagementDialog = ({
     amount: number,
     description: string
   ) => {
-    if (!user) return false;
-
-    const success = await processTransaction(user, credits, transactionType, amount, description);
-    if (success) {
-      onCreditsUpdated();
-      onOpenChange(false);
+    if (!user) {
+      console.error('No user provided to handleTransactionSubmit');
+      return false;
     }
-    return success;
+
+    console.log('Submitting transaction:', { transactionType, amount, description, userId: user.id });
+
+    try {
+      const success = await processTransaction(user, credits, transactionType, amount, description);
+      if (success) {
+        console.log('Transaction successful, updating credits and closing dialog');
+        onCreditsUpdated();
+        onOpenChange(false);
+      }
+      return success;
+    } catch (error) {
+      console.error('Transaction submission failed:', error);
+      return false;
+    }
   };
 
-  if (!user) return null;
+  if (!user) {
+    console.log('CreditManagementDialog: No user provided, not rendering');
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
