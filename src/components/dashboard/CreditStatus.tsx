@@ -3,23 +3,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Coins, CreditCard, AlertTriangle } from 'lucide-react';
+import { Coins, CreditCard, AlertTriangle, Settings, RefreshCw } from 'lucide-react';
 import { useUserCredits } from '@/hooks/useUserCredits';
+import { useStripeSubscription } from '@/hooks/useStripeSubscription';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export const CreditStatus = () => {
   const { credits, creditsLoading } = useUserCredits();
+  const { subscriptionStatus, refreshSubscription, openCustomerPortal } = useStripeSubscription();
   const { profile, subscription } = useAuth();
   const navigate = useNavigate();
 
-  if (creditsLoading) {
+  if (creditsLoading || subscriptionStatus.loading) {
     return (
       <Card>
         <CardHeader>
           <div className="flex items-center space-x-2">
             <Coins className="h-5 w-5" />
-            <CardTitle>Credits</CardTitle>
+            <CardTitle>Access Status</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -33,13 +35,16 @@ export const CreditStatus = () => {
   }
 
   const isOwner = profile?.role === 'owner';
-  const hasActiveSubscription = subscription?.status === 'active' || subscription?.status === 'free';
+  const hasActiveSubscription = subscription?.status === 'active' || subscription?.status === 'free' || subscriptionStatus.subscribed;
   const currentBalance = credits?.current_balance || 0;
   const hasAccess = isOwner || hasActiveSubscription || currentBalance > 0;
 
   const getStatusBadge = () => {
     if (isOwner) {
       return <Badge variant="default">Owner - Unlimited</Badge>;
+    }
+    if (subscriptionStatus.subscribed) {
+      return <Badge variant="default">Active Subscription - {subscriptionStatus.subscription_tier}</Badge>;
     }
     if (hasActiveSubscription) {
       return <Badge variant="default">Active Subscription</Badge>;
@@ -53,6 +58,9 @@ export const CreditStatus = () => {
   const getStatusMessage = () => {
     if (isOwner) {
       return "You have unlimited access to all features as an owner.";
+    }
+    if (subscriptionStatus.subscribed) {
+      return `You have unlimited access through your ${subscriptionStatus.subscription_tier} subscription.`;
     }
     if (hasActiveSubscription) {
       return "You have unlimited access through your subscription.";
@@ -71,11 +79,28 @@ export const CreditStatus = () => {
             <Coins className="h-5 w-5" />
             <CardTitle>Access Status</CardTitle>
           </div>
-          {getStatusBadge()}
+          <div className="flex items-center gap-2">
+            {getStatusBadge()}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={refreshSubscription}
+              disabled={subscriptionStatus.loading}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className={`h-3 w-3 ${subscriptionStatus.loading ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
         </div>
         <CardDescription>
           {getStatusMessage()}
         </CardDescription>
+        
+        {subscriptionStatus.subscribed && subscriptionStatus.subscription_end && (
+          <CardDescription className="text-xs">
+            Subscription expires: {new Date(subscriptionStatus.subscription_end).toLocaleDateString()}
+          </CardDescription>
+        )}
       </CardHeader>
       <CardContent>
         {!hasAccess && (
@@ -87,9 +112,9 @@ export const CreditStatus = () => {
           </Alert>
         )}
 
-        {!isOwner && !hasActiveSubscription && (
+        {!isOwner && (
           <div className="space-y-3">
-            {currentBalance > 0 && (
+            {currentBalance > 0 && !subscriptionStatus.subscribed && (
               <div className="text-sm text-muted-foreground">
                 Each design analysis costs 1 credit.
               </div>
@@ -104,14 +129,14 @@ export const CreditStatus = () => {
                 <span>View Subscription Plans</span>
               </Button>
               
-              {currentBalance === 0 && (
+              {subscriptionStatus.subscribed && (
                 <Button 
                   variant="outline"
-                  onClick={() => navigate('/subscription')}
+                  onClick={openCustomerPortal}
                   className="flex items-center space-x-2"
                 >
-                  <Coins className="h-4 w-4" />
-                  <span>Purchase Credits</span>
+                  <Settings className="h-4 w-4" />
+                  <span>Manage Subscription</span>
                 </Button>
               )}
             </div>

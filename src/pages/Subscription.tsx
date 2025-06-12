@@ -1,15 +1,40 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Navigation } from '@/components/layout/Navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Check, Star, Zap, Gift } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useStripeSubscription } from '@/hooks/useStripeSubscription';
+import { Check, Star, Zap, Gift, RefreshCw, Settings } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 const Subscription = () => {
   const { subscription, isOwner } = useAuth();
+  const { subscriptionStatus, createCheckoutSession, openCustomerPortal, refreshSubscription } = useStripeSubscription();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
+
+  // Handle successful checkout return
+  useEffect(() => {
+    if (searchParams.get('success') === 'true') {
+      toast({
+        title: "Subscription Successful!",
+        description: "Your subscription has been activated. Thank you for subscribing!",
+      });
+      // Refresh subscription status after successful checkout
+      setTimeout(refreshSubscription, 2000);
+    }
+    if (searchParams.get('canceled') === 'true') {
+      toast({
+        variant: "destructive",
+        title: "Subscription Canceled",
+        description: "Your subscription process was canceled. You can try again anytime.",
+      });
+    }
+  }, [searchParams, toast, refreshSubscription]);
 
   const plans = [
     {
@@ -28,7 +53,7 @@ const Subscription = () => {
       buttonText: 'Current Plan',
       buttonVariant: 'outline' as const,
       popular: false,
-      current: subscription?.status === 'free'
+      current: subscription?.status === 'free' && !subscriptionStatus.subscribed
     },
     {
       id: 'basic',
@@ -48,7 +73,7 @@ const Subscription = () => {
       buttonText: 'Upgrade to Basic',
       buttonVariant: 'default' as const,
       popular: true,
-      current: subscription?.status === 'active' && subscription?.stripe_subscription_id?.includes('basic')
+      current: subscriptionStatus.subscribed && subscriptionStatus.subscription_tier === 'Basic'
     },
     {
       id: 'unlimited',
@@ -69,20 +94,21 @@ const Subscription = () => {
       buttonText: 'Upgrade to Unlimited',
       buttonVariant: 'default' as const,
       popular: false,
-      current: subscription?.status === 'active' && subscription?.stripe_subscription_id?.includes('unlimited')
+      current: subscriptionStatus.subscribed && subscriptionStatus.subscription_tier === 'Unlimited'
     }
   ];
 
   const handlePlanSelect = (planId: string) => {
     if (planId === 'free') {
-      // Already on free plan, redirect to dashboard
       navigate('/dashboard');
       return;
     }
 
-    // For paid plans, this will be implemented with Stripe integration
-    console.log(`Selected plan: ${planId}`);
-    // TODO: Implement Stripe checkout for paid plans
+    if (planId === 'basic') {
+      createCheckoutSession('basic');
+    } else if (planId === 'unlimited') {
+      createCheckoutSession('unlimited');
+    }
   };
 
   if (isOwner) {
@@ -127,13 +153,53 @@ const Subscription = () => {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Start with our free tier and upgrade when you need more advanced features
           </p>
-          {subscription?.status === 'free' && (
-            <div className="mt-4">
-              <Badge variant="default" className="text-sm">
+          
+          {/* Subscription Status Display */}
+          <div className="mt-6 flex justify-center items-center gap-4">
+            {subscriptionStatus.loading ? (
+              <Badge variant="secondary" className="text-sm">
+                <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                Checking subscription...
+              </Badge>
+            ) : subscriptionStatus.subscribed ? (
+              <div className="flex items-center gap-2">
+                <Badge variant="default" className="text-sm">
+                  <Check className="h-3 w-3 mr-1" />
+                  Active: {subscriptionStatus.subscription_tier} Plan
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={openCustomerPortal}
+                  className="flex items-center gap-1"
+                >
+                  <Settings className="h-3 w-3" />
+                  Manage
+                </Button>
+              </div>
+            ) : (
+              <Badge variant="secondary" className="text-sm">
                 <Gift className="h-3 w-3 mr-1" />
                 Currently on Free Plan
               </Badge>
-            </div>
+            )}
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={refreshSubscription}
+              disabled={subscriptionStatus.loading}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className={`h-3 w-3 ${subscriptionStatus.loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
+
+          {subscriptionStatus.subscribed && subscriptionStatus.subscription_end && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Subscription expires: {new Date(subscriptionStatus.subscription_end).toLocaleDateString()}
+            </p>
           )}
         </div>
 
@@ -179,7 +245,7 @@ const Subscription = () => {
                     className="w-full mt-6" 
                     variant={plan.current ? 'outline' : plan.buttonVariant}
                     onClick={() => handlePlanSelect(plan.id)}
-                    disabled={plan.current}
+                    disabled={plan.current || subscriptionStatus.loading}
                   >
                     {plan.current ? 'Current Plan' : plan.buttonText}
                   </Button>
@@ -198,6 +264,12 @@ const Subscription = () => {
             <Button variant="outline" onClick={() => navigate('/dashboard')}>
               Back to Dashboard
             </Button>
+            {subscriptionStatus.subscribed && (
+              <Button onClick={openCustomerPortal} className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Manage Subscription
+              </Button>
+            )}
           </div>
         </div>
       </main>
