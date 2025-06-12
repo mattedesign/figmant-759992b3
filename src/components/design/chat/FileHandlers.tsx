@@ -185,7 +185,7 @@ export const useFileHandlers = (storageStatus: 'checking' | 'ready' | 'error') =
         type: 'file',
         name: file.name,
         file,
-        status: 'validating'
+        status: 'processing'
       };
 
       newAttachments.push(attachment);
