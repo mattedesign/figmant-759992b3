@@ -1,24 +1,18 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Upload, Check, Eye } from 'lucide-react';
+import { Upload, Check, Eye, Trash2 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useAssetManagement } from '@/hooks/useAssetManagement';
+import { useLogoConfig } from '@/hooks/useLogoConfig';
 import { ASSET_CATEGORIES } from '@/types/assets';
 import { Logo } from '@/components/common/Logo';
 
-interface LogoConfig {
-  id: string;
-  name: string;
-  url: string;
-  isActive: boolean;
-}
-
 export const LogoManager: React.FC = () => {
-  const { uploadAsset, getAssetsByType, isLoading } = useAssetManagement();
-  const [activeLogoUrl, setActiveLogoUrl] = useState('/lovable-uploads/aed59d55-5b0a-4b7b-b82d-340e25b8ca40.png');
+  const { uploadAsset, getAssetsByType, deleteAsset, isLoading } = useAssetManagement();
+  const { logoConfig, updateActiveLogo } = useLogoConfig();
   
   const logoAssets = getAssetsByType('logo');
 
@@ -32,15 +26,23 @@ export const LogoManager: React.FC = () => {
         const asset = await uploadAsset(file, 'logo', ASSET_CATEGORIES.BRANDING, ['main-logo']);
         if (asset) {
           console.log('New logo uploaded:', asset.url);
+          // Automatically set new uploads as active
+          updateActiveLogo(asset.url);
         }
       }
     }
   });
 
   const handleSetActiveLogo = (url: string) => {
-    setActiveLogoUrl(url);
-    console.log('Active logo set to:', url);
-    // In a real app, this would update the logo configuration in the database/settings
+    updateActiveLogo(url);
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   return (
@@ -49,7 +51,7 @@ export const LogoManager: React.FC = () => {
         <CardHeader>
           <CardTitle>Logo Management</CardTitle>
           <CardDescription>
-            Upload and manage logos for your application
+            Upload and manage logos for your application. New uploads are automatically set as active.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -77,7 +79,7 @@ export const LogoManager: React.FC = () => {
         <CardHeader>
           <CardTitle>Current Logo Preview</CardTitle>
           <CardDescription>
-            Preview how the logo appears across different sizes
+            Preview how the active logo appears across different sizes
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,6 +103,9 @@ export const LogoManager: React.FC = () => {
                   <Logo size="lg" />
                 </div>
               </div>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Active Logo URL: {logoConfig.activeLogoUrl}
             </div>
           </div>
         </CardContent>
@@ -132,9 +137,12 @@ export const LogoManager: React.FC = () => {
                     </div>
                     <div className="space-y-2">
                       <h4 className="font-medium truncate">{logo.name}</h4>
+                      <div className="text-xs text-muted-foreground">
+                        {formatFileSize(logo.fileSize)}
+                      </div>
                       <div className="flex items-center justify-between">
-                        <Badge variant={activeLogoUrl === logo.url ? "default" : "outline"}>
-                          {activeLogoUrl === logo.url ? "Active" : "Available"}
+                        <Badge variant={logoConfig.activeLogoUrl === logo.url ? "default" : "outline"}>
+                          {logoConfig.activeLogoUrl === logo.url ? "Active" : "Available"}
                         </Badge>
                         <div className="flex gap-2">
                           <Button
@@ -144,7 +152,7 @@ export const LogoManager: React.FC = () => {
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          {activeLogoUrl !== logo.url && (
+                          {logoConfig.activeLogoUrl !== logo.url && (
                             <Button
                               size="sm"
                               onClick={() => handleSetActiveLogo(logo.url)}
@@ -153,6 +161,14 @@ export const LogoManager: React.FC = () => {
                               <Check className="h-4 w-4" />
                             </Button>
                           )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => deleteAsset(logo)}
+                            disabled={isLoading || logoConfig.activeLogoUrl === logo.url}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     </div>

@@ -16,6 +16,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const OwnerDashboard = lazy(() => import('./pages/OwnerDashboard'));
 const DesignAnalysis = lazy(() => import('./pages/DesignAnalysis'));
 const Subscription = lazy(() => import('./pages/Subscription'));
+const AdminAssets = lazy(() => import('./pages/AdminAssets'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const ProcessingPage = lazy(() => import('./components/design/ProcessingPage').then(module => ({ default: module.ProcessingPage })));
 
@@ -57,6 +58,11 @@ function App() {
                   <Route path="/subscription" element={
                     <AuthGuard>
                       <Subscription />
+                    </AuthGuard>
+                  } />
+                  <Route path="/admin/assets" element={
+                    <AuthGuard>
+                      <AdminAssets />
                     </AuthGuard>
                   } />
                   <Route path="*" element={<NotFound />} />

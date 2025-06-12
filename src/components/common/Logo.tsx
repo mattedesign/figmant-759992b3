@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useLogoConfig } from '@/hooks/useLogoConfig';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -8,7 +9,7 @@ interface LogoProps {
 
 export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   const [imageStatus, setImageStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
-  const [logoUrl, setLogoUrl] = useState('/lovable-uploads/aed59d55-5b0a-4b7b-b82d-340e25b8ca40.png');
+  const { logoConfig } = useLogoConfig();
 
   // Optimized size classes for horizontal logo
   const sizeClasses = {
@@ -18,8 +19,9 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   };
 
   useEffect(() => {
-    // In the future, this could fetch the active logo from settings/database
-    // For now, we'll use the current logo and add fallback handling
+    // Reset status when logo URL changes
+    setImageStatus('loading');
+    
     const img = new Image();
     const timeoutId = setTimeout(() => {
       console.warn('Logo image load timeout - using fallback');
@@ -38,12 +40,12 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
       setImageStatus('error');
     };
 
-    img.src = logoUrl;
+    img.src = logoConfig.activeLogoUrl;
 
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [logoUrl]);
+  }, [logoConfig.activeLogoUrl]);
 
   // Enhanced fallback with FIGMANT branding and colored dots
   const FallbackLogo = () => (
@@ -76,7 +78,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   // Display the actual logo
   return (
     <img
-      src={logoUrl}
+      src={logoConfig.activeLogoUrl}
       alt="Figmant Logo"
       className={`${sizeClasses[size]} ${className} object-contain`}
       onError={() => setImageStatus('error')}
