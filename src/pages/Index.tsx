@@ -1,149 +1,114 @@
+
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { BarChart3, Users, Target, Zap, Shield } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
+import { HeroSection } from '@/components/landing/HeroSection';
+import { FeaturesSection } from '@/components/landing/FeaturesSection';
+import { BenefitsSection } from '@/components/landing/BenefitsSection';
+import { TestimonialsSection } from '@/components/landing/TestimonialsSection';
+import { CTASection } from '@/components/landing/CTASection';
+
 const Index = () => {
   const navigate = useNavigate();
-  const {
-    user,
-    loading
-  } = useAuth();
-  const features = [{
-    icon: Zap,
-    title: 'AI-Powered Insights',
-    description: 'Claude AI analyzes your UX data to provide intelligent recommendations and identify patterns.'
-  }, {
-    icon: BarChart3,
-    title: 'Real-time Analytics',
-    description: 'Monitor user behavior, conversion funnels, and performance metrics in real-time.'
-  }, {
-    icon: Users,
-    title: 'User Journey Mapping',
-    description: 'Visualize complete user journeys and identify optimization opportunities.'
-  }, {
-    icon: Target,
-    title: 'Conversion Optimization',
-    description: 'Track conversion rates and get AI-driven suggestions to improve performance.'
-  }, {
-    icon: Zap,
-    title: 'Automated Reports',
-    description: 'Generate comprehensive UX reports with AI insights automatically.'
-  }, {
-    icon: Shield,
-    title: 'Privacy Compliant',
-    description: 'GDPR-compliant data collection with user privacy protection built-in.'
-  }];
-  const handleGetStarted = () => {
-    if (user) {
-      navigate('/dashboard');
-    } else {
-      navigate('/auth');
-    }
-  };
-  return <div className="min-h-screen bg-background">
-      <header className="border-b">
+  const { user, loading } = useAuth();
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Logo size="md" />
             </div>
             <div className="space-x-2">
-              {loading ? <div className="h-10 w-24 bg-gray-200 animate-pulse rounded-md"></div> : user ? <Button onClick={() => navigate('/dashboard')}>
+              {loading ? (
+                <div className="h-10 w-24 bg-gray-200 animate-pulse rounded-md"></div>
+              ) : user ? (
+                <Button onClick={() => navigate('/dashboard')}>
                   Go to Dashboard
-                </Button> : <>
+                </Button>
+              ) : (
+                <>
                   <Button variant="outline" onClick={() => navigate('/auth')}>
                     Sign In
                   </Button>
-                  <Button onClick={handleGetStarted}>
+                  <Button onClick={() => navigate('/auth')}>
                     Get Started
                   </Button>
-                </>}
+                </>
+              )}
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-12">
-        <div className="text-center mb-16">
-          <Badge variant="secondary" className="mb-4">
-            Powered by Claude AI
-          </Badge>
-          <h2 className="text-5xl font-bold mb-6">You're Not Dreaming.</h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">Get AI-powered analysis of your designs with actionable recommendations. Qualitative and quantitative instant insights to help you measure and deliver impact your rationale – with data to prove it.</p>
-          <div className="space-x-4">
-            <Button size="lg" onClick={handleGetStarted}>
-              Get Started
-            </Button>
-            <Button variant="outline" size="lg">
-              View Demo
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {features.map((feature, index) => <Card key={index}>
-              <CardHeader>
-                <feature.icon className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>{feature.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>{feature.description}</CardDescription>
-              </CardContent>
-            </Card>)}
-        </div>
-
-        <Card className="max-w-4xl mx-auto">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl">Key Capabilities</CardTitle>
-            <CardDescription className="text-lg">
-              Everything you need for comprehensive UX analytics
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <h4 className="font-semibold text-lg">Analytics & Monitoring</h4>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• Real-time user behavior tracking</li>
-                  <li>• Conversion funnel analysis</li>
-                  <li>• Page performance metrics</li>
-                  <li>• Mobile vs desktop comparisons</li>
-                  <li>• Traffic source analysis</li>
-                </ul>
-              </div>
-              <div className="space-y-4">
-                <h4 className="font-semibold text-lg">AI-Powered Features</h4>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• Claude AI insights and recommendations</li>
-                  <li>• Automated pattern detection</li>
-                  <li>• Predictive analytics</li>
-                  <li>• Custom report generation</li>
-                  <li>• Anomaly detection alerts</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <main>
+        <HeroSection />
+        <FeaturesSection />
+        <BenefitsSection />
+        <TestimonialsSection />
+        <CTASection />
       </main>
 
-      <footer className="border-t mt-16">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Logo size="sm" />
-              <span className="text-sm text-muted-foreground">
-                UX Analytics AI - Powered by Claude
-              </span>
+      <footer className="border-t bg-secondary/20">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center space-x-2 mb-4">
+                <Logo size="sm" />
+                <span className="font-semibold">UX Analytics AI</span>
+              </div>
+              <p className="text-muted-foreground mb-4 max-w-md">
+                AI-powered design analysis that helps you create better user experiences 
+                and drive business results.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Powered by Claude AI • Built with React & TypeScript
+              </p>
             </div>
-            <div className="text-sm text-muted-foreground">
-              Built with React, TypeScript & Tailwind CSS
+            
+            <div>
+              <h4 className="font-semibold mb-4">Product</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-foreground transition-colors">Features</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Pricing</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">API</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Documentation</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4">Support</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-foreground transition-colors">Help Center</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Contact</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Privacy</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">Terms</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-sm text-muted-foreground">
+              © 2024 UX Analytics AI. All rights reserved.
+            </p>
+            <div className="flex space-x-4 mt-4 md:mt-0">
+              <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Twitter
+              </a>
+              <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                LinkedIn
+              </a>
+              <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                GitHub
+              </a>
             </div>
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
