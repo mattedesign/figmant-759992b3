@@ -71,15 +71,23 @@ export default {
 					yellow: 'hsl(var(--figmant-yellow))',
 					orange: 'hsl(var(--figmant-orange))',
 					red: 'hsl(var(--figmant-red))'
+				},
+				frame: {
+					content: 'var(--frame-content-bg)'
 				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				sm: 'calc(var(--radius) - 4px)',
+				frame: 'var(--frame-border-radius)'
+			},
+			spacing: {
+				frame: 'var(--frame-padding)'
 			},
 			backgroundImage: {
-				'figmant-gradient': 'var(--figmant-gradient)'
+				'figmant-gradient': 'var(--figmant-gradient)',
+				'frame-gradient': 'var(--frame-gradient)'
 			},
 			keyframes: {
 				'accordion-down': {

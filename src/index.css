@@ -63,6 +63,18 @@
       hsl(var(--figmant-green)) 60%,
       hsl(var(--figmant-yellow)) 80%,
       hsl(var(--figmant-orange)) 100%);
+
+    /* Frame Effect Variables */
+    --frame-gradient: linear-gradient(135deg, 
+      hsl(var(--figmant-purple)) 0%,
+      hsl(var(--figmant-blue)) 20%,
+      hsl(var(--figmant-cyan)) 40%,
+      hsl(var(--figmant-green)) 60%,
+      hsl(var(--figmant-yellow)) 80%,
+      hsl(var(--figmant-orange)) 100%);
+    --frame-content-bg: #F1F1F1;
+    --frame-border-radius: 12px;
+    --frame-padding: 12px;
   }
 
   .dark {
@@ -110,6 +122,18 @@
     --figmant-yellow: 51 100% 68%;
     --figmant-orange: 26 100% 68%;
     --figmant-red: 0 84% 68%;
+
+    /* Frame Effect Variables - Same in dark mode */
+    --frame-gradient: linear-gradient(135deg, 
+      hsl(var(--figmant-purple)) 0%,
+      hsl(var(--figmant-blue)) 20%,
+      hsl(var(--figmant-cyan)) 40%,
+      hsl(var(--figmant-green)) 60%,
+      hsl(var(--figmant-yellow)) 80%,
+      hsl(var(--figmant-orange)) 100%);
+    --frame-content-bg: #2a2a2a;
+    --frame-border-radius: 12px;
+    --frame-padding: 12px;
   }
 }
 
@@ -119,7 +143,20 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    background: var(--frame-gradient);
+    padding: var(--frame-padding);
+    min-height: 100vh;
+  }
+
+  body > #root {
+    background: var(--frame-content-bg);
+    border-radius: var(--frame-border-radius);
+    min-height: calc(100vh - calc(var(--frame-padding) * 2));
+    overflow: hidden;
+  }
+
+  body > #root * {
+    color: hsl(var(--foreground));
   }
 }
 
@@ -137,5 +174,9 @@
   
   .figmant-border-gradient {
     border-image: var(--figmant-gradient) 1;
+  }
+
+  .frame-gradient {
+    background: var(--frame-gradient);
   }
 }
