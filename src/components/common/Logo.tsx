@@ -11,9 +11,9 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   const [imageLoading, setImageLoading] = useState(true);
 
   const sizeClasses = {
-    sm: 'h-8 w-8',
-    md: 'h-10 w-10', 
-    lg: 'h-16 w-16'
+    sm: 'h-6 w-20',
+    md: 'h-8 w-24', 
+    lg: 'h-12 w-32'
   };
 
   const handleImageError = () => {
