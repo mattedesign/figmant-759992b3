@@ -35,7 +35,7 @@ export const CreditStatus = () => {
   }
 
   const isOwner = profile?.role === 'owner';
-  const hasActiveSubscription = subscription?.status === 'active' || subscription?.status === 'free' || subscriptionStatus.subscribed;
+  const hasActiveSubscription = subscription?.status === 'active' || subscriptionStatus.subscribed;
   const currentBalance = credits?.current_balance || 0;
   const hasAccess = isOwner || hasActiveSubscription || currentBalance > 0;
 

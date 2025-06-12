@@ -22,29 +22,29 @@ export const useAuthState = () => {
       
       if (profileData) setProfile(profileData);
       
-      // If no subscription data exists, create a default 'free' subscription
+      // If no subscription data exists, create a default 'inactive' subscription
       if (subscriptionData) {
         setSubscription(subscriptionData);
       } else {
-        console.log('No subscription found, creating free subscription for user:', userId);
-        // Try to create a free subscription for this user
+        console.log('No subscription found, creating inactive subscription for user:', userId);
+        // Try to create an inactive subscription for this user
         try {
           const { data, error } = await supabase
             .from('subscriptions')
             .insert({
               user_id: userId,
-              status: 'free'
+              status: 'inactive'
             })
             .select()
             .single();
           
           if (error) {
-            console.error('Error creating free subscription:', error);
-            // Set a default free subscription locally if database insert fails
+            console.error('Error creating inactive subscription:', error);
+            // Set a default inactive subscription locally if database insert fails
             setSubscription({
-              id: 'temp-free',
+              id: 'temp-inactive',
               user_id: userId,
-              status: 'free',
+              status: 'inactive',
               stripe_customer_id: null,
               stripe_subscription_id: null,
               current_period_start: null,
@@ -55,11 +55,11 @@ export const useAuthState = () => {
           }
         } catch (createError) {
           console.error('Failed to create subscription:', createError);
-          // Fallback: set a local free subscription
+          // Fallback: set a local inactive subscription
           setSubscription({
-            id: 'temp-free',
+            id: 'temp-inactive',
             user_id: userId,
-            status: 'free',
+            status: 'inactive',
             stripe_customer_id: null,
             stripe_subscription_id: null,
             current_period_start: null,
@@ -117,8 +117,8 @@ export const useAuthState = () => {
   }, []);
 
   const isOwner = profile?.role === 'owner';
-  // Updated logic: Now includes 'free' status as having access, plus owners always have access
-  const hasActiveSubscription = subscription?.status === 'active' || subscription?.status === 'free' || isOwner;
+  // Updated logic: Now only 'active' subscriptions provide access, plus owners always have access
+  const hasActiveSubscription = subscription?.status === 'active' || isOwner;
 
   console.log('Current auth state:', {
     user: user?.id,

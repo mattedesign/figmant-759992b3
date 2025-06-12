@@ -12,7 +12,7 @@ export interface UserProfile {
 export interface Subscription {
   id: string;
   user_id: string;
-  status: 'active' | 'inactive' | 'cancelled' | 'expired' | 'free';
+  status: 'active' | 'inactive' | 'cancelled' | 'expired';
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   current_period_start: string | null;
