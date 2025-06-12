@@ -4,10 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
-import { useLogoConfig } from '@/hooks/useLogoConfig';
+import { usePublicLogoConfig } from '@/hooks/usePublicLogoConfig';
 
 export const LogoPreviewSection: React.FC = () => {
-  const { logoConfig, isLoading, reload } = useLogoConfig();
+  const { logoConfig, isLoading, reload } = usePublicLogoConfig();
 
   const handleRefresh = () => {
     reload();
@@ -18,9 +18,9 @@ export const LogoPreviewSection: React.FC = () => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Current Logo Preview</CardTitle>
+            <CardTitle>Current Public Logo Preview</CardTitle>
             <CardDescription>
-              Preview how the active logo appears across different sizes
+              Preview how the public logo appears across different sizes (visible to all users)
             </CardDescription>
           </div>
           <Button
@@ -64,7 +64,7 @@ export const LogoPreviewSection: React.FC = () => {
               <strong>Fallback Logo URL:</strong> {logoConfig.fallbackLogoUrl}
             </div>
             {isLoading && (
-              <div className="text-blue-600">Loading logo configuration...</div>
+              <div className="text-blue-600">Loading public logo configuration...</div>
             )}
           </div>
         </div>

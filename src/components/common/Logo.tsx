@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useLogoConfig } from '@/hooks/useLogoConfig';
+import { usePublicLogoConfig } from '@/hooks/usePublicLogoConfig';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -10,7 +10,7 @@ interface LogoProps {
 export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   const [imageStatus, setImageStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
   const [currentImageUrl, setCurrentImageUrl] = useState<string>('');
-  const { logoConfig, isLoading } = useLogoConfig();
+  const { logoConfig, isLoading } = usePublicLogoConfig();
 
   // Optimized size classes for horizontal logo
   const sizeClasses = {
@@ -23,7 +23,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     if (isLoading) return;
     
     const loadImage = async () => {
-      console.log('Loading logo with config:', logoConfig);
+      console.log('Loading logo with public config:', logoConfig);
       setImageStatus('loading');
       
       // Try active logo first

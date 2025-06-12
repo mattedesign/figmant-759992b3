@@ -2,37 +2,53 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLogoConfigOperations } from './logo/logoConfigOperations';
-import { DEFAULT_FALLBACK_LOGO, type LogoConfig } from './logo/types';
+import { usePublicLogoConfig } from '@/hooks/usePublicLogoConfig';
+import { type LogoConfig } from './logo/types';
 
 export const useLogoConfig = () => {
   const [logoConfig, setLogoConfig] = useState<LogoConfig>({
-    activeLogoUrl: DEFAULT_FALLBACK_LOGO,
-    fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
+    activeLogoUrl: '',
+    fallbackLogoUrl: ''
   });
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { loadLogoConfig, updateActiveLogo: updateActiveLogoDb, resetToDefault: resetToDefaultDb } = useLogoConfigOperations();
+  const { logoConfig: publicLogoConfig, isLoading: publicLoading, reload: reloadPublic } = usePublicLogoConfig();
 
   const loadConfig = async () => {
     if (!user) {
-      setIsLoading(false);
+      // If no user, use public configuration
+      setLogoConfig(publicLogoConfig);
+      setIsLoading(publicLoading);
       return;
     }
 
     try {
       setIsLoading(true);
+      // For authenticated users, try to load personal config, fall back to public
       const config = await loadLogoConfig(user.id);
-      setLogoConfig(config);
+      
+      // If user has no personal config, use public config
+      if (!config.activeLogoUrl || config.activeLogoUrl === publicLogoConfig.activeLogoUrl) {
+        setLogoConfig(publicLogoConfig);
+      } else {
+        setLogoConfig(config);
+      }
     } catch (error) {
       console.error('Failed to load logo configuration:', error);
+      // Fall back to public config on error
+      setLogoConfig(publicLogoConfig);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadConfig();
-  }, [user]);
+    // When public config changes, reload personal config
+    if (!publicLoading) {
+      loadConfig();
+    }
+  }, [user, publicLogoConfig, publicLoading]);
 
   const updateActiveLogo = async (newLogoUrl: string) => {
     if (!user) {
@@ -55,12 +71,15 @@ export const useLogoConfig = () => {
 
     const success = await resetToDefaultDb(user.id);
     if (success) {
-      setLogoConfig({
-        activeLogoUrl: DEFAULT_FALLBACK_LOGO,
-        fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
-      });
+      // Reset to public configuration
+      setLogoConfig(publicLogoConfig);
     }
     return success;
+  };
+
+  const reload = async () => {
+    await reloadPublic();
+    await loadConfig();
   };
 
   return {
@@ -68,6 +87,6 @@ export const useLogoConfig = () => {
     isLoading,
     updateActiveLogo,
     resetToDefault,
-    reload: loadConfig
+    reload
   };
 };

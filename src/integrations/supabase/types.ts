@@ -726,6 +726,36 @@ export type Database = {
         }
         Relationships: []
       }
+      public_logo_configuration: {
+        Row: {
+          config_key: string
+          created_at: string
+          fallback_logo_url: string
+          id: string
+          is_active: boolean
+          logo_url: string
+          updated_at: string
+        }
+        Insert: {
+          config_key: string
+          created_at?: string
+          fallback_logo_url: string
+          id?: string
+          is_active?: boolean
+          logo_url: string
+          updated_at?: string
+        }
+        Update: {
+          config_key?: string
+          created_at?: string
+          fallback_logo_url?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string
@@ -1059,6 +1089,13 @@ export type Database = {
           fallback_logo_url: string
         }[]
       }
+      get_public_logo_config: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          logo_url: string
+          fallback_logo_url: string
+        }[]
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -1082,6 +1119,10 @@ export type Database = {
           new_active_logo_url: string
           new_fallback_logo_url: string
         }
+        Returns: undefined
+      }
+      update_public_logo_config: {
+        Args: { new_logo_url: string; new_fallback_logo_url: string }
         Returns: undefined
       }
       upsert_admin_setting: {
