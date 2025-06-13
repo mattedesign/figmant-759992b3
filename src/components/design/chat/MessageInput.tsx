@@ -11,6 +11,7 @@ interface MessageInputProps {
   onToggleUrlInput: () => void;
   isLoading: boolean;
   hasContent: boolean;
+  canSend?: boolean;
 }
 
 export const MessageInput: React.FC<MessageInputProps> = ({
@@ -19,8 +20,11 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   onSendMessage,
   onToggleUrlInput,
   isLoading,
-  hasContent
+  hasContent,
+  canSend = true
 }) => {
+  const isDisabled = !hasContent || isLoading || !canSend;
+
   return (
     <div className="flex gap-2">
       <Textarea
@@ -29,7 +33,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         placeholder="Ask me about your designs..."
         className="flex-1 min-h-[80px] resize-none"
         onKeyPress={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
+          if (e.key === 'Enter' && !e.shiftKey && !isDisabled) {
             e.preventDefault();
             onSendMessage();
           }
@@ -46,8 +50,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         </Button>
         <Button
           onClick={onSendMessage}
-          disabled={!hasContent || isLoading}
+          disabled={isDisabled}
           size="icon"
+          title={!canSend ? "Please wait for uploads to complete" : "Send message"}
         >
           <Send className="h-4 w-4" />
         </Button>

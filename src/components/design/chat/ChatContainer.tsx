@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ChatMessage as ChatMessageComponent } from './ChatMessage';
 import { MessageInput } from './MessageInput';
@@ -41,6 +42,7 @@ interface ChatContainerProps {
   getInputProps: any;
   isDragActive: boolean;
   isLoading: boolean;
+  canSendMessage: boolean;
   pauseJob: (jobId: string) => void;
   resumeJob: (jobId: string) => void;
   cancelJob: (jobId: string) => void;
@@ -78,6 +80,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   getInputProps,
   isDragActive,
   isLoading,
+  canSendMessage,
   pauseJob,
   resumeJob,
   cancelJob
@@ -142,6 +145,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             onToggleUrlInput={onToggleUrlInput}
             isLoading={isLoading}
             hasContent={message.trim().length > 0 || attachments.length > 0}
+            canSend={canSendMessage}
           />
         </div>
       </div>

@@ -30,70 +30,119 @@ export const useMessageHandlers = () => {
       return;
     }
 
-    // Check if any attachments are still processing with timeout
-    const processingAttachments = attachments.filter(att => 
+    // Immediate validation of current attachment states
+    const currentProcessingAttachments = attachments.filter(att => 
       att.status === 'uploading' || att.status === 'processing'
     );
     
-    if (processingAttachments.length > 0) {
-      console.log('Found processing attachments:', processingAttachments.map(att => att.id));
+    const currentFailedAttachments = attachments.filter(att => att.status === 'error');
+    
+    console.log('Current processing attachments:', currentProcessingAttachments.length);
+    console.log('Current failed attachments:', currentFailedAttachments.length);
+
+    // Check for failed uploads first
+    if (currentFailedAttachments.length > 0) {
+      console.log('Found failed attachments:', currentFailedAttachments.map(att => att.id));
+      toast({
+        variant: "destructive",
+        title: "Upload Errors",
+        description: `${currentFailedAttachments.length} file(s) failed to upload. Please remove them or retry before sending.`,
+      });
+      return;
+    }
+
+    // If there are processing attachments, wait with proper state monitoring
+    if (currentProcessingAttachments.length > 0) {
+      console.log('Found processing attachments, waiting for completion...');
       
-      // Wait for processing to complete or timeout
       const startTime = Date.now();
       let timeoutReached = false;
       
-      const checkProcessingComplete = () => {
+      const waitForProcessingComplete = () => {
         return new Promise<boolean>((resolve) => {
           const checkInterval = setInterval(() => {
             const currentTime = Date.now();
             if (currentTime - startTime > MESSAGE_SEND_TIMEOUT) {
               clearInterval(checkInterval);
               timeoutReached = true;
+              console.log('Processing timeout reached');
               resolve(false);
               return;
             }
             
-            // Check current state of attachments
-            const stillProcessing = attachments.filter(att => 
-              att.status === 'uploading' || att.status === 'processing'
-            );
-            
-            if (stillProcessing.length === 0) {
-              clearInterval(checkInterval);
-              resolve(true);
-            }
+            // Get fresh attachment state by checking the current DOM/state
+            setAttachments(currentAttachments => {
+              const stillProcessing = currentAttachments.filter(att => 
+                att.status === 'uploading' || att.status === 'processing'
+              );
+              
+              const newFailures = currentAttachments.filter(att => att.status === 'error');
+              
+              console.log(`Processing check: ${stillProcessing.length} still processing, ${newFailures.length} failed`);
+              
+              if (newFailures.length > 0) {
+                clearInterval(checkInterval);
+                console.log('New failures detected during wait');
+                resolve(false);
+                return currentAttachments;
+              }
+              
+              if (stillProcessing.length === 0) {
+                clearInterval(checkInterval);
+                console.log('All processing completed successfully');
+                resolve(true);
+                return currentAttachments;
+              }
+              
+              return currentAttachments;
+            });
           }, 500);
         });
       };
       
-      const processingComplete = await checkProcessingComplete();
+      const processingComplete = await waitForProcessingComplete();
       
       if (!processingComplete || timeoutReached) {
         console.log('Processing timeout or failed');
         toast({
           variant: "destructive",
-          title: "Upload Timeout",
-          description: "Some files are taking too long to process. Please remove failed uploads and try again.",
+          title: timeoutReached ? "Upload Timeout" : "Upload Failed",
+          description: timeoutReached 
+            ? "Some files are taking too long to process. Please remove failed uploads and try again."
+            : "Some files failed to upload. Please remove failed uploads and try again.",
         });
         return;
       }
     }
 
-    // Check for failed uploads after processing check
-    const failedAttachments = attachments.filter(att => att.status === 'error');
-    if (failedAttachments.length > 0) {
-      console.log('Found failed attachments:', failedAttachments.map(att => att.id));
+    // Final validation before sending - get fresh state
+    let finalAttachments: ChatAttachment[] = [];
+    setAttachments(current => {
+      finalAttachments = current;
+      return current;
+    });
+
+    // Wait for state update
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    const finalFailedAttachments = finalAttachments.filter(att => att.status === 'error');
+    const finalProcessingAttachments = finalAttachments.filter(att => 
+      att.status === 'uploading' || att.status === 'processing'
+    );
+
+    if (finalFailedAttachments.length > 0 || finalProcessingAttachments.length > 0) {
+      console.log('Final validation failed - still have failed or processing attachments');
       toast({
         variant: "destructive",
-        title: "Upload Errors",
-        description: `${failedAttachments.length} file(s) failed to upload. Please remove them or retry before sending.`,
+        title: "Upload Issues",
+        description: "Please ensure all files are successfully uploaded before sending.",
       });
       return;
     }
 
     // Ensure all attachments are properly uploaded
-    const uploadedAttachments = attachments.filter(att => att.status === 'uploaded');
-    if (attachments.length > 0 && uploadedAttachments.length !== attachments.length) {
+    const uploadedAttachments = finalAttachments.filter(att => att.status === 'uploaded');
+    if (finalAttachments.length > 0 && uploadedAttachments.length !== finalAttachments.length) {
       console.log('Not all attachments are uploaded properly');
       toast({
         variant: "destructive",
@@ -182,8 +231,26 @@ export const useMessageHandlers = () => {
     console.log('=== SEND MESSAGE HANDLER COMPLETE ===');
   };
 
+  const validateAttachmentsStatus = (attachments: ChatAttachment[]) => {
+    const processing = attachments.filter(att => 
+      att.status === 'uploading' || att.status === 'processing'
+    );
+    const failed = attachments.filter(att => att.status === 'error');
+    const uploaded = attachments.filter(att => att.status === 'uploaded');
+    
+    return {
+      hasProcessing: processing.length > 0,
+      hasFailed: failed.length > 0,
+      allUploaded: attachments.length > 0 && uploaded.length === attachments.length,
+      processing,
+      failed,
+      uploaded
+    };
+  };
+
   return {
     handleSendMessage,
-    analyzeWithChat
+    analyzeWithChat,
+    validateAttachmentsStatus
   };
 };

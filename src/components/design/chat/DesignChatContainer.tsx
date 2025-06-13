@@ -58,7 +58,7 @@ export const DesignChatContainer = () => {
     setShowUrlInput
   );
 
-  const { onSendMessage, analyzeWithChat } = useChatMessageHandlers(
+  const { onSendMessage, analyzeWithChat, canSendMessage } = useChatMessageHandlers(
     setMessages,
     setMessage,
     setAttachments,
@@ -143,6 +143,7 @@ export const DesignChatContainer = () => {
           getInputProps={getInputProps}
           isDragActive={isDragActive}
           isLoading={analyzeWithChat.isPending}
+          canSendMessage={canSendMessage(message, attachments)}
           pauseJob={pauseJob}
           resumeJob={resumeJob}
           cancelJob={cancelJob}
