@@ -58,7 +58,13 @@ export const DesignChatContainer = () => {
     setShowUrlInput
   );
 
-  const { onSendMessage, analyzeWithChat, canSendMessage } = useChatMessageHandlers(
+  const { 
+    onSendMessage, 
+    analyzeWithChat, 
+    canSendMessage, 
+    loadingState, 
+    getStageMessage 
+  } = useChatMessageHandlers(
     setMessages,
     setMessage,
     setAttachments,
@@ -72,19 +78,25 @@ export const DesignChatContainer = () => {
       'application/pdf': ['.pdf']
     },
     maxSize: 50 * 1024 * 1024, // 50MB
-    disabled: storageStatus !== 'ready'
+    disabled: storageStatus !== 'ready' || loadingState.isLoading
   });
 
   const handleSuggestedPrompt = (prompt: string) => {
-    setMessage(prompt);
+    if (!loadingState.isLoading) {
+      setMessage(prompt);
+    }
   };
 
   const retryAttachment = (id: string) => {
-    handleRetryAttachment(attachments, setAttachments, id);
+    if (!loadingState.isLoading) {
+      handleRetryAttachment(attachments, setAttachments, id);
+    }
   };
 
   const clearAllAttachments = () => {
-    handleClearAllAttachments(setAttachments);
+    if (!loadingState.isLoading) {
+      handleClearAllAttachments(setAttachments);
+    }
   };
 
   const handleSendMessageWrapper = () => {
@@ -92,7 +104,9 @@ export const DesignChatContainer = () => {
   };
 
   const handleAddUrl = () => {
-    addUrlAttachment(urlInput);
+    if (!loadingState.isLoading) {
+      addUrlAttachment(urlInput);
+    }
   };
 
   const onImageProcessed = (attachmentId: string, processedFile: File, processingInfo: any) => {
@@ -127,7 +141,7 @@ export const DesignChatContainer = () => {
           systemHealth={systemHealth}
           onMessageChange={setMessage}
           onSendMessage={handleSendMessageWrapper}
-          onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
+          onToggleUrlInput={() => !loadingState.isLoading && setShowUrlInput(!showUrlInput)}
           onUrlInputChange={setUrlInput}
           onAddUrl={handleAddUrl}
           onCancelUrl={() => setShowUrlInput(false)}
@@ -147,6 +161,8 @@ export const DesignChatContainer = () => {
           pauseJob={pauseJob}
           resumeJob={resumeJob}
           cancelJob={cancelJob}
+          loadingState={loadingState}
+          getStageMessage={getStageMessage}
         />
 
         <ChatSidebar

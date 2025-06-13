@@ -8,6 +8,8 @@ import { DebugPanel } from './DebugPanel';
 import { ProcessingMonitor } from './ProcessingMonitor';
 import { FileUploadDropzone } from './FileUploadDropzone';
 import { URLInput } from './URLInput';
+import { TypingIndicator } from './TypingIndicator';
+import { ChatMessageSkeleton } from './ChatMessageSkeleton';
 import { ChatMessage, ChatAttachment } from '../DesignChatInterface';
 
 interface ChatContainerProps {
@@ -46,6 +48,14 @@ interface ChatContainerProps {
   pauseJob: (jobId: string) => void;
   resumeJob: (jobId: string) => void;
   cancelJob: (jobId: string) => void;
+  // New props for enhanced loading states
+  loadingState?: {
+    isLoading: boolean;
+    stage: string | null;
+    progress: number;
+    estimatedTimeRemaining: number | null;
+  };
+  getStageMessage?: () => string;
 }
 
 export const ChatContainer: React.FC<ChatContainerProps> = ({
@@ -83,7 +93,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   canSendMessage,
   pauseJob,
   resumeJob,
-  cancelJob
+  cancelJob,
+  loadingState,
+  getStageMessage
 }) => {
   return (
     <div className="lg:col-span-2 flex flex-col h-full">
@@ -102,16 +114,28 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 ? (
+          {messages.length === 0 && !loadingState?.isLoading ? (
             <div className="text-center py-8">
               <div className="text-muted-foreground mb-4">
                 Start a conversation by uploading a design or asking a question
               </div>
             </div>
           ) : (
-            messages.map((msg) => (
-              <ChatMessageComponent key={msg.id} message={msg} />
-            ))
+            <>
+              {messages.map((msg) => (
+                <ChatMessageComponent key={msg.id} message={msg} />
+              ))}
+              
+              {/* Show typing indicator when AI is processing */}
+              {loadingState?.isLoading && loadingState.stage && (
+                <TypingIndicator
+                  stage={loadingState.stage}
+                  progress={loadingState.progress}
+                  estimatedTimeRemaining={loadingState.estimatedTimeRemaining}
+                  stageMessage={getStageMessage?.() || 'Processing...'}
+                />
+              )}
+            </>
           )}
         </div>
 
@@ -143,9 +167,10 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             onMessageChange={onMessageChange}
             onSendMessage={onSendMessage}
             onToggleUrlInput={onToggleUrlInput}
-            isLoading={isLoading}
+            isLoading={loadingState?.isLoading || isLoading}
             hasContent={message.trim().length > 0 || attachments.length > 0}
             canSend={canSendMessage}
+            loadingStage={getStageMessage?.()}
           />
         </div>
       </div>
