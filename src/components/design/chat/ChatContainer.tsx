@@ -111,39 +111,24 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           <ChatAttachments
             attachments={attachments}
             onRemove={onRemoveAttachment}
-            onImageProcessed={onImageProcessed}
-            onImageProcessingError={onImageProcessingError}
-            pendingImageProcessing={pendingImageProcessing}
           />
           
           <MessageInput
             message={message}
-            urlInput={urlInput}
-            showUrlInput={showUrlInput}
-            storageStatus={storageStatus}
             onMessageChange={onMessageChange}
             onSendMessage={onSendMessage}
             onToggleUrlInput={onToggleUrlInput}
-            onUrlInputChange={onUrlInputChange}
-            onAddUrl={onAddUrl}
-            onCancelUrl={onCancelUrl}
-            onToggleDebugPanel={onToggleDebugPanel}
-            onToggleProcessingMonitor={onToggleProcessingMonitor}
-            getRootProps={getRootProps}
-            getInputProps={getInputProps}
-            isDragActive={isDragActive}
             isLoading={isLoading}
+            hasContent={message.trim().length > 0 || attachments.length > 0}
           />
         </div>
       </div>
 
       {showDebugPanel && (
         <DebugPanel
-          lastAnalysisResult={lastAnalysisResult}
           attachments={attachments}
-          storageStatus={storageStatus}
-          storageErrorDetails={storageErrorDetails}
-          onClose={onToggleDebugPanel}
+          lastAnalysisResult={lastAnalysisResult}
+          isVisible={showDebugPanel}
         />
       )}
 
@@ -151,10 +136,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         <ProcessingMonitor
           jobs={jobs}
           systemHealth={systemHealth}
-          pauseJob={pauseJob}
-          resumeJob={resumeJob}
-          cancelJob={cancelJob}
-          onClose={onToggleProcessingMonitor}
+          onPauseJob={pauseJob}
+          onResumeJob={resumeJob}
+          onCancelJob={cancelJob}
         />
       )}
     </div>
