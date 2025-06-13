@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, BarChart3, History, RefreshCw } from 'lucide-react';
+import { Upload, MessageSquare, BarChart3, History, Sparkles, RefreshCw } from 'lucide-react';
+import { EnhancedDesignUploader } from './EnhancedDesignUploader';
 import { DesignChatInterface } from './DesignChatInterface';
 import { DesignList } from './DesignList';
 import { BatchAnalysisDashboard } from './BatchAnalysisDashboard';
@@ -15,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { DesignUpload } from '@/types/design';
 
 export const AdvancedDesignAnalysisPage = () => {
-  const [activeTab, setActiveTab] = useState('chat');
+  const [activeTab, setActiveTab] = useState('upload');
   const [refreshKey, setRefreshKey] = useState(0);
   const { data: claudeSettings, isLoading: claudeLoading } = useClaudeSettings();
   const { data: uploads, refetch: refetchUploads } = useDesignUploads();
@@ -80,9 +81,9 @@ export const AdvancedDesignAnalysisPage = () => {
     <div className="container mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">AI Design Analysis</h1>
+          <h1 className="text-3xl font-bold mb-2">Advanced Design Analysis</h1>
           <p className="text-muted-foreground">
-            Chat with AI for comprehensive UX insights, batch analysis, and design history
+            Upload designs, chat with AI, and get comprehensive UX insights
           </p>
         </div>
         <div className="flex space-x-2">
@@ -102,7 +103,11 @@ export const AdvancedDesignAnalysisPage = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="upload" className="flex items-center space-x-2">
+            <Upload className="h-4 w-4" />
+            <span>Upload & Analyze</span>
+          </TabsTrigger>
           <TabsTrigger value="chat" className="flex items-center space-x-2">
             <MessageSquare className="h-4 w-4" />
             <span>AI Chat Analysis</span>
@@ -116,6 +121,23 @@ export const AdvancedDesignAnalysisPage = () => {
             <span>Analysis History</span>
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="upload" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Sparkles className="h-5 w-5" />
+                <span>Enhanced Design Uploader</span>
+              </CardTitle>
+              <CardDescription>
+                Upload multiple designs with advanced analysis options and batch processing
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EnhancedDesignUploader key={refreshKey} />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="chat" className="mt-6">
           <DesignChatInterface key={refreshKey} />
