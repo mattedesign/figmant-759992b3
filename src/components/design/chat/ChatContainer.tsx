@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChatMessage as ChatMessageComponent } from './ChatMessage';
 import { MessageInput } from './MessageInput';
@@ -31,6 +30,8 @@ interface ChatContainerProps {
   onAddUrl: () => void;
   onCancelUrl: () => void;
   onRemoveAttachment: (id: string) => void;
+  onRetryAttachment?: (id: string) => void;
+  onClearAllAttachments?: () => void;
   onImageProcessed: (attachmentId: string, processedFile: File, processingInfo: any) => void;
   onImageProcessingError: (attachmentId: string, error: string) => void;
   onToggleDebugPanel: () => void;
@@ -66,6 +67,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onAddUrl,
   onCancelUrl,
   onRemoveAttachment,
+  onRetryAttachment,
+  onClearAllAttachments,
   onImageProcessed,
   onImageProcessingError,
   onToggleDebugPanel,
@@ -128,6 +131,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           <ChatAttachments
             attachments={attachments}
             onRemove={onRemoveAttachment}
+            onRetry={onRetryAttachment}
+            onClearAll={onClearAllAttachments}
           />
           
           <MessageInput

@@ -2,17 +2,25 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { X, Image, Globe, File, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { X, Image, Globe, File, AlertCircle, CheckCircle, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 import { ChatAttachment } from '../DesignChatInterface';
 
 interface ChatAttachmentsProps {
   attachments: ChatAttachment[];
   onRemove: (id: string) => void;
+  onRetry?: (id: string) => void;
+  onClearAll?: () => void;
 }
 
-export const ChatAttachments: React.FC<ChatAttachmentsProps> = ({ attachments, onRemove }) => {
+export const ChatAttachments: React.FC<ChatAttachmentsProps> = ({ 
+  attachments, 
+  onRemove, 
+  onRetry,
+  onClearAll 
+}) => {
   const getStatusIcon = (attachment: ChatAttachment) => {
-    if (attachment.status === 'uploading') {
+    if (attachment.status === 'uploading' || attachment.status === 'processing') {
       return <Loader2 className="h-3 w-3 animate-spin text-blue-500" />;
     }
     if (attachment.status === 'error') {
@@ -36,50 +44,124 @@ export const ChatAttachments: React.FC<ChatAttachmentsProps> = ({ attachments, o
 
   const getBadgeVariant = (attachment: ChatAttachment) => {
     if (attachment.status === 'error') return 'destructive';
-    if (attachment.status === 'uploading') return 'outline';
+    if (attachment.status === 'uploading' || attachment.status === 'processing') return 'outline';
     return 'secondary';
   };
 
+  const getUploadProgress = (attachment: ChatAttachment) => {
+    if (attachment.status === 'uploading') return 50;
+    if (attachment.status === 'processing') return 75;
+    if (attachment.status === 'uploaded') return 100;
+    return 0;
+  };
+
+  const hasErrors = attachments.some(att => att.status === 'error');
+  const hasProcessing = attachments.some(att => 
+    att.status === 'uploading' || att.status === 'processing'
+  );
+
+  if (attachments.length === 0) return null;
+
   return (
-    <div className="space-y-2">
-      <div className="text-sm font-medium text-muted-foreground">
-        Attachments ({attachments.length})
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-medium text-muted-foreground">
+          Attachments ({attachments.length})
+        </div>
+        
+        {(hasErrors || attachments.length > 1) && onClearAll && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClearAll}
+            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <Trash2 className="h-3 w-3 mr-1" />
+            Clear All
+          </Button>
+        )}
       </div>
-      <div className="flex flex-wrap gap-2">
+
+      <div className="space-y-2">
         {attachments.map((attachment) => (
-          <div key={attachment.id} className="flex flex-col gap-1">
+          <div key={attachment.id} className="space-y-2">
             <Badge 
               variant={getBadgeVariant(attachment)} 
-              className="flex items-center space-x-2 px-3 py-2"
+              className="flex items-center justify-between w-full px-3 py-2"
             >
-              {getFileIcon(attachment)}
-              <span className="text-xs truncate max-w-[180px]">
-                {attachment.name}
-              </span>
-              {getStatusIcon(attachment)}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onRemove(attachment.id)}
-                className="h-4 w-4 p-0 ml-2"
-                disabled={attachment.status === 'uploading'}
-              >
-                <X className="h-3 w-3" />
-              </Button>
+              <div className="flex items-center space-x-2 flex-1 min-w-0">
+                {getFileIcon(attachment)}
+                <span className="text-xs truncate flex-1">
+                  {attachment.name}
+                </span>
+                {getStatusIcon(attachment)}
+              </div>
+              
+              <div className="flex items-center space-x-1 ml-2">
+                {attachment.status === 'error' && onRetry && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onRetry(attachment.id)}
+                    className="h-4 w-4 p-0"
+                    title="Retry upload"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                  </Button>
+                )}
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onRemove(attachment.id)}
+                  className="h-4 w-4 p-0"
+                  disabled={attachment.status === 'uploading'}
+                  title="Remove attachment"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
             </Badge>
-            {attachment.status === 'error' && attachment.errorMessage && (
-              <div className="text-xs text-red-600 max-w-[200px] break-words px-1">
-                {attachment.errorMessage}
+
+            {/* Progress bar for uploading/processing files */}
+            {(attachment.status === 'uploading' || attachment.status === 'processing') && (
+              <div className="px-1">
+                <Progress 
+                  value={getUploadProgress(attachment)} 
+                  className="h-1"
+                />
+                <div className="text-xs text-blue-600 mt-1">
+                  {attachment.status === 'uploading' ? 'Uploading...' : 'Processing...'}
+                </div>
               </div>
             )}
-            {attachment.status === 'uploading' && (
-              <div className="text-xs text-blue-600 px-1">
-                Uploading...
+
+            {/* Error message */}
+            {attachment.status === 'error' && attachment.errorMessage && (
+              <div className="text-xs text-red-600 px-1 bg-red-50 rounded p-2 border border-red-200">
+                <div className="font-medium">Upload failed:</div>
+                <div className="break-words">{attachment.errorMessage}</div>
+              </div>
+            )}
+
+            {/* Success info */}
+            {attachment.status === 'uploaded' && attachment.processingInfo && (
+              <div className="text-xs text-green-600 px-1">
+                {attachment.processingInfo.compressionRatio > 0 && (
+                  <div>Compressed by {attachment.processingInfo.compressionRatio}%</div>
+                )}
               </div>
             )}
           </div>
         ))}
       </div>
+
+      {/* Status summary */}
+      {hasProcessing && (
+        <div className="text-xs text-blue-600 bg-blue-50 rounded p-2 border border-blue-200">
+          Processing files... Please wait before sending your message.
+        </div>
+      )}
     </div>
   );
 };

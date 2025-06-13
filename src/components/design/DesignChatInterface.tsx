@@ -6,7 +6,7 @@ import { ChatSidebar } from './chat/ChatSidebar';
 import { useFileHandlers } from './chat/handlers/useFileHandlers';
 import { useMessageHandlers } from './chat/MessageHandlers';
 import { useImageProcessingMonitor } from '@/hooks/useImageProcessingMonitor';
-import { verifyStorageAccess } from '@/utils/storageUtils';
+import { verifyStorageAccess } from '@/utils/storage/storageVerification';
 
 export interface ChatAttachment {
   id: string;
@@ -56,6 +56,8 @@ export const DesignChatInterface = () => {
     handleImageProcessed,
     handleImageProcessingError,
     handleFileDrop,
+    handleRetryAttachment,
+    handleClearAllAttachments,
     updateAttachmentStatus
   } = useFileHandlers(storageStatus);
 
@@ -141,6 +143,14 @@ export const DesignChatInterface = () => {
     setAttachments(prev => prev.filter(att => att.id !== id));
   };
 
+  const retryAttachment = (id: string) => {
+    handleRetryAttachment(attachments, setAttachments, id);
+  };
+
+  const clearAllAttachments = () => {
+    handleClearAllAttachments(setAttachments);
+  };
+
   const onSendMessage = () => {
     handleSendMessage(
       message,
@@ -187,6 +197,8 @@ export const DesignChatInterface = () => {
         onAddUrl={addUrlAttachment}
         onCancelUrl={() => setShowUrlInput(false)}
         onRemoveAttachment={removeAttachment}
+        onRetryAttachment={retryAttachment}
+        onClearAllAttachments={clearAllAttachments}
         onImageProcessed={onImageProcessed}
         onImageProcessingError={onImageProcessingError}
         onToggleDebugPanel={() => setShowDebugPanel(!showDebugPanel)}
