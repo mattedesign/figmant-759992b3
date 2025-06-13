@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { DomainValidator } from './DomainValidator';
 
 interface URLInputProps {
   showUrlInput: boolean;
@@ -21,26 +21,28 @@ export const URLInput: React.FC<URLInputProps> = ({
     return null;
   }
 
+  const handleValidUrl = (validUrl: string) => {
+    onUrlInputChange(validUrl);
+    onAddUrl();
+  };
+
   return (
-    <div className="flex gap-2 mb-4">
-      <input
-        type="url"
-        placeholder="https://example.com"
-        value={urlInput}
-        onChange={(e) => onUrlInputChange(e.target.value)}
-        className="flex-1 px-3 py-2 border rounded-md"
-        onKeyPress={(e) => e.key === 'Enter' && onAddUrl()}
+    <div className="mb-4 p-4 border rounded-lg bg-background">
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="text-sm font-medium">Add Website URL</h3>
+        <button
+          onClick={onCancel}
+          className="text-muted-foreground hover:text-foreground text-sm"
+        >
+          Cancel
+        </button>
+      </div>
+      
+      <DomainValidator
+        url={urlInput}
+        onUrlChange={onUrlInputChange}
+        onValidUrl={handleValidUrl}
       />
-      <Button onClick={onAddUrl} size="sm">
-        Add
-      </Button>
-      <Button 
-        onClick={onCancel} 
-        variant="outline" 
-        size="sm"
-      >
-        Cancel
-      </Button>
     </div>
   );
 };
