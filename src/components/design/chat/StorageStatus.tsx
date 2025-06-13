@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { AlertTriangle, CheckCircle, RefreshCw, Info } from 'lucide-react';
+import { AlertTriangle, CheckCircle, RefreshCw, Info, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +27,7 @@ export const StorageStatus: React.FC<StorageStatusProps> = ({
     onStatusChange?.('checking');
 
     try {
-      console.log('Retrying storage verification...');
+      console.log('Retrying simplified storage verification...');
       
       const result = await verifyStorageAccess();
       
@@ -66,9 +66,9 @@ export const StorageStatus: React.FC<StorageStatusProps> = ({
 
   if (status === 'checking') {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-        <div className="h-4 w-4 bg-blue-500 rounded animate-pulse" />
-        <span>Verifying storage configuration...</span>
+      <div className="flex items-center gap-2 text-sm text-blue-600 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <Clock className="h-4 w-4 animate-pulse" />
+        <span>Verifying storage access...</span>
       </div>
     );
   }
@@ -82,7 +82,12 @@ export const StorageStatus: React.FC<StorageStatusProps> = ({
             <div className="flex-1">
               <span className="font-medium">File uploads unavailable</span>
               <br />
-              <span className="text-sm">Storage configuration issue detected</span>
+              <span className="text-sm">
+                {errorDetails?.step === 'bucket_access' 
+                  ? 'Storage bucket not accessible'
+                  : 'Storage configuration issue detected'
+                }
+              </span>
             </div>
             <div className="flex items-center gap-2 ml-2">
               <Button
@@ -114,7 +119,7 @@ export const StorageStatus: React.FC<StorageStatusProps> = ({
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="text-xs">
-                  Error Step: {errorDetails.step || 'unknown'}
+                  Failed at: {errorDetails.step || 'unknown'}
                 </Badge>
               </div>
               
@@ -124,9 +129,9 @@ export const StorageStatus: React.FC<StorageStatusProps> = ({
                 </div>
               )}
               
-              {errorDetails.bucketsError && (
+              {errorDetails.listError && (
                 <div>
-                  <span className="font-medium">Bucket Error:</span> {errorDetails.bucketsError.message}
+                  <span className="font-medium">Access Error:</span> {errorDetails.listError.message}
                 </div>
               )}
               
@@ -136,11 +141,15 @@ export const StorageStatus: React.FC<StorageStatusProps> = ({
                 </div>
               )}
               
-              {errorDetails.availableBuckets && (
+              {errorDetails.storageError && (
                 <div>
-                  <span className="font-medium">Available Buckets:</span> {errorDetails.availableBuckets.join(', ') || 'none'}
+                  <span className="font-medium">Storage Error:</span> {errorDetails.storageError.message}
                 </div>
               )}
+              
+              <div className="text-xs text-muted-foreground mt-2">
+                This simplified verification tests direct bucket access instead of listing all buckets.
+              </div>
             </div>
           </div>
         )}

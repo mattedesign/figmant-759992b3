@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const uploadFileToStorage = async (file: File): Promise<string> => {
-  console.log('=== ENHANCED FILE UPLOAD UTILS START ===');
+  console.log('=== SIMPLIFIED FILE UPLOAD START ===');
   
   try {
     // Step 1: Verify authentication
@@ -38,7 +38,6 @@ export const uploadFileToStorage = async (file: File): Promise<string> => {
     const fileExt = file.name.split('.').pop()?.toLowerCase();
     const timestamp = Date.now();
     const randomId = Math.random().toString(36).substr(2, 9);
-    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const filePath = `${user.id}/chat-${timestamp}-${randomId}.${fileExt}`;
 
     console.log('Upload path generated:', filePath);
@@ -60,13 +59,31 @@ export const uploadFileToStorage = async (file: File): Promise<string> => {
         userId: user.id
       });
 
-      // Provide more specific error messages
-      if (uploadError.message.includes('not found')) {
+      // Provide specific error messages based on error type
+      if (uploadError.message?.toLowerCase().includes('not found')) {
         throw new Error('Storage bucket not accessible. Please contact your administrator.');
-      } else if (uploadError.message.includes('policy')) {
+      } else if (uploadError.message?.toLowerCase().includes('policy')) {
         throw new Error('Upload permission denied. Please check your account settings.');
-      } else if (uploadError.message.includes('size')) {
+      } else if (uploadError.message?.toLowerCase().includes('size')) {
         throw new Error('File size exceeds storage limits.');
+      } else if (uploadError.message?.toLowerCase().includes('duplicate')) {
+        // Retry with different filename
+        const retryPath = `${user.id}/chat-${timestamp}-${randomId}-retry.${fileExt}`;
+        console.log('Retrying upload with new path:', retryPath);
+        
+        const { data: retryData, error: retryError } = await supabase.storage
+          .from('design-uploads')
+          .upload(retryPath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+          
+        if (retryError) {
+          throw new Error(`Upload failed after retry: ${retryError.message}`);
+        }
+        
+        console.log('✓ File uploaded successfully on retry:', retryData.path);
+        return retryPath;
       } else {
         throw new Error(`Upload failed: ${uploadError.message}`);
       }
@@ -82,11 +99,11 @@ export const uploadFileToStorage = async (file: File): Promise<string> => {
       id: uploadData.id
     });
 
-    console.log('=== ENHANCED FILE UPLOAD UTILS SUCCESS ===');
+    console.log('=== SIMPLIFIED FILE UPLOAD SUCCESS ===');
     return filePath;
 
   } catch (error) {
-    console.error('=== FILE UPLOAD UTILS ERROR ===');
+    console.error('=== FILE UPLOAD ERROR ===');
     console.error('Upload failed with error:', error);
     
     // Re-throw with enhanced error message
