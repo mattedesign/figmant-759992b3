@@ -6,6 +6,8 @@ import { ChatAttachments } from './ChatAttachments';
 import { StorageStatus } from './StorageStatus';
 import { DebugPanel } from './DebugPanel';
 import { ProcessingMonitor } from './ProcessingMonitor';
+import { FileUploadDropzone } from './FileUploadDropzone';
+import { URLInput } from './URLInput';
 import { ChatMessage, ChatAttachment } from '../DesignChatInterface';
 
 interface ChatContainerProps {
@@ -107,7 +109,22 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           )}
         </div>
 
-        <div className="border-t p-4">
+        <div className="border-t p-4 space-y-4">
+          <FileUploadDropzone
+            storageStatus={storageStatus}
+            getRootProps={getRootProps}
+            getInputProps={getInputProps}
+            isDragActive={isDragActive}
+          />
+          
+          <URLInput
+            showUrlInput={showUrlInput}
+            urlInput={urlInput}
+            onUrlInputChange={onUrlInputChange}
+            onAddUrl={onAddUrl}
+            onCancel={onCancelUrl}
+          />
+          
           <ChatAttachments
             attachments={attachments}
             onRemove={onRemoveAttachment}
