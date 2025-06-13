@@ -10,11 +10,6 @@ import { AuthGuard } from '@/components/auth/AuthGuard';
 import { RoleRedirect } from '@/components/auth/RoleRedirect';
 
 // Lazy load components with better error handling
-const Index = lazy(() => import('./pages/Index').catch(err => {
-  console.error('Failed to load Index page:', err);
-  return { default: () => <div>Error loading home page</div> };
-}));
-
 const Auth = lazy(() => import('./pages/Auth').catch(err => {
   console.error('Failed to load Auth page:', err);
   return { default: () => <div>Error loading auth page</div> };
@@ -87,8 +82,7 @@ function App() {
             <div className="min-h-screen bg-background font-sans antialiased">
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/" element={<Auth />} />
                   <Route path="/dashboard" element={
                     <AuthGuard>
                       <RoleRedirect>
