@@ -9,7 +9,8 @@ export const useUserCredits = () => {
     transactions,
     creditsLoading,
     transactionsLoading,
-    creditsError
+    creditsError,
+    refetchCredits
   } = useCreditQueries();
 
   const {
@@ -33,6 +34,7 @@ export const useUserCredits = () => {
     useCredits,
     checkUserAccess,
     deductAnalysisCredits,
-    isProcessing
+    isProcessing,
+    refetchCredits
   };
 };
