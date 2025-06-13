@@ -18,6 +18,15 @@ export const createImageProcessingHandlers = (
     processedFile: File,
     processingInfo: ProcessedImage
   ) => {
+    console.log('=== IMAGE PROCESSING HANDLER TESTING ===');
+    console.log('Processing completed for attachment:', attachmentId);
+    console.log('Processed file details:', {
+      name: processedFile.name,
+      size: processedFile.size,
+      type: processedFile.type
+    });
+    console.log('Processing info:', processingInfo);
+
     try {
       console.log('Image processed, uploading to storage:', {
         attachmentId,
@@ -29,11 +38,13 @@ export const createImageProcessingHandlers = (
       updateAttachmentStatus(attachments, setAttachments, attachmentId, 'uploading', undefined, undefined, processingInfo);
 
       const uploadPath = await uploadFileToStorage(processedFile);
+      console.log('Upload completed successfully:', uploadPath);
       updateAttachmentStatus(attachments, setAttachments, attachmentId, 'uploaded', undefined, uploadPath, processingInfo);
 
       setPendingImageProcessing(prev => {
         const updated = new Set(prev);
         updated.delete(attachmentId);
+        console.log('Removed from pending processing:', attachmentId);
         return updated;
       });
 
@@ -52,6 +63,7 @@ export const createImageProcessingHandlers = (
       setPendingImageProcessing(prev => {
         const updated = new Set(prev);
         updated.delete(attachmentId);
+        console.log('Removed from pending processing due to error:', attachmentId);
         return updated;
       });
 
@@ -61,6 +73,7 @@ export const createImageProcessingHandlers = (
         description: errorMessage,
       });
     }
+    console.log('=== IMAGE PROCESSING HANDLER TESTING COMPLETE ===');
   };
 
   const handleImageProcessingError = (
@@ -69,14 +82,17 @@ export const createImageProcessingHandlers = (
     attachmentId: string,
     error: string
   ) => {
+    console.log('=== IMAGE PROCESSING ERROR HANDLER TESTING ===');
     console.error('Image processing failed:', { attachmentId, error });
     updateAttachmentStatus(attachments, setAttachments, attachmentId, 'error', error);
     
     setPendingImageProcessing(prev => {
       const updated = new Set(prev);
       updated.delete(attachmentId);
+      console.log('Removed from pending processing due to error:', attachmentId);
       return updated;
     });
+    console.log('=== IMAGE PROCESSING ERROR HANDLER TESTING COMPLETE ===');
   };
 
   return {

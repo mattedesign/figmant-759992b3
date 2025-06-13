@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useDropzone } from 'react-dropzone';
 import { ChatContainer } from './chat/ChatContainer';
 import { ChatSidebar } from './chat/ChatSidebar';
-import { useFileHandlers } from './chat/FileHandlers';
+import { useFileHandlers } from './chat/handlers/useFileHandlers';
 import { useMessageHandlers } from './chat/MessageHandlers';
 import { useImageProcessingMonitor } from '@/hooks/useImageProcessingMonitor';
 import { verifyStorageAccess } from '@/utils/storageUtils';
