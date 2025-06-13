@@ -37,6 +37,7 @@ export const DesignChatInterface = () => {
   const [urlInput, setUrlInput] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [storageStatus, setStorageStatus] = useState<'checking' | 'ready' | 'error'>('checking');
+  const [storageErrorDetails, setStorageErrorDetails] = useState<any>(null);
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [showProcessingMonitor, setShowProcessingMonitor] = useState(false);
@@ -60,32 +61,41 @@ export const DesignChatInterface = () => {
 
   const { handleSendMessage, analyzeWithChat } = useMessageHandlers();
 
-  // Check storage access on component mount
+  // Enhanced storage verification on component mount
   React.useEffect(() => {
     const checkStorage = async () => {
       try {
-        console.log('Starting storage verification...');
+        console.log('Starting enhanced storage verification...');
+        setStorageStatus('checking');
+        setStorageErrorDetails(null);
+        
         const result = await verifyStorageAccess();
         
         if (result.success) {
           console.log('Storage verification successful');
           setStorageStatus('ready');
+          setStorageErrorDetails(null);
+          
           toast({
             title: "Storage Ready",
             description: "File uploads are ready to use.",
           });
         } else {
-          console.error('Storage verification failed:', result.error);
+          console.error('Storage verification failed:', result);
           setStorageStatus('error');
+          setStorageErrorDetails(result.details);
+          
           toast({
             variant: "destructive",
             title: "Storage Configuration Issue",
-            description: result.error || "Unable to access file storage. Please check your configuration.",
+            description: result.error || "Unable to access file storage.",
           });
         }
       } catch (error) {
         console.error('Storage verification error:', error);
         setStorageStatus('error');
+        setStorageErrorDetails({ step: 'catch', error });
+        
         toast({
           variant: "destructive",
           title: "Storage Verification Error",
@@ -163,6 +173,7 @@ export const DesignChatInterface = () => {
         urlInput={urlInput}
         showUrlInput={showUrlInput}
         storageStatus={storageStatus}
+        storageErrorDetails={storageErrorDetails}
         showDebugPanel={showDebugPanel}
         showProcessingMonitor={showProcessingMonitor}
         lastAnalysisResult={lastAnalysisResult}
@@ -180,6 +191,7 @@ export const DesignChatInterface = () => {
         onImageProcessingError={onImageProcessingError}
         onToggleDebugPanel={() => setShowDebugPanel(!showDebugPanel)}
         onToggleProcessingMonitor={() => setShowProcessingMonitor(!showProcessingMonitor)}
+        onStorageStatusChange={setStorageStatus}
         getRootProps={getRootProps}
         getInputProps={getInputProps}
         isDragActive={isDragActive}

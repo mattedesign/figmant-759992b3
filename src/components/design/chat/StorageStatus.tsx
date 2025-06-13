@@ -1,17 +1,25 @@
 
-import React, { useState, useEffect } from 'react';
-import { AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { AlertTriangle, CheckCircle, RefreshCw, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { verifyStorageAccess } from '@/utils/storage/storageVerification';
 import { useToast } from '@/hooks/use-toast';
 
 interface StorageStatusProps {
   status: 'checking' | 'ready' | 'error';
   onStatusChange?: (status: 'checking' | 'ready' | 'error') => void;
+  errorDetails?: any;
 }
 
-export const StorageStatus: React.FC<StorageStatusProps> = ({ status, onStatusChange }) => {
+export const StorageStatus: React.FC<StorageStatusProps> = ({ 
+  status, 
+  onStatusChange,
+  errorDetails 
+}) => {
   const [isRetrying, setIsRetrying] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const { toast } = useToast();
 
   const retryStorageCheck = async () => {
@@ -19,45 +27,37 @@ export const StorageStatus: React.FC<StorageStatusProps> = ({ status, onStatusCh
     onStatusChange?.('checking');
 
     try {
-      console.log('Retrying storage check...');
+      console.log('Retrying storage verification...');
       
-      // Test storage bucket access
-      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      const result = await verifyStorageAccess();
       
-      if (bucketsError) {
-        throw new Error('Failed to access storage buckets');
+      if (result.success) {
+        console.log('Storage verification successful on retry');
+        onStatusChange?.('ready');
+        
+        toast({
+          title: "Storage Ready",
+          description: "File upload functionality is now available.",
+        });
+      } else {
+        console.error('Storage verification failed on retry:', result);
+        onStatusChange?.('error');
+        
+        toast({
+          variant: "destructive",
+          title: "Storage Still Unavailable",
+          description: result.error || 'Storage verification failed',
+        });
       }
-      
-      const designUploadsBucket = buckets?.find(bucket => bucket.id === 'design-uploads');
-      if (!designUploadsBucket) {
-        throw new Error('design-uploads bucket not found');
-      }
-
-      // Test file listing
-      const { data: files, error: filesError } = await supabase.storage
-        .from('design-uploads')
-        .list('', { limit: 1 });
-
-      if (filesError) {
-        console.warn('File listing failed, but bucket exists:', filesError);
-      }
-
-      console.log('Storage check successful');
-      onStatusChange?.('ready');
-      
-      toast({
-        title: "Storage Ready",
-        description: "File upload functionality is now available.",
-      });
 
     } catch (error) {
-      console.error('Storage retry failed:', error);
+      console.error('Retry failed with unexpected error:', error);
       onStatusChange?.('error');
       
       toast({
         variant: "destructive",
-        title: "Storage Still Unavailable",
-        description: error instanceof Error ? error.message : 'Storage check failed',
+        title: "Retry Failed",
+        description: 'An unexpected error occurred during retry',
       });
     } finally {
       setIsRetrying(false);
@@ -66,41 +66,92 @@ export const StorageStatus: React.FC<StorageStatusProps> = ({ status, onStatusCh
 
   if (status === 'checking') {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-        <div className="h-4 w-4 bg-muted rounded animate-pulse" />
-        <span>Checking storage configuration...</span>
+      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="h-4 w-4 bg-blue-500 rounded animate-pulse" />
+        <span>Verifying storage configuration...</span>
       </div>
     );
   }
   
   if (status === 'error') {
     return (
-      <div className="flex items-center justify-between text-sm text-red-600 mb-4 p-3 bg-red-50 rounded-lg border border-red-200">
-        <div className="flex items-center gap-2">
+      <div className="mb-4 space-y-3">
+        <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
-          <span>File uploads are currently unavailable. Storage configuration issue detected.</span>
-        </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={retryStorageCheck}
-          disabled={isRetrying}
-          className="ml-2"
-        >
-          {isRetrying ? (
-            <RefreshCw className="h-3 w-3 animate-spin" />
-          ) : (
-            'Retry'
-          )}
-        </Button>
+          <AlertDescription className="flex items-center justify-between">
+            <div className="flex-1">
+              <span className="font-medium">File uploads unavailable</span>
+              <br />
+              <span className="text-sm">Storage configuration issue detected</span>
+            </div>
+            <div className="flex items-center gap-2 ml-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowDetails(!showDetails)}
+              >
+                <Info className="h-3 w-3 mr-1" />
+                Details
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={retryStorageCheck}
+                disabled={isRetrying}
+              >
+                {isRetrying ? (
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                ) : (
+                  'Retry'
+                )}
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+
+        {showDetails && errorDetails && (
+          <div className="p-3 bg-red-50 rounded-lg border border-red-200 text-sm">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs">
+                  Error Step: {errorDetails.step || 'unknown'}
+                </Badge>
+              </div>
+              
+              {errorDetails.authError && (
+                <div>
+                  <span className="font-medium">Auth Error:</span> {errorDetails.authError.message}
+                </div>
+              )}
+              
+              {errorDetails.bucketsError && (
+                <div>
+                  <span className="font-medium">Bucket Error:</span> {errorDetails.bucketsError.message}
+                </div>
+              )}
+              
+              {errorDetails.uploadError && (
+                <div>
+                  <span className="font-medium">Upload Error:</span> {errorDetails.uploadError.message}
+                </div>
+              )}
+              
+              {errorDetails.availableBuckets && (
+                <div>
+                  <span className="font-medium">Available Buckets:</span> {errorDetails.availableBuckets.join(', ') || 'none'}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-2 text-sm text-green-600 mb-4">
+    <div className="flex items-center gap-2 text-sm text-green-600 mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
       <CheckCircle className="h-4 w-4" />
-      <span>Ready for file uploads</span>
+      <span>Storage ready - file uploads enabled</span>
     </div>
   );
 };
