@@ -79,69 +79,71 @@ export const EnhancedAttachmentStatus: React.FC<EnhancedAttachmentStatusProps> =
       <div className="space-y-2">
         {attachments.map((attachment) => (
           <Card key={attachment.id} className="p-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                {getStatusIcon(attachment.status || 'pending', attachment.type)}
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium truncate">
-                      {attachment.type === 'url' 
-                        ? getDomainFromUrl(attachment.url || attachment.name)
-                        : attachment.name
-                      }
-                    </span>
-                    {attachment.type === 'url' && attachment.url && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.open(attachment.url, '_blank')}
-                        className="h-6 w-6 p-0"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                      </Button>
+            <CardContent className="p-0">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  {getStatusIcon(attachment.status || 'pending', attachment.type)}
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium truncate">
+                        {attachment.type === 'url' 
+                          ? getDomainFromUrl(attachment.url || attachment.name)
+                          : attachment.name
+                        }
+                      </span>
+                      {attachment.type === 'url' && attachment.url && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(attachment.url, '_blank')}
+                          className="h-6 w-6 p-0"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {attachment.errorMessage && (
+                      <p className="text-xs text-red-600 mt-1">
+                        {attachment.errorMessage}
+                      </p>
+                    )}
+                    
+                    {attachment.type === 'file' && attachment.file && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {(attachment.file.size / 1024 / 1024).toFixed(1)} MB
+                      </p>
                     )}
                   </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  {getStatusBadge(attachment.status || 'pending')}
                   
-                  {attachment.errorMessage && (
-                    <p className="text-xs text-red-600 mt-1">
-                      {attachment.errorMessage}
-                    </p>
+                  {attachment.status === 'error' && onRetry && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onRetry(attachment.id)}
+                      className="h-7 px-2"
+                    >
+                      <RotateCcw className="h-3 w-3" />
+                    </Button>
                   )}
                   
-                  {attachment.type === 'file' && attachment.file && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {(attachment.file.size / 1024 / 1024).toFixed(1)} MB
-                    </p>
-                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onRemove(attachment.id)}
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-red-600"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-2">
-                {getStatusBadge(attachment.status || 'pending')}
-                
-                {attachment.status === 'error' && onRetry && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onRetry(attachment.id)}
-                    className="h-7 px-2"
-                  >
-                    <RotateCcw className="h-3 w-3" />
-                  </Button>
-                )}
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onRemove(attachment.id)}
-                  className="h-7 w-7 p-0 text-muted-foreground hover:text-red-600"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
