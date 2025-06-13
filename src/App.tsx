@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import { RoleRedirect } from '@/components/auth/RoleRedirect';
@@ -82,7 +82,10 @@ function App() {
             <div className="min-h-screen bg-background font-sans antialiased">
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
+                  {/* Auth route - accessible to all, but authenticated users see different content */}
                   <Route path="/" element={<Auth />} />
+                  
+                  {/* Protected dashboard routes */}
                   <Route path="/dashboard" element={
                     <AuthGuard>
                       <RoleRedirect>
@@ -90,11 +93,13 @@ function App() {
                       </RoleRedirect>
                     </AuthGuard>
                   } />
+                  
                   <Route path="/processing/:batchId" element={
                     <AuthGuard>
                       <ProcessingPage />
                     </AuthGuard>
                   } />
+                  
                   <Route path="/owner" element={
                     <AuthGuard requireOwner>
                       <Suspense fallback={<LoadingFallback message="Loading owner dashboard..." />}>
@@ -102,21 +107,25 @@ function App() {
                       </Suspense>
                     </AuthGuard>
                   } />
+                  
                   <Route path="/design-analysis" element={
                     <AuthGuard>
                       <DesignAnalysis />
                     </AuthGuard>
                   } />
+                  
                   <Route path="/subscription" element={
                     <AuthGuard>
                       <Subscription />
                     </AuthGuard>
                   } />
+                  
                   <Route path="/admin/assets" element={
                     <AuthGuard>
                       <AdminAssets />
                     </AuthGuard>
                   } />
+                  
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>

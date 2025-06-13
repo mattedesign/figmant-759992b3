@@ -1,20 +1,21 @@
-
 import React, { useState } from 'react';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { EnhancedSignInForm } from './EnhancedSignInForm';
 import { EnhancedSignUpForm } from './EnhancedSignUpForm';
 import { PasswordResetForm } from './PasswordResetForm';
 import { UpdatePasswordForm } from './UpdatePasswordForm';
 import { OnboardingFlow } from '../onboarding/OnboardingFlow';
 import { Logo } from '@/components/common/Logo';
-import { Sparkles, Shield, Zap } from 'lucide-react';
+import { Sparkles, Shield, Zap, LogOut } from 'lucide-react';
 
 export const SplitScreenAuth = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [activeTab, setActiveTab] = useState('signin');
@@ -22,9 +23,27 @@ export const SplitScreenAuth = () => {
   // Check if we're in password reset mode
   const resetMode = searchParams.get('mode') === 'reset';
 
-  // Redirect if already authenticated and not in reset mode
-  if (user && !loading && !resetMode && !showOnboarding) {
-    return <Navigate to="/dashboard" replace />;
+  const handleSignOut = async () => {
+    console.log('Signing out user...');
+    try {
+      await signOut();
+      console.log('Sign out successful');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
+  const handleGoToDashboard = () => {
+    navigate('/dashboard');
+  };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   // Show password update form if user is authenticated and in reset mode
@@ -44,22 +63,121 @@ export const SplitScreenAuth = () => {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
+  // Show onboarding flow
   if (showOnboarding) {
     return <OnboardingFlow onComplete={() => setShowOnboarding(false)} />;
+  }
+
+  // If user is authenticated and not in reset mode, show welcome back message
+  if (user && !resetMode) {
+    return (
+      <div className="min-h-screen flex">
+        {/* Left side - Branding and features */}
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary to-primary/80 text-white p-12 flex-col justify-between">
+          <div>
+            <div className="flex items-center space-x-3 mb-12">
+              <Logo size="lg" />
+              <div>
+                <h1 className="text-3xl font-bold">UX Analytics AI</h1>
+                <p className="text-primary-foreground/80">Intelligent design insights</p>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div className="flex items-start space-x-4">
+                <div className="bg-white/20 p-3 rounded-lg">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">AI-Powered Analysis</h3>
+                  <p className="text-primary-foreground/80">
+                    Get instant insights on your designs with advanced AI analysis that identifies UX patterns and opportunities.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="bg-white/20 p-3 rounded-lg">
+                  <Shield className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Secure & Private</h3>
+                  <p className="text-primary-foreground/80">
+                    Your designs are protected with enterprise-grade security and never shared with third parties.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="bg-white/20 p-3 rounded-lg">
+                  <Zap className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">Lightning Fast</h3>
+                  <p className="text-primary-foreground/80">
+                    Get comprehensive design analysis results in seconds, not hours.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-sm text-primary-foreground/60">
+            <p>© 2024 UX Analytics AI. All rights reserved.</p>
+          </div>
+        </div>
+
+        {/* Right side - Welcome back message */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+          <div className="w-full max-w-md space-y-6">
+            {/* Mobile logo */}
+            <div className="lg:hidden text-center space-y-2 mb-8">
+              <div className="flex items-center justify-center space-x-2">
+                <Logo size="md" />
+                <h1 className="text-2xl font-bold">UX Analytics AI</h1>
+              </div>
+              <p className="text-muted-foreground">Intelligent design insights</p>
+            </div>
+
+            <Card className="border-0 shadow-xl">
+              <CardContent className="p-8">
+                <div className="text-center space-y-6">
+                  <div>
+                    <h2 className="text-2xl font-bold mb-2">Welcome back!</h2>
+                    <p className="text-muted-foreground">
+                      You're already signed in. Ready to continue your design analysis?
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <Button onClick={handleGoToDashboard} className="w-full" size="lg">
+                      Go to Dashboard
+                    </Button>
+                    
+                    <Button 
+                      onClick={handleSignOut} 
+                      variant="outline" 
+                      className="w-full"
+                      disabled={loading}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const handleSuccessfulSignUp = () => {
     setShowOnboarding(true);
   };
 
+  // Show auth forms for non-authenticated users
   return (
     <div className="min-h-screen flex">
       {/* Left side - Branding and features */}

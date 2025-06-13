@@ -18,8 +18,14 @@ export const UserMenu = () => {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+    console.log('UserMenu: Initiating sign out...');
+    try {
+      await signOut();
+      console.log('UserMenu: Sign out successful, navigating to root');
+      navigate('/');
+    } catch (error) {
+      console.error('UserMenu: Sign out error:', error);
+    }
   };
 
   const getSubscriptionBadge = () => {
