@@ -6,10 +6,12 @@ import { ChatAttachments } from './ChatAttachments';
 import { StorageStatus } from './StorageStatus';
 import { DebugPanel } from './DebugPanel';
 import { ProcessingMonitor } from './ProcessingMonitor';
-import { FileUploadDropzone } from './FileUploadDropzone';
+import { EnhancedFileUploadDropzone } from './EnhancedFileUploadDropzone';
 import { URLInput } from './URLInput';
 import { TypingIndicator } from './TypingIndicator';
 import { ChatMessageSkeleton } from './ChatMessageSkeleton';
+import { ConnectionStatus } from './ConnectionStatus';
+import { LoadingOverlay } from './LoadingOverlay';
 import { ChatMessage, ChatAttachment } from '../DesignChatInterface';
 
 interface ChatContainerProps {
@@ -48,7 +50,6 @@ interface ChatContainerProps {
   pauseJob: (jobId: string) => void;
   resumeJob: (jobId: string) => void;
   cancelJob: (jobId: string) => void;
-  // New props for enhanced loading states
   loadingState?: {
     isLoading: boolean;
     stage: string | null;
@@ -97,8 +98,35 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   loadingState,
   getStageMessage
 }) => {
+  // Prepare processing files data for enhanced dropzone
+  const processingFiles = attachments
+    .filter(att => att.status === 'uploading' || att.status === 'processing')
+    .map(att => ({
+      id: att.id,
+      name: att.name,
+      progress: att.status === 'processing' ? 75 : 25,
+      status: att.status as 'uploading' | 'processing'
+    }));
+
+  const isUploading = processingFiles.length > 0;
+  const uploadProgress = processingFiles.length > 0 
+    ? Math.round(processingFiles.reduce((sum, file) => sum + file.progress, 0) / processingFiles.length)
+    : 0;
+
+  // Connection status
+  const isConnected = storageStatus === 'ready';
+  const isConnecting = storageStatus === 'checking';
+
+  // Loading overlay steps
+  const loadingSteps = loadingState?.isLoading ? [
+    { id: 'validate', label: 'Validating attachments', status: 'complete' as const },
+    { id: 'process', label: 'Processing files', status: loadingState.stage === 'processing' ? 'active' as const : 'complete' as const },
+    { id: 'analyze', label: 'AI Analysis', status: loadingState.stage === 'analyzing' ? 'active' as const : 'pending' as const },
+    { id: 'complete', label: 'Generating response', status: 'pending' as const }
+  ] : [];
+
   return (
-    <div className="lg:col-span-2 flex flex-col h-full">
+    <div className="lg:col-span-2 flex flex-col h-full relative">
       <div className="flex-1 overflow-hidden flex flex-col">
         <div className="p-4 border-b">
           <h2 className="text-xl font-semibold mb-2">AI Design Analysis Chat</h2>
@@ -110,6 +138,12 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             status={storageStatus} 
             onStatusChange={onStorageStatusChange}
             errorDetails={storageErrorDetails}
+          />
+          
+          <ConnectionStatus 
+            isConnected={isConnected}
+            isLoading={isConnecting}
+            onRetry={() => onStorageStatusChange?.('checking')}
           />
         </div>
 
@@ -140,11 +174,14 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         </div>
 
         <div className="border-t p-4 space-y-4">
-          <FileUploadDropzone
+          <EnhancedFileUploadDropzone
             storageStatus={storageStatus}
             getRootProps={getRootProps}
             getInputProps={getInputProps}
             isDragActive={isDragActive}
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
+            processingFiles={processingFiles}
           />
           
           <URLInput
@@ -174,6 +211,17 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           />
         </div>
       </div>
+
+      {/* Loading Overlay for intensive operations */}
+      <LoadingOverlay
+        isVisible={loadingState?.isLoading || false}
+        title="AI Analysis in Progress"
+        description="Please wait while we analyze your design"
+        progress={loadingState?.progress}
+        estimatedTime={loadingState?.estimatedTimeRemaining}
+        stage={loadingState?.stage || undefined}
+        steps={loadingSteps}
+      />
 
       {showDebugPanel && (
         <DebugPanel
