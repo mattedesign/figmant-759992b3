@@ -6,30 +6,6 @@ import { IconSidebar } from '@/components/owner/IconSidebar';
 import { SecondaryNavigation } from '@/components/owner/SecondaryNavigation';
 import { useSearchParams } from 'react-router-dom';
 
-// Lazy load heavy components to prevent loading issues
-import { lazy, Suspense } from 'react';
-const UserManagement = lazy(() => import('@/components/owner/UserManagement').then(module => ({
-  default: module.UserManagement
-})));
-const AdminSettings = lazy(() => import('@/components/owner/AdminSettings').then(module => ({
-  default: module.AdminSettings
-})));
-const ClaudeSettings = lazy(() => import('@/components/owner/ClaudeSettings').then(module => ({
-  default: module.ClaudeSettings
-})));
-const SubscriptionPlansManager = lazy(() => import('@/components/owner/SubscriptionPlansManager').then(module => ({
-  default: module.SubscriptionPlansManager
-})));
-const AdvancedDesignAnalysisPage = lazy(() => import('@/components/design/AdvancedDesignAnalysisPage').then(module => ({
-  default: module.AdvancedDesignAnalysisPage
-})));
-
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center p-8">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-  </div>
-);
-
 // Map tabs to sections for the two-level navigation
 const tabToSectionMap: Record<string, string> = {
   design: 'workspace',
@@ -101,47 +77,6 @@ const OwnerDashboard = () => {
     }
   }, [searchParams]);
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'design':
-        return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AdvancedDesignAnalysisPage />
-          </Suspense>
-        );
-      case 'users':
-        return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <UserManagement />
-          </Suspense>
-        );
-      case 'plans':
-        return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <SubscriptionPlansManager />
-          </Suspense>
-        );
-      case 'claude':
-        return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <ClaudeSettings />
-          </Suspense>
-        );
-      case 'settings':
-        return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AdminSettings />
-          </Suspense>
-        );
-      default:
-        return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AdvancedDesignAnalysisPage />
-          </Suspense>
-        );
-    }
-  };
-
   console.log('Rendering OwnerDashboard with tab:', activeTab, 'section:', activeSection);
   
   return (
@@ -153,21 +88,16 @@ const OwnerDashboard = () => {
           onSectionChange={handleSectionChange} 
         />
         
-        {/* Secondary Navigation */}
-        <SecondaryNavigation 
-          activeSection={activeSection}
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-        />
-        
-        {/* Main Content Area */}
+        {/* Main Content Area with Navigation and Content */}
         <div className="flex-1 flex flex-col">
           <Navigation showSidebarTrigger={false} />
           
-          <main className="flex-1 p-6 overflow-auto">
-            <div className="space-y-6">
-              {renderContent()}
-            </div>
+          <main className="flex-1 flex overflow-hidden">
+            <SecondaryNavigation 
+              activeSection={activeSection}
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+            />
           </main>
         </div>
       </div>
