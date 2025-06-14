@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthContainer } from './shared/AuthContainer';
 import { SignInView } from './views/SignInView';
-import { WelcomeBackView } from './views/WelcomeBackView';
 import { PasswordResetForm } from './PasswordResetForm';
 import { UpdatePasswordForm } from './UpdatePasswordForm';
 import { ModernOnboardingFlow } from './ModernOnboardingFlow';
 import { DashboardPreview } from './DashboardPreview';
-import { Logo } from '@/components/common/Logo';
+
 export const SplitScreenAuth = () => {
   const {
     user,
     loading,
-    signOut
+    isOwner
   } = useAuth();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -21,26 +21,29 @@ export const SplitScreenAuth = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [activeTab, setActiveTab] = useState('signin');
   const resetMode = searchParams.get('mode') === 'reset';
-  const handleSignOut = async () => {
-    console.log('Signing out user...');
-    try {
-      await signOut();
-      console.log('Sign out successful');
-    } catch (error) {
-      console.error('Sign out error:', error);
+
+  // Auto-redirect authenticated users to their dashboard
+  useEffect(() => {
+    if (user && !loading && !resetMode && !showOnboarding) {
+      console.log('Auto-redirecting authenticated user to dashboard...');
+      if (isOwner) {
+        navigate('/owner');
+      } else {
+        navigate('/dashboard');
+      }
     }
-  };
-  const handleGoToDashboard = () => {
-    navigate('/dashboard');
-  };
+  }, [user, loading, resetMode, showOnboarding, isOwner, navigate]);
+
   const handleSuccessfulSignUp = () => {
     setShowOnboarding(true);
   };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>;
   }
+
   if (user && resetMode) {
     return <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <AuthContainer title="Update Password" subtitle="Update your password">
@@ -48,34 +51,19 @@ export const SplitScreenAuth = () => {
         </AuthContainer>
       </div>;
   }
+
   if (showOnboarding) {
     return <ModernOnboardingFlow onComplete={() => setShowOnboarding(false)} />;
   }
+
+  // If user is authenticated and not in reset mode or onboarding, the useEffect will handle redirect
+  // This return should only be reached during the brief moment before redirect
   if (user && !resetMode) {
-    return <div className="min-h-screen flex bg-background">
-        {/* Left side - Welcome back */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-          <div className="w-full max-w-md space-y-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Logo size="md" />
-                <div>
-                  
-                  <p className="auth-subheading">Welcome back!</p>
-                </div>
-              </div>
-            </div>
-
-            <WelcomeBackView onGoToDashboard={handleGoToDashboard} onSignOut={handleSignOut} loading={loading} />
-          </div>
-        </div>
-
-        {/* Right side - Dashboard preview */}
-        <div className="hidden lg:block lg:w-1/2 p-8 bg-muted/30">
-          <DashboardPreview />
-        </div>
+    return <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>;
   }
+
   return <div className="min-h-screen flex bg-background">
       {/* Left side - Authentication forms */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
