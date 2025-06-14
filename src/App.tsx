@@ -1,4 +1,3 @@
-
 import { Suspense, lazy } from 'react';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
@@ -90,7 +89,7 @@ function App() {
                   {/* Auth route - accessible to all, but authenticated users see different content */}
                   <Route path="/" element={<Auth />} />
                   
-                  {/* Protected dashboard routes */}
+                  {/* Protected dashboard routes - Updated to allow owners access to both */}
                   <Route path="/dashboard" element={
                     <AuthGuard>
                       <RoleRedirect>
@@ -107,6 +106,7 @@ function App() {
                     </AuthGuard>
                   } />
                   
+                  {/* Owner dashboard - owners can access, but keep requireOwner for security */}
                   <Route path="/owner" element={
                     <AuthGuard requireOwner>
                       <Suspense fallback={<LoadingFallback message="Loading owner dashboard..." />}>

@@ -28,10 +28,8 @@ export const RoleRedirect: React.FC<RoleRedirectProps> = ({
     return <Navigate to="/dashboard" replace />;
   }
 
-  // If user is an owner and trying to access regular dashboard, redirect to owner dashboard
-  if (isOwner && location.pathname === '/dashboard') {
-    return <Navigate to="/owner" replace />;
-  }
+  // Allow owners to access both dashboards - remove automatic redirect
+  // Owners can now manually choose which dashboard to view via the UserMenu
 
   // If user is not an owner and trying to access owner dashboard, redirect to subscriber dashboard
   if (!isOwner && location.pathname === '/owner') {

@@ -14,15 +14,38 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
   const { user, isOwner } = useAuth();
   const location = useLocation();
   
-  // Determine the title based on the current route and user role
+  // Determine the title based on the current route
   const getTitle = () => {
-    if (location.pathname === '/owner' && isOwner) {
+    if (location.pathname === '/owner') {
       return 'Owner Dashboard';
     }
-    if (location.pathname === '/dashboard' || (location.pathname === '/owner' && !isOwner)) {
-      return 'Dashboard';
+    if (location.pathname === '/dashboard') {
+      return isOwner ? 'Subscriber View' : 'Dashboard';
     }
     return 'Dashboard';
+  };
+
+  // Determine the badge based on current view
+  const getBadge = () => {
+    if (location.pathname === '/owner') {
+      return (
+        <Badge variant="default" className="bg-purple-100 text-purple-800">
+          Owner Mode
+        </Badge>
+      );
+    }
+    if (location.pathname === '/dashboard' && isOwner) {
+      return (
+        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+          Subscriber Mode
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="secondary" className="bg-green-100 text-green-800">
+        Live
+      </Badge>
+    );
   };
 
   return (
@@ -36,9 +59,7 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
               className="h-8 w-8 object-contain"
             />
             <h1 className="text-xl font-semibold">{getTitle()}</h1>
-            <Badge variant="secondary" className="bg-green-100 text-green-800">
-              Live
-            </Badge>
+            {getBadge()}
           </div>
 
           <div className="flex items-center space-x-4">
@@ -47,7 +68,7 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
                 <Button variant="ghost" size="icon">
                   <Bell className="h-4 w-4" />
                 </Button>
-                {isOwner && (
+                {(isOwner || location.pathname === '/owner') && (
                   <Button variant="ghost" size="icon">
                     <Settings className="h-4 w-4" />
                   </Button>

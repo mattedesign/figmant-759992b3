@@ -1,7 +1,7 @@
 
-import { User, Settings, LogOut, CreditCard, Shield } from 'lucide-react';
+import { User, Settings, LogOut, CreditCard, Shield, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 export const UserMenu = () => {
   const { user, profile, subscription, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSignOut = async () => {
     console.log('UserMenu: Initiating sign out...');
@@ -50,6 +51,10 @@ export const UserMenu = () => {
     return 'U';
   };
 
+  const isOwner = profile?.role === 'owner';
+  const isOnOwnerDashboard = location.pathname === '/owner';
+  const isOnSubscriberDashboard = location.pathname === '/dashboard';
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -74,22 +79,41 @@ export const UserMenu = () => {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-          <User className="mr-2 h-4 w-4" />
-          Dashboard
-        </DropdownMenuItem>
+        {/* Dashboard Navigation - Only show for owners */}
+        {isOwner && (
+          <>
+            <DropdownMenuItem 
+              onClick={() => navigate('/dashboard')}
+              className={isOnSubscriberDashboard ? 'bg-accent' : ''}
+            >
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              Subscriber Dashboard
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem 
+              onClick={() => navigate('/owner')}
+              className={isOnOwnerDashboard ? 'bg-accent' : ''}
+            >
+              <Shield className="mr-2 h-4 w-4" />
+              Owner Dashboard
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+          </>
+        )}
+
+        {/* Regular dashboard link for non-owners */}
+        {!isOwner && (
+          <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+            <User className="mr-2 h-4 w-4" />
+            Dashboard
+          </DropdownMenuItem>
+        )}
         
         <DropdownMenuItem onClick={() => navigate('/subscription')}>
           <CreditCard className="mr-2 h-4 w-4" />
           Subscription
         </DropdownMenuItem>
-
-        {profile?.role === 'owner' && (
-          <DropdownMenuItem onClick={() => navigate('/owner')}>
-            <Shield className="mr-2 h-4 w-4" />
-            Owner Dashboard
-          </DropdownMenuItem>
-        )}
         
         <DropdownMenuSeparator />
         
