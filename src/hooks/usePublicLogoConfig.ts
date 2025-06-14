@@ -13,13 +13,36 @@ export const usePublicLogoConfig = () => {
   const loadPublicLogoConfig = async () => {
     try {
       setIsLoading(true);
-      console.log('usePublicLogoConfig: Loading public logo configuration...');
+      console.log('=== LOADING PUBLIC LOGO CONFIG ===');
       
-      // Call the public function that doesn't require authentication
+      // First, try to get the public logo configuration
       const { data, error } = await supabase.rpc('get_public_logo_config');
       
       if (error) {
         console.error('usePublicLogoConfig: Error loading public logo config:', error);
+        
+        // If function doesn't exist or fails, fall back to checking admin_settings
+        console.log('usePublicLogoConfig: Fallback to admin_settings...');
+        
+        const { data: adminData, error: adminError } = await supabase
+          .from('admin_settings')
+          .select('setting_value')
+          .eq('setting_key', 'logo_url')
+          .maybeSingle();
+          
+        if (adminError) {
+          console.error('usePublicLogoConfig: Admin settings query failed:', adminError);
+        } else if (adminData?.setting_value) {
+          const logoUrl = adminData.setting_value?.value || adminData.setting_value;
+          console.log('usePublicLogoConfig: Found logo in admin_settings:', logoUrl);
+          
+          return {
+            activeLogoUrl: logoUrl,
+            fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
+          };
+        }
+        
+        // Final fallback to default
         return {
           activeLogoUrl: DEFAULT_FALLBACK_LOGO,
           fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
@@ -66,8 +89,10 @@ export const usePublicLogoConfig = () => {
 
   const reload = async () => {
     console.log('usePublicLogoConfig: Manually reloading logo config');
+    setIsLoading(true);
     const config = await loadPublicLogoConfig();
     setLogoConfig(config);
+    setIsLoading(false);
   };
 
   return {

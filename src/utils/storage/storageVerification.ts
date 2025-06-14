@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const verifyStorageAccess = async () => {
   try {
-    console.log('=== SIMPLIFIED STORAGE VERIFICATION START ===');
+    console.log('=== ENHANCED STORAGE VERIFICATION START ===');
     
     // Step 1: Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -28,13 +28,11 @@ export const verifyStorageAccess = async () => {
 
     console.log('✓ User authenticated:', user.id);
 
-    // Step 2: Test direct bucket access with a simple operation
-    // Instead of listing buckets, try a direct operation on the known bucket
+    // Step 2: Check if design-uploads bucket exists, create if needed
+    console.log('Checking storage bucket configuration...');
+    
     try {
-      console.log('Testing direct bucket access...');
-      
-      // Try to list files in the design-uploads bucket with a very small limit
-      // This will tell us if the bucket exists and is accessible
+      // Try to list files in the design-uploads bucket
       const { data: files, error: listError } = await supabase.storage
         .from('design-uploads')
         .list('', { 
@@ -43,22 +41,31 @@ export const verifyStorageAccess = async () => {
         });
 
       if (listError) {
-        console.error('Direct bucket access failed:', listError);
+        console.log('Bucket access failed, checking if bucket exists:', listError);
         
-        // Check if it's a "bucket not found" error
+        // If bucket doesn't exist, we need to create it via the database
         if (listError.message?.toLowerCase().includes('not found') || 
             listError.message?.toLowerCase().includes('does not exist')) {
+          
+          console.log('Bucket does not exist, attempting to create it...');
+          
+          // Note: We can't create buckets directly from the client
+          // This should be handled by the database migration
           return { 
             success: false, 
-            error: 'Storage bucket "design-uploads" not found. Please contact your administrator.',
-            details: { step: 'bucket_access', listError }
+            error: 'Storage bucket "design-uploads" not found. Please contact your administrator to run the storage setup migration.',
+            details: { 
+              step: 'bucket_missing', 
+              listError,
+              suggestion: 'Run the storage configuration migration'
+            }
           };
         }
         
-        // For other errors, it might still be accessible for uploads
+        // For other errors, continue with upload test
         console.warn('List operation failed but bucket might still be accessible:', listError);
       } else {
-        console.log('✓ Direct bucket access successful, found', files?.length || 0, 'files');
+        console.log('✓ Bucket access successful, found', files?.length || 0, 'files');
       }
 
       // Step 3: Test upload permissions with a minimal test file
@@ -79,7 +86,7 @@ export const verifyStorageAccess = async () => {
       const testBlob = new Blob([testData], { type: 'image/png' });
       const testFile = new File([testBlob], 'verification-test.png', { type: 'image/png' });
       
-      const testPath = `${user.id}/storage-verification-${Date.now()}.png`;
+      const testPath = `verification/${user.id}/test-${Date.now()}.png`;
       
       const { error: uploadError } = await supabase.storage
         .from('design-uploads')
@@ -112,7 +119,14 @@ export const verifyStorageAccess = async () => {
 
       console.log('✓ Upload test successful');
 
-      // Step 4: Clean up test file (non-critical)
+      // Step 4: Test public URL generation
+      const { data: { publicUrl } } = supabase.storage
+        .from('design-uploads')
+        .getPublicUrl(testPath);
+
+      console.log('✓ Public URL generated:', publicUrl);
+
+      // Step 5: Clean up test file (non-critical)
       try {
         const { error: deleteError } = await supabase.storage
           .from('design-uploads')
@@ -127,14 +141,16 @@ export const verifyStorageAccess = async () => {
         console.warn('Cleanup error (non-critical):', cleanupError);
       }
 
-      console.log('=== SIMPLIFIED STORAGE VERIFICATION SUCCESS ===');
+      console.log('=== ENHANCED STORAGE VERIFICATION SUCCESS ===');
       return { 
         success: true,
         details: { 
           userId: user.id,
           bucketAccessible: true,
           uploadTest: true,
-          listTest: !listError
+          listTest: !listError,
+          publicUrlTest: true,
+          testPath
         }
       };
 

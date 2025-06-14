@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TestTube, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { testStorageAccess, testImageUrl } from '@/utils/logoTestUtils';
-import { useLogoConfig } from '@/hooks/useLogoConfig';
+import { usePublicLogoConfig } from '@/hooks/usePublicLogoConfig';
 import { useAssetManagement } from '@/hooks/useAssetManagement';
 
 interface TestResult {
@@ -18,7 +18,7 @@ interface TestResult {
 export const LogoTestingPanel: React.FC = () => {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
-  const { logoConfig } = useLogoConfig();
+  const { logoConfig } = usePublicLogoConfig();
   const { getAssetsByType } = useAssetManagement();
 
   const runDiagnostics = async () => {
@@ -26,34 +26,50 @@ export const LogoTestingPanel: React.FC = () => {
     const results: TestResult[] = [];
 
     try {
-      // Test 1: Storage Access
-      console.log('Running storage access test...');
+      console.log('=== LOGO DIAGNOSTICS START ===');
+
+      // Test 1: Enhanced Storage Access
+      console.log('Running enhanced storage access test...');
       const storageResult = await testStorageAccess();
       results.push({
         name: 'Storage Access',
         status: storageResult.success ? 'success' : 'error',
-        message: storageResult.success ? 'Storage is accessible' : storageResult.error || 'Storage access failed',
+        message: storageResult.success 
+          ? `Storage is accessible. Found ${storageResult.details?.filesFound || 0} logo files.`
+          : storageResult.error || 'Storage access failed',
         details: storageResult
       });
 
       // Test 2: Active Logo URL
-      console.log('Testing active logo URL...');
+      console.log('Testing active logo URL accessibility...');
       const activeLogoTest = await testImageUrl(logoConfig.activeLogoUrl);
       results.push({
         name: 'Active Logo URL',
         status: activeLogoTest ? 'success' : 'error',
-        message: activeLogoTest ? 'Active logo loads successfully' : 'Active logo failed to load',
-        details: { url: logoConfig.activeLogoUrl }
+        message: activeLogoTest 
+          ? 'Active logo loads successfully' 
+          : 'Active logo failed to load',
+        details: { 
+          url: logoConfig.activeLogoUrl,
+          isLocalAsset: logoConfig.activeLogoUrl.startsWith('/'),
+          isSupabaseUrl: logoConfig.activeLogoUrl.includes('supabase')
+        }
       });
 
       // Test 3: Fallback Logo URL
-      console.log('Testing fallback logo URL...');
+      console.log('Testing fallback logo URL accessibility...');
       const fallbackLogoTest = await testImageUrl(logoConfig.fallbackLogoUrl);
       results.push({
         name: 'Fallback Logo URL',
         status: fallbackLogoTest ? 'success' : 'error',
-        message: fallbackLogoTest ? 'Fallback logo loads successfully' : 'Fallback logo failed to load',
-        details: { url: logoConfig.fallbackLogoUrl }
+        message: fallbackLogoTest 
+          ? 'Fallback logo loads successfully' 
+          : 'Fallback logo failed to load',
+        details: { 
+          url: logoConfig.fallbackLogoUrl,
+          isLocalAsset: logoConfig.fallbackLogoUrl.startsWith('/'),
+          isSupabaseUrl: logoConfig.fallbackLogoUrl.includes('supabase')
+        }
       });
 
       // Test 4: Asset Management
@@ -61,27 +77,63 @@ export const LogoTestingPanel: React.FC = () => {
       results.push({
         name: 'Asset Management',
         status: logoAssets.length > 0 ? 'success' : 'warning',
-        message: `Found ${logoAssets.length} logo assets`,
-        details: { assets: logoAssets }
+        message: `Found ${logoAssets.length} logo assets in local cache`,
+        details: { assets: logoAssets.map(asset => ({
+          id: asset.id,
+          name: asset.name,
+          url: asset.url
+        })) }
       });
 
-      // Test 5: URL Consistency
-      const hasSupabaseUrl = logoConfig.activeLogoUrl.includes('supabase');
-      const hasLocalUrl = logoConfig.activeLogoUrl.startsWith('/');
+      // Test 5: URL Configuration Analysis
+      const activeUrl = logoConfig.activeLogoUrl;
+      const hasSupabaseUrl = activeUrl.includes('supabase');
+      const hasLocalUrl = activeUrl.startsWith('/');
+      const isDefaultFallback = activeUrl === '/lovable-uploads/235bdb67-21d3-44ed-968a-518226eef780.png';
+      
+      let configStatus: 'success' | 'warning' | 'error' = 'error';
+      let configMessage = 'Invalid URL format';
+      
+      if (isDefaultFallback) {
+        configStatus = 'success';
+        configMessage = 'Using default Figmant logo (local asset)';
+      } else if (hasSupabaseUrl) {
+        configStatus = 'success';
+        configMessage = 'Using Supabase storage URL (recommended)';
+      } else if (hasLocalUrl) {
+        configStatus = 'warning';
+        configMessage = 'Using local URL (may not persist across deployments)';
+      }
+      
       results.push({
         name: 'URL Configuration',
-        status: hasSupabaseUrl ? 'success' : hasLocalUrl ? 'warning' : 'error',
-        message: hasSupabaseUrl 
-          ? 'Using Supabase storage URL' 
-          : hasLocalUrl 
-            ? 'Using local URL (may not persist)' 
-            : 'Invalid URL format',
+        status: configStatus,
+        message: configMessage,
         details: { 
-          activeUrl: logoConfig.activeLogoUrl,
+          activeUrl,
           isSupabase: hasSupabaseUrl,
-          isLocal: hasLocalUrl
+          isLocal: hasLocalUrl,
+          isDefault: isDefaultFallback,
+          fallbackUrl: logoConfig.fallbackLogoUrl
         }
       });
+
+      // Test 6: Configuration Consistency
+      const hasPublicConfig = logoConfig.activeLogoUrl !== '/lovable-uploads/235bdb67-21d3-44ed-968a-518226eef780.png';
+      results.push({
+        name: 'Configuration Status',
+        status: hasPublicConfig ? 'success' : 'warning',
+        message: hasPublicConfig 
+          ? 'Custom logo configuration is active' 
+          : 'Using default configuration (no custom logo set)',
+        details: {
+          hasCustomConfig: hasPublicConfig,
+          activeLogoUrl: logoConfig.activeLogoUrl,
+          fallbackLogoUrl: logoConfig.fallbackLogoUrl
+        }
+      });
+
+      console.log('=== LOGO DIAGNOSTICS COMPLETE ===');
 
     } catch (error) {
       console.error('Diagnostics error:', error);
@@ -124,7 +176,7 @@ export const LogoTestingPanel: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TestTube className="h-5 w-5" />
-          Logo Diagnostics
+          Enhanced Logo Diagnostics
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -133,7 +185,7 @@ export const LogoTestingPanel: React.FC = () => {
           disabled={isRunning}
           className="w-full"
         >
-          {isRunning ? 'Running Diagnostics...' : 'Run Diagnostics'}
+          {isRunning ? 'Running Enhanced Diagnostics...' : 'Run Enhanced Diagnostics'}
         </Button>
 
         {testResults.length > 0 && (
@@ -149,7 +201,7 @@ export const LogoTestingPanel: React.FC = () => {
                     {result.details && (
                       <details className="mt-2">
                         <summary className="text-xs cursor-pointer text-blue-600">View Details</summary>
-                        <pre className="text-xs mt-1 p-2 bg-muted rounded overflow-auto">
+                        <pre className="text-xs mt-1 p-2 bg-muted rounded overflow-auto max-h-32">
                           {JSON.stringify(result.details, null, 2)}
                         </pre>
                       </details>
@@ -162,9 +214,12 @@ export const LogoTestingPanel: React.FC = () => {
           </div>
         )}
 
-        <div className="text-xs text-muted-foreground space-y-1">
+        <div className="text-xs text-muted-foreground space-y-1 p-3 bg-muted rounded-lg">
           <div><strong>Current Active Logo:</strong> {logoConfig.activeLogoUrl}</div>
           <div><strong>Fallback Logo:</strong> {logoConfig.fallbackLogoUrl}</div>
+          <div className="text-xs text-blue-600 mt-2">
+            💡 Tip: If storage tests fail, you may need to run the storage configuration migration.
+          </div>
         </div>
       </CardContent>
     </Card>
