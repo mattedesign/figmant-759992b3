@@ -1,11 +1,14 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Lightbulb, TrendingUp, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Lightbulb, TrendingUp, AlertTriangle, CheckCircle, Clock, RefreshCw } from 'lucide-react';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { useDesignBatchAnalyses } from '@/hooks/useDesignBatchAnalyses';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Insight {
   id: string;
@@ -19,16 +22,78 @@ interface Insight {
 }
 
 export const InsightsPage = () => {
-  const { data: individualAnalyses = [] } = useDesignAnalyses();
-  const { data: batchAnalyses = [] } = useDesignBatchAnalyses();
+  const { data: individualAnalyses = [], refetch: refetchAnalyses } = useDesignAnalyses();
+  const { data: batchAnalyses = [], refetch: refetchBatch } = useDesignBatchAnalyses();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Set up real-time subscriptions for new insights
+  useEffect(() => {
+    console.log('Setting up real-time subscriptions for insights...');
+    
+    const insightsChannel = supabase
+      .channel('insights-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'design_analysis'
+        },
+        (payload) => {
+          console.log('Real-time: New analysis for insights:', payload);
+          // Refresh data to generate new insights
+          refetchAnalyses();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'design_batch_analysis'
+        },
+        (payload) => {
+          console.log('Real-time: New batch analysis for insights:', payload);
+          refetchBatch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('Cleaning up insights real-time subscriptions...');
+      supabase.removeChannel(insightsChannel);
+    };
+  }, [refetchAnalyses, refetchBatch]);
 
   // Generate insights from analysis data
   const insights = useMemo(() => {
+    console.log('Generating insights from data:', {
+      individualAnalysesCount: individualAnalyses.length,
+      batchAnalysesCount: batchAnalyses.length
+    });
+
     const generatedInsights: Insight[] = [];
 
     // Analyze individual analyses for patterns
     if (individualAnalyses.length > 0) {
       const avgConfidence = individualAnalyses.reduce((sum, analysis) => sum + (analysis.confidence_score || 0), 0) / individualAnalyses.length;
+      
+      // Count chat analyses specifically
+      const chatAnalyses = individualAnalyses.filter(analysis => analysis.analysis_type === 'chat_analysis');
+      
+      if (chatAnalyses.length > 0) {
+        generatedInsights.push({
+          id: 'chat-analysis-activity',
+          title: 'Active Chat Analysis Usage',
+          description: `You've completed ${chatAnalyses.length} chat analysis session${chatAnalyses.length !== 1 ? 's' : ''}, showing strong engagement with AI-powered insights.`,
+          type: 'success',
+          priority: 'medium',
+          confidence: 0.95,
+          createdAt: new Date().toISOString(),
+          source: 'Chat Analysis'
+        });
+      }
       
       if (avgConfidence > 0.8) {
         generatedInsights.push({
@@ -99,6 +164,17 @@ export const InsightsPage = () => {
     });
   }, [individualAnalyses, batchAnalyses]);
 
+  const handleRefreshInsights = () => {
+    console.log('Manually refreshing insights...');
+    refetchAnalyses();
+    refetchBatch();
+    
+    toast({
+      title: "Insights Refreshed",
+      description: "Insights have been updated based on the latest analysis data.",
+    });
+  };
+
   const getInsightIcon = (type: string) => {
     switch (type) {
       case 'improvement':
@@ -132,10 +208,16 @@ export const InsightsPage = () => {
             AI-powered insights and recommendations based on your design analysis patterns
           </p>
         </div>
-        <Button variant="outline">
-          <Clock className="h-4 w-4 mr-2" />
-          View History
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleRefreshInsights}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh Insights
+          </Button>
+          <Button variant="outline">
+            <Clock className="h-4 w-4 mr-2" />
+            View History
+          </Button>
+        </div>
       </div>
 
       {/* Insights Grid */}

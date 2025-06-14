@@ -1,5 +1,5 @@
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
@@ -212,6 +212,8 @@ const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAna
 };
 
 export const useChatAnalysis = () => {
+  const queryClient = useQueryClient();
+
   return {
     analyzeWithChat: useMutation({
       mutationFn: analyzeWithChatAPI,
@@ -223,6 +225,12 @@ export const useChatAnalysis = () => {
           analysisLength: data.analysis.length,
           uploadIds: data.uploadIds?.length || 0
         });
+        
+        // CRITICAL: Invalidate all analysis-related queries to refresh the UI
+        console.log('Invalidating analysis queries after successful chat analysis...');
+        queryClient.invalidateQueries({ queryKey: ['design-analyses'] });
+        queryClient.invalidateQueries({ queryKey: ['design-uploads'] });
+        queryClient.invalidateQueries({ queryKey: ['chat-analysis-history'] });
       }
     })
   };

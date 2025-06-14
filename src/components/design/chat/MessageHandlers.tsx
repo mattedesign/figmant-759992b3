@@ -170,6 +170,12 @@ export const useMessageHandlers = () => {
     setMessage('');
     setAttachments([]);
 
+    // Show processing toast
+    toast({
+      title: "Analysis Starting",
+      description: "Your analysis request is being processed...",
+    });
+
     try {
       console.log('Starting chat analysis with persistence...');
       const result = await analyzeWithChat.mutateAsync({
@@ -215,7 +221,7 @@ export const useMessageHandlers = () => {
       
       toast({
         title: "Analysis Complete & Saved",
-        description: "Your analysis has been completed and saved to your history.",
+        description: "Your analysis has been completed and saved. It will appear in the 'All Analysis' section shortly.",
       });
 
     } catch (error) {
