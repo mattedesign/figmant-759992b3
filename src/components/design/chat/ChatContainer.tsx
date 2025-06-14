@@ -94,6 +94,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   loadingState,
   getStageMessage
 }) => {
+  // Calculate if we have content for MessageInput
+  const hasContent = message.trim().length > 0 || attachments.length > 0;
+
   return (
     <div className="lg:col-span-2 space-y-4">
       <Card className="h-full flex flex-col">
@@ -166,11 +169,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
           {/* URL Input */}
           {showUrlInput && (
             <URLInput
+              showUrlInput={showUrlInput}
               urlInput={urlInput}
-              onChange={onUrlInputChange}
-              onAdd={onAddUrl}
+              onUrlInputChange={onUrlInputChange}
+              onAddUrl={onAddUrl}
               onCancel={onCancelUrl}
-              disabled={isLoading}
             />
           )}
 
@@ -182,10 +185,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               onSendMessage={onSendMessage}
               onToggleUrlInput={onToggleUrlInput}
               isLoading={isLoading}
-              storageStatus={storageStatus}
-              getRootProps={getRootProps}
-              getInputProps={getInputProps}
-              isDragActive={isDragActive}
+              hasContent={hasContent}
+              canSend={canSendMessage}
+              loadingStage={getStageMessage(loadingState.stage)}
             />
           </div>
         </CardContent>
@@ -214,6 +216,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       {/* Loading Overlay */}
       {isLoading && (
         <LoadingOverlay 
+          isVisible={isLoading}
           stage={loadingState.stage}
         />
       )}
