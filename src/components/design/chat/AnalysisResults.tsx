@@ -32,7 +32,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
       {hasImpactSummary && (
         <EnhancedImpactSummary 
           impactSummary={latestAnalysis.impact_summary}
-          uploadId={uploadIds[0]}
+          winnerUploadId={uploadIds[0]}
         />
       )}
 

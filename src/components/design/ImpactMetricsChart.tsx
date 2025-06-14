@@ -149,7 +149,6 @@ export const ImpactMetricsChart: React.FC<ImpactMetricsChartProps> = ({ impactSu
                 <Tooltip content={<CustomTooltip />} />
                 <Bar 
                   dataKey="value" 
-                  fill="#8884d8"
                   radius={[4, 4, 0, 0]}
                   strokeWidth={1}
                   stroke="#6366f1"
