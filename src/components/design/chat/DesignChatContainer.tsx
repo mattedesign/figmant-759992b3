@@ -3,7 +3,7 @@ import React from 'react';
 import { useDropzone } from 'react-dropzone';
 import { ChatContainer } from './ChatContainer';
 import { ChatSidebar } from './ChatSidebar';
-import { StorageVerificationManager } from './StorageVerificationManager';
+import { RoleAwareStorageManager } from './RoleAwareStorageManager';
 import { useChatInterfaceState } from './hooks/useChatInterfaceState';
 import { useAttachmentHandlers } from './hooks/useAttachmentHandlers';
 import { useChatMessageHandlers } from './hooks/useChatMessageHandlers';
@@ -119,7 +119,7 @@ export const DesignChatContainer = () => {
 
   return (
     <>
-      <StorageVerificationManager
+      <RoleAwareStorageManager
         setStorageStatus={setStorageStatus}
         setStorageErrorDetails={setStorageErrorDetails}
       />
