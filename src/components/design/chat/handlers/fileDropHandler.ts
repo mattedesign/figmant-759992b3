@@ -25,6 +25,9 @@ export const createFileDropHandler = (
     isImage: boolean,
     retryCount: number = 0
   ): Promise<void> => {
+    console.log(`=== PROCESS FILE WITH RETRY (${retryCount + 1}/${MAX_RETRY_ATTEMPTS + 1}) ===`);
+    console.log('File:', file.name, 'Storage status:', storageStatus);
+
     try {
       if (isImage) {
         console.log(`Processing image file (attempt ${retryCount + 1}):`, file.name);
@@ -69,19 +72,39 @@ export const createFileDropHandler = (
 
           clearTimeout(timeoutId);
           
-          // Upload the file
-          updateAttachmentStatus(attachments, setAttachments, attachment.id, 'uploading');
-          const uploadPath = await uploadFileToStorage(fileToUpload);
-          updateAttachmentStatus(attachments, setAttachments, attachment.id, 'uploaded', undefined, uploadPath, processingInfo);
-          
-          removeAttachmentFromPending(setPendingImageProcessing, attachment.id);
-          
-          toast({
-            title: "Image Ready",
-            description: processingInfo 
-              ? `${file.name} processed and uploaded successfully.`
-              : `${file.name} uploaded successfully.`,
-          });
+          // Upload the file - wait for storage to be ready if needed
+          if (storageStatus === 'checking') {
+            console.log('Storage still checking, waiting before upload...');
+            updateAttachmentStatus(attachments, setAttachments, attachment.id, 'pending', 'Waiting for storage...');
+            
+            // Wait and retry if storage is still checking
+            setTimeout(() => {
+              if (storageStatus === 'ready') {
+                processFileWithRetry(file, attachment, attachments, setAttachments, isImage, retryCount);
+              } else {
+                console.log('Storage not ready after wait, proceeding anyway');
+                continueUpload();
+              }
+            }, 2000);
+            return;
+          }
+
+          const continueUpload = async () => {
+            updateAttachmentStatus(attachments, setAttachments, attachment.id, 'uploading');
+            const uploadPath = await uploadFileToStorage(fileToUpload);
+            updateAttachmentStatus(attachments, setAttachments, attachment.id, 'uploaded', undefined, uploadPath, processingInfo);
+            
+            removeAttachmentFromPending(setPendingImageProcessing, attachment.id);
+            
+            toast({
+              title: "Image Ready",
+              description: processingInfo 
+                ? `${file.name} processed and uploaded successfully.`
+                : `${file.name} uploaded successfully.`,
+            });
+          };
+
+          await continueUpload();
 
         } catch (processingError) {
           clearTimeout(timeoutId);
@@ -90,6 +113,18 @@ export const createFileDropHandler = (
       } else {
         // Non-image file processing
         console.log(`Processing non-image file (attempt ${retryCount + 1}):`, file.name);
+        
+        // Wait for storage to be ready for non-image files too
+        if (storageStatus === 'checking') {
+          console.log('Storage checking, queueing non-image file...');
+          updateAttachmentStatus(attachments, setAttachments, attachment.id, 'pending', 'Waiting for storage...');
+          
+          setTimeout(() => {
+            processFileWithRetry(file, attachment, attachments, setAttachments, isImage, retryCount);
+          }, 2000);
+          return;
+        }
+
         updateAttachmentStatus(attachments, setAttachments, attachment.id, 'uploading');
         const uploadPath = await uploadFileToStorage(file);
         updateAttachmentStatus(attachments, setAttachments, attachment.id, 'uploaded', undefined, uploadPath);
@@ -137,14 +172,13 @@ export const createFileDropHandler = (
     console.log('Storage status:', storageStatus);
     console.log('Files received:', acceptedFiles.map(f => ({ name: f.name, size: f.size, type: f.type })));
 
-    if (storageStatus !== 'ready') {
-      console.log('Storage not ready, aborting file drop');
+    // Allow files to be queued even if storage is not ready
+    if (storageStatus === 'error') {
+      console.log('Storage in error state, showing warning but allowing queue');
       toast({
-        variant: "destructive",
-        title: "Storage Not Ready",
-        description: "File storage is not properly configured. Please wait or contact support.",
+        title: "Storage Issue",
+        description: "Files will be queued and processed when storage becomes available.",
       });
-      return;
     }
 
     const newAttachments: ChatAttachment[] = [];
@@ -160,7 +194,7 @@ export const createFileDropHandler = (
         type: 'file',
         name: file.name,
         file,
-        status: 'pending'
+        status: storageStatus === 'ready' ? 'pending' : 'queued'
       };
 
       newAttachments.push(attachment);

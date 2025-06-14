@@ -3,7 +3,7 @@ import React from 'react';
 import { useDropzone } from 'react-dropzone';
 import { ChatContainer } from './ChatContainer';
 import { ChatSidebar } from './ChatSidebar';
-import { RoleAwareStorageManager } from './RoleAwareStorageManager';
+import { ImprovedRoleAwareStorageManager } from './ImprovedRoleAwareStorageManager';
 import { useChatInterfaceState } from './hooks/useChatInterfaceState';
 import { useAttachmentHandlers } from './hooks/useAttachmentHandlers';
 import { useChatMessageHandlers } from './hooks/useChatMessageHandlers';
@@ -33,6 +33,11 @@ export const DesignChatContainer = () => {
     showProcessingMonitor,
     setShowProcessingMonitor
   } = useChatInterfaceState();
+
+  console.log('=== DESIGN CHAT CONTAINER DEBUG ===');
+  console.log('Storage status:', storageStatus);
+  console.log('Storage error details:', storageErrorDetails);
+  console.log('Attachments count:', attachments.length);
 
   const { 
     jobs, 
@@ -72,13 +77,23 @@ export const DesignChatContainer = () => {
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: (acceptedFiles) => handleFileDrop(acceptedFiles, attachments, setAttachments),
+    onDrop: (acceptedFiles) => {
+      console.log('=== DROPZONE FILE DROP ===');
+      console.log('Files dropped:', acceptedFiles.length);
+      console.log('Current storage status:', storageStatus);
+      
+      if (storageStatus !== 'ready') {
+        console.warn('Dropzone: Storage not ready, files will be queued');
+      }
+      
+      handleFileDrop(acceptedFiles, attachments, setAttachments);
+    },
     accept: {
       'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'],
       'application/pdf': ['.pdf']
     },
     maxSize: 50 * 1024 * 1024, // 50MB
-    disabled: storageStatus !== 'ready' || loadingState.isLoading
+    disabled: loadingState.isLoading
   });
 
   const handleSuggestedPrompt = (prompt: string) => {
@@ -100,6 +115,11 @@ export const DesignChatContainer = () => {
   };
 
   const handleSendMessageWrapper = () => {
+    console.log('=== SEND MESSAGE WRAPPER ===');
+    console.log('Message length:', message.length);
+    console.log('Attachments count:', attachments.length);
+    console.log('Storage status:', storageStatus);
+    
     onSendMessage(message, attachments);
   };
 
@@ -110,16 +130,24 @@ export const DesignChatContainer = () => {
   };
 
   const onImageProcessed = (attachmentId: string, processedFile: File, processingInfo: any) => {
+    console.log('=== IMAGE PROCESSED CALLBACK ===');
+    console.log('Attachment ID:', attachmentId);
+    console.log('Processed file size:', processedFile.size);
+    
     handleImageProcessed(attachments, setAttachments, attachmentId, processedFile, processingInfo);
   };
 
   const onImageProcessingError = (attachmentId: string, error: string) => {
+    console.log('=== IMAGE PROCESSING ERROR CALLBACK ===');
+    console.log('Attachment ID:', attachmentId);
+    console.log('Error:', error);
+    
     handleImageProcessingError(attachments, setAttachments, attachmentId, error);
   };
 
   return (
     <>
-      <RoleAwareStorageManager
+      <ImprovedRoleAwareStorageManager
         setStorageStatus={setStorageStatus}
         setStorageErrorDetails={setStorageErrorDetails}
       />
