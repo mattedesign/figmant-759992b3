@@ -1,4 +1,4 @@
-import { BarChart3, Users, CreditCard, Bot, Settings, Bell, MessageSquare, Target, History, FileText } from 'lucide-react';
+import { BarChart3, Users, CreditCard, Bot, Settings, Bell, MessageSquare, Target, History, FileText, Lightbulb, Crown, Plug } from 'lucide-react';
 
 export const sectionConfig = {
   workspace: {
@@ -6,6 +6,10 @@ export const sectionConfig = {
     items: [
       { id: 'design', label: 'AI Chat Analysis', icon: MessageSquare },
       { id: 'all-analysis', label: 'All Analysis', icon: FileText },
+      { id: 'insights', label: 'Insights', icon: Lightbulb },
+      { id: 'prompts', label: 'Prompts', icon: MessageSquare },
+      { id: 'premium-analysis', label: 'Premium Analysis', icon: Crown },
+      { id: 'integrations', label: 'Integrations', icon: Plug },
       // Hidden navigation items - keeping functionality but removing from UI
       // { id: 'batch', label: 'Batch Analysis', icon: BarChart3 },
       // { id: 'history', label: 'Analysis History', icon: Target },

@@ -1,3 +1,4 @@
+
 import { lazy, Suspense } from 'react';
 import { LoadingSpinner } from './LoadingSpinner';
 
@@ -7,6 +8,18 @@ const DesignChatInterface = lazy(() => import('@/components/design/DesignChatInt
 })));
 const AllAnalysisPage = lazy(() => import('@/components/design/AllAnalysisPage').then(module => ({
   default: module.AllAnalysisPage
+})));
+const InsightsPage = lazy(() => import('@/components/design/InsightsPage').then(module => ({
+  default: module.InsightsPage
+})));
+const PromptsPage = lazy(() => import('@/components/design/PromptsPage').then(module => ({
+  default: module.PromptsPage
+})));
+const PremiumAnalysisPage = lazy(() => import('@/components/design/PremiumAnalysisPage').then(module => ({
+  default: module.PremiumAnalysisPage
+})));
+const IntegrationsPage = lazy(() => import('@/components/design/IntegrationsPage').then(module => ({
+  default: module.IntegrationsPage
 })));
 const BatchAnalysisDashboard = lazy(() => import('@/components/design/BatchAnalysisDashboard').then(module => ({
   default: module.BatchAnalysisDashboard
@@ -57,6 +70,30 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
         return (
           <Suspense fallback={<LoadingSpinner />}>
             <AllAnalysisPage />
+          </Suspense>
+        );
+      case 'insights':
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <InsightsPage />
+          </Suspense>
+        );
+      case 'prompts':
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <PromptsPage />
+          </Suspense>
+        );
+      case 'premium-analysis':
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <PremiumAnalysisPage />
+          </Suspense>
+        );
+      case 'integrations':
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <IntegrationsPage />
           </Suspense>
         );
       // Hidden pages - keep functional but not shown in navigation

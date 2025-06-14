@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Navigation } from '@/components/layout/Navigation';
 import { OwnerDashboardErrorBoundary } from '@/components/owner/OwnerDashboardErrorBoundary';
@@ -11,6 +10,10 @@ import { useSearchParams } from 'react-router-dom';
 const tabToSectionMap: Record<string, string> = {
   design: 'workspace',
   'all-analysis': 'workspace',
+  insights: 'workspace',
+  prompts: 'workspace',
+  'premium-analysis': 'workspace',
+  integrations: 'workspace',
   batch: 'workspace', // Hidden but functional
   history: 'workspace', // Hidden but functional
   legacy: 'workspace', // Hidden but functional
@@ -31,7 +34,7 @@ const OwnerDashboard = () => {
   const [activeSection, setActiveSection] = useState(tabToSectionMap[tabFromUrl] || 'workspace');
 
   // Valid tab options - including hidden tabs for direct access
-  const validTabs = ['design', 'all-analysis', 'batch', 'history', 'legacy', 'users', 'plans', 'claude', 'settings'];
+  const validTabs = ['design', 'all-analysis', 'insights', 'prompts', 'premium-analysis', 'integrations', 'batch', 'history', 'legacy', 'users', 'plans', 'claude', 'settings'];
   console.log('Current tab:', activeTab, 'Current section:', activeSection);
 
   // Update URL when tab changes
