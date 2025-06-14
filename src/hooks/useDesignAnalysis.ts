@@ -9,3 +9,4 @@ export { useUploadDesign } from './useUploadDesign';
 export { useAnalyzeDesign, useRetryAnalysis } from './useAnalyzeDesign';
 export { useBatchUploadDesign } from './useBatchUploadDesign';
 export { triggerBatchAnalysis } from './designAnalysisHelpers';
+export { generateImpactSummary, type ImpactSummary } from './batch-upload/impactSummaryGenerator';

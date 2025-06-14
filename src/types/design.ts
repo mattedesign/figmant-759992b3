@@ -53,6 +53,32 @@ export interface DesignContextFile {
   created_at: string;
 }
 
+export interface ImpactSummary {
+  business_impact: {
+    conversion_potential: number;
+    user_engagement_score: number;
+    brand_alignment: number;
+    competitive_advantage: string[];
+  };
+  user_experience: {
+    usability_score: number;
+    accessibility_rating: number;
+    pain_points: string[];
+    positive_aspects: string[];
+  };
+  recommendations: {
+    priority: 'high' | 'medium' | 'low';
+    category: string;
+    description: string;
+    expected_impact: string;
+  }[];
+  key_metrics: {
+    overall_score: number;
+    improvement_areas: string[];
+    strengths: string[];
+  };
+}
+
 export interface DesignAnalysis {
   id: string;
   design_upload_id: string;
@@ -63,6 +89,7 @@ export interface DesignAnalysis {
   confidence_score: number;
   suggestions?: any;
   improvement_areas?: string[];
+  impact_summary?: ImpactSummary;
   created_at: string;
 }
 
@@ -82,6 +109,7 @@ export interface DesignBatchAnalysis {
   parent_analysis_id?: string;
   modification_summary?: string;
   version_number?: number;
+  impact_summary?: ImpactSummary;
   created_at: string;
 }
 

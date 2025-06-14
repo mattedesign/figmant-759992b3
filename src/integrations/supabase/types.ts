@@ -362,6 +362,7 @@ export type Database = {
           created_at: string
           design_upload_id: string
           id: string
+          impact_summary: Json | null
           improvement_areas: string[] | null
           prompt_used: string
           suggestions: Json | null
@@ -374,6 +375,7 @@ export type Database = {
           created_at?: string
           design_upload_id: string
           id?: string
+          impact_summary?: Json | null
           improvement_areas?: string[] | null
           prompt_used: string
           suggestions?: Json | null
@@ -386,6 +388,7 @@ export type Database = {
           created_at?: string
           design_upload_id?: string
           id?: string
+          impact_summary?: Json | null
           improvement_areas?: string[] | null
           prompt_used?: string
           suggestions?: Json | null
@@ -418,6 +421,7 @@ export type Database = {
           context_summary: string | null
           created_at: string
           id: string
+          impact_summary: Json | null
           key_metrics: Json | null
           modification_summary: string | null
           parent_analysis_id: string | null
@@ -436,6 +440,7 @@ export type Database = {
           context_summary?: string | null
           created_at?: string
           id?: string
+          impact_summary?: Json | null
           key_metrics?: Json | null
           modification_summary?: string | null
           parent_analysis_id?: string | null
@@ -454,6 +459,7 @@ export type Database = {
           context_summary?: string | null
           created_at?: string
           id?: string
+          impact_summary?: Json | null
           key_metrics?: Json | null
           modification_summary?: string | null
           parent_analysis_id?: string | null

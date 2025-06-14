@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { DesignUseCase, AnalysisPreferences } from '@/types/design';
+import { generateImpactSummary } from './batch-upload/impactSummaryGenerator';
 
 export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) => {
   console.log('Triggering analysis for upload:', uploadId);
@@ -140,9 +141,18 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
       throw new Error(`Claude AI analysis failed: ${claudeError.message}`);
     }
 
-    console.log('Claude analysis completed, saving results...');
+    console.log('Claude analysis completed, generating impact summary...');
 
-    // Save analysis results
+    // Generate impact summary
+    const impactSummary = await generateImpactSummary(
+      analysisResponse.analysis || analysisResponse.response,
+      useCase.name,
+      user.id
+    );
+
+    console.log('Impact summary generated, saving results...');
+
+    // Save analysis results with impact summary
     const { data: analysis, error: saveError } = await supabase
       .from('design_analysis')
       .insert({
@@ -150,7 +160,8 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
         user_id: user.id,
         analysis_type: useCase.name,
         prompt_used: enhancedPrompt,
-        analysis_results: { response: analysisResponse.response },
+        analysis_results: { response: analysisResponse.analysis || analysisResponse.response },
+        impact_summary: impactSummary,
         confidence_score: 0.8
       })
       .select()
@@ -321,6 +332,15 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
       throw new Error(`Batch analysis failed: ${claudeError.message}`);
     }
 
+    console.log('Batch analysis completed, generating impact summary...');
+
+    // Generate impact summary for batch analysis
+    const batchImpactSummary = await generateImpactSummary(
+      batchAnalysisResponse.analysis || batchAnalysisResponse.response,
+      useCase.name,
+      user.id
+    );
+
     // Prepare context summary
     const contextSummary = contextFiles && contextFiles.length > 0 ? 
       `Analysis enhanced with ${contextFiles.length} context files: ${contextFiles.map(f => f.file_name).join(', ')}` : 
@@ -330,7 +350,7 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
     const firstUploadPreferences = uploads[0]?.analysis_preferences ? 
       uploads[0].analysis_preferences as unknown as AnalysisPreferences : null;
 
-    // Save batch analysis results with enhanced metadata
+    // Save batch analysis results with enhanced metadata and impact summary
     const { data: batchAnalysis, error: saveError } = await supabase
       .from('design_batch_analysis')
       .insert({
@@ -338,7 +358,8 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
         user_id: user.id,
         analysis_type: useCase.name,
         prompt_used: batchPrompt,
-        analysis_results: { response: batchAnalysisResponse.response },
+        analysis_results: { response: batchAnalysisResponse.analysis || batchAnalysisResponse.response },
+        impact_summary: batchImpactSummary,
         context_summary: contextSummary,
         analysis_settings: {
           uploads_count: uploads.length,

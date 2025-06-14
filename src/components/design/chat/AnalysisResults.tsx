@@ -1,104 +1,133 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Eye, FileText, CheckCircle } from 'lucide-react';
-import { DesignUpload, DesignBatchAnalysis } from '@/types/design';
-import { useDesignUploads } from '@/hooks/useDesignUploads';
-import { useDesignBatchAnalyses } from '@/hooks/useDesignBatchAnalyses';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
+import { ImpactSummary } from '../ImpactSummary';
 
 interface AnalysisResultsProps {
-  onViewUpload?: (upload: DesignUpload) => void;
-  onViewBatchAnalysis?: (batch: DesignBatchAnalysis) => void;
+  lastAnalysisResult: any;
+  uploadIds?: string[];
 }
 
 export const AnalysisResults: React.FC<AnalysisResultsProps> = ({ 
-  onViewUpload, 
-  onViewBatchAnalysis 
+  lastAnalysisResult, 
+  uploadIds = [] 
 }) => {
-  const { data: uploads } = useDesignUploads();
-  const { data: batchAnalyses } = useDesignBatchAnalyses();
+  // Get the latest analysis for the first upload ID if available
+  const { data: analyses } = useDesignAnalyses(uploadIds[0]);
+  const latestAnalysis = analyses?.[0];
 
-  // Show recent uploads and batch analyses
-  const recentUploads = uploads?.slice(0, 3) || [];
-  const recentBatches = batchAnalyses?.slice(0, 3) || [];
+  if (!lastAnalysisResult) {
+    return null;
+  }
+
+  const hasImpactSummary = latestAnalysis?.impact_summary;
 
   return (
-    <Card className="border-l-4 border-l-primary">
-      <CardHeader className="pb-3">
-        <div className="flex items-center space-x-2">
-          <CheckCircle className="h-5 w-5 text-green-500" />
-          <CardTitle className="text-lg">Recent Analyses</CardTitle>
-        </div>
-        <CardDescription>
-          Your recent design analyses and uploads.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Recent Batch Analyses */}
-        {recentBatches.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium text-sm">Recent Batch Analyses:</h4>
-            {recentBatches.map((batch) => (
-              <div key={batch.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <div>
-                  <h4 className="font-medium">Batch Analysis</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {batch.analysis_type} • Created {new Date(batch.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-                {onViewBatchAnalysis && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => onViewBatchAnalysis(batch)}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Analysis
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+    <div className="space-y-6">
+      {/* Impact Summary Section */}
+      {hasImpactSummary && (
+        <ImpactSummary impactSummary={latestAnalysis.impact_summary} />
+      )}
 
-        {/* Recent Individual Uploads */}
-        {recentUploads.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium text-sm">Recent Individual Analyses:</h4>
-            {recentUploads.map((upload) => (
-              <div key={upload.id} className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                <div className="flex items-center space-x-2">
-                  <FileText className="h-4 w-4" />
-                  <span className="text-sm truncate">{upload.file_name}</span>
-                  <Badge variant="secondary" className="text-xs">
-                    {upload.use_case}
+      {/* Analysis Results */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-500" />
+            Analysis Complete
+          </CardTitle>
+          <CardDescription>
+            AI-powered design analysis results
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {hasImpactSummary ? (
+            <Tabs defaultValue="analysis" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="analysis">Analysis</TabsTrigger>
+                <TabsTrigger value="details">Details</TabsTrigger>
+                <TabsTrigger value="debug">Debug</TabsTrigger>
+              </TabsList>
+              <TabsContent value="analysis" className="space-y-4">
+                <div className="prose max-w-none">
+                  <div className="whitespace-pre-wrap text-sm leading-relaxed bg-muted/30 p-4 rounded-lg">
+                    {lastAnalysisResult.analysis || lastAnalysisResult.response || 'No analysis available'}
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="details" className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span className="text-sm">
+                      Response Time: {lastAnalysisResult.debugInfo?.responseTimeMs || 0}ms
+                    </span>
+                  </div>
+                  
+                  {lastAnalysisResult.debugInfo?.tokensUsed && (
+                    <div className="text-sm">
+                      <Badge variant="secondary">
+                        {lastAnalysisResult.debugInfo.tokensUsed} tokens used
+                      </Badge>
+                    </div>
+                  )}
+                  
+                  {lastAnalysisResult.debugInfo?.model && (
+                    <div className="text-sm">
+                      Model: <Badge variant="outline">{lastAnalysisResult.debugInfo.model}</Badge>
+                    </div>
+                  )}
+                  
+                  {uploadIds.length > 0 && (
+                    <div className="text-sm">
+                      <span className="font-medium">Upload IDs:</span>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {uploadIds.map((id) => (
+                          <Badge key={id} variant="outline" className="text-xs">
+                            {id.slice(-8)}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              <TabsContent value="debug" className="space-y-4">
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <pre className="text-xs overflow-auto">
+                    {JSON.stringify(lastAnalysisResult.debugInfo, null, 2)}
+                  </pre>
+                </div>
+              </TabsContent>
+            </Tabs>
+          ) : (
+            <div className="space-y-4">
+              <div className="prose max-w-none">
+                <div className="whitespace-pre-wrap text-sm leading-relaxed bg-muted/30 p-4 rounded-lg">
+                  {lastAnalysisResult.analysis || lastAnalysisResult.response || 'No analysis available'}
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span>Response Time: {lastAnalysisResult.debugInfo?.responseTimeMs || 0}ms</span>
+                </div>
+                
+                {lastAnalysisResult.debugInfo?.tokensUsed && (
+                  <Badge variant="secondary">
+                    {lastAnalysisResult.debugInfo.tokensUsed} tokens used
                   </Badge>
-                </div>
-                {onViewUpload && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => onViewUpload(upload)}
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                  </Button>
                 )}
               </div>
-            ))}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {recentUploads.length === 0 && recentBatches.length === 0 && (
-          <div className="p-3 bg-background border rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              No recent analyses found. Upload files or share URLs to get started with design analysis.
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
