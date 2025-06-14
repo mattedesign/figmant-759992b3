@@ -1,10 +1,12 @@
-
 import { lazy, Suspense } from 'react';
 import { LoadingSpinner } from './LoadingSpinner';
 
 // Lazy load content components
 const DesignChatInterface = lazy(() => import('@/components/design/DesignChatInterface').then(module => ({
   default: module.DesignChatInterface
+})));
+const AllAnalysisPage = lazy(() => import('@/components/design/AllAnalysisPage').then(module => ({
+  default: module.AllAnalysisPage
 })));
 const BatchAnalysisDashboard = lazy(() => import('@/components/design/BatchAnalysisDashboard').then(module => ({
   default: module.BatchAnalysisDashboard
@@ -51,6 +53,13 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
             </Suspense>
           </div>
         );
+      case 'all-analysis':
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AllAnalysisPage />
+          </Suspense>
+        );
+      // Hidden pages - keep functional but not shown in navigation
       case 'batch':
         return (
           <div className="p-6 space-y-6 h-full overflow-y-auto">

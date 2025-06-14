@@ -10,9 +10,10 @@ import { useSearchParams } from 'react-router-dom';
 // Map tabs to sections for the two-level navigation
 const tabToSectionMap: Record<string, string> = {
   design: 'workspace',
-  batch: 'workspace',
-  history: 'workspace',
-  legacy: 'workspace',
+  'all-analysis': 'workspace',
+  batch: 'workspace', // Hidden but functional
+  history: 'workspace', // Hidden but functional
+  legacy: 'workspace', // Hidden but functional
   users: 'users',
   plans: 'products',
   claude: 'apps',
@@ -29,8 +30,8 @@ const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState(tabFromUrl);
   const [activeSection, setActiveSection] = useState(tabToSectionMap[tabFromUrl] || 'workspace');
 
-  // Valid tab options
-  const validTabs = ['design', 'batch', 'history', 'legacy', 'users', 'plans', 'claude', 'settings'];
+  // Valid tab options - including hidden tabs for direct access
+  const validTabs = ['design', 'all-analysis', 'batch', 'history', 'legacy', 'users', 'plans', 'claude', 'settings'];
   console.log('Current tab:', activeTab, 'Current section:', activeSection);
 
   // Update URL when tab changes
@@ -48,13 +49,22 @@ const OwnerDashboard = () => {
     console.log('Changing section to:', newSection);
     setActiveSection(newSection);
     
-    // Set the first available tab for the section
+    // Set the first available tab for the section (prioritize visible tabs)
     const sectionTabs = Object.entries(tabToSectionMap)
       .filter(([_, section]) => section === newSection)
       .map(([tab, _]) => tab);
     
     if (sectionTabs.length > 0) {
-      const firstTab = sectionTabs[0];
+      // For workspace, prefer 'design' first, then 'all-analysis'
+      let firstTab = sectionTabs[0];
+      if (newSection === 'workspace') {
+        if (sectionTabs.includes('design')) {
+          firstTab = 'design';
+        } else if (sectionTabs.includes('all-analysis')) {
+          firstTab = 'all-analysis';
+        }
+      }
+      
       setActiveTab(firstTab);
       setSearchParams({
         tab: firstTab

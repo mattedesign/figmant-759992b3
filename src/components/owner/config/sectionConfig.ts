@@ -1,11 +1,11 @@
-
-import { BarChart3, Users, CreditCard, Bot, Settings, Bell, MessageSquare, Target, History } from 'lucide-react';
+import { BarChart3, Users, CreditCard, Bot, Settings, Bell, MessageSquare, Target, History, FileText } from 'lucide-react';
 
 export const sectionConfig = {
   workspace: {
     title: 'Design Analysis',
     items: [
       { id: 'design', label: 'AI Chat Analysis', icon: MessageSquare },
+      { id: 'all-analysis', label: 'All Analysis', icon: FileText },
       { id: 'batch', label: 'Batch Analysis', icon: BarChart3 },
       { id: 'history', label: 'Analysis History', icon: Target },
       { id: 'legacy', label: 'Legacy View', icon: History },
