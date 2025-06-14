@@ -182,11 +182,7 @@ export const SecondaryNavigation = ({ activeSection, activeTab, onTabChange }: S
 
       {/* Content Area */}
       <div className="flex-1 overflow-auto">
-        <div className="p-6">
-          <div className="space-y-6">
-            {renderTabContent(activeTab)}
-          </div>
-        </div>
+        {renderTabContent(activeTab)}
       </div>
     </div>
   );
