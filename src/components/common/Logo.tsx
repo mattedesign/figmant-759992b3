@@ -12,11 +12,11 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   const [currentImageUrl, setCurrentImageUrl] = useState<string>('');
   const { logoConfig, isLoading } = usePublicLogoConfig();
 
-  // Optimized size classes for horizontal logo
+  // Optimized size classes for the logo
   const sizeClasses = {
     sm: 'h-8 w-auto max-w-[120px]',
     md: 'h-10 w-auto max-w-[150px]', 
-    lg: 'h-14 w-auto max-w-[200px]'
+    lg: 'h-16 w-auto max-w-[200px]'
   };
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
       }
 
       // Both failed, show error state
-      console.error('Both active and fallback logos failed to load, using FIGMANT fallback');
+      console.error('Both active and fallback logos failed to load');
       setImageStatus('error');
     };
 
@@ -91,19 +91,10 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     });
   };
 
-  // Enhanced fallback with FIGMANT branding and colored dots
+  // Simple fallback with just the logo placeholder
   const FallbackLogo = () => (
-    <div className={`${sizeClasses[size]} ${className} flex items-center justify-center bg-gradient-to-r from-primary to-primary/80 rounded-lg px-3 py-1`}>
-      <div className="flex items-center space-x-1">
-        <span className="text-primary-foreground font-bold text-sm tracking-wide">
-          FIGMANT
-        </span>
-        <div className="flex space-x-1 ml-2">
-          <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-          <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-          <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
-        </div>
-      </div>
+    <div className={`${sizeClasses[size]} ${className} flex items-center justify-center bg-muted rounded-lg`}>
+      <span className="text-xs text-muted-foreground">Logo</span>
     </div>
   );
 
@@ -116,9 +107,9 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     );
   }
 
-  // Show enhanced fallback if image failed to load
+  // Show fallback if image failed to load
   if (imageStatus === 'error') {
-    console.log('Showing FIGMANT fallback logo due to load errors');
+    console.log('Showing fallback logo due to load errors');
     return <FallbackLogo />;
   }
 

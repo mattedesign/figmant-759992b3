@@ -20,12 +20,8 @@ export const AuthContainer: React.FC<AuthContainerProps> = ({
     <div className="w-full max-w-md space-y-8">
       {showLogo && (
         <div className="space-y-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center">
             <Logo size="md" />
-            <div>
-              <h1 className="auth-heading">UX Analytics AI</h1>
-              <p className="auth-subheading">{subtitle}</p>
-            </div>
           </div>
         </div>
       )}
