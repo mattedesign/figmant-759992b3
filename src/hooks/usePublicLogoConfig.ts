@@ -13,13 +13,13 @@ export const usePublicLogoConfig = () => {
   const loadPublicLogoConfig = async () => {
     try {
       setIsLoading(true);
-      console.log('Loading public logo configuration...');
+      console.log('usePublicLogoConfig: Loading public logo configuration...');
       
       // Call the public function that doesn't require authentication
       const { data, error } = await supabase.rpc('get_public_logo_config');
       
       if (error) {
-        console.error('Error loading public logo config:', error);
+        console.error('usePublicLogoConfig: Error loading public logo config:', error);
         return {
           activeLogoUrl: DEFAULT_FALLBACK_LOGO,
           fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
@@ -28,20 +28,24 @@ export const usePublicLogoConfig = () => {
 
       if (data && data.length > 0) {
         const config = data[0];
-        console.log('Loaded public logo config:', config);
-        return {
+        console.log('usePublicLogoConfig: Loaded public logo config:', config);
+        
+        const logoConfig = {
           activeLogoUrl: config.logo_url || DEFAULT_FALLBACK_LOGO,
           fallbackLogoUrl: config.fallback_logo_url || DEFAULT_FALLBACK_LOGO
         };
+        
+        console.log('usePublicLogoConfig: Final logo config:', logoConfig);
+        return logoConfig;
       } else {
-        console.log('No public logo configuration found, using defaults');
+        console.log('usePublicLogoConfig: No public logo configuration found, using defaults');
         return {
           activeLogoUrl: DEFAULT_FALLBACK_LOGO,
           fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
         };
       }
     } catch (error) {
-      console.error('Failed to load public logo configuration:', error);
+      console.error('usePublicLogoConfig: Failed to load public logo configuration:', error);
       return {
         activeLogoUrl: DEFAULT_FALLBACK_LOGO,
         fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
@@ -52,6 +56,7 @@ export const usePublicLogoConfig = () => {
   useEffect(() => {
     const loadConfig = async () => {
       const config = await loadPublicLogoConfig();
+      console.log('usePublicLogoConfig: Setting logo config:', config);
       setLogoConfig(config);
       setIsLoading(false);
     };
@@ -60,6 +65,7 @@ export const usePublicLogoConfig = () => {
   }, []);
 
   const reload = async () => {
+    console.log('usePublicLogoConfig: Manually reloading logo config');
     const config = await loadPublicLogoConfig();
     setLogoConfig(config);
   };

@@ -9,7 +9,7 @@ export const useLogoConfigOperations = () => {
 
   const loadLogoConfig = async (userId: string): Promise<LogoConfig> => {
     try {
-      console.log('Loading logo configuration from database...');
+      console.log('logoConfigOperations: Loading logo configuration from database for user:', userId);
       
       const { data, error } = await supabase
         .from('logo_configuration')
@@ -18,7 +18,7 @@ export const useLogoConfigOperations = () => {
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error loading logo config:', error);
+        console.error('logoConfigOperations: Error loading logo config:', error);
         return {
           activeLogoUrl: DEFAULT_FALLBACK_LOGO,
           fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
@@ -26,20 +26,22 @@ export const useLogoConfigOperations = () => {
       }
 
       if (data) {
-        console.log('Loaded logo config from database:', data);
-        return {
+        console.log('logoConfigOperations: Loaded logo config from database:', data);
+        const config = {
           activeLogoUrl: data.active_logo_url || DEFAULT_FALLBACK_LOGO,
           fallbackLogoUrl: data.fallback_logo_url || DEFAULT_FALLBACK_LOGO
         };
+        console.log('logoConfigOperations: Final processed config:', config);
+        return config;
       } else {
-        console.log('No logo configuration found, using defaults');
+        console.log('logoConfigOperations: No logo configuration found, using defaults');
         return {
           activeLogoUrl: DEFAULT_FALLBACK_LOGO,
           fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
         };
       }
     } catch (error) {
-      console.error('Failed to load logo configuration:', error);
+      console.error('logoConfigOperations: Failed to load logo configuration:', error);
       return {
         activeLogoUrl: DEFAULT_FALLBACK_LOGO,
         fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
@@ -48,13 +50,13 @@ export const useLogoConfigOperations = () => {
   };
 
   const updateActiveLogo = async (userId: string, newLogoUrl: string): Promise<boolean> => {
-    console.log('Attempting to update active logo to:', newLogoUrl);
+    console.log('logoConfigOperations: Attempting to update active logo to:', newLogoUrl, 'for user:', userId);
     
     // Test if the new logo URL is accessible
     const isAccessible = await testImageLoad(newLogoUrl);
     
     if (!isAccessible) {
-      console.error('New logo URL is not accessible:', newLogoUrl);
+      console.error('logoConfigOperations: New logo URL is not accessible:', newLogoUrl);
       toast({
         variant: "destructive",
         title: "Logo Update Failed",
@@ -77,7 +79,7 @@ export const useLogoConfigOperations = () => {
         });
 
       if (error) {
-        console.error('Error updating logo configuration in database:', error);
+        console.error('logoConfigOperations: Error updating logo configuration in database:', error);
         toast({
           variant: "destructive",
           title: "Logo Update Failed",
@@ -86,15 +88,34 @@ export const useLogoConfigOperations = () => {
         return false;
       }
 
+      console.log('logoConfigOperations: Successfully updated logo in database');
+      
+      // Also update the public logo configuration for global use
+      const { error: publicError } = await supabase
+        .from('admin_settings')
+        .upsert({
+          setting_key: 'logo_url',
+          setting_value: newLogoUrl,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'setting_key'
+        });
+
+      if (publicError) {
+        console.error('logoConfigOperations: Error updating public logo configuration:', publicError);
+      } else {
+        console.log('logoConfigOperations: Successfully updated public logo configuration');
+      }
+
       toast({
         title: "Logo Updated",
         description: "The active logo has been updated successfully.",
       });
       
-      console.log('Active logo updated successfully to:', newLogoUrl);
+      console.log('logoConfigOperations: Active logo updated successfully to:', newLogoUrl);
       return true;
     } catch (error) {
-      console.error('Failed to update logo configuration:', error);
+      console.error('logoConfigOperations: Failed to update logo configuration:', error);
       toast({
         variant: "destructive",
         title: "Logo Update Failed",
@@ -106,6 +127,8 @@ export const useLogoConfigOperations = () => {
 
   const resetToDefault = async (userId: string): Promise<boolean> => {
     try {
+      console.log('logoConfigOperations: Resetting logo to default for user:', userId);
+      
       const { error } = await supabase
         .from('logo_configuration')
         .upsert({
@@ -118,8 +141,23 @@ export const useLogoConfigOperations = () => {
         });
 
       if (error) {
-        console.error('Error resetting logo configuration:', error);
+        console.error('logoConfigOperations: Error resetting logo configuration:', error);
         return false;
+      }
+
+      // Also reset the public logo configuration
+      const { error: publicError } = await supabase
+        .from('admin_settings')
+        .upsert({
+          setting_key: 'logo_url',
+          setting_value: DEFAULT_FALLBACK_LOGO,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'setting_key'
+        });
+
+      if (publicError) {
+        console.error('logoConfigOperations: Error resetting public logo configuration:', publicError);
       }
 
       toast({
@@ -127,9 +165,10 @@ export const useLogoConfigOperations = () => {
         description: "Logo has been reset to default.",
       });
 
+      console.log('logoConfigOperations: Successfully reset logo to default');
       return true;
     } catch (error) {
-      console.error('Failed to reset logo configuration:', error);
+      console.error('logoConfigOperations: Failed to reset logo configuration:', error);
       return false;
     }
   };

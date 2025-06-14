@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePublicLogoConfig } from '@/hooks/usePublicLogoConfig';
+import { DEFAULT_FALLBACK_LOGO } from '@/hooks/logo/types';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -23,40 +24,38 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     if (isLoading) return;
     
     const loadImage = async () => {
-      console.log('Loading logo with config:', logoConfig);
+      console.log('Logo component: Loading image with config:', logoConfig);
       setImageStatus('loading');
       
-      // Try active logo first
-      if (logoConfig.activeLogoUrl) {
-        try {
-          console.log('Attempting to load active logo:', logoConfig.activeLogoUrl);
-          await testImageLoad(logoConfig.activeLogoUrl);
-          setCurrentImageUrl(logoConfig.activeLogoUrl);
-          setImageStatus('loaded');
-          console.log('Active logo loaded successfully');
-          return;
-        } catch (error) {
-          console.warn('Active logo failed to load:', error);
+      // Always try the default fallback first since it's a local asset
+      const logoToTest = logoConfig.activeLogoUrl || DEFAULT_FALLBACK_LOGO;
+      
+      console.log('Logo component: Testing logo URL:', logoToTest);
+      
+      try {
+        await testImageLoad(logoToTest);
+        setCurrentImageUrl(logoToTest);
+        setImageStatus('loaded');
+        console.log('Logo component: Successfully loaded logo:', logoToTest);
+      } catch (error) {
+        console.error('Logo component: Failed to load logo:', logoToTest, error);
+        
+        // If the configured logo fails, try the default fallback
+        if (logoToTest !== DEFAULT_FALLBACK_LOGO) {
+          console.log('Logo component: Trying default fallback:', DEFAULT_FALLBACK_LOGO);
+          try {
+            await testImageLoad(DEFAULT_FALLBACK_LOGO);
+            setCurrentImageUrl(DEFAULT_FALLBACK_LOGO);
+            setImageStatus('loaded');
+            console.log('Logo component: Successfully loaded fallback logo');
+          } catch (fallbackError) {
+            console.error('Logo component: Even fallback logo failed:', fallbackError);
+            setImageStatus('error');
+          }
+        } else {
+          setImageStatus('error');
         }
       }
-
-      // Try fallback logo
-      if (logoConfig.fallbackLogoUrl && logoConfig.fallbackLogoUrl !== logoConfig.activeLogoUrl) {
-        try {
-          console.log('Attempting to load fallback logo:', logoConfig.fallbackLogoUrl);
-          await testImageLoad(logoConfig.fallbackLogoUrl);
-          setCurrentImageUrl(logoConfig.fallbackLogoUrl);
-          setImageStatus('loaded');
-          console.log('Fallback logo loaded successfully');
-          return;
-        } catch (error) {
-          console.warn('Fallback logo failed to load:', error);
-        }
-      }
-
-      // Both failed, show error state
-      console.error('Both active and fallback logos failed to load');
-      setImageStatus('error');
     };
 
     loadImage();
@@ -66,19 +65,19 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       const timeout = setTimeout(() => {
-        console.error('Image load timeout for:', url);
+        console.error('Logo component: Image load timeout for:', url);
         reject(new Error('Image load timeout'));
       }, 5000);
 
       img.onload = () => {
         clearTimeout(timeout);
-        console.log('Image loaded successfully:', url);
+        console.log('Logo component: Image loaded successfully:', url);
         resolve();
       };
       
       img.onerror = (error) => {
         clearTimeout(timeout);
-        console.error('Image load failed for:', url, error);
+        console.error('Logo component: Image load failed for:', url, error);
         reject(new Error('Image load failed'));
       };
       
@@ -91,10 +90,19 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     });
   };
 
-  // Simple fallback with just the logo placeholder
+  // Fallback component with the Figmant branding
   const FallbackLogo = () => (
-    <div className={`${sizeClasses[size]} ${className} flex items-center justify-center bg-muted rounded-lg`}>
-      <span className="text-xs text-muted-foreground">Logo</span>
+    <div className={`${sizeClasses[size]} ${className} flex items-center justify-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg px-3 py-1`}>
+      <div className="flex items-center space-x-1">
+        <span className="text-white font-bold text-sm tracking-wide">
+          FIGMANT
+        </span>
+        <div className="flex space-x-1 ml-2">
+          <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+          <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+          <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+        </div>
+      </div>
     </div>
   );
 
@@ -109,7 +117,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
 
   // Show fallback if image failed to load
   if (imageStatus === 'error') {
-    console.log('Showing fallback logo due to load errors');
+    console.log('Logo component: Showing Figmant fallback due to load errors');
     return <FallbackLogo />;
   }
 
@@ -120,11 +128,11 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
       alt="Logo"
       className={`${sizeClasses[size]} ${className} object-contain`}
       onError={(e) => {
-        console.error('Image onError triggered for:', currentImageUrl);
+        console.error('Logo component: Image onError triggered for:', currentImageUrl);
         setImageStatus('error');
       }}
       onLoad={() => {
-        console.log('Image onLoad triggered successfully');
+        console.log('Logo component: Image onLoad triggered successfully for:', currentImageUrl);
       }}
     />
   );
