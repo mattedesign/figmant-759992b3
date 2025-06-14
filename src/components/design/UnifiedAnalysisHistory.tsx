@@ -35,15 +35,10 @@ export const UnifiedAnalysisHistory: React.FC<UnifiedAnalysisHistoryProps> = ({
 
   const isLoading = uploadsLoading || analysesLoading || batchLoading;
 
-  // Filter completed uploads and get their analyses
+  // Filter completed uploads and get their analyses - all should now have impact summaries
   const completedUploads = uploads.filter(upload => upload.status === 'completed');
-  const recentIndividualAnalyses = individualAnalyses
-    .filter(analysis => analysis.impact_summary)
-    .slice(0, limit);
-  
-  const recentBatchAnalyses = batchAnalyses
-    .filter(analysis => analysis.impact_summary)
-    .slice(0, limit);
+  const recentIndividualAnalyses = individualAnalyses.slice(0, limit);
+  const recentBatchAnalyses = batchAnalyses.slice(0, limit);
 
   const getStatusColor = (status: string) => {
     switch (status) {

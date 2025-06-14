@@ -28,15 +28,13 @@ export const RecentAnalyses = ({
   const { data: individualAnalyses = [] } = useDesignAnalyses();
   const { data: batchAnalyses = [] } = useDesignBatchAnalyses();
 
-  // Filter uploads with completed analyses that have impact summaries
+  // Filter uploads with completed analyses - now all analyses should have impact summaries
   const recentUploads = uploads
     .filter(upload => upload.status === 'completed')
     .slice(0, limit);
 
-  // Filter batch analyses that have impact summaries
-  const recentBatchAnalyses = batchAnalyses
-    .filter(analysis => analysis.impact_summary)
-    .slice(0, limit);
+  // All batch analyses should now have impact summaries
+  const recentBatchAnalyses = batchAnalyses.slice(0, limit);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -197,34 +195,48 @@ export const RecentAnalyses = ({
         
         <TabsContent value="individual" className="mt-4">
           <div className="space-y-3">
-            {recentUploads.map((upload) => (
-              <div key={upload.id} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <FileImage className="h-8 w-8 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium text-sm">{upload.file_name}</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{upload.use_case}</span>
-                      <span>•</span>
-                      <span>{formatDistanceToNow(new Date(upload.created_at))} ago</span>
+            {recentUploads.map((upload) => {
+              // Find the corresponding analysis for this upload
+              const analysis = individualAnalyses.find(a => a.design_upload_id === upload.id);
+              const overallScore = analysis?.impact_summary?.key_metrics?.overall_score || 0;
+              
+              return (
+                <div key={upload.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <FileImage className="h-8 w-8 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium text-sm">{upload.file_name}</p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{upload.use_case}</span>
+                        <span>•</span>
+                        <span>{formatDistanceToNow(new Date(upload.created_at))} ago</span>
+                        {overallScore > 0 && (
+                          <>
+                            <span>•</span>
+                            <Badge variant="outline" className="text-xs">
+                              Score: {overallScore}/10
+                            </Badge>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={getStatusColor(upload.status)}>
+                      {upload.status}
+                    </Badge>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onViewAnalysis(upload)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={getStatusColor(upload.status)}>
-                    {upload.status}
-                  </Badge>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onViewAnalysis(upload)}
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    View
-                  </Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </TabsContent>
         
