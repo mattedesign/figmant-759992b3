@@ -38,6 +38,18 @@ export const SplitScreenAuth = () => {
     setShowOnboarding(true);
   };
 
+  const getAuthTitle = () => {
+    if (showPasswordReset) return "Reset Password";
+    return activeTab === 'signin' ? "Welcome Back" : "Get Started";
+  };
+
+  const getAuthSubtitle = () => {
+    if (showPasswordReset) return "Enter your email to receive a reset link";
+    return activeTab === 'signin' 
+      ? "Sign in to your account to continue" 
+      : "Create your account to get started";
+  };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -67,7 +79,7 @@ export const SplitScreenAuth = () => {
   return <div className="min-h-screen flex bg-background">
       {/* Left side - Authentication forms */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <AuthContainer title={showPasswordReset ? "Reset Password" : "Welcome"} subtitle={showPasswordReset ? "Enter your email to receive a reset link" : "AI-powered design analysis"}>
+        <AuthContainer title={getAuthTitle()} subtitle={getAuthSubtitle()}>
           {showPasswordReset ? <div className="space-y-6">
               <PasswordResetForm onBack={() => setShowPasswordReset(false)} />
             </div> : <SignInView activeTab={activeTab} onTabChange={setActiveTab} onForgotPassword={() => setShowPasswordReset(true)} onSignUpSuccess={handleSuccessfulSignUp} />}
