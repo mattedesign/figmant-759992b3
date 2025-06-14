@@ -6,9 +6,10 @@ export const sectionConfig = {
     items: [
       { id: 'design', label: 'AI Chat Analysis', icon: MessageSquare },
       { id: 'all-analysis', label: 'All Analysis', icon: FileText },
-      { id: 'batch', label: 'Batch Analysis', icon: BarChart3 },
-      { id: 'history', label: 'Analysis History', icon: Target },
-      { id: 'legacy', label: 'Legacy View', icon: History },
+      // Hidden navigation items - keeping functionality but removing from UI
+      // { id: 'batch', label: 'Batch Analysis', icon: BarChart3 },
+      // { id: 'history', label: 'Analysis History', icon: Target },
+      // { id: 'legacy', label: 'Legacy View', icon: History },
     ]
   },
   users: {
