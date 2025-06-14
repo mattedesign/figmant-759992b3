@@ -56,13 +56,6 @@ export const IconSidebar = ({
     <div className="w-16 h-full border-r border-border flex flex-col overflow-hidden" style={{
       backgroundColor: '#F5F6FA'
     }}>
-      {/* Header with Icon Logo */}
-      <div className="flex-none p-2 border-b border-border">
-        <div className="w-12 h-12 flex items-center justify-center">
-          <img alt="Figmant Icon" className="w-8 h-8 object-contain" src="/lovable-uploads/175842d1-13c3-4c8f-95c3-8fef7505dc8b.png" />
-        </div>
-      </div>
-
       {/* Navigation Icons */}
       <div className="flex-1 px-2 py-4 overflow-y-auto">
         <div className="flex flex-col space-y-2">
