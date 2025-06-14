@@ -7,6 +7,7 @@ import { ChatFooter } from './ChatFooter';
 import { DebugPanel } from './DebugPanel';
 import { ProcessingMonitor } from './ProcessingMonitor';
 import { LoadingOverlay } from './LoadingOverlay';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { ChatMessage as ChatMessageType, ChatAttachment } from '../DesignChatInterface';
 import type { ProcessingJob, SystemHealth } from '@/hooks/useImageProcessingMonitor';
 
@@ -89,9 +90,89 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   loadingState,
   getStageMessage
 }) => {
+  const isMobile = useIsMobile();
   // Calculate if we have content for MessageInput
   const hasContent = message.trim().length > 0 || attachments.length > 0;
 
+  if (isMobile) {
+    return (
+      <div className="flex flex-col h-full">
+        <Card className="flex-1 flex flex-col overflow-hidden">
+          <ChatHeader
+            onToggleProcessingMonitor={onToggleProcessingMonitor}
+            onToggleDebugPanel={onToggleDebugPanel}
+          />
+
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <ChatContent
+              messages={messages}
+              attachments={attachments}
+              storageStatus={storageStatus}
+              storageErrorDetails={storageErrorDetails}
+              getRootProps={getRootProps}
+              getInputProps={getInputProps}
+              isDragActive={isDragActive}
+              onStorageStatusChange={onStorageStatusChange}
+              onRemoveAttachment={onRemoveAttachment}
+              onRetryAttachment={onRetryAttachment}
+              onClearAllAttachments={onClearAllAttachments}
+            />
+          </div>
+
+          <ChatFooter
+            message={message}
+            urlInput={urlInput}
+            showUrlInput={showUrlInput}
+            isLoading={isLoading}
+            hasContent={hasContent}
+            canSendMessage={canSendMessage}
+            loadingState={loadingState}
+            getStageMessage={getStageMessage}
+            onMessageChange={onMessageChange}
+            onSendMessage={onSendMessage}
+            onToggleUrlInput={onToggleUrlInput}
+            onUrlInputChange={onUrlInputChange}
+            onAddUrl={onAddUrl}
+            onCancelUrl={onCancelUrl}
+          />
+        </Card>
+
+        {/* Debug Panel - Mobile Modal */}
+        {showDebugPanel && (
+          <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
+            <DebugPanel
+              attachments={attachments}
+              lastAnalysisResult={lastAnalysisResult}
+              isVisible={showDebugPanel}
+            />
+          </div>
+        )}
+
+        {/* Processing Monitor - Mobile Modal */}
+        {showProcessingMonitor && (
+          <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
+            <ProcessingMonitor
+              jobs={jobs}
+              systemHealth={systemHealth}
+              onPauseJob={pauseJob}
+              onResumeJob={resumeJob}
+              onCancelJob={cancelJob}
+            />
+          </div>
+        )}
+
+        {/* Loading Overlay */}
+        {isLoading && (
+          <LoadingOverlay 
+            isVisible={isLoading}
+            stage={loadingState.stage}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Desktop layout
   return (
     <div className="lg:col-span-2 space-y-4">
       <Card className="h-full flex flex-col">

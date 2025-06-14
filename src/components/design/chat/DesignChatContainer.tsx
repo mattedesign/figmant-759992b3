@@ -9,8 +9,12 @@ import { useAttachmentHandlers } from './hooks/useAttachmentHandlers';
 import { useChatMessageHandlers } from './hooks/useChatMessageHandlers';
 import { useFileHandlers } from './handlers/useFileHandlers';
 import { useImageProcessingMonitor } from '@/hooks/useImageProcessingMonitor';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export const DesignChatContainer = () => {
+  const isMobile = useIsMobile();
+  
   const {
     message,
     setMessage,
@@ -145,6 +149,76 @@ export const DesignChatContainer = () => {
     handleImageProcessingError(attachments, setAttachments, attachmentId, error);
   };
 
+  if (isMobile) {
+    return (
+      <>
+        <ImprovedRoleAwareStorageManager
+          setStorageStatus={setStorageStatus}
+          setStorageErrorDetails={setStorageErrorDetails}
+        />
+        
+        <div className="h-[calc(100vh-120px)] flex flex-col">
+          <Tabs defaultValue="chat" className="flex-1 flex flex-col">
+            <TabsList className="grid w-full grid-cols-2 mb-2">
+              <TabsTrigger value="chat">Chat</TabsTrigger>
+              <TabsTrigger value="prompts">Prompts</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="chat" className="flex-1 flex flex-col mt-0">
+              <ChatContainer
+                messages={messages}
+                attachments={attachments}
+                message={message}
+                urlInput={urlInput}
+                showUrlInput={showUrlInput}
+                storageStatus={storageStatus}
+                storageErrorDetails={storageErrorDetails}
+                showDebugPanel={showDebugPanel}
+                showProcessingMonitor={showProcessingMonitor}
+                lastAnalysisResult={lastAnalysisResult}
+                pendingImageProcessing={pendingImageProcessing}
+                jobs={jobs}
+                systemHealth={systemHealth}
+                onMessageChange={setMessage}
+                onSendMessage={handleSendMessageWrapper}
+                onToggleUrlInput={() => !loadingState.isLoading && setShowUrlInput(!showUrlInput)}
+                onUrlInputChange={setUrlInput}
+                onAddUrl={handleAddUrl}
+                onCancelUrl={() => setShowUrlInput(false)}
+                onRemoveAttachment={removeAttachment}
+                onRetryAttachment={retryAttachment}
+                onClearAllAttachments={clearAllAttachments}
+                onImageProcessed={onImageProcessed}
+                onImageProcessingError={onImageProcessingError}
+                onToggleDebugPanel={() => setShowDebugPanel(!showDebugPanel)}
+                onToggleProcessingMonitor={() => setShowProcessingMonitor(!showProcessingMonitor)}
+                onStorageStatusChange={setStorageStatus}
+                getRootProps={getRootProps}
+                getInputProps={getInputProps}
+                isDragActive={isDragActive}
+                isLoading={analyzeWithChat.isPending}
+                canSendMessage={canSendMessage(message, attachments)}
+                pauseJob={pauseJob}
+                resumeJob={resumeJob}
+                cancelJob={cancelJob}
+                loadingState={loadingState}
+                getStageMessage={getStageMessage}
+              />
+            </TabsContent>
+            
+            <TabsContent value="prompts" className="flex-1 mt-0 p-4">
+              <ChatSidebar
+                messages={messages}
+                onSelectPrompt={handleSuggestedPrompt}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </>
+    );
+  }
+
+  // Desktop layout
   return (
     <>
       <ImprovedRoleAwareStorageManager

@@ -1,7 +1,9 @@
 
 import React from 'react';
 import { MessageInput } from './MessageInput';
+import { MobileMessageInput } from './MobileMessageInput';
 import { URLInput } from './URLInput';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ChatFooterProps {
   message: string;
@@ -36,6 +38,9 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
   onAddUrl,
   onCancelUrl
 }) => {
+  const isMobile = useIsMobile();
+  const InputComponent = isMobile ? MobileMessageInput : MessageInput;
+
   return (
     <>
       {/* URL Input */}
@@ -50,8 +55,8 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
       )}
 
       {/* Message Input */}
-      <div className="flex-shrink-0">
-        <MessageInput
+      <div className={isMobile ? '' : 'flex-shrink-0'}>
+        <InputComponent
           message={message}
           onMessageChange={onMessageChange}
           onSendMessage={onSendMessage}
