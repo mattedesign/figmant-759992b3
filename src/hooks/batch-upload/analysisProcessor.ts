@@ -56,7 +56,12 @@ const processIndividualAnalysis = async (upload: DesignUpload, useCase: string) 
     console.log('Claude AI response:', claudeResponse);
 
     // Generate impact summary from Claude response
-    const impactSummary = generateImpactSummary(claudeResponse);
+    const analysisText = claudeResponse.analysis || claudeResponse.response || '';
+    const impactSummary = await generateImpactSummary(
+      analysisText,
+      'individual',
+      upload.user_id
+    );
     console.log('Generated impact summary:', impactSummary);
 
     // Save analysis to database with impact summary
@@ -125,7 +130,12 @@ const processBatchAnalysis = async (uploads: DesignUpload[], batchId: string, us
     console.log('Batch Claude AI response:', claudeResponse);
 
     // Generate impact summary for batch analysis
-    const impactSummary = generateImpactSummary(claudeResponse);
+    const analysisText = claudeResponse.analysis || claudeResponse.response || '';
+    const impactSummary = await generateImpactSummary(
+      analysisText,
+      'batch_comparative',
+      uploads[0].user_id
+    );
     console.log('Generated batch impact summary:', impactSummary);
 
     // Save batch analysis to database
