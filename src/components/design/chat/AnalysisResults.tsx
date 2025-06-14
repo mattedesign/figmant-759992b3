@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
-import { ImpactSummary } from '../ImpactSummary';
+import { EnhancedImpactSummary } from '../EnhancedImpactSummary';
 
 interface AnalysisResultsProps {
   lastAnalysisResult: any;
@@ -28,9 +28,12 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Impact Summary Section */}
+      {/* Enhanced Impact Summary Section */}
       {hasImpactSummary && (
-        <ImpactSummary impactSummary={latestAnalysis.impact_summary} />
+        <EnhancedImpactSummary 
+          impactSummary={latestAnalysis.impact_summary}
+          uploadId={uploadIds[0]}
+        />
       )}
 
       {/* Analysis Results */}

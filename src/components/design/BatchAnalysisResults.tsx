@@ -2,21 +2,31 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DesignBatchAnalysis } from '@/types/design';
-import { ImpactSummary } from './ImpactSummary';
+import { EnhancedImpactSummary } from './EnhancedImpactSummary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useDesignUploads } from '@/hooks/useDesignUploads';
 
 interface BatchAnalysisResultsProps {
   selectedVersion: DesignBatchAnalysis;
 }
 
 export const BatchAnalysisResults = ({ selectedVersion }: BatchAnalysisResultsProps) => {
+  const { data: uploads } = useDesignUploads();
   const analysisResults = selectedVersion.analysis_results?.response || 'No analysis results available.';
   const hasImpactSummary = selectedVersion.impact_summary;
+  
+  // Find winner upload details
+  const winnerUpload = selectedVersion.winner_upload_id 
+    ? uploads?.find(u => u.id === selectedVersion.winner_upload_id)
+    : null;
 
   return (
     <div className="space-y-6">
       {hasImpactSummary && (
-        <ImpactSummary impactSummary={selectedVersion.impact_summary} />
+        <EnhancedImpactSummary 
+          impactSummary={selectedVersion.impact_summary} 
+          winnerUploadId={selectedVersion.winner_upload_id || undefined}
+        />
       )}
       
       <Card>
