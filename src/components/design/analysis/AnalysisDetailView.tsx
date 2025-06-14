@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BarChart3, FileImage } from 'lucide-react';
 import { format } from 'date-fns';
+import { UnifiedAnalysisResultsViewer } from '../UnifiedAnalysisResultsViewer';
 
 interface Analysis {
   id: string;
@@ -71,7 +72,7 @@ export const AnalysisDetailView = ({ analysis, onBack }: AnalysisDetailViewProps
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {getTypeIcon(analysis.type)}
-            Analysis Details
+            Analysis Overview
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -102,17 +103,17 @@ export const AnalysisDetailView = ({ analysis, onBack }: AnalysisDetailViewProps
               </p>
             </div>
           )}
-
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Analysis Results</label>
-            <div className="mt-2 p-4 bg-muted/30 rounded-lg max-h-64 overflow-y-auto">
-              <pre className="text-sm whitespace-pre-wrap">
-                {JSON.stringify(analysis.rawData.analysis_results, null, 2)}
-              </pre>
-            </div>
-          </div>
         </CardContent>
       </Card>
+
+      {/* Use UnifiedAnalysisResultsViewer for formatted display */}
+      <UnifiedAnalysisResultsViewer
+        analysisData={analysis.rawData}
+        analysisType={analysis.type === 'batch' ? 'batch' : 'individual'}
+        upload={analysis.relatedUpload}
+        uploads={analysis.relatedUploads}
+        title={analysis.title}
+      />
     </div>
   );
 };
