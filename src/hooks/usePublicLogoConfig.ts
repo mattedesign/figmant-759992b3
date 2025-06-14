@@ -33,7 +33,16 @@ export const usePublicLogoConfig = () => {
         if (adminError) {
           console.error('usePublicLogoConfig: Admin settings query failed:', adminError);
         } else if (adminData?.setting_value) {
-          const logoUrl = adminData.setting_value?.value || adminData.setting_value;
+          // Handle both direct string values and object values with .value property
+          let logoUrl: string;
+          if (typeof adminData.setting_value === 'string') {
+            logoUrl = adminData.setting_value;
+          } else if (typeof adminData.setting_value === 'object' && adminData.setting_value !== null && 'value' in adminData.setting_value) {
+            logoUrl = adminData.setting_value.value as string;
+          } else {
+            logoUrl = DEFAULT_FALLBACK_LOGO;
+          }
+          
           console.log('usePublicLogoConfig: Found logo in admin_settings:', logoUrl);
           
           return {
