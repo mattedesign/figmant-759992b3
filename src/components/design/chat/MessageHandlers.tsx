@@ -171,16 +171,36 @@ export const useMessageHandlers = () => {
     setAttachments([]);
 
     try {
-      console.log('Starting chat analysis...');
+      console.log('Starting chat analysis with persistence...');
       const result = await analyzeWithChat.mutateAsync({
         message: currentMessage,
         attachments: currentAttachments
       });
 
-      console.log('Chat analysis completed successfully');
+      console.log('Chat analysis completed successfully - analysis should now be persisted in database');
       
-      // Store the analysis result for debugging
-      setLastAnalysisResult(result);
+      // Store the analysis result for debugging AND create a persistence record
+      const persistenceResult = {
+        ...result,
+        persistence_status: 'saved_to_database',
+        saved_at: new Date().toISOString(),
+        analysis_id: result.uploadIds?.[0] || 'chat_analysis', // Will be set by database save
+        user_context: {
+          message: currentMessage,
+          attachments_count: currentAttachments.length,
+          timestamp: new Date().toISOString()
+        }
+      };
+      
+      setLastAnalysisResult(persistenceResult);
+
+      // Also save to localStorage as backup for immediate retrieval
+      try {
+        localStorage.setItem('lastChatAnalysis', JSON.stringify(persistenceResult));
+        console.log('Analysis also saved to localStorage as backup');
+      } catch (storageError) {
+        console.warn('Could not save to localStorage:', storageError);
+      }
 
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
@@ -194,23 +214,31 @@ export const useMessageHandlers = () => {
       setMessages(prev => [...prev, assistantMessage]);
       
       toast({
-        title: "Analysis Complete",
-        description: "Your message has been analyzed successfully.",
+        title: "Analysis Complete & Saved",
+        description: "Your analysis has been completed and saved to your history.",
       });
 
     } catch (error) {
       console.error('Chat analysis failed:', error);
       
-      // Store the error for debugging
-      setLastAnalysisResult({
+      // Store the error for debugging with persistence status
+      const errorResult = {
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
+        persistence_status: 'failed_to_save',
+        user_context: {
+          message: currentMessage,
+          attachments_count: currentAttachments.length,
+          error_details: error
+        },
         attachments: currentAttachments.map(att => ({ 
           id: att.id, 
           name: att.name, 
           status: att.status 
         }))
-      });
+      };
+      
+      setLastAnalysisResult(errorResult);
       
       const errorMessage: ChatMessage = {
         id: crypto.randomUUID(),

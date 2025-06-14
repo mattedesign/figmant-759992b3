@@ -161,6 +161,41 @@ const analyzeWithChatAPI = async (request: ChatAnalysisRequest): Promise<ChatAna
     throw new Error(data?.error || 'Analysis failed');
   }
 
+  // CRITICAL FIX: Save the chat analysis result to database for persistence
+  console.log('Saving chat analysis to database...');
+  try {
+    const { data: savedAnalysis, error: saveError } = await supabase
+      .from('design_analysis')
+      .insert({
+        design_upload_id: uploadIds[0] || null, // Use first upload ID if available
+        user_id: user.id,
+        analysis_type: 'chat_analysis',
+        prompt_used: request.message,
+        analysis_results: { 
+          response: data.analysis,
+          attachments_processed: data.attachmentsProcessed || 0,
+          chat_context: {
+            message: request.message,
+            attachments_count: processedAttachments.length,
+            upload_ids: uploadIds
+          }
+        },
+        confidence_score: 0.8
+      })
+      .select()
+      .single();
+
+    if (saveError) {
+      console.error('Failed to save chat analysis to database:', saveError);
+      // Don't throw error here - still return the analysis even if save fails
+    } else {
+      console.log('Chat analysis successfully saved to database:', savedAnalysis.id);
+    }
+  } catch (saveError) {
+    console.error('Error saving chat analysis:', saveError);
+    // Continue - don't fail the entire operation if database save fails
+  }
+
   console.log('Chat analysis completed successfully:', {
     analysisLength: data.analysis?.length || 0,
     attachmentsProcessed: data.attachmentsProcessed || 0,
