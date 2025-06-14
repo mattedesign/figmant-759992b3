@@ -37,7 +37,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
     switch (activeTab) {
       case 'design':
         return (
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 h-full overflow-y-auto">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold mb-2">AI Design Analysis</h1>
@@ -53,7 +53,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
         );
       case 'batch':
         return (
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 h-full overflow-y-auto">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold mb-2">Batch Analysis</h1>
@@ -69,7 +69,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
         );
       case 'history':
         return (
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 h-full overflow-y-auto">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold mb-2">Analysis History</h1>
@@ -85,7 +85,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
         );
       case 'legacy':
         return (
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 h-full overflow-y-auto">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold mb-2">Legacy Design View</h1>
@@ -101,31 +101,39 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
         );
       case 'users':
         return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <UserManagement />
-          </Suspense>
+          <div className="h-full overflow-y-auto">
+            <Suspense fallback={<LoadingSpinner />}>
+              <UserManagement />
+            </Suspense>
+          </div>
         );
       case 'plans':
         return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <SubscriptionPlansManager />
-          </Suspense>
+          <div className="h-full overflow-y-auto">
+            <Suspense fallback={<LoadingSpinner />}>
+              <SubscriptionPlansManager />
+            </Suspense>
+          </div>
         );
       case 'claude':
         return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <ClaudeSettings />
-          </Suspense>
+          <div className="h-full overflow-y-auto">
+            <Suspense fallback={<LoadingSpinner />}>
+              <ClaudeSettings />
+            </Suspense>
+          </div>
         );
       case 'settings':
         return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AdminSettings />
-          </Suspense>
+          <div className="h-full overflow-y-auto">
+            <Suspense fallback={<LoadingSpinner />}>
+              <AdminSettings />
+            </Suspense>
+          </div>
         );
       default:
         return (
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 h-full overflow-y-auto">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold mb-2">AI Design Analysis</h1>
@@ -143,7 +151,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
   };
 
   return (
-    <div className="flex-1 overflow-auto">
+    <div className="h-full w-full">
       {renderTabContent(activeTab)}
     </div>
   );

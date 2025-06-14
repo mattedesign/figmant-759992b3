@@ -24,14 +24,14 @@ interface NavigationSidebarProps {
 
 export const NavigationSidebar = ({ config, activeTab, onTabChange }: NavigationSidebarProps) => {
   return (
-    <div className="w-64 h-screen bg-card border-r border-border flex flex-col">
+    <div className="w-64 h-full bg-card border-r border-border flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-border">
+      <div className="flex-none p-4 border-b border-border">
         <h2 className="text-lg font-semibold">{config.title}</h2>
       </div>
 
       {/* Navigation Items */}
-      <div className="flex-1 p-2">
+      <div className="flex-1 p-2 overflow-y-auto">
         <div className="space-y-1">
           {config.items.map((item) => (
             <Button
@@ -39,7 +39,7 @@ export const NavigationSidebar = ({ config, activeTab, onTabChange }: Navigation
               variant="ghost"
               onClick={() => !item.disabled && onTabChange(item.id)}
               className={cn(
-                "w-full justify-start h-10 px-3",
+                "w-full justify-start h-10 px-3 flex-shrink-0",
                 activeTab === item.id && "bg-accent text-accent-foreground",
                 item.disabled && "opacity-50 cursor-not-allowed"
               )}

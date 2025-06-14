@@ -13,7 +13,7 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
   const { user } = useAuth();
 
   return (
-    <header className="border-b bg-card">
+    <header className="border-b bg-card flex-shrink-0">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">

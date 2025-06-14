@@ -85,30 +85,34 @@ const OwnerDashboard = () => {
   
   return (
     <OwnerDashboardErrorBoundary>
-      <div className="min-h-screen flex w-full bg-background">
-        {/* Fixed Navigation Container */}
-        <div className="flex h-screen">
-          {/* Icon Sidebar */}
-          <IconSidebar 
-            activeSection={activeSection} 
-            onSectionChange={handleSectionChange} 
-          />
-          
-          {/* Secondary Navigation */}
-          <SecondaryNavigation 
-            activeSection={activeSection}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-          />
+      <div className="h-screen w-full flex flex-col bg-background overflow-hidden">
+        {/* Top Navigation - Fixed */}
+        <div className="flex-none">
+          <Navigation showSidebarTrigger={false} />
         </div>
         
-        {/* Main Content Area - Scrollable */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Navigation showSidebarTrigger={false} />
+        {/* Main Content Area - Flexible */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left Navigation Container - Fixed Width, No Scroll */}
+          <div className="flex-none flex">
+            {/* Icon Sidebar */}
+            <IconSidebar 
+              activeSection={activeSection} 
+              onSectionChange={handleSectionChange} 
+            />
+            
+            {/* Secondary Navigation */}
+            <SecondaryNavigation 
+              activeSection={activeSection}
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+            />
+          </div>
           
-          <main className="flex-1 overflow-auto">
+          {/* Main Content Area - Scrollable */}
+          <div className="flex-1 overflow-auto">
             <TabContentRenderer activeTab={activeTab} />
-          </main>
+          </div>
         </div>
       </div>
     </OwnerDashboardErrorBoundary>
