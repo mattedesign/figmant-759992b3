@@ -4,6 +4,7 @@ import { Navigation } from '@/components/layout/Navigation';
 import { OwnerDashboardErrorBoundary } from '@/components/owner/OwnerDashboardErrorBoundary';
 import { IconSidebar } from '@/components/owner/IconSidebar';
 import { SecondaryNavigation } from '@/components/owner/SecondaryNavigation';
+import { TabContentRenderer } from '@/components/owner/components/TabContentRenderer';
 import { useSearchParams } from 'react-router-dom';
 
 // Map tabs to sections for the two-level navigation
@@ -85,22 +86,28 @@ const OwnerDashboard = () => {
   return (
     <OwnerDashboardErrorBoundary>
       <div className="min-h-screen flex w-full bg-background">
-        {/* Icon Sidebar */}
-        <IconSidebar 
-          activeSection={activeSection} 
-          onSectionChange={handleSectionChange} 
-        />
+        {/* Fixed Navigation Container */}
+        <div className="flex h-screen">
+          {/* Icon Sidebar */}
+          <IconSidebar 
+            activeSection={activeSection} 
+            onSectionChange={handleSectionChange} 
+          />
+          
+          {/* Secondary Navigation */}
+          <SecondaryNavigation 
+            activeSection={activeSection}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+          />
+        </div>
         
-        {/* Main Content Area with Navigation and Content */}
-        <div className="flex-1 flex flex-col">
+        {/* Main Content Area - Scrollable */}
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Navigation showSidebarTrigger={false} />
           
-          <main className="flex-1 flex overflow-hidden">
-            <SecondaryNavigation 
-              activeSection={activeSection}
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-            />
+          <main className="flex-1 overflow-auto">
+            <TabContentRenderer activeTab={activeTab} />
           </main>
         </div>
       </div>

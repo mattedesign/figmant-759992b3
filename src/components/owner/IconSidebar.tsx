@@ -54,9 +54,15 @@ export const IconSidebar = ({ activeSection, onSectionChange }: IconSidebarProps
 
   return (
     <div className="w-16 h-screen border-r border-border flex flex-col" style={{ backgroundColor: '#F5F6FA' }}>
-      {/* Header - removed the logo section */}
+      {/* Header with Icon Logo */}
       <div className="p-2 border-b border-border">
-        <div className="w-12 h-12"></div>
+        <div className="w-12 h-12 flex items-center justify-center">
+          <img 
+            src="/lovable-uploads/235bdb67-21d3-44ed-968a-518226eef780.png" 
+            alt="Figmant Icon" 
+            className="w-8 h-8 object-contain"
+          />
+        </div>
       </div>
 
       {/* Navigation Icons */}
