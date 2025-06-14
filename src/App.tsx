@@ -52,7 +52,9 @@ const App = () => {
                     path="/owner/dashboard"
                     element={
                       <AuthGuard>
-                        <OwnerDashboard />
+                        <RoleRedirect ownerOnly>
+                          <OwnerDashboard />
+                        </RoleRedirect>
                       </AuthGuard>
                     }
                   />
