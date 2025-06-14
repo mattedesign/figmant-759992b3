@@ -28,9 +28,17 @@ export const ChatContent: React.FC<ChatContentProps> = ({
   onRetryAttachment,
   onClearAllAttachments
 }) => {
+  // Determine if we should show storage-related Claude alert
+  // Only show it if storage is in error state and there are failed attachments
+  const hasFailedAttachments = attachments.some(att => att.status === 'error');
+  const showStorageRelatedAlert = storageStatus === 'error' && hasFailedAttachments;
+
   return (
     <>
-      <ClaudeAISetupPrompt />
+      <ClaudeAISetupPrompt 
+        storageStatus={storageStatus}
+        showStorageRelatedAlert={showStorageRelatedAlert}
+      />
       
       <RoleAwareStorageStatus 
         status={storageStatus}

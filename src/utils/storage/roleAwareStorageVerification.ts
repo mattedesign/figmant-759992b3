@@ -10,6 +10,8 @@ export interface RoleAwareStorageResult {
   isAuthenticated: boolean;
 }
 
+const VERIFICATION_TIMEOUT = 8000; // 8 seconds timeout
+
 export const verifyStorageForRole = async (): Promise<RoleAwareStorageResult> => {
   try {
     console.log('=== ROLE-AWARE STORAGE VERIFICATION START ===');
@@ -17,7 +19,7 @@ export const verifyStorageForRole = async (): Promise<RoleAwareStorageResult> =>
     // Step 1: Check authentication status with timeout
     const authPromise = supabase.auth.getUser();
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Authentication timeout')), 5000);
+      setTimeout(() => reject(new Error('Authentication timeout')), VERIFICATION_TIMEOUT);
     });
 
     let user;
@@ -31,8 +33,8 @@ export const verifyStorageForRole = async (): Promise<RoleAwareStorageResult> =>
       console.warn('Auth check timed out or failed:', error);
       return {
         success: false,
-        status: 'checking',
-        error: 'Authentication check in progress...',
+        status: 'error',
+        error: 'Authentication check timed out. Please refresh and try again.',
         isAuthenticated: false,
         details: { step: 'auth_timeout', error }
       };
@@ -62,12 +64,30 @@ export const verifyStorageForRole = async (): Promise<RoleAwareStorageResult> =>
 
     console.log('✓ User authenticated:', user.id);
 
-    // Step 2: Get user role from profiles
-    const { data: profile, error: profileError } = await supabase
+    // Step 2: Get user role from profiles with timeout
+    const profilePromise = supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
+    
+    const profileTimeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Profile fetch timeout')), 3000);
+    });
+
+    let profile;
+    let profileError;
+    
+    try {
+      const result = await Promise.race([profilePromise, profileTimeoutPromise]) as any;
+      profile = result.data;
+      profileError = result.error;
+    } catch (error) {
+      console.warn('Profile fetch timed out:', error);
+      // Continue with default role instead of failing
+      profile = { role: 'subscriber' };
+      profileError = null;
+    }
 
     if (profileError) {
       console.warn('Could not fetch user role:', profileError);
@@ -102,10 +122,31 @@ const performFullStorageVerification = async (userId: string, userRole: string):
   try {
     console.log('Performing full storage verification for owner...');
     
-    // Test bucket access
-    const { data: files, error: listError } = await supabase.storage
+    // Test bucket access with timeout
+    const listPromise = supabase.storage
       .from('design-uploads')
       .list('', { limit: 1 });
+    
+    const listTimeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Bucket list timeout')), 5000);
+    });
+
+    let files, listError;
+    try {
+      const result = await Promise.race([listPromise, listTimeoutPromise]) as any;
+      files = result.data;
+      listError = result.error;
+    } catch (error) {
+      console.error('Bucket access timed out:', error);
+      return {
+        success: false,
+        status: 'error',
+        error: 'Storage bucket access timed out. Please try again.',
+        isAuthenticated: true,
+        userRole,
+        details: { step: 'bucket_timeout', error }
+      };
+    }
 
     if (listError) {
       console.error('Bucket access failed:', listError);
@@ -119,15 +160,35 @@ const performFullStorageVerification = async (userId: string, userRole: string):
       };
     }
 
-    // Test upload with minimal file
+    // Test upload with minimal file and timeout
     const testData = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
     const testBlob = new Blob([testData], { type: 'image/png' });
     const testFile = new File([testBlob], 'test.png', { type: 'image/png' });
     const testPath = `verification/${userId}/test-${Date.now()}.png`;
 
-    const { error: uploadError } = await supabase.storage
+    const uploadPromise = supabase.storage
       .from('design-uploads')
       .upload(testPath, testFile, { upsert: false });
+    
+    const uploadTimeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Upload test timeout')), 5000);
+    });
+
+    let uploadError;
+    try {
+      const result = await Promise.race([uploadPromise, uploadTimeoutPromise]) as any;
+      uploadError = result.error;
+    } catch (error) {
+      console.error('Upload test timed out:', error);
+      return {
+        success: false,
+        status: 'error',
+        error: 'Upload test timed out. Storage may be slow.',
+        isAuthenticated: true,
+        userRole,
+        details: { step: 'upload_timeout', error }
+      };
+    }
 
     if (uploadError) {
       console.error('Upload test failed:', uploadError);
@@ -141,8 +202,12 @@ const performFullStorageVerification = async (userId: string, userRole: string):
       };
     }
 
-    // Cleanup test file
-    await supabase.storage.from('design-uploads').remove([testPath]);
+    // Cleanup test file (don't fail if this doesn't work)
+    try {
+      await supabase.storage.from('design-uploads').remove([testPath]);
+    } catch (cleanupError) {
+      console.warn('Test file cleanup failed:', cleanupError);
+    }
 
     console.log('✓ Full storage verification successful');
     return {
@@ -170,10 +235,30 @@ const performSubscriberStorageVerification = async (userId: string, userRole: st
   try {
     console.log('Performing simplified storage verification for subscriber...');
     
-    // For subscribers, just check if bucket is accessible
-    const { error: listError } = await supabase.storage
+    // For subscribers, just check if bucket is accessible with timeout
+    const listPromise = supabase.storage
       .from('design-uploads')
       .list('', { limit: 1 });
+    
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Bucket check timeout')), 3000);
+    });
+
+    let listError;
+    try {
+      const result = await Promise.race([listPromise, timeoutPromise]) as any;
+      listError = result.error;
+    } catch (error) {
+      console.warn('Bucket check timed out for subscriber:', error);
+      return {
+        success: false,
+        status: 'unavailable',
+        error: 'Storage check timed out. Please try again.',
+        isAuthenticated: true,
+        userRole,
+        details: { step: 'subscriber_timeout', error }
+      };
+    }
 
     if (listError) {
       console.warn('Bucket access failed for subscriber:', listError);
