@@ -53,18 +53,10 @@ export const IconSidebar = ({ activeSection, onSectionChange }: IconSidebarProps
   };
 
   return (
-    <div className="w-16 h-screen bg-card border-r border-border flex flex-col">
-      {/* Header */}
+    <div className="w-16 h-screen border-r border-border flex flex-col" style={{ backgroundColor: '#F5F6FA' }}>
+      {/* Header - removed the logo section */}
       <div className="p-2 border-b border-border">
-        <div className="flex items-center justify-center">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-            <img 
-              src="/lovable-uploads/eda58068-9251-4a23-8650-74d725883c99.png" 
-              alt="App Icon" 
-              className="w-10 h-10 rounded-lg object-cover"
-            />
-          </div>
-        </div>
+        <div className="w-12 h-12"></div>
       </div>
 
       {/* Navigation Icons */}

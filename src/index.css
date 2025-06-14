@@ -92,7 +92,8 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply text-foreground font-sans;
+    background-color: #FAFAFA;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
