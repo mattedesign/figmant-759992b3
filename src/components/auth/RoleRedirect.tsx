@@ -25,7 +25,7 @@ export const RoleRedirect: React.FC<RoleRedirectProps> = ({
 
   // If this is an owner-only route and user is not an owner
   if (ownerOnly && !isOwner) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/user/dashboard" replace />;
   }
 
   // If user is an owner and trying to access regular dashboard, redirect to owner dashboard
