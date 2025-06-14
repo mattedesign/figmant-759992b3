@@ -9,6 +9,9 @@ import { useSearchParams } from 'react-router-dom';
 // Map tabs to sections for the two-level navigation
 const tabToSectionMap: Record<string, string> = {
   design: 'workspace',
+  batch: 'workspace',
+  history: 'workspace',
+  legacy: 'workspace',
   users: 'users',
   plans: 'products',
   claude: 'apps',
@@ -26,7 +29,7 @@ const OwnerDashboard = () => {
   const [activeSection, setActiveSection] = useState(tabToSectionMap[tabFromUrl] || 'workspace');
 
   // Valid tab options
-  const validTabs = ['design', 'users', 'plans', 'claude', 'settings'];
+  const validTabs = ['design', 'batch', 'history', 'legacy', 'users', 'plans', 'claude', 'settings'];
   console.log('Current tab:', activeTab, 'Current section:', activeSection);
 
   // Update URL when tab changes

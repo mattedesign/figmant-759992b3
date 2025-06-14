@@ -1,13 +1,22 @@
 
 import { Button } from '@/components/ui/button';
-import { BarChart3, Users, CreditCard, Bot, Settings, Bell } from 'lucide-react';
+import { BarChart3, Users, CreditCard, Bot, Settings, Bell, MessageSquare, Target, History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { lazy, Suspense } from 'react';
 
 // Lazy load content components
-const AdvancedDesignAnalysisPage = lazy(() => import('@/components/design/AdvancedDesignAnalysisPage').then(module => ({
-  default: module.AdvancedDesignAnalysisPage
+const SimpleDesignAnalysisPage = lazy(() => import('@/components/design/SimpleDesignAnalysisPage').then(module => ({
+  default: module.SimpleDesignAnalysisPage
+})));
+const BatchAnalysisPage = lazy(() => import('@/components/design/BatchAnalysisPage').then(module => ({
+  default: module.BatchAnalysisPage
+})));
+const AnalysisHistoryPage = lazy(() => import('@/components/design/AnalysisHistoryPage').then(module => ({
+  default: module.AnalysisHistoryPage
+})));
+const LegacyDesignPage = lazy(() => import('@/components/design/LegacyDesignPage').then(module => ({
+  default: module.LegacyDesignPage
 })));
 const UserManagement = lazy(() => import('@/components/owner/UserManagement').then(module => ({
   default: module.UserManagement
@@ -38,7 +47,10 @@ const sectionConfig = {
   workspace: {
     title: 'Workspace',
     items: [
-      { id: 'design', label: 'Design Analysis', icon: BarChart3 },
+      { id: 'design', label: 'AI Chat Analysis', icon: MessageSquare },
+      { id: 'batch', label: 'Batch Analysis', icon: BarChart3 },
+      { id: 'history', label: 'Analysis History', icon: Target },
+      { id: 'legacy', label: 'Legacy View', icon: History },
     ]
   },
   users: {
@@ -79,7 +91,25 @@ const renderTabContent = (activeTab: string) => {
     case 'design':
       return (
         <Suspense fallback={<LoadingSpinner />}>
-          <AdvancedDesignAnalysisPage />
+          <SimpleDesignAnalysisPage />
+        </Suspense>
+      );
+    case 'batch':
+      return (
+        <Suspense fallback={<LoadingSpinner />}>
+          <BatchAnalysisPage />
+        </Suspense>
+      );
+    case 'history':
+      return (
+        <Suspense fallback={<LoadingSpinner />}>
+          <AnalysisHistoryPage />
+        </Suspense>
+      );
+    case 'legacy':
+      return (
+        <Suspense fallback={<LoadingSpinner />}>
+          <LegacyDesignPage />
         </Suspense>
       );
     case 'users':
@@ -109,7 +139,7 @@ const renderTabContent = (activeTab: string) => {
     default:
       return (
         <Suspense fallback={<LoadingSpinner />}>
-          <AdvancedDesignAnalysisPage />
+          <SimpleDesignAnalysisPage />
         </Suspense>
       );
   }
