@@ -65,11 +65,16 @@ export const IconSidebar = ({
               variant="ghost" 
               size="icon" 
               className={cn(
-                "w-12 h-12 rounded-lg transition-colors flex-shrink-0", 
+                "w-12 h-12 transition-colors flex-shrink-0", 
                 activeSection === section.id 
-                  ? "bg-primary text-primary-foreground" 
+                  ? "text-primary" 
                   : "hover:bg-muted"
-              )} 
+              )}
+              style={activeSection === section.id ? {
+                borderRadius: '8px',
+                background: 'var(--Background-primary, #FFF)',
+                boxShadow: '0px 2px 4px 1px rgba(18, 18, 18, 0.06)'
+              } : {}}
               onClick={() => onSectionChange(section.id)} 
               title={section.label}
             >
