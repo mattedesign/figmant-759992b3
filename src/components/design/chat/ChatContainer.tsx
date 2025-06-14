@@ -1,17 +1,12 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { MessageSquarePlus, Settings, Activity } from 'lucide-react';
-import { ChatMessage } from './ChatMessage';
-import { MessageInput } from './MessageInput';
-import { ChatAttachments } from './ChatAttachments';
-import { RoleAwareStorageStatus } from './RoleAwareStorageStatus';
-import { URLInput } from './URLInput';
+import { Card, CardContent } from '@/components/ui/card';
+import { ChatHeader } from './ChatHeader';
+import { ChatContent } from './ChatContent';
+import { ChatFooter } from './ChatFooter';
 import { DebugPanel } from './DebugPanel';
 import { ProcessingMonitor } from './ProcessingMonitor';
 import { LoadingOverlay } from './LoadingOverlay';
-import { ClaudeAISetupPrompt } from '../ClaudeAISetupPrompt';
 import type { ChatMessage as ChatMessageType, ChatAttachment } from '../DesignChatInterface';
 import type { ProcessingJob, SystemHealth } from '@/hooks/useImageProcessingMonitor';
 
@@ -100,96 +95,39 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   return (
     <div className="lg:col-span-2 space-y-4">
       <Card className="h-full flex flex-col">
-        <CardHeader className="flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquarePlus className="h-5 w-5" />
-              Design Analysis Chat
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onToggleProcessingMonitor}
-                className="flex items-center gap-1"
-              >
-                <Activity className="h-3 w-3" />
-                Monitor
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onToggleDebugPanel}
-                className="flex items-center gap-1"
-              >
-                <Settings className="h-3 w-3" />
-                Debug
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
+        <ChatHeader
+          onToggleProcessingMonitor={onToggleProcessingMonitor}
+          onToggleDebugPanel={onToggleDebugPanel}
+        />
 
         <CardContent className="flex-1 flex flex-col min-h-0">
-          <ClaudeAISetupPrompt />
-          
-          <RoleAwareStorageStatus 
-            status={storageStatus}
-            onStatusChange={onStorageStatusChange}
-            errorDetails={storageErrorDetails}
+          <ChatContent
+            messages={messages}
+            attachments={attachments}
+            storageStatus={storageStatus}
+            storageErrorDetails={storageErrorDetails}
+            onStorageStatusChange={onStorageStatusChange}
+            onRemoveAttachment={onRemoveAttachment}
+            onRetryAttachment={onRetryAttachment}
+            onClearAllAttachments={onClearAllAttachments}
           />
 
-          {/* Chat Messages */}
-          <div className="flex-1 overflow-y-auto space-y-4 mb-4 min-h-0">
-            {messages.length === 0 && (
-              <div className="text-center text-muted-foreground py-8">
-                <MessageSquarePlus className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Start a conversation about your design</p>
-                <p className="text-sm">Upload images or ask questions to begin</p>
-              </div>
-            )}
-            
-            {messages.map((msg, index) => (
-              <ChatMessage 
-                key={index} 
-                message={msg}
-              />
-            ))}
-          </div>
-
-          {/* File Attachments */}
-          {attachments.length > 0 && (
-            <ChatAttachments
-              attachments={attachments}
-              onRemove={onRemoveAttachment}
-              onRetry={onRetryAttachment}
-              onClearAll={onClearAllAttachments}
-            />
-          )}
-
-          {/* URL Input */}
-          {showUrlInput && (
-            <URLInput
-              showUrlInput={showUrlInput}
-              urlInput={urlInput}
-              onUrlInputChange={onUrlInputChange}
-              onAddUrl={onAddUrl}
-              onCancel={onCancelUrl}
-            />
-          )}
-
-          {/* Message Input */}
-          <div className="flex-shrink-0">
-            <MessageInput
-              message={message}
-              onMessageChange={onMessageChange}
-              onSendMessage={onSendMessage}
-              onToggleUrlInput={onToggleUrlInput}
-              isLoading={isLoading}
-              hasContent={hasContent}
-              canSend={canSendMessage}
-              loadingStage={getStageMessage(loadingState.stage)}
-            />
-          </div>
+          <ChatFooter
+            message={message}
+            urlInput={urlInput}
+            showUrlInput={showUrlInput}
+            isLoading={isLoading}
+            hasContent={hasContent}
+            canSendMessage={canSendMessage}
+            loadingState={loadingState}
+            getStageMessage={getStageMessage}
+            onMessageChange={onMessageChange}
+            onSendMessage={onSendMessage}
+            onToggleUrlInput={onToggleUrlInput}
+            onUrlInputChange={onUrlInputChange}
+            onAddUrl={onAddUrl}
+            onCancelUrl={onCancelUrl}
+          />
         </CardContent>
       </Card>
 
