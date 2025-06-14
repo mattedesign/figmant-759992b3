@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { BarChart3, Users, CreditCard, Bot, Settings, Bell, MessageSquare, Target, History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +45,7 @@ interface SecondaryNavigationProps {
 
 const sectionConfig = {
   workspace: {
-    title: 'Workspace',
+    title: 'Design Analysis',
     items: [
       { id: 'design', label: 'AI Chat Analysis', icon: MessageSquare },
       { id: 'batch', label: 'Batch Analysis', icon: BarChart3 },
