@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -83,6 +82,10 @@ export const AllAnalysisPage = () => {
 
   const handleViewAnalysis = (analysis: any) => {
     setSelectedAnalysis(analysis);
+  };
+
+  const handleRowClick = (analysis: any) => {
+    handleViewAnalysis(analysis);
   };
 
   const getStatusBadge = (status: string) => {
@@ -257,7 +260,11 @@ export const AllAnalysisPage = () => {
           </TableHeader>
           <TableBody>
             {filteredAnalyses.map((analysis) => (
-              <TableRow key={analysis.id}>
+              <TableRow 
+                key={analysis.id}
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => handleRowClick(analysis)}
+              >
                 <TableCell>
                   <div className="flex items-center gap-3">
                     {getTypeIcon(analysis.type)}
@@ -294,7 +301,10 @@ export const AllAnalysisPage = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleViewAnalysis(analysis)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent row click when clicking the button
+                      handleViewAnalysis(analysis);
+                    }}
                     className="flex items-center gap-1"
                   >
                     <Eye className="h-3 w-3" />
