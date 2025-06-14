@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navigation } from '@/components/layout/Navigation';
 import { OwnerDashboardErrorBoundary } from '@/components/owner/OwnerDashboardErrorBoundary';
+import { OwnerSidebar } from '@/components/owner/OwnerSidebar';
+import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 // Lazy load heavy components to prevent loading issues
@@ -22,9 +24,13 @@ const SubscriptionPlansManager = lazy(() => import('@/components/owner/Subscript
 const AdvancedDesignAnalysisPage = lazy(() => import('@/components/design/AdvancedDesignAnalysisPage').then(module => ({
   default: module.AdvancedDesignAnalysisPage
 })));
-const LoadingSpinner = () => <div className="flex items-center justify-center p-8">
+
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center p-8">
     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-  </div>;
+  </div>
+);
+
 const OwnerDashboard = () => {
   console.log('OwnerDashboard component mounting...');
   const [searchParams, setSearchParams] = useSearchParams();
@@ -63,58 +69,75 @@ const OwnerDashboard = () => {
       setActiveTab(currentTab);
     }
   }, [searchParams]);
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'design':
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AdvancedDesignAnalysisPage />
+          </Suspense>
+        );
+      case 'users':
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <UserManagement />
+          </Suspense>
+        );
+      case 'plans':
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <SubscriptionPlansManager />
+          </Suspense>
+        );
+      case 'claude':
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <ClaudeSettings />
+          </Suspense>
+        );
+      case 'settings':
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AdminSettings />
+          </Suspense>
+        );
+      default:
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AdvancedDesignAnalysisPage />
+          </Suspense>
+        );
+    }
+  };
+
   console.log('Rendering OwnerDashboard with tab:', activeTab);
-  return <OwnerDashboardErrorBoundary>
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        
-        <main className="container mx-auto px-4 py-[4px]">
-          <div className="mb-8">
+  
+  return (
+    <OwnerDashboardErrorBoundary>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background">
+          <OwnerSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+          
+          <SidebarInset className="flex-1">
+            <Navigation />
             
-            
-          </div>
-
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="design">Design Analysis</TabsTrigger>
-              <TabsTrigger value="users">Users</TabsTrigger>
-              <TabsTrigger value="plans">Plans & Products</TabsTrigger>
-              <TabsTrigger value="claude">Claude AI</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="design" className="mt-6">
-              <Suspense fallback={<LoadingSpinner />}>
-                <AdvancedDesignAnalysisPage />
-              </Suspense>
-            </TabsContent>
-
-            <TabsContent value="users" className="mt-6">
-              <Suspense fallback={<LoadingSpinner />}>
-                <UserManagement />
-              </Suspense>
-            </TabsContent>
-
-            <TabsContent value="plans" className="mt-6">
-              <Suspense fallback={<LoadingSpinner />}>
-                <SubscriptionPlansManager />
-              </Suspense>
-            </TabsContent>
-
-            <TabsContent value="claude" className="mt-6">
-              <Suspense fallback={<LoadingSpinner />}>
-                <ClaudeSettings />
-              </Suspense>
-            </TabsContent>
-
-            <TabsContent value="settings" className="mt-6">
-              <Suspense fallback={<LoadingSpinner />}>
-                <AdminSettings />
-              </Suspense>
-            </TabsContent>
-          </Tabs>
-        </main>
-      </div>
-    </OwnerDashboardErrorBoundary>;
+            <main className="flex-1 p-6">
+              <div className="flex items-center space-x-2 mb-6">
+                <SidebarTrigger />
+                <div className="h-4 w-px bg-border" />
+                <h1 className="text-2xl font-semibold">Owner Dashboard</h1>
+              </div>
+              
+              <div className="space-y-6">
+                {renderContent()}
+              </div>
+            </main>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    </OwnerDashboardErrorBoundary>
+  );
 };
+
 export default OwnerDashboard;
