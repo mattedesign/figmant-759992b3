@@ -26,7 +26,7 @@ export const EnhancedSignInForm: React.FC<EnhancedSignInFormProps> = ({
   } = useSignInForm(onSuccess);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-4">
         <AuthInput
           id="signin-email"
@@ -55,7 +55,7 @@ export const EnhancedSignInForm: React.FC<EnhancedSignInFormProps> = ({
           rightIcon={
             <button
               type="button"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors p-1"
               onClick={() => setShowPassword(!showPassword)}
               disabled={isSubmitting}
             >
@@ -65,10 +65,10 @@ export const EnhancedSignInForm: React.FC<EnhancedSignInFormProps> = ({
         />
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-end">
         <button
           type="button"
-          className="text-sm text-primary hover:underline font-medium"
+          className="text-sm text-primary hover:underline font-medium transition-colors"
           onClick={onForgotPassword}
           disabled={isSubmitting}
         >
@@ -81,7 +81,7 @@ export const EnhancedSignInForm: React.FC<EnhancedSignInFormProps> = ({
         loading={isSubmitting}
         loadingText="Signing in..."
         icon={ArrowRight}
-        className="w-full"
+        className="w-full h-12 text-base font-medium"
       >
         Sign in
       </AuthButton>

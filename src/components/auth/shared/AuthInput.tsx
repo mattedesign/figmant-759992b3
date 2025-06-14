@@ -42,30 +42,39 @@ export const AuthInput: React.FC<AuthInputProps> = ({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor={id} className="text-sm font-medium">
+      <Label htmlFor={id} className="text-sm font-medium text-foreground">
         {label}
       </Label>
       <div className="relative">
         {Icon && (
-          <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
         )}
         <Input
           id={id}
           type={type}
           placeholder={placeholder}
-          className={`modern-input ${Icon ? 'pl-10' : ''} ${rightIcon ? 'pr-10' : ''} ${error ? 'border-destructive' : ''} ${className}`}
+          className={`
+            h-12 text-base
+            ${Icon ? 'pl-10' : 'pl-4'} 
+            ${rightIcon ? 'pr-12' : 'pr-4'} 
+            ${error ? 'border-destructive focus-visible:ring-destructive' : 'border-input focus-visible:ring-ring'} 
+            ${className}
+            transition-colors duration-200
+            bg-background
+            rounded-lg
+          `}
           value={value}
           onChange={handleChange}
           disabled={disabled}
         />
         {rightIcon && (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 z-10">
             {rightIcon}
           </div>
         )}
       </div>
       {error && (
-        <p className="text-xs text-destructive">{error}</p>
+        <p className="text-xs text-destructive mt-1">{error}</p>
       )}
     </div>
   );

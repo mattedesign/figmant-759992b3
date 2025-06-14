@@ -1,5 +1,4 @@
 
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -99,6 +98,12 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Ensure mobile viewport handling */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
 }
 
 /* Modern typography styles */
@@ -116,11 +121,33 @@
   }
   
   .modern-input {
-    @apply border-input bg-background rounded-lg px-4 py-3 text-sm;
+    @apply border-input bg-background rounded-lg px-4 py-3 text-base;
+    min-height: 48px;
   }
   
   .modern-button {
-    @apply bg-primary text-primary-foreground rounded-lg px-4 py-3 text-sm font-medium;
+    @apply bg-primary text-primary-foreground rounded-lg px-4 py-3 text-base font-medium;
+    min-height: 48px;
+  }
+
+  /* Enhanced responsive input styling */
+  @screen sm {
+    .modern-input {
+      @apply text-sm;
+      min-height: 44px;
+    }
+    
+    .modern-button {
+      @apply text-sm;
+      min-height: 44px;
+    }
+  }
+
+  /* Improved mobile touch targets */
+  @media (max-width: 640px) {
+    .modern-input, .modern-button {
+      min-height: 48px;
+      @apply text-base;
+    }
   }
 }
-

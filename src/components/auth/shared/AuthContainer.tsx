@@ -17,19 +17,17 @@ export const AuthContainer: React.FC<AuthContainerProps> = ({
   showLogo = true
 }) => {
   return (
-    <div className="w-full max-w-md space-y-8">
+    <div className="w-full space-y-6">
       {showLogo && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-center">
-            <Logo size="md" />
-          </div>
+        <div className="text-center">
+          <Logo size="md" />
         </div>
       )}
 
       <Card className="modern-card border-0 shadow-xl">
-        <CardContent className="p-8">
-          <div className="text-center space-y-2 mb-8">
-            <h2 className="text-xl font-semibold">{title}</h2>
+        <CardContent className="p-6 sm:p-8">
+          <div className="text-center space-y-2 mb-6">
+            <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
             <p className="text-sm text-muted-foreground">{subtitle}</p>
           </div>
           {children}
