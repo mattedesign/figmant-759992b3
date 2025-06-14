@@ -14,12 +14,12 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
   const { user, isOwner } = useAuth();
   const location = useLocation();
   
-  // Determine the title based on the current route
+  // Determine the title based on the current route and user role
   const getTitle = () => {
-    if (location.pathname === '/owner') {
+    if (location.pathname === '/owner' && isOwner) {
       return 'Owner Dashboard';
     }
-    if (location.pathname === '/dashboard') {
+    if (location.pathname === '/dashboard' || (location.pathname === '/owner' && !isOwner)) {
       return 'Dashboard';
     }
     return 'Dashboard';

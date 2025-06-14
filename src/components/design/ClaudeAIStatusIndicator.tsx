@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, AlertTriangle, Settings } from 'lucide-react';
 import { useClaudeSettings } from '@/hooks/useClaudeSettings';
+import { useAuth } from '@/contexts/AuthContext';
 import { getConnectionStatus } from '@/utils/claudeStatus';
 
 interface ClaudeAIStatusIndicatorProps {
@@ -16,6 +17,7 @@ export const ClaudeAIStatusIndicator = ({
   onConfigureClick 
 }: ClaudeAIStatusIndicatorProps) => {
   const { data: claudeSettings, isLoading } = useClaudeSettings();
+  const { isOwner } = useAuth();
 
   if (isLoading) {
     return (
@@ -35,7 +37,7 @@ export const ClaudeAIStatusIndicator = ({
   if (compact) {
     return (
       <Badge 
-        variant={connectionStatus.status === 'ready' ? 'default' : 'destructive'}
+        variant={connectionStatus.status === 'ready' ? 'default' : 'secondary'}
         className="flex items-center space-x-1"
       >
         <StatusIcon className="h-3 w-3" />
@@ -51,7 +53,7 @@ export const ClaudeAIStatusIndicator = ({
         <span className="text-sm font-medium">Claude AI: {connectionStatus.text}</span>
       </div>
       
-      {connectionStatus.status !== 'ready' && onConfigureClick && (
+      {connectionStatus.status !== 'ready' && isOwner && onConfigureClick && (
         <Button
           variant="outline"
           size="sm"

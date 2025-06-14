@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Loader2, Brain } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, Brain, Shield } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -11,9 +12,19 @@ export const ClaudeConnectionTest = () => {
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
   const [testResponse, setTestResponse] = useState<string>('');
+  const { isOwner } = useAuth();
   const { toast } = useToast();
 
   const testClaudeConnection = async () => {
+    if (!isOwner) {
+      toast({
+        variant: "destructive",
+        title: "Access Restricted",
+        description: "Only administrators can test the Claude AI connection.",
+      });
+      return;
+    }
+
     setIsTestingConnection(true);
     setTestResult(null);
     setTestResponse('');
@@ -56,6 +67,28 @@ export const ClaudeConnectionTest = () => {
       setIsTestingConnection(false);
     }
   };
+
+  if (!isOwner) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Claude AI Connection Test
+          </CardTitle>
+          <CardDescription>
+            Connection testing is restricted to administrators
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Shield className="h-4 w-4" />
+            <span>Contact your administrator if you're experiencing issues with Claude AI</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
