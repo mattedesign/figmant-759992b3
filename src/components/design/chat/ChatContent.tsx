@@ -5,6 +5,7 @@ import { ChatMessage } from './ChatMessage';
 import { ChatAttachments } from './ChatAttachments';
 import { ClaudeAISetupPrompt } from '../ClaudeAISetupPrompt';
 import { RoleAwareStorageStatus } from './RoleAwareStorageStatus';
+import { FileUploadDropzone } from './FileUploadDropzone';
 import type { ChatMessage as ChatMessageType, ChatAttachment } from '../DesignChatInterface';
 
 interface ChatContentProps {
@@ -12,6 +13,9 @@ interface ChatContentProps {
   attachments: ChatAttachment[];
   storageStatus: 'checking' | 'ready' | 'error';
   storageErrorDetails?: any;
+  getRootProps?: any;
+  getInputProps?: any;
+  isDragActive?: boolean;
   onStorageStatusChange: (status: 'checking' | 'ready' | 'error') => void;
   onRemoveAttachment: (id: string) => void;
   onRetryAttachment: (id: string) => void;
@@ -23,6 +27,9 @@ export const ChatContent: React.FC<ChatContentProps> = ({
   attachments,
   storageStatus,
   storageErrorDetails,
+  getRootProps,
+  getInputProps,
+  isDragActive = false,
   onStorageStatusChange,
   onRemoveAttachment,
   onRetryAttachment,
@@ -45,6 +52,16 @@ export const ChatContent: React.FC<ChatContentProps> = ({
         onStatusChange={onStorageStatusChange}
         errorDetails={storageErrorDetails}
       />
+
+      {/* File Upload Dropzone */}
+      {getRootProps && getInputProps && (
+        <FileUploadDropzone
+          storageStatus={storageStatus}
+          getRootProps={getRootProps}
+          getInputProps={getInputProps}
+          isDragActive={isDragActive}
+        />
+      )}
 
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto space-y-4 mb-4 min-h-0">

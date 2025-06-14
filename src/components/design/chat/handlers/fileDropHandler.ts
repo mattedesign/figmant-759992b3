@@ -79,32 +79,23 @@ export const createFileDropHandler = (
             
             // Wait and retry if storage is still checking
             setTimeout(() => {
-              if (storageStatus === 'ready') {
-                processFileWithRetry(file, attachment, attachments, setAttachments, isImage, retryCount);
-              } else {
-                console.log('Storage not ready after wait, proceeding anyway');
-                continueUpload();
-              }
+              processFileWithRetry(file, attachment, attachments, setAttachments, isImage, retryCount);
             }, 2000);
             return;
           }
 
-          const continueUpload = async () => {
-            updateAttachmentStatus(attachments, setAttachments, attachment.id, 'uploading');
-            const uploadPath = await uploadFileToStorage(fileToUpload);
-            updateAttachmentStatus(attachments, setAttachments, attachment.id, 'uploaded', undefined, uploadPath, processingInfo);
-            
-            removeAttachmentFromPending(setPendingImageProcessing, attachment.id);
-            
-            toast({
-              title: "Image Ready",
-              description: processingInfo 
-                ? `${file.name} processed and uploaded successfully.`
-                : `${file.name} uploaded successfully.`,
-            });
-          };
-
-          await continueUpload();
+          updateAttachmentStatus(attachments, setAttachments, attachment.id, 'uploading');
+          const uploadPath = await uploadFileToStorage(fileToUpload);
+          updateAttachmentStatus(attachments, setAttachments, attachment.id, 'uploaded', undefined, uploadPath, processingInfo);
+          
+          removeAttachmentFromPending(setPendingImageProcessing, attachment.id);
+          
+          toast({
+            title: "Image Ready",
+            description: processingInfo 
+              ? `${file.name} processed and uploaded successfully.`
+              : `${file.name} uploaded successfully.`,
+          });
 
         } catch (processingError) {
           clearTimeout(timeoutId);
@@ -194,7 +185,7 @@ export const createFileDropHandler = (
         type: 'file',
         name: file.name,
         file,
-        status: storageStatus === 'ready' ? 'pending' : 'queued'
+        status: storageStatus === 'ready' ? 'pending' : 'pending' // Fixed: use only 'pending' instead of 'queued'
       };
 
       newAttachments.push(attachment);
