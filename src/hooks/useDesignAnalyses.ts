@@ -16,7 +16,7 @@ export const useDesignAnalyses = (uploadId?: string) => {
       const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
-      return (data || []) as DesignAnalysis[];
+      return (data || []) as unknown as DesignAnalysis[];
     },
     enabled: !!uploadId
   });

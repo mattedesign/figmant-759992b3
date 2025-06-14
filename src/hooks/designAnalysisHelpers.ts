@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { DesignUseCase, AnalysisPreferences } from '@/types/design';
 import { generateImpactSummary } from './batch-upload/impactSummaryGenerator';
@@ -161,7 +160,7 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
         analysis_type: useCase.name,
         prompt_used: enhancedPrompt,
         analysis_results: { response: analysisResponse.analysis || analysisResponse.response },
-        impact_summary: impactSummary,
+        impact_summary: impactSummary as any, // Cast to any to match Json type
         confidence_score: 0.8
       })
       .select()
@@ -359,7 +358,7 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
         analysis_type: useCase.name,
         prompt_used: batchPrompt,
         analysis_results: { response: batchAnalysisResponse.analysis || batchAnalysisResponse.response },
-        impact_summary: batchImpactSummary,
+        impact_summary: batchImpactSummary as any, // Cast to any to match Json type
         context_summary: contextSummary,
         analysis_settings: {
           uploads_count: uploads.length,

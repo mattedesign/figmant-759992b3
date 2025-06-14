@@ -16,7 +16,7 @@ export const useDesignBatchAnalyses = (batchId?: string) => {
       const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
-      return (data || []) as DesignBatchAnalysis[];
+      return (data || []) as unknown as DesignBatchAnalysis[];
     },
     enabled: true // Always enabled, will fetch all if no batchId provided
   });

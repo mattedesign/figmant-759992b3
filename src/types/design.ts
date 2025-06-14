@@ -77,6 +77,7 @@ export interface ImpactSummary {
     improvement_areas: string[];
     strengths: string[];
   };
+  [key: string]: any; // Add index signature to make it compatible with Json type
 }
 
 export interface DesignAnalysis {
