@@ -1,15 +1,16 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDesignUploads } from '@/hooks/useDesignUploads';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { useDesignBatchAnalyses } from '@/hooks/useDesignBatchAnalyses';
 import { DesignUpload, DesignBatchAnalysis } from '@/types/design';
-import { Eye, FileImage, BarChart3, Target } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { Target } from 'lucide-react';
+import { AnalysisInsights } from './components/AnalysisInsights';
+import { IndividualAnalysesList } from './components/IndividualAnalysesList';
+import { BatchAnalysesList } from './components/BatchAnalysesList';
 
 interface RecentAnalysesProps {
   onViewAnalysis: (upload: DesignUpload) => void;
@@ -75,113 +76,13 @@ export const RecentAnalyses = ({
 
   if (showInsights) {
     return (
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Analysis Insights</CardTitle>
-            <CardDescription>
-              Key insights and patterns from your design analyses
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Total Analyses</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-2xl font-bold">{uploads.length}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {recentBatchAnalyses.length} batch analyses
-                    </p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Completion Rate</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-2xl font-bold">
-                      {uploads.length > 0 ? Math.round((recentUploads.length / uploads.length) * 100) : 0}%
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Successful analyses
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Recent Analysis Results</h4>
-                <Tabs defaultValue="individual" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="individual">Individual</TabsTrigger>
-                    <TabsTrigger value="batch">Batch</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="individual" className="mt-4">
-                    <div className="space-y-2">
-                      {recentUploads.slice(0, 3).map((upload) => (
-                        <div key={upload.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                          <div>
-                            <p className="font-medium text-sm">{upload.file_name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {upload.use_case} • {formatDistanceToNow(new Date(upload.created_at))} ago
-                            </p>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onViewAnalysis(upload)}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="batch" className="mt-4">
-                    <div className="space-y-2">
-                      {recentBatchAnalyses.slice(0, 3).map((batchAnalysis) => (
-                        <div key={batchAnalysis.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                          <div>
-                            <p className="font-medium text-sm flex items-center gap-2">
-                              <BarChart3 className="h-4 w-4 text-blue-600" />
-                              Batch Analysis
-                              {batchAnalysis.version_number && batchAnalysis.version_number > 1 && (
-                                <Badge variant="outline" className="text-xs">
-                                  v{batchAnalysis.version_number}
-                                </Badge>
-                              )}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {batchAnalysis.analysis_type} • {formatDistanceToNow(new Date(batchAnalysis.created_at))} ago
-                            </p>
-                          </div>
-                          {onViewBatchAnalysis && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => onViewBatchAnalysis(batchAnalysis)}
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <AnalysisInsights
+        uploads={uploads}
+        recentUploads={recentUploads}
+        recentBatchAnalyses={recentBatchAnalyses}
+        onViewAnalysis={onViewAnalysis}
+        onViewBatchAnalysis={onViewBatchAnalysis}
+      />
     );
   }
 
@@ -194,111 +95,19 @@ export const RecentAnalyses = ({
         </TabsList>
         
         <TabsContent value="individual" className="mt-4">
-          <div className="space-y-3">
-            {recentUploads.map((upload) => {
-              // Find the corresponding analysis for this upload
-              const analysis = individualAnalyses.find(a => a.design_upload_id === upload.id);
-              const overallScore = analysis?.impact_summary?.key_metrics?.overall_score || 0;
-              
-              return (
-                <div key={upload.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FileImage className="h-8 w-8 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium text-sm">{upload.file_name}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{upload.use_case}</span>
-                        <span>•</span>
-                        <span>{formatDistanceToNow(new Date(upload.created_at))} ago</span>
-                        {overallScore > 0 && (
-                          <>
-                            <span>•</span>
-                            <Badge variant="outline" className="text-xs">
-                              Score: {overallScore}/10
-                            </Badge>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={getStatusColor(upload.status)}>
-                      {upload.status}
-                    </Badge>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onViewAnalysis(upload)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <IndividualAnalysesList
+            uploads={recentUploads}
+            analyses={individualAnalyses}
+            onViewAnalysis={onViewAnalysis}
+            getStatusColor={getStatusColor}
+          />
         </TabsContent>
         
         <TabsContent value="batch" className="mt-4">
-          <div className="space-y-3">
-            {recentBatchAnalyses.length === 0 ? (
-              <div className="text-center py-4">
-                <BarChart3 className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">No batch analyses yet</p>
-              </div>
-            ) : (
-              recentBatchAnalyses.map((batchAnalysis) => {
-                const overallScore = batchAnalysis.impact_summary?.key_metrics?.overall_score || 0;
-                
-                return (
-                  <div key={batchAnalysis.id} className="flex items-center justify-between p-3 border rounded-lg border-l-4 border-l-blue-500">
-                    <div className="flex items-center gap-3">
-                      <BarChart3 className="h-8 w-8 text-blue-600" />
-                      <div>
-                        <p className="font-medium text-sm flex items-center gap-2">
-                          Batch Comparative Analysis
-                          {batchAnalysis.version_number && batchAnalysis.version_number > 1 && (
-                            <Badge variant="outline" className="text-xs">
-                              v{batchAnalysis.version_number}
-                            </Badge>
-                          )}
-                        </p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{batchAnalysis.analysis_type}</span>
-                          <span>•</span>
-                          <span>{formatDistanceToNow(new Date(batchAnalysis.created_at))} ago</span>
-                          {overallScore > 0 && (
-                            <>
-                              <span>•</span>
-                              <Badge variant="outline" className="text-xs">
-                                Score: {overallScore}/10
-                              </Badge>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="default" className="bg-blue-100 text-blue-800">
-                        Batch
-                      </Badge>
-                      {onViewBatchAnalysis && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onViewBatchAnalysis(batchAnalysis)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+          <BatchAnalysesList
+            batchAnalyses={recentBatchAnalyses}
+            onViewBatchAnalysis={onViewBatchAnalysis}
+          />
         </TabsContent>
       </Tabs>
       
