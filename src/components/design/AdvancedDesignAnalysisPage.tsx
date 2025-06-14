@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, BarChart3, History, RefreshCw } from 'lucide-react';
+import { MessageSquare, BarChart3, History, RefreshCw, Target } from 'lucide-react';
 import { DesignChatInterface } from './DesignChatInterface';
 import { DesignList } from './DesignList';
 import { BatchAnalysisDashboard } from './BatchAnalysisDashboard';
+import { UnifiedAnalysisHistory } from './UnifiedAnalysisHistory';
 import { ClaudeAISetupPrompt } from './ClaudeAISetupPrompt';
 import { useClaudeSettings } from '@/hooks/useClaudeSettings';
 import { useDesignUploads } from '@/hooks/useDesignUploads';
@@ -102,7 +103,7 @@ export const AdvancedDesignAnalysisPage = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="chat" className="flex items-center space-x-2">
             <MessageSquare className="h-4 w-4" />
             <span>AI Chat Analysis</span>
@@ -112,8 +113,12 @@ export const AdvancedDesignAnalysisPage = () => {
             <span>Batch Analysis</span>
           </TabsTrigger>
           <TabsTrigger value="history" className="flex items-center space-x-2">
-            <History className="h-4 w-4" />
+            <Target className="h-4 w-4" />
             <span>Analysis History</span>
+          </TabsTrigger>
+          <TabsTrigger value="legacy" className="flex items-center space-x-2">
+            <History className="h-4 w-4" />
+            <span>Legacy View</span>
           </TabsTrigger>
         </TabsList>
 
@@ -126,6 +131,10 @@ export const AdvancedDesignAnalysisPage = () => {
         </TabsContent>
 
         <TabsContent value="history" className="mt-6">
+          <UnifiedAnalysisHistory key={refreshKey} onViewAnalysis={handleViewAnalysis} />
+        </TabsContent>
+
+        <TabsContent value="legacy" className="mt-6">
           <DesignList key={refreshKey} onViewAnalysis={handleViewAnalysis} />
         </TabsContent>
       </Tabs>

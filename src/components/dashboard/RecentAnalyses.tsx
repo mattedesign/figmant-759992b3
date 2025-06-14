@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDesignUploads, useDesignUseCases, useDesignBatchAnalyses } from '@/hooks/useDesignAnalysis';
 import { DesignUpload, DesignBatchAnalysis } from '@/types/design';
-import { Eye, FileImage, BarChart3 } from 'lucide-react';
+import { Eye, FileImage, BarChart3, Target, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface RecentAnalysesProps {
@@ -26,11 +26,14 @@ export const RecentAnalyses = ({
   const { data: useCases = [] } = useDesignUseCases();
   const { data: batchAnalyses = [] } = useDesignBatchAnalyses();
 
+  // Filter uploads with completed analyses that have impact summaries
   const recentUploads = uploads
     .filter(upload => upload.status === 'completed')
     .slice(0, limit);
 
+  // Filter batch analyses that have impact summaries
   const recentBatchAnalyses = batchAnalyses
+    .filter(analysis => analysis.impact_summary)
     .slice(0, limit);
 
   const getUseCaseName = (useCaseId: string) => {
@@ -63,7 +66,7 @@ export const RecentAnalyses = ({
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <FileImage className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground">
             {showInsights ? 'No analysis insights available yet' : 'No completed analyses yet'}
           </p>
@@ -154,7 +157,7 @@ export const RecentAnalyses = ({
                             <p className="font-medium text-sm flex items-center gap-2">
                               <BarChart3 className="h-4 w-4 text-blue-600" />
                               Batch Analysis
-                              {batchAnalysis.version_number > 1 && (
+                              {batchAnalysis.version_number && batchAnalysis.version_number > 1 && (
                                 <Badge variant="outline" className="text-xs">
                                   v{batchAnalysis.version_number}
                                 </Badge>
@@ -243,7 +246,7 @@ export const RecentAnalyses = ({
                     <div>
                       <p className="font-medium text-sm flex items-center gap-2">
                         Batch Comparative Analysis
-                        {batchAnalysis.version_number > 1 && (
+                        {batchAnalysis.version_number && batchAnalysis.version_number > 1 && (
                           <Badge variant="outline" className="text-xs">
                             v{batchAnalysis.version_number}
                           </Badge>

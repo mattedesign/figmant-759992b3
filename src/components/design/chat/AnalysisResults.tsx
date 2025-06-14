@@ -10,11 +10,13 @@ import { EnhancedImpactSummary } from '../EnhancedImpactSummary';
 interface AnalysisResultsProps {
   lastAnalysisResult: any;
   uploadIds?: string[];
+  showEnhancedSummary?: boolean;
 }
 
 export const AnalysisResults: React.FC<AnalysisResultsProps> = ({ 
   lastAnalysisResult, 
-  uploadIds = [] 
+  uploadIds = [],
+  showEnhancedSummary = true
 }) => {
   // Get the latest analysis for the first upload ID if available
   const { data: analyses } = useDesignAnalyses(uploadIds[0]);
@@ -29,7 +31,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
   return (
     <div className="space-y-6">
       {/* Enhanced Impact Summary Section */}
-      {hasImpactSummary && (
+      {showEnhancedSummary && hasImpactSummary && (
         <EnhancedImpactSummary 
           impactSummary={latestAnalysis.impact_summary}
           winnerUploadId={uploadIds[0]}
@@ -41,10 +43,10 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-500" />
-            Analysis Complete
+            Analysis Results
           </CardTitle>
           <CardDescription>
-            AI-powered design analysis results
+            AI-powered design analysis insights
           </CardDescription>
         </CardHeader>
         <CardContent>
