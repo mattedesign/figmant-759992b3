@@ -99,7 +99,7 @@ export const AdvancedDesignAnalysisPage = () => {
       </div>
 
       {showClaudeSetup && (
-        <ClaudeAISetupPrompt onSetupComplete={() => window.location.reload()} />
+        <ClaudeAISetupPrompt />
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
