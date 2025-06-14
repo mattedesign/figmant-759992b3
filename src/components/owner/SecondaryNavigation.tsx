@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { BarChart3, Users, CreditCard, Bot, Settings, Bell, MessageSquare, Target, History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -9,9 +8,15 @@ import { lazy, Suspense } from 'react';
 const DesignChatInterface = lazy(() => import('@/components/design/DesignChatInterface').then(module => ({
   default: module.DesignChatInterface
 })));
-const BatchAnalysisDashboard = lazy(() => import('@/components/design/BatchAnalysisDashboard'));
-const UnifiedAnalysisHistory = lazy(() => import('@/components/design/UnifiedAnalysisHistory'));
-const DesignList = lazy(() => import('@/components/design/DesignList'));
+const BatchAnalysisDashboard = lazy(() => import('@/components/design/BatchAnalysisDashboard').then(module => ({
+  default: module.BatchAnalysisDashboard
+})));
+const UnifiedAnalysisHistory = lazy(() => import('@/components/design/UnifiedAnalysisHistory').then(module => ({
+  default: module.UnifiedAnalysisHistory
+})));
+const DesignList = lazy(() => import('@/components/design/DesignList').then(module => ({
+  default: module.DesignList
+})));
 const UserManagement = lazy(() => import('@/components/owner/UserManagement').then(module => ({
   default: module.UserManagement
 })));
