@@ -9,7 +9,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 // Lazy load heavy components to prevent loading issues
 import { lazy, Suspense } from 'react';
 
-const OwnerAnalytics = lazy(() => import('@/components/owner/OwnerAnalytics').then(module => ({ default: module.OwnerAnalytics })));
 const UserManagement = lazy(() => import('@/components/owner/UserManagement').then(module => ({ default: module.UserManagement })));
 const AdminSettings = lazy(() => import('@/components/owner/AdminSettings').then(module => ({ default: module.AdminSettings })));
 const ClaudeSettings = lazy(() => import('@/components/owner/ClaudeSettings').then(module => ({ default: module.ClaudeSettings })));
@@ -28,9 +27,12 @@ const OwnerDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   
-  // Get the tab from URL parameters, default to 'analytics'
-  const tabFromUrl = searchParams.get('tab') || 'analytics';
+  // Get the tab from URL parameters, default to 'design' (first available tab)
+  const tabFromUrl = searchParams.get('tab') || 'design';
   const [activeTab, setActiveTab] = useState(tabFromUrl);
+
+  // Valid tab options (excluding analytics)
+  const validTabs = ['design', 'users', 'plans', 'claude', 'settings'];
 
   console.log('Current tab:', activeTab);
 
@@ -41,11 +43,19 @@ const OwnerDashboard = () => {
     setSearchParams({ tab: newTab });
   };
 
-  // Sync tab state with URL changes
+  // Sync tab state with URL changes and handle invalid tabs
   useEffect(() => {
-    const currentTab = searchParams.get('tab') || 'analytics';
+    const currentTab = searchParams.get('tab') || 'design';
     console.log('URL tab changed to:', currentTab);
-    setActiveTab(currentTab);
+    
+    // If the current tab is invalid (like 'analytics'), redirect to default
+    if (!validTabs.includes(currentTab)) {
+      console.log('Invalid tab detected, redirecting to design tab');
+      setActiveTab('design');
+      setSearchParams({ tab: 'design' });
+    } else {
+      setActiveTab(currentTab);
+    }
   }, [searchParams]);
 
   console.log('Rendering OwnerDashboard with tab:', activeTab);
@@ -64,20 +74,13 @@ const OwnerDashboard = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="design">Design Analysis</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="plans">Plans & Products</TabsTrigger>
               <TabsTrigger value="claude">Claude AI</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
-
-            <TabsContent value="analytics" className="mt-6">
-              <Suspense fallback={<LoadingSpinner />}>
-                <OwnerAnalytics />
-              </Suspense>
-            </TabsContent>
 
             <TabsContent value="design" className="mt-6">
               <Suspense fallback={<LoadingSpinner />}>
