@@ -76,7 +76,7 @@ const processIndividualAnalysis = async (upload: DesignUpload, useCase: string) 
         confidence_score: claudeResponse.confidence_score || 0.8,
         suggestions: claudeResponse.suggestions,
         improvement_areas: claudeResponse.improvement_areas,
-        impact_summary: impactSummary
+        impact_summary: impactSummary ? JSON.parse(JSON.stringify(impactSummary)) : null
       })
       .select()
       .single();
@@ -152,7 +152,7 @@ const processBatchAnalysis = async (uploads: DesignUpload[], batchId: string, us
         recommendations: claudeResponse.recommendations,
         confidence_score: claudeResponse.confidence_score || 0.8,
         context_summary: claudeResponse.context_summary,
-        impact_summary: impactSummary
+        impact_summary: impactSummary ? JSON.parse(JSON.stringify(impactSummary)) : null
       })
       .select()
       .single();
