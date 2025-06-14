@@ -1,8 +1,7 @@
-
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { AuthButton } from './shared/AuthButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { useUserOnboarding } from '@/hooks/useUserOnboarding';
@@ -222,29 +221,25 @@ export const ModernOnboardingFlow: React.FC<ModernOnboardingFlowProps> = ({ onCo
 
           {/* Navigation */}
           <div className="flex justify-between items-center">
-            <Button 
-              variant="ghost" 
+            <AuthButton 
+              variant="ghost"
               onClick={handleComplete}
               disabled={isCompleting}
               className="text-sm"
             >
               Skip setup
-            </Button>
+            </AuthButton>
             
-            <Button 
+            <AuthButton 
               onClick={handleNext}
               disabled={isCompleting}
-              className="modern-button flex items-center gap-2"
+              loading={isCompleting}
+              loadingText="Finishing..."
+              icon={currentStep !== steps.length - 1 ? ArrowRight : undefined}
+              className="modern-button"
             >
-              {currentStep === steps.length - 1 ? (
-                isCompleting ? 'Finishing...' : 'Get started'
-              ) : (
-                <>
-                  Continue
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </Button>
+              {currentStep === steps.length - 1 ? 'Get started' : 'Continue'}
+            </AuthButton>
           </div>
         </div>
       </div>
