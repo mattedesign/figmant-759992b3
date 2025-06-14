@@ -18,7 +18,7 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <img 
-              src="/lovable-uploads/c52140a4-1da3-4d65-aa1d-35e9ccd21d91.png" 
+              src="/lovable-uploads/c1e94897-1bb1-4fc6-9402-83245dcb008c.png" 
               alt="Logo" 
               className="h-8 w-8 object-contain"
             />
