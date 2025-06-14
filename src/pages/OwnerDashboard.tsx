@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Navigation } from '@/components/layout/Navigation';
 import { OwnerDashboardErrorBoundary } from '@/components/owner/OwnerDashboardErrorBoundary';
 import { OwnerSidebar } from '@/components/owner/OwnerSidebar';
-import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 // Lazy load heavy components to prevent loading issues
@@ -120,15 +120,9 @@ const OwnerDashboard = () => {
           <OwnerSidebar activeTab={activeTab} onTabChange={handleTabChange} />
           
           <SidebarInset className="flex-1">
-            <Navigation />
+            <Navigation showSidebarTrigger={true} />
             
             <main className="flex-1 p-6">
-              <div className="flex items-center space-x-2 mb-6">
-                <SidebarTrigger />
-                <div className="h-4 w-px bg-border" />
-                <h1 className="text-2xl font-semibold">Owner Dashboard</h1>
-              </div>
-              
               <div className="space-y-6">
                 {renderContent()}
               </div>
