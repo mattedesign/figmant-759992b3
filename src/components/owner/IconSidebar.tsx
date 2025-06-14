@@ -57,8 +57,12 @@ export const IconSidebar = ({ activeSection, onSectionChange }: IconSidebarProps
       {/* Header */}
       <div className="p-2 border-b border-border">
         <div className="flex items-center justify-center">
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-            <Building2 className="h-5 w-5 text-white" />
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+            <img 
+              src="/lovable-uploads/eda58068-9251-4a23-8650-74d725883c99.png" 
+              alt="App Icon" 
+              className="w-10 h-10 rounded-lg object-cover"
+            />
           </div>
         </div>
       </div>
