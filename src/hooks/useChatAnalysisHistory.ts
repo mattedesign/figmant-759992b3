@@ -45,7 +45,19 @@ export const useChatAnalysisHistory = () => {
       }
 
       console.log('Fetched chat analysis history:', data?.length || 0, 'records');
-      return data || [];
+      
+      // Transform the data to match our interface
+      const transformedData: SavedChatAnalysis[] = (data || []).map(item => ({
+        id: item.id,
+        analysis_type: item.analysis_type,
+        prompt_used: item.prompt_used,
+        analysis_results: item.analysis_results as SavedChatAnalysis['analysis_results'],
+        confidence_score: item.confidence_score || 0,
+        created_at: item.created_at,
+        design_upload_id: item.design_upload_id || undefined,
+      }));
+
+      return transformedData;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -78,7 +90,19 @@ export const useGetChatAnalysis = (analysisId: string) => {
       }
 
       console.log('Fetched specific chat analysis:', data?.id);
-      return data;
+      
+      // Transform the single item to match our interface
+      const transformedData: SavedChatAnalysis = {
+        id: data.id,
+        analysis_type: data.analysis_type,
+        prompt_used: data.prompt_used,
+        analysis_results: data.analysis_results as SavedChatAnalysis['analysis_results'],
+        confidence_score: data.confidence_score || 0,
+        created_at: data.created_at,
+        design_upload_id: data.design_upload_id || undefined,
+      };
+
+      return transformedData;
     },
     enabled: !!analysisId,
     staleTime: 10 * 60 * 1000, // 10 minutes
