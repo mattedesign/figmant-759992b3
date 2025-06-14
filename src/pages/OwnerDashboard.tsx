@@ -1,12 +1,10 @@
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Navigation } from '@/components/layout/Navigation';
 import { OwnerDashboardErrorBoundary } from '@/components/owner/OwnerDashboardErrorBoundary';
 import { IconSidebar } from '@/components/owner/IconSidebar';
 import { SecondaryNavigation } from '@/components/owner/SecondaryNavigation';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 // Lazy load heavy components to prevent loading issues
 import { lazy, Suspense } from 'react';
@@ -45,7 +43,6 @@ const tabToSectionMap: Record<string, string> = {
 const OwnerDashboard = () => {
   console.log('OwnerDashboard component mounting...');
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   // Get the tab from URL parameters, default to 'design' (first available tab)
   const tabFromUrl = searchParams.get('tab') || 'design';
@@ -149,30 +146,31 @@ const OwnerDashboard = () => {
   
   return (
     <OwnerDashboardErrorBoundary>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background">
-          <IconSidebar 
-            activeSection={activeSection} 
-            onSectionChange={handleSectionChange} 
-          />
+      <div className="min-h-screen flex w-full bg-background">
+        {/* Icon Sidebar */}
+        <IconSidebar 
+          activeSection={activeSection} 
+          onSectionChange={handleSectionChange} 
+        />
+        
+        {/* Secondary Navigation */}
+        <SecondaryNavigation 
+          activeSection={activeSection}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
+        
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col">
+          <Navigation showSidebarTrigger={false} />
           
-          <SecondaryNavigation 
-            activeSection={activeSection}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-          />
-          
-          <SidebarInset className="flex-1">
-            <Navigation showSidebarTrigger={false} />
-            
-            <main className="flex-1 p-6">
-              <div className="space-y-6">
-                {renderContent()}
-              </div>
-            </main>
-          </SidebarInset>
+          <main className="flex-1 p-6 overflow-auto">
+            <div className="space-y-6">
+              {renderContent()}
+            </div>
+          </main>
         </div>
-      </SidebarProvider>
+      </div>
     </OwnerDashboardErrorBoundary>
   );
 };

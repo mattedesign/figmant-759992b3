@@ -1,7 +1,8 @@
 
-import { Sidebar, SidebarContent, SidebarHeader, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
 import { BarChart3, Users, CreditCard, Bot, Settings, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface SecondaryNavigationProps {
   activeSection: string;
@@ -54,51 +55,52 @@ export const SecondaryNavigation = ({ activeSection, activeTab, onTabChange }: S
 
   if (!config) {
     return (
-      <Sidebar className="w-64 border-r">
-        <SidebarHeader className="p-4">
+      <div className="w-64 h-screen bg-card border-r border-border flex flex-col">
+        <div className="p-4 border-b border-border">
           <h2 className="text-lg font-semibold">Navigation</h2>
-        </SidebarHeader>
-        <SidebarContent>
-          <div className="p-4 text-muted-foreground">
+        </div>
+        <div className="flex-1 p-4">
+          <div className="text-muted-foreground">
             Select a section from the left sidebar
           </div>
-        </SidebarContent>
-      </Sidebar>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Sidebar className="w-64 border-r">
-      <SidebarHeader className="p-4">
+    <div className="w-64 h-screen bg-card border-r border-border flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b border-border">
         <h2 className="text-lg font-semibold">{config.title}</h2>
-      </SidebarHeader>
+      </div>
 
-      <SidebarContent className="px-2">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {config.items.map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton
-                    isActive={activeTab === item.id}
-                    onClick={() => !item.disabled && onTabChange(item.id)}
-                    className={`w-full justify-start ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    disabled={item.disabled}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                    {item.badge && (
-                      <Badge variant="secondary" className="ml-auto text-xs">
-                        {item.badge}
-                      </Badge>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
+      {/* Navigation Items */}
+      <div className="flex-1 p-2">
+        <div className="space-y-1">
+          {config.items.map((item) => (
+            <Button
+              key={item.id}
+              variant="ghost"
+              onClick={() => !item.disabled && onTabChange(item.id)}
+              className={cn(
+                "w-full justify-start h-10 px-3",
+                activeTab === item.id && "bg-accent text-accent-foreground",
+                item.disabled && "opacity-50 cursor-not-allowed"
+              )}
+              disabled={item.disabled}
+            >
+              <item.icon className="h-4 w-4 mr-3" />
+              <span className="flex-1 text-left">{item.label}</span>
+              {item.badge && (
+                <Badge variant="secondary" className="ml-2 text-xs">
+                  {item.badge}
+                </Badge>
+              )}
+            </Button>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };

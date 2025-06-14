@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { BarChart3, Users, CreditCard, Settings, Bot, Building2 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -54,16 +53,18 @@ export const IconSidebar = ({ activeSection, onSectionChange }: IconSidebarProps
   };
 
   return (
-    <Sidebar className="w-16 border-r">
-      <SidebarHeader className="p-2">
+    <div className="w-16 h-screen bg-card border-r border-border flex flex-col">
+      {/* Header */}
+      <div className="p-2 border-b border-border">
         <div className="flex items-center justify-center">
           <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
             <Building2 className="h-5 w-5 text-white" />
           </div>
         </div>
-      </SidebarHeader>
+      </div>
 
-      <SidebarContent className="px-2">
+      {/* Navigation Icons */}
+      <div className="flex-1 px-2 py-4">
         <div className="flex flex-col space-y-2">
           {sections.map((section) => (
             <Button
@@ -83,9 +84,10 @@ export const IconSidebar = ({ activeSection, onSectionChange }: IconSidebarProps
             </Button>
           ))}
         </div>
-      </SidebarContent>
+      </div>
 
-      <SidebarFooter className="p-2">
+      {/* Footer - User Avatar */}
+      <div className="p-2 border-t border-border">
         <div className="flex items-center justify-center">
           <Avatar className="h-10 w-10">
             <AvatarFallback className="text-xs bg-muted">
@@ -93,7 +95,7 @@ export const IconSidebar = ({ activeSection, onSectionChange }: IconSidebarProps
             </AvatarFallback>
           </Avatar>
         </div>
-      </SidebarFooter>
-    </Sidebar>
+      </div>
+    </div>
   );
 };
