@@ -33,7 +33,7 @@ export const NavigationSidebar = ({
   onToggleCollapse 
 }: NavigationSidebarProps) => {
   return (
-    <div className={`${isCollapsed ? 'w-0' : 'w-64'} h-full bg-card border-r border-border flex flex-col overflow-hidden transition-all duration-300`}>
+    <div className={`${isCollapsed ? 'w-12' : 'w-64'} h-full bg-card border-r border-border flex flex-col overflow-hidden transition-all duration-300`}>
       {!isCollapsed && (
         <>
           {/* Header */}
@@ -81,12 +81,12 @@ export const NavigationSidebar = ({
       )}
       
       {isCollapsed && onToggleCollapse && (
-        <div className="h-full flex items-start pt-4">
+        <div className="h-full flex items-start pt-4 justify-center">
           <Button
             variant="ghost"
             size="sm"
             onClick={onToggleCollapse}
-            className="h-6 w-6 p-0 hover:bg-muted ml-2"
+            className="h-6 w-6 p-0 hover:bg-muted"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
