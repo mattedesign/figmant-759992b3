@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDesignUploads, useDesignUseCases, useDesignBatchAnalyses } from '@/hooks/useDesignAnalysis';
+import { useDesignUploads } from '@/hooks/useDesignUploads';
+import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
+import { useDesignBatchAnalyses } from '@/hooks/useDesignBatchAnalyses';
 import { DesignUpload, DesignBatchAnalysis } from '@/types/design';
-import { Eye, FileImage, BarChart3, Target, TrendingUp } from 'lucide-react';
+import { Eye, FileImage, BarChart3, Target } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface RecentAnalysesProps {
@@ -23,7 +25,7 @@ export const RecentAnalyses = ({
   showInsights = false 
 }: RecentAnalysesProps) => {
   const { data: uploads = [], isLoading } = useDesignUploads();
-  const { data: useCases = [] } = useDesignUseCases();
+  const { data: individualAnalyses = [] } = useDesignAnalyses();
   const { data: batchAnalyses = [] } = useDesignBatchAnalyses();
 
   // Filter uploads with completed analyses that have impact summaries
@@ -35,11 +37,6 @@ export const RecentAnalyses = ({
   const recentBatchAnalyses = batchAnalyses
     .filter(analysis => analysis.impact_summary)
     .slice(0, limit);
-
-  const getUseCaseName = (useCaseId: string) => {
-    const useCase = useCases.find(uc => uc.id === useCaseId);
-    return useCase?.name || 'Unknown';
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -133,7 +130,7 @@ export const RecentAnalyses = ({
                           <div>
                             <p className="font-medium text-sm">{upload.file_name}</p>
                             <p className="text-xs text-muted-foreground">
-                              {getUseCaseName(upload.use_case)} • {formatDistanceToNow(new Date(upload.created_at))} ago
+                              {upload.use_case} • {formatDistanceToNow(new Date(upload.created_at))} ago
                             </p>
                           </div>
                           <Button
@@ -207,7 +204,7 @@ export const RecentAnalyses = ({
                   <div>
                     <p className="font-medium text-sm">{upload.file_name}</p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{getUseCaseName(upload.use_case)}</span>
+                      <span>{upload.use_case}</span>
                       <span>•</span>
                       <span>{formatDistanceToNow(new Date(upload.created_at))} ago</span>
                     </div>
@@ -239,43 +236,55 @@ export const RecentAnalyses = ({
                 <p className="text-sm text-muted-foreground">No batch analyses yet</p>
               </div>
             ) : (
-              recentBatchAnalyses.map((batchAnalysis) => (
-                <div key={batchAnalysis.id} className="flex items-center justify-between p-3 border rounded-lg border-l-4 border-l-blue-500">
-                  <div className="flex items-center gap-3">
-                    <BarChart3 className="h-8 w-8 text-blue-600" />
-                    <div>
-                      <p className="font-medium text-sm flex items-center gap-2">
-                        Batch Comparative Analysis
-                        {batchAnalysis.version_number && batchAnalysis.version_number > 1 && (
-                          <Badge variant="outline" className="text-xs">
-                            v{batchAnalysis.version_number}
-                          </Badge>
-                        )}
-                      </p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{batchAnalysis.analysis_type}</span>
-                        <span>•</span>
-                        <span>{formatDistanceToNow(new Date(batchAnalysis.created_at))} ago</span>
+              recentBatchAnalyses.map((batchAnalysis) => {
+                const overallScore = batchAnalysis.impact_summary?.key_metrics?.overall_score || 0;
+                
+                return (
+                  <div key={batchAnalysis.id} className="flex items-center justify-between p-3 border rounded-lg border-l-4 border-l-blue-500">
+                    <div className="flex items-center gap-3">
+                      <BarChart3 className="h-8 w-8 text-blue-600" />
+                      <div>
+                        <p className="font-medium text-sm flex items-center gap-2">
+                          Batch Comparative Analysis
+                          {batchAnalysis.version_number && batchAnalysis.version_number > 1 && (
+                            <Badge variant="outline" className="text-xs">
+                              v{batchAnalysis.version_number}
+                            </Badge>
+                          )}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{batchAnalysis.analysis_type}</span>
+                          <span>•</span>
+                          <span>{formatDistanceToNow(new Date(batchAnalysis.created_at))} ago</span>
+                          {overallScore > 0 && (
+                            <>
+                              <span>•</span>
+                              <Badge variant="outline" className="text-xs">
+                                Score: {overallScore}/10
+                              </Badge>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="default" className="bg-blue-100 text-blue-800">
+                        Batch
+                      </Badge>
+                      {onViewBatchAnalysis && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onViewBatchAnalysis(batchAnalysis)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="default" className="bg-blue-100 text-blue-800">
-                      Batch
-                    </Badge>
-                    {onViewBatchAnalysis && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onViewBatchAnalysis(batchAnalysis)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </TabsContent>

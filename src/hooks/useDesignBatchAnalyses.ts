@@ -15,9 +15,14 @@ export const useDesignBatchAnalyses = (batchId?: string) => {
       
       const { data, error } = await query.order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching batch analyses:', error);
+        throw error;
+      }
+      
+      console.log('Fetched batch analyses:', data?.length || 0);
       return (data || []) as unknown as DesignBatchAnalysis[];
     },
-    enabled: true // Always enabled, will fetch all if no batchId provided
+    enabled: true // Always enabled to fetch all batch analyses
   });
 };

@@ -15,9 +15,14 @@ export const useDesignAnalyses = (uploadId?: string) => {
       
       const { data, error } = await query.order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching design analyses:', error);
+        throw error;
+      }
+      
+      console.log('Fetched design analyses:', data?.length || 0);
       return (data || []) as unknown as DesignAnalysis[];
     },
-    enabled: !!uploadId
+    enabled: uploadId ? !!uploadId : true // Always enabled if no uploadId, enabled only if uploadId exists when provided
   });
 };

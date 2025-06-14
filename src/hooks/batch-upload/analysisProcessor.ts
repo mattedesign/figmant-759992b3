@@ -57,12 +57,20 @@ const processIndividualAnalysis = async (upload: DesignUpload, useCase: string) 
 
     // Generate impact summary from Claude response
     const analysisText = claudeResponse.analysis || claudeResponse.response || '';
-    const impactSummary = await generateImpactSummary(
-      analysisText,
-      'individual',
-      upload.user_id
-    );
-    console.log('Generated impact summary:', impactSummary);
+    console.log('Generating impact summary for analysis text length:', analysisText.length);
+    
+    let impactSummary = null;
+    try {
+      impactSummary = await generateImpactSummary(
+        analysisText,
+        'individual',
+        upload.user_id
+      );
+      console.log('Generated impact summary:', impactSummary);
+    } catch (summaryError) {
+      console.error('Failed to generate impact summary:', summaryError);
+      // Continue without impact summary rather than failing the entire analysis
+    }
 
     // Save analysis to database with impact summary
     const { data: analysisData, error: analysisError } = await supabase
@@ -76,7 +84,7 @@ const processIndividualAnalysis = async (upload: DesignUpload, useCase: string) 
         confidence_score: claudeResponse.confidence_score || 0.8,
         suggestions: claudeResponse.suggestions,
         improvement_areas: claudeResponse.improvement_areas,
-        impact_summary: impactSummary ? JSON.parse(JSON.stringify(impactSummary)) : null
+        impact_summary: impactSummary
       })
       .select()
       .single();
@@ -88,11 +96,16 @@ const processIndividualAnalysis = async (upload: DesignUpload, useCase: string) 
 
     console.log('Analysis saved successfully:', analysisData);
 
-    // Update upload status
-    await supabase
+    // Update upload status to completed
+    const { error: updateError } = await supabase
       .from('design_uploads')
       .update({ status: 'completed' })
       .eq('id', upload.id);
+
+    if (updateError) {
+      console.error('Failed to update upload status:', updateError);
+      // Don't throw here as the analysis was saved successfully
+    }
 
     return { success: true, analysisId: analysisData.id };
   } catch (error) {
@@ -131,12 +144,20 @@ const processBatchAnalysis = async (uploads: DesignUpload[], batchId: string, us
 
     // Generate impact summary for batch analysis
     const analysisText = claudeResponse.analysis || claudeResponse.response || '';
-    const impactSummary = await generateImpactSummary(
-      analysisText,
-      'batch_comparative',
-      uploads[0].user_id
-    );
-    console.log('Generated batch impact summary:', impactSummary);
+    console.log('Generating batch impact summary for analysis text length:', analysisText.length);
+    
+    let impactSummary = null;
+    try {
+      impactSummary = await generateImpactSummary(
+        analysisText,
+        'batch_comparative',
+        uploads[0].user_id
+      );
+      console.log('Generated batch impact summary:', impactSummary);
+    } catch (summaryError) {
+      console.error('Failed to generate batch impact summary:', summaryError);
+      // Continue without impact summary rather than failing the entire analysis
+    }
 
     // Save batch analysis to database
     const { data: batchAnalysisData, error: batchError } = await supabase
@@ -152,7 +173,7 @@ const processBatchAnalysis = async (uploads: DesignUpload[], batchId: string, us
         recommendations: claudeResponse.recommendations,
         confidence_score: claudeResponse.confidence_score || 0.8,
         context_summary: claudeResponse.context_summary,
-        impact_summary: impactSummary ? JSON.parse(JSON.stringify(impactSummary)) : null
+        impact_summary: impactSummary
       })
       .select()
       .single();

@@ -4,15 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useDesignUploads } from '@/hooks/useDesignUploads';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { useDesignBatchAnalyses } from '@/hooks/useDesignBatchAnalyses';
 import { DesignUpload, DesignAnalysis, DesignBatchAnalysis } from '@/types/design';
 import { Eye, FileImage, BarChart3, Clock, Target, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { EnhancedImpactSummary } from './EnhancedImpactSummary';
-import { AnalysisResults } from './chat/AnalysisResults';
+import { UnifiedAnalysisResultsViewer } from './UnifiedAnalysisResultsViewer';
 
 interface UnifiedAnalysisHistoryProps {
   onViewAnalysis?: (upload: DesignUpload) => void;
@@ -26,6 +25,8 @@ export const UnifiedAnalysisHistory: React.FC<UnifiedAnalysisHistoryProps> = ({
   const [selectedAnalysis, setSelectedAnalysis] = useState<{
     type: 'individual' | 'batch';
     data: any;
+    upload?: any;
+    uploads?: any[];
   } | null>(null);
 
   const { data: uploads = [], isLoading: uploadsLoading } = useDesignUploads();
@@ -57,14 +58,18 @@ export const UnifiedAnalysisHistory: React.FC<UnifiedAnalysisHistoryProps> = ({
     const upload = uploads.find(u => u.id === analysis.design_upload_id);
     setSelectedAnalysis({ 
       type: 'individual', 
-      data: { analysis, upload } 
+      data: analysis,
+      upload
     });
   };
 
   const handleViewBatchAnalysis = (batchAnalysis: DesignBatchAnalysis) => {
+    // Get uploads for this batch
+    const batchUploads = uploads.filter(u => u.batch_id === batchAnalysis.batch_id);
     setSelectedAnalysis({ 
       type: 'batch', 
-      data: batchAnalysis 
+      data: batchAnalysis,
+      uploads: batchUploads
     });
   };
 
@@ -134,10 +139,14 @@ export const UnifiedAnalysisHistory: React.FC<UnifiedAnalysisHistoryProps> = ({
                             <span>{analysis.analysis_type}</span>
                             <span>•</span>
                             <span>{formatDistanceToNow(new Date(analysis.created_at))} ago</span>
-                            <span>•</span>
-                            <Badge variant="outline" className="text-xs">
-                              Score: {overallScore}/10
-                            </Badge>
+                            {overallScore > 0 && (
+                              <>
+                                <span>•</span>
+                                <Badge variant="outline" className="text-xs">
+                                  Score: {overallScore}/10
+                                </Badge>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -188,10 +197,14 @@ export const UnifiedAnalysisHistory: React.FC<UnifiedAnalysisHistoryProps> = ({
                               <span>{batchAnalysis.analysis_type}</span>
                               <span>•</span>
                               <span>{formatDistanceToNow(new Date(batchAnalysis.created_at))} ago</span>
-                              <span>•</span>
-                              <Badge variant="outline" className="text-xs">
-                                Score: {overallScore}/10
-                              </Badge>
+                              {overallScore > 0 && (
+                                <>
+                                  <span>•</span>
+                                  <Badge variant="outline" className="text-xs">
+                                    Score: {overallScore}/10
+                                  </Badge>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -237,29 +250,14 @@ export const UnifiedAnalysisHistory: React.FC<UnifiedAnalysisHistoryProps> = ({
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-6">
-            {selectedAnalysis?.type === 'individual' && selectedAnalysis.data.analysis.impact_summary && (
-              <EnhancedImpactSummary 
-                impactSummary={selectedAnalysis.data.analysis.impact_summary}
-                winnerUploadId={selectedAnalysis.data.upload?.id}
-                designFileName={selectedAnalysis.data.upload?.file_name}
-              />
-            )}
-            
-            {selectedAnalysis?.type === 'batch' && selectedAnalysis.data.impact_summary && (
-              <EnhancedImpactSummary 
-                impactSummary={selectedAnalysis.data.impact_summary}
-                winnerUploadId={selectedAnalysis.data.winner_upload_id}
-              />
-            )}
-
-            {selectedAnalysis?.type === 'individual' && (
-              <AnalysisResults
-                lastAnalysisResult={selectedAnalysis.data.analysis.analysis_results}
-                uploadIds={[selectedAnalysis.data.upload?.id].filter(Boolean)}
-              />
-            )}
-          </div>
+          {selectedAnalysis && (
+            <UnifiedAnalysisResultsViewer
+              analysisData={selectedAnalysis.data}
+              analysisType={selectedAnalysis.type}
+              upload={selectedAnalysis.upload}
+              uploads={selectedAnalysis.uploads}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </>
