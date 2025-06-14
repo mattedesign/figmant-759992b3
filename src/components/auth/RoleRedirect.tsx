@@ -33,7 +33,7 @@ export const RoleRedirect: React.FC<RoleRedirectProps> = ({
     return <Navigate to="/owner" replace />;
   }
 
-  // If user is not an owner and trying to access owner dashboard, redirect to regular dashboard
+  // If user is not an owner and trying to access owner dashboard, redirect to subscriber dashboard
   if (!isOwner && location.pathname === '/owner') {
     return <Navigate to="/dashboard" replace />;
   }

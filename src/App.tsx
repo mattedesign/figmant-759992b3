@@ -20,6 +20,11 @@ const Dashboard = lazy(() => import('./pages/Dashboard').catch(err => {
   return { default: () => <div>Error loading dashboard</div> };
 }));
 
+const SubscriberDashboard = lazy(() => import('./pages/SubscriberDashboard').catch(err => {
+  console.error('Failed to load SubscriberDashboard page:', err);
+  return { default: () => <div>Error loading subscriber dashboard. Please check console for details.</div> };
+}));
+
 const OwnerDashboard = lazy(() => import('./pages/OwnerDashboard').catch(err => {
   console.error('Failed to load OwnerDashboard page:', err);
   return { default: () => <div>Error loading owner dashboard. Please check console for details.</div> };
@@ -89,7 +94,9 @@ function App() {
                   <Route path="/dashboard" element={
                     <AuthGuard>
                       <RoleRedirect>
-                        <Dashboard />
+                        <Suspense fallback={<LoadingFallback message="Loading dashboard..." />}>
+                          <SubscriberDashboard />
+                        </Suspense>
                       </RoleRedirect>
                     </AuthGuard>
                   } />

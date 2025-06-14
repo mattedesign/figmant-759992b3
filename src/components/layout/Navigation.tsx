@@ -4,13 +4,26 @@ import { Badge } from '@/components/ui/badge';
 import { Bell, Settings } from 'lucide-react';
 import { UserMenu } from './UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLocation } from 'react-router-dom';
 
 interface NavigationProps {
   showSidebarTrigger?: boolean;
 }
 
 export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
-  const { user } = useAuth();
+  const { user, isOwner } = useAuth();
+  const location = useLocation();
+  
+  // Determine the title based on the current route
+  const getTitle = () => {
+    if (location.pathname === '/owner') {
+      return 'Owner Dashboard';
+    }
+    if (location.pathname === '/dashboard') {
+      return 'Dashboard';
+    }
+    return 'Dashboard';
+  };
 
   return (
     <header className="border-b bg-card flex-shrink-0">
@@ -22,7 +35,7 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
               alt="Logo" 
               className="h-8 w-8 object-contain"
             />
-            <h1 className="text-xl font-semibold">Owner Dashboard</h1>
+            <h1 className="text-xl font-semibold">{getTitle()}</h1>
             <Badge variant="secondary" className="bg-green-100 text-green-800">
               Live
             </Badge>
@@ -34,9 +47,11 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
                 <Button variant="ghost" size="icon">
                   <Bell className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-4 w-4" />
-                </Button>
+                {isOwner && (
+                  <Button variant="ghost" size="icon">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                )}
                 <UserMenu />
               </>
             )}
