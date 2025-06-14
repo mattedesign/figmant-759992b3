@@ -149,7 +149,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               <ChatMessage 
                 key={index} 
                 message={msg}
-                lastAnalysisResult={msg.type === 'assistant' ? lastAnalysisResult : undefined}
               />
             ))}
           </div>
@@ -161,17 +160,13 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               onRemove={onRemoveAttachment}
               onRetry={onRetryAttachment}
               onClearAll={onClearAllAttachments}
-              onImageProcessed={onImageProcessed}
-              onImageProcessingError={onImageProcessingError}
-              pendingImageProcessing={pendingImageProcessing}
-              storageStatus={storageStatus}
             />
           )}
 
           {/* URL Input */}
           {showUrlInput && (
             <URLInput
-              value={urlInput}
+              urlInput={urlInput}
               onChange={onUrlInputChange}
               onAdd={onAddUrl}
               onCancel={onCancelUrl}
@@ -186,7 +181,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               onMessageChange={onMessageChange}
               onSendMessage={onSendMessage}
               onToggleUrlInput={onToggleUrlInput}
-              canSendMessage={canSendMessage}
               isLoading={isLoading}
               storageStatus={storageStatus}
               getRootProps={getRootProps}
@@ -201,11 +195,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       {showDebugPanel && (
         <DebugPanel
           attachments={attachments}
-          messages={messages}
           lastAnalysisResult={lastAnalysisResult}
-          storageStatus={storageStatus}
-          storageErrorDetails={storageErrorDetails}
-          onToggle={onToggleDebugPanel}
+          isVisible={showDebugPanel}
         />
       )}
 
@@ -214,7 +205,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         <ProcessingMonitor
           jobs={jobs}
           systemHealth={systemHealth}
-          onToggle={onToggleProcessingMonitor}
           onPauseJob={pauseJob}
           onResumeJob={resumeJob}
           onCancelJob={cancelJob}
@@ -225,7 +215,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       {isLoading && (
         <LoadingOverlay 
           stage={loadingState.stage}
-          message={getStageMessage(loadingState.stage)}
         />
       )}
     </div>
