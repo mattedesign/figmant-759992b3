@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { BarChart3, Users, CreditCard, Settings, Bot, Building2 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
+import { LogoDisplay } from '@/components/common/LogoDisplay';
 import { cn } from '@/lib/utils';
 
 interface IconSidebarProps {
@@ -54,12 +55,10 @@ export const IconSidebar = ({ activeSection, onSectionChange }: IconSidebarProps
 
   return (
     <div className="w-16 h-screen bg-card border-r border-border flex flex-col">
-      {/* Header */}
+      {/* Header with Logo */}
       <div className="p-2 border-b border-border">
         <div className="flex items-center justify-center">
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-            <Building2 className="h-5 w-5 text-white" />
-          </div>
+          <LogoDisplay context="sidebar" />
         </div>
       </div>
 
