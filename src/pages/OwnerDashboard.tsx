@@ -115,27 +115,31 @@ const OwnerDashboard = () => {
   
   return (
     <OwnerDashboardErrorBoundary>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background">
-          <OwnerSidebar activeTab={activeTab} onTabChange={handleTabChange} />
-          
-          <SidebarInset className="flex-1">
-            <Navigation />
+      <div className="min-h-screen flex flex-col w-full bg-background">
+        {/* Navigation spans full width at the top */}
+        <Navigation />
+        
+        {/* Sidebar and content area */}
+        <SidebarProvider>
+          <div className="flex flex-1 w-full">
+            <OwnerSidebar activeTab={activeTab} onTabChange={handleTabChange} />
             
-            <main className="flex-1 p-6">
-              <div className="flex items-center space-x-2 mb-6">
-                <SidebarTrigger />
-                <div className="h-4 w-px bg-border" />
-                <h1 className="text-2xl font-semibold">Owner Dashboard</h1>
-              </div>
-              
-              <div className="space-y-6">
-                {renderContent()}
-              </div>
-            </main>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
+            <SidebarInset className="flex-1">
+              <main className="flex-1 p-6">
+                <div className="flex items-center space-x-2 mb-6">
+                  <SidebarTrigger />
+                  <div className="h-4 w-px bg-border" />
+                  <h1 className="text-2xl font-semibold">Owner Dashboard</h1>
+                </div>
+                
+                <div className="space-y-6">
+                  {renderContent()}
+                </div>
+              </main>
+            </SidebarInset>
+          </div>
+        </SidebarProvider>
+      </div>
     </OwnerDashboardErrorBoundary>
   );
 };
