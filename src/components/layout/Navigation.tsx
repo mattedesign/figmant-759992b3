@@ -10,8 +10,8 @@ export const Navigation = () => {
   const { user } = useAuth();
 
   return (
-    <header className="border-b bg-card w-full">
-      <div className="w-full px-6 py-4">
+    <header className="border-b bg-card">
+      <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
