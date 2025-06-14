@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ImpactSummary } from '@/hooks/batch-upload/impactSummaryGenerator';
@@ -154,7 +154,7 @@ export const ImpactMetricsChart: React.FC<ImpactMetricsChartProps> = ({ impactSu
                   stroke="#6366f1"
                 >
                   {barData.map((entry, index) => (
-                    <Bar key={`cell-${index}`} fill={getBarColor(entry.value)} />
+                    <Cell key={`cell-${index}`} fill={getBarColor(entry.value)} />
                   ))}
                 </Bar>
               </BarChart>
