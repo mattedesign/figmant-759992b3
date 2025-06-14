@@ -1,96 +1,142 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { LogoProvider } from "@/contexts/LogoContext";
-import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import DesignAnalysis from "./pages/DesignAnalysis";
-import NotFound from "./pages/NotFound";
-import OwnerDashboard from "./pages/OwnerDashboard";
-import Subscription from "./pages/Subscription";
-import AdminAssets from "./pages/AdminAssets";
-import { AuthGuard } from "@/components/auth/AuthGuard";
-import { RoleRedirect } from "@/components/auth/RoleRedirect";
+import { Suspense, lazy } from 'react';
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthGuard } from '@/components/auth/AuthGuard';
+import { RoleRedirect } from '@/components/auth/RoleRedirect';
 
-const queryClient = new QueryClient();
+// Lazy load components with better error handling
+const Auth = lazy(() => import('./pages/Auth').catch(err => {
+  console.error('Failed to load Auth page:', err);
+  return { default: () => <div>Error loading auth page</div> };
+}));
 
-const App = () => {
+const Dashboard = lazy(() => import('./pages/Dashboard').catch(err => {
+  console.error('Failed to load Dashboard page:', err);
+  return { default: () => <div>Error loading dashboard</div> };
+}));
+
+const OwnerDashboard = lazy(() => import('./pages/OwnerDashboard').catch(err => {
+  console.error('Failed to load OwnerDashboard page:', err);
+  return { default: () => <div>Error loading owner dashboard. Please check console for details.</div> };
+}));
+
+const DesignAnalysis = lazy(() => import('./pages/DesignAnalysis').catch(err => {
+  console.error('Failed to load DesignAnalysis page:', err);
+  return { default: () => <div>Error loading design analysis page</div> };
+}));
+
+const Subscription = lazy(() => import('./pages/Subscription').catch(err => {
+  console.error('Failed to load Subscription page:', err);
+  return { default: () => <div>Error loading subscription page</div> };
+}));
+
+const AdminAssets = lazy(() => import('./pages/AdminAssets').catch(err => {
+  console.error('Failed to load AdminAssets page:', err);
+  return { default: () => <div>Error loading admin assets page</div> };
+}));
+
+const NotFound = lazy(() => import('./pages/NotFound').catch(err => {
+  console.error('Failed to load NotFound page:', err);
+  return { default: () => <div>Page not found</div> };
+}));
+
+const ProcessingPage = lazy(() => import('./components/design/ProcessingPage').then(module => ({ default: module.ProcessingPage })).catch(err => {
+  console.error('Failed to load ProcessingPage:', err);
+  return { default: () => <div>Error loading processing page</div> };
+}));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => {
+        console.error('Query failed:', error);
+        return failureCount < 3;
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
+
+const LoadingFallback = ({ message = "Loading..." }: { message?: string }) => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+      <p className="text-muted-foreground">{message}</p>
+    </div>
+  </div>
+);
+
+function App() {
+  console.log('App component mounting...');
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <LogoProvider>
-              <AnalyticsProvider>
+            <div className="min-h-screen bg-background font-sans antialiased">
+              <Suspense fallback={<LoadingFallback />}>
                 <Routes>
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  <Route
-                    path="/dashboard"
-                    element={
-                      <AuthGuard>
-                        <RoleRedirect />
-                      </AuthGuard>
-                    }
-                  />
-                  <Route
-                    path="/user/dashboard"
-                    element={
-                      <AuthGuard>
+                  {/* Auth route - accessible to all, but authenticated users see different content */}
+                  <Route path="/" element={<Auth />} />
+                  
+                  {/* Protected dashboard routes */}
+                  <Route path="/dashboard" element={
+                    <AuthGuard>
+                      <RoleRedirect>
                         <Dashboard />
-                      </AuthGuard>
-                    }
-                  />
-                  <Route
-                    path="/owner/dashboard"
-                    element={
-                      <AuthGuard>
-                        <RoleRedirect ownerOnly>
-                          <OwnerDashboard />
-                        </RoleRedirect>
-                      </AuthGuard>
-                    }
-                  />
-                  <Route
-                    path="/admin/assets"
-                    element={
-                      <AuthGuard>
-                        <AdminAssets />
-                      </AuthGuard>
-                    }
-                  />
-                  <Route
-                    path="/design-analysis"
-                    element={
-                      <AuthGuard>
-                        <DesignAnalysis />
-                      </AuthGuard>
-                    }
-                  />
-                  <Route
-                    path="/subscription"
-                    element={
-                      <AuthGuard>
-                        <Subscription />
-                      </AuthGuard>
-                    }
-                  />
+                      </RoleRedirect>
+                    </AuthGuard>
+                  } />
+                  
+                  <Route path="/processing/:batchId" element={
+                    <AuthGuard>
+                      <ProcessingPage />
+                    </AuthGuard>
+                  } />
+                  
+                  <Route path="/owner" element={
+                    <AuthGuard requireOwner>
+                      <Suspense fallback={<LoadingFallback message="Loading owner dashboard..." />}>
+                        <OwnerDashboard />
+                      </Suspense>
+                    </AuthGuard>
+                  } />
+                  
+                  <Route path="/design-analysis" element={
+                    <AuthGuard>
+                      <DesignAnalysis />
+                    </AuthGuard>
+                  } />
+                  
+                  <Route path="/subscription" element={
+                    <AuthGuard>
+                      <Subscription />
+                    </AuthGuard>
+                  } />
+                  
+                  <Route path="/admin/assets" element={
+                    <AuthGuard>
+                      <AdminAssets />
+                    </AuthGuard>
+                  } />
+                  
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </AnalyticsProvider>
-            </LogoProvider>
+              </Suspense>
+              <Toaster />
+              <Sonner />
+            </div>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;

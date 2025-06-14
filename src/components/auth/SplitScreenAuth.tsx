@@ -27,9 +27,9 @@ export const SplitScreenAuth = () => {
     if (user && !loading && !resetMode && !showOnboarding) {
       console.log('Auto-redirecting authenticated user to dashboard...');
       if (isOwner) {
-        navigate('/owner/dashboard', { replace: true });
+        navigate('/owner');
       } else {
-        navigate('/user/dashboard', { replace: true });
+        navigate('/dashboard');
       }
     }
   }, [user, loading, resetMode, showOnboarding, isOwner, navigate]);

@@ -4,14 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { Bell, Settings } from 'lucide-react';
 import { UserMenu } from './UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogoDisplay } from '@/components/common/LogoDisplay';
+import { Logo } from '@/components/common/Logo';
 
 interface NavigationProps {
   showSidebarTrigger?: boolean;
 }
 
 export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
-  const { user, isOwner } = useAuth();
+  const { user } = useAuth();
 
   return (
     <header className="border-b bg-card">
@@ -19,11 +19,9 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <LogoDisplay context="navigation" />
+              <Logo size="md" />
             </div>
-            <h1 className="text-xl font-semibold">
-              {isOwner ? 'Owner Dashboard' : 'Dashboard'}
-            </h1>
+            <h1 className="text-xl font-semibold">Owner Dashboard</h1>
             <Badge variant="secondary" className="bg-green-100 text-green-800">
               Live
             </Badge>
