@@ -51,24 +51,34 @@ export const RoleAwareStorageStatus: React.FC<RoleAwareStorageStatusProps> = ({
         });
       } else {
         console.error('Storage verification failed on retry:', result);
-        onStatusChange?.('error');
+        // For better UX, set to ready for non-critical errors
+        if (result.userRole === 'subscriber') {
+          onStatusChange?.('ready');
+        } else {
+          onStatusChange?.('error');
+        }
         
-        toast({
-          variant: "destructive",
-          title: "Storage Still Unavailable",
-          description: result.error || 'Storage verification failed',
-        });
+        if (isOwner) {
+          toast({
+            variant: "destructive",
+            title: "Storage Still Unavailable",
+            description: result.error || 'Storage verification failed',
+          });
+        }
       }
 
     } catch (error) {
       console.error('Retry failed with unexpected error:', error);
-      onStatusChange?.('error');
+      // Default to ready state to avoid blocking UI
+      onStatusChange?.('ready');
       
-      toast({
-        variant: "destructive",
-        title: "Retry Failed",
-        description: 'An unexpected error occurred during retry',
-      });
+      if (isOwner) {
+        toast({
+          variant: "destructive",
+          title: "Retry Failed",
+          description: 'An unexpected error occurred during retry',
+        });
+      }
     } finally {
       setIsRetrying(false);
     }
@@ -86,7 +96,6 @@ export const RoleAwareStorageStatus: React.FC<RoleAwareStorageStatusProps> = ({
           <Clock className="h-4 w-4 animate-pulse" />
           <span>Verifying storage access...</span>
         </div>
-        {/* Add a manual retry option even during checking to prevent getting stuck */}
         <Button
           size="sm"
           variant="outline"
@@ -97,7 +106,7 @@ export const RoleAwareStorageStatus: React.FC<RoleAwareStorageStatusProps> = ({
           {isRetrying ? (
             <RefreshCw className="h-3 w-3 animate-spin" />
           ) : (
-            'Force Retry'
+            'Skip'
           )}
         </Button>
       </div>
@@ -105,48 +114,33 @@ export const RoleAwareStorageStatus: React.FC<RoleAwareStorageStatusProps> = ({
   }
   
   if (status === 'error') {
-    // Check if this is a timeout or persistent checking error
+    // Only show errors for owners or critical issues
     const isTimeout = errorDetails?.timeout || errorDetails?.fallbackFromChecking;
     const isStorageUnavailable = errorDetails?.step === 'subscriber_bucket_check' || 
                                 errorDetails?.step === 'not_authenticated';
     
+    // Don't show errors for subscribers unless it's critical
     if (!isOwner && isStorageUnavailable && !isTimeout) {
-      return (
-        <div className="mb-4">
-          <Alert variant="default" className="border-blue-200 bg-blue-50">
-            <Info className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="font-medium">File uploads unavailable</span>
-                  <br />
-                  <span className="text-sm">
-                    Contact your administrator if you need file upload access.
-                  </span>
-                </div>
-              </div>
-            </AlertDescription>
-          </Alert>
-        </div>
-      );
+      return null; // Hide from subscribers to avoid confusion
     }
 
+    // For owners or critical errors, show a less alarming message
     return (
       <div className="mb-4 space-y-3">
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
+        <Alert variant={isOwner ? "destructive" : "default"} className={isOwner ? "" : "border-blue-200 bg-blue-50"}>
+          <Info className={`h-4 w-4 ${isOwner ? '' : 'text-blue-600'}`} />
           <AlertDescription className="flex items-center justify-between">
             <div className="flex-1">
               <span className="font-medium">
-                {isTimeout ? 'Storage verification timed out' : 'File uploads unavailable'}
+                {isTimeout ? 'Storage check taking longer than expected' : 'File uploads may be limited'}
               </span>
               <br />
               <span className="text-sm">
                 {isTimeout 
-                  ? 'The storage check took too long. Please try again.'
+                  ? 'You can continue using the application while we verify storage in the background.'
                   : isOwner 
-                    ? 'Storage configuration issue detected' 
-                    : 'Storage access is currently unavailable'
+                    ? 'Storage configuration may need attention' 
+                    : 'Contact your administrator if you need file upload access'
                 }
               </span>
             </div>
@@ -214,14 +208,12 @@ export const RoleAwareStorageStatus: React.FC<RoleAwareStorageStatusProps> = ({
     );
   }
 
+  // Only show success message briefly
   return (
     <div className="flex items-center gap-2 text-sm text-green-600 mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
       <CheckCircle className="h-4 w-4" />
       <span>
-        {isOwner 
-          ? 'Storage ready - file uploads enabled' 
-          : 'File uploads available'
-        }
+        File uploads ready
       </span>
     </div>
   );

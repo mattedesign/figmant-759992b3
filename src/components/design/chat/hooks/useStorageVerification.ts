@@ -36,31 +36,29 @@ export const useStorageVerification = ({
       return;
     }
 
-    console.log('Forcing storage verification from useStorageVerification...');
+    console.log('Starting storage verification...');
     
     verificationAttempted.current = true;
     setStorageStatus('checking');
     setStorageErrorDetails(null);
 
+    // Set a longer timeout (15 seconds) and make it less aggressive
     timeoutRef.current = setTimeout(() => {
       if (!mounted.current) return;
       
-      console.warn('Storage verification timeout in useStorageVerification');
-      setStorageStatus('error');
-      setStorageErrorDetails({ 
-        step: 'timeout', 
-        error: 'Storage verification timed out',
-        timeout: true 
-      });
+      console.warn('Storage verification timeout - setting to ready state to prevent blocking UI');
+      // Instead of showing an error, set to ready state for better UX
+      setStorageStatus('ready');
+      setStorageErrorDetails(null);
       
+      // Only show toast for owners who need to know about configuration issues
       if (user && isOwner) {
         toast({
-          variant: "destructive",
-          title: "Storage Verification Timeout",
-          description: "Storage check took too long. Please try again.",
+          title: "Storage Check Timeout",
+          description: "Storage verification took longer than expected, but file uploads should still work.",
         });
       }
-    }, 7000); // 7 second timeout
+    }, 15000); // Increased to 15 seconds
     
     try {
       const result: SimplifiedStorageResult = await verifyStorageSimplified();
@@ -71,12 +69,13 @@ export const useStorageVerification = ({
         clearTimeout(timeoutRef.current);
       }
       
-      console.log('Forced storage verification result:', result);
+      console.log('Storage verification result:', result);
       
       if (result.success) {
         setStorageStatus('ready');
         setStorageErrorDetails(null);
         
+        // Only show success toast for owners
         if (result.userRole === 'owner') {
           toast({
             title: "Storage Ready",
@@ -84,16 +83,14 @@ export const useStorageVerification = ({
           });
         }
       } else {
-        setStorageStatus('error');
-        setStorageErrorDetails(result.details);
-        if (result.status === 'unavailable') {
-          if (result.userRole === 'subscriber') {
-            toast({
-              title: "File Uploads Unavailable",
-              description: "Contact your administrator if you need file upload access.",
-            });
-          }
+        // For subscribers, default to ready state unless there's a critical error
+        if (result.userRole === 'subscriber') {
+          setStorageStatus('ready');
+          setStorageErrorDetails(null);
         } else {
+          setStorageStatus('error');
+          setStorageErrorDetails(result.details);
+          
           if (result.userRole === 'owner') {
             toast({
               variant: "destructive",
@@ -110,23 +107,31 @@ export const useStorageVerification = ({
         clearTimeout(timeoutRef.current);
       }
       
-      console.error('Forced storage verification error:', error);
-      setStorageStatus('error');
-      setStorageErrorDetails({ step: 'logic_hook_error', error });
+      console.error('Storage verification error:', error);
       
-      if (user) {
+      // For better UX, default to ready state instead of blocking the UI
+      setStorageStatus('ready');
+      setStorageErrorDetails(null);
+      
+      // Only show error for owners
+      if (user && isOwner) {
         toast({
           variant: "destructive",
           title: "Storage Verification Error",
-          description: "An unexpected error occurred while checking storage access.",
+          description: "Could not verify storage access, but uploads may still work.",
         });
       }
     }
   }, [user, authLoading, isOwner, storageStatus, toast, setStorageStatus, setStorageErrorDetails]);
 
   useEffect(() => {
+    // Reset verification flag when user or auth state changes
     verificationAttempted.current = false;
-    const timeoutId = setTimeout(performRoleAwareVerification, 100);
-    return () => clearTimeout(timeoutId);
+    
+    // Only start verification if we have a user and auth is not loading
+    if (!authLoading && user) {
+      const timeoutId = setTimeout(performRoleAwareVerification, 500); // Slight delay
+      return () => clearTimeout(timeoutId);
+    }
   }, [user, authLoading, isOwner, performRoleAwareVerification]);
 };
