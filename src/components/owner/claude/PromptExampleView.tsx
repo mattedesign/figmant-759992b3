@@ -11,6 +11,12 @@ interface PromptExampleViewProps {
 }
 
 export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, onEdit }) => {
+  const handleEditClick = () => {
+    console.log('🖱️ Edit button clicked for prompt:', prompt.id, prompt.title);
+    onEdit();
+    console.log('🖱️ onEdit function called');
+  };
+
   return (
     <div className="border rounded p-3 space-y-2">
       <div className="flex items-center justify-between">
@@ -24,7 +30,7 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
           {prompt.is_template && (
             <Badge variant="secondary">Template</Badge>
           )}
-          <Button size="sm" variant="ghost" onClick={onEdit}>
+          <Button size="sm" variant="ghost" onClick={handleEditClick}>
             <Edit2 className="h-4 w-4" />
           </Button>
         </div>
