@@ -6,7 +6,8 @@ import { Plus, Coins } from 'lucide-react';
 import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans';
 import { SubscriptionPlanDialog } from './SubscriptionPlanDialog';
 import { DeletePlanDialog } from './DeletePlanDialog';
-import { PlansManagerContent } from './PlansManagerContent';
+import { PlansList } from './PlansList';
+import { EmptyStateCard } from './EmptyStateCard';
 import { SubscriptionPlan, CreateSubscriptionPlanData } from '@/types/subscription';
 
 export const SubscriptionPlansManager = () => {
@@ -15,7 +16,6 @@ export const SubscriptionPlansManager = () => {
   const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<SubscriptionPlan | null>(null);
-  const [activeFilter, setActiveFilter] = useState('all');
 
   // Filter to only show credit-based plans
   const creditPlans = plans?.filter(plan => plan.plan_type === 'credits') || [];
@@ -97,16 +97,20 @@ export const SubscriptionPlansManager = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <PlansManagerContent
-            plans={creditPlans}
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
-            onCreatePlan={handleCreatePlan}
-            onEditPlan={handleEditPlan}
-            onDeletePlan={handleDeletePlan}
-            isDeleting={isDeleting}
-            isUpdating={isUpdating}
-          />
+          {!creditPlans || creditPlans.length === 0 ? (
+            <EmptyStateCard 
+              activeFilter="credits"
+              onCreatePlan={handleCreatePlan}
+            />
+          ) : (
+            <PlansList
+              plans={creditPlans}
+              onEdit={handleEditPlan}
+              onDelete={handleDeletePlan}
+              isDeleting={isDeleting}
+              isUpdating={isUpdating}
+            />
+          )}
         </CardContent>
       </Card>
 
