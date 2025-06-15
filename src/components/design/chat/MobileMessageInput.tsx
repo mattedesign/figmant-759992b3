@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,6 +32,7 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
   isDragActive,
 }) => {
   const isDisabled = !hasContent || isLoading || !canSend;
+  const { open: openDropzone, ...restRootProps } = getRootProps();
   const inputProps = getInputProps();
 
   const getSendButtonContent = () => {
@@ -45,11 +45,12 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
   return (
     <div className="bg-background border-t p-2">
       <div
-        {...getRootProps()}
+        {...restRootProps}
         className={`relative border rounded-lg transition-colors bg-background flex items-start p-1 gap-1 ${
           isDragActive ? 'border-primary ring-2 ring-primary' : 'border-input'
         } ${isLoading ? 'opacity-70' : ''}`}
       >
+        <input {...inputProps} />
         <Drawer>
           <DrawerTrigger asChild>
             <Button variant="ghost" size="icon" className="flex-shrink-0 h-10 w-10" disabled={isLoading}>
@@ -63,12 +64,9 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
               </DrawerHeader>
               <div className="p-4 pt-0 space-y-2">
                 <DrawerClose asChild>
-                  <Button variant="outline" className="w-full" asChild>
-                    <label className="cursor-pointer flex items-center justify-center w-full h-full">
-                      <Upload className="mr-2 h-4 w-4" />
-                      Upload File
-                      <input {...inputProps} className="sr-only" />
-                    </label>
+                  <Button variant="outline" className="w-full" onClick={openDropzone} disabled={isLoading}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload File
                   </Button>
                 </DrawerClose>
                 <DrawerClose asChild>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,6 +32,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   isDragActive,
 }) => {
   const isDisabled = !hasContent || isLoading || !canSend;
+  const { open: openDropzone, ...restRootProps } = getRootProps();
   const inputProps = getInputProps();
 
   const getSendButtonContent = () => {
@@ -61,13 +61,14 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
   return (
     <div
-      {...getRootProps()}
+      {...restRootProps}
       className={`relative border rounded-lg transition-colors bg-background ${
         isDragActive
           ? 'border-primary ring-2 ring-primary ring-offset-2'
           : 'border-input'
       } ${isLoading ? 'opacity-70' : ''}`}
     >
+      <input {...inputProps} />
       <div className="flex items-start p-2 gap-2">
         <Popover>
           <PopoverTrigger asChild>
@@ -83,12 +84,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           </PopoverTrigger>
           <PopoverContent className="w-56 p-1 mb-2">
             <div className="grid gap-1">
-              <Button variant="ghost" className="w-full justify-start h-9" asChild>
-                <label className="cursor-pointer flex items-center w-full">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload File
-                  <input {...inputProps} className="sr-only" />
-                </label>
+              <Button variant="ghost" className="w-full justify-start h-9" onClick={openDropzone} disabled={isLoading}>
+                <Upload className="mr-2 h-4 w-4" />
+                Upload File
               </Button>
               <Button variant="ghost" className="w-full justify-start h-9" onClick={onToggleUrlInput}>
                 <Link className="mr-2 h-4 w-4" />

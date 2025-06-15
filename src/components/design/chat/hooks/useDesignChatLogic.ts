@@ -193,7 +193,7 @@ export const useDesignChatLogic = () => {
   );
 
   // Configure dropzone without disabled property - handle disabled state in UI
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps: originalGetRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop: (acceptedFiles) => {
       console.log('=== DROPZONE FILE DROP ===');
       console.log('Files dropped:', acceptedFiles.length);
@@ -217,8 +217,13 @@ export const useDesignChatLogic = () => {
       'application/pdf': ['.pdf']
     },
     maxSize: 50 * 1024 * 1024, // 50MB
-    noClick: loadingState.isLoading, // Disable click when loading
+    noClick: true, // Disable click when loading
     noDrag: loadingState.isLoading // Disable drag when loading
+  });
+
+  const getRootProps = (props?: any) => ({
+    ...originalGetRootProps(props),
+    open,
   });
 
   const handleSuggestedPrompt = (prompt: string) => {
