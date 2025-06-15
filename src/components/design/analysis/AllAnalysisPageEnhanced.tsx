@@ -9,7 +9,7 @@ import { ErrorDisplay } from './components/ErrorDisplay';
 import { PageHeader } from './components/PageHeader';
 import { DiagnosticsSection } from './components/DiagnosticsSection';
 import { EnhancedErrorBoundary } from './components/EnhancedErrorBoundary';
-import { EnhancedFiltersPanel } from './components/EnhancedFiltersPanel';
+import { EnhancedFiltersPanel } from './components/filters/EnhancedFiltersPanel';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 import { useEnhancedAnalysisDataProcessor } from '@/hooks/useEnhancedAnalysisDataProcessor';
 import { useEnhancedRealTimeConnection } from '@/hooks/useEnhancedRealTimeConnection';
