@@ -12,6 +12,8 @@ export const FigmantLayout = () => {
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const [rightSidebarMode, setRightSidebarMode] = useState('attachments');
 
+  console.log('FigmantLayout rendering...', { user, activeSection });
+
   const handleBackToList = () => {
     setSelectedAnalysis(null);
   };

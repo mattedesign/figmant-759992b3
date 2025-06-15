@@ -3,7 +3,13 @@ import React from 'react';
 import { FigmantLayout } from '@/components/figmant/FigmantLayout';
 
 const Figmant = () => {
-  return <FigmantLayout />;
+  console.log('Figmant page rendering...');
+  
+  return (
+    <div className="min-h-screen">
+      <FigmantLayout />
+    </div>
+  );
 };
 
 export default Figmant;
