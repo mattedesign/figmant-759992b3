@@ -2,86 +2,58 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { ArrowRight, MousePointer, ShoppingCart, CreditCard, CheckCircle } from 'lucide-react';
+import { ArrowRight, MousePointer, Upload, Activity, Eye, CreditCard, CheckCircle } from 'lucide-react';
+import { useUserJourneyAnalytics } from '@/hooks/useAnalytics';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const stepConfig: { [key: string]: { icon: React.ElementType; color: string; avgTime: string } } = {
+  'Landing': { icon: MousePointer, color: 'bg-blue-500', avgTime: '45s' },
+  'Dashboard': { icon: Activity, color: 'bg-teal-500', avgTime: '1m 10s' },
+  'Upload': { icon: Upload, color: 'bg-green-500', avgTime: '2m 30s' },
+  'Analysis': { icon: CreditCard, color: 'bg-yellow-500', avgTime: '3m 15s' },
+  'View Result': { icon: Eye, color: 'bg-orange-500', avgTime: '1m 20s' },
+  'Purchase': { icon: CheckCircle, color: 'bg-purple-500', avgTime: '2m 10s' },
+};
 
 export const UserJourneyMap = () => {
-  const journeySteps = [
-    {
-      step: 'Landing',
-      icon: MousePointer,
-      users: 1000,
-      conversionRate: 100,
-      avgTime: '45s',
-      dropoffRate: 0,
-      color: 'bg-blue-500'
-    },
-    {
-      step: 'Browse',
-      icon: MousePointer,
-      users: 850,
-      conversionRate: 85,
-      avgTime: '2m 30s',
-      dropoffRate: 15,
-      color: 'bg-green-500'
-    },
-    {
-      step: 'Product View',
-      icon: MousePointer,
-      users: 680,
-      conversionRate: 68,
-      avgTime: '3m 15s',
-      dropoffRate: 20,
-      color: 'bg-yellow-500'
-    },
-    {
-      step: 'Add to Cart',
-      icon: ShoppingCart,
-      users: 340,
-      conversionRate: 34,
-      avgTime: '1m 20s',
-      dropoffRate: 50,
-      color: 'bg-orange-500'
-    },
-    {
-      step: 'Checkout',
-      icon: CreditCard,
-      users: 238,
-      conversionRate: 24,
-      avgTime: '4m 45s',
-      dropoffRate: 30,
-      color: 'bg-red-500'
-    },
-    {
-      step: 'Purchase',
-      icon: CheckCircle,
-      users: 190,
-      conversionRate: 19,
-      avgTime: '2m 10s',
-      dropoffRate: 20,
-      color: 'bg-purple-500'
-    }
-  ];
+  const { data: rawJourneyData, isLoading } = useUserJourneyAnalytics();
 
-  const painPoints = [
-    {
-      step: 'Product View → Add to Cart',
-      issue: 'High dropoff (50%)',
-      suggestion: 'Simplify add-to-cart process, improve product information',
-      severity: 'critical'
-    },
-    {
-      step: 'Add to Cart → Checkout',
-      issue: 'Medium dropoff (30%)',
-      suggestion: 'Reduce checkout form complexity, add guest checkout',
-      severity: 'high'
-    },
-    {
-      step: 'Checkout → Purchase',
-      issue: 'Payment friction (20%)',
-      suggestion: 'Add more payment options, improve trust signals',
-      severity: 'medium'
+  const journeySteps = (rawJourneyData || [])
+    .map((step, index, arr) => {
+      const totalUsers = arr[0]?.user_count || 0;
+      const previousStepUsers = index > 0 ? arr[index - 1].user_count : step.user_count;
+      
+      const config = stepConfig[step.step_name] || { icon: MousePointer, color: 'bg-gray-500', avgTime: 'N/A' };
+      
+      return {
+        step: step.step_name,
+        icon: config.icon,
+        users: step.user_count,
+        conversionRate: totalUsers > 0 ? Math.round((step.user_count / totalUsers) * 100) : 0,
+        avgTime: config.avgTime,
+        dropoffRate: previousStepUsers > 0 && index > 0 && previousStepUsers > step.user_count ? Math.round(((previousStepUsers - step.user_count) / previousStepUsers) * 100) : 0,
+        color: config.color,
+      };
+    });
+
+  const painPoints = [];
+  if (journeySteps.length > 1) {
+    for (let i = 0; i < journeySteps.length - 1; i++) {
+      const dropoff = journeySteps[i+1].dropoffRate;
+      if (dropoff > 25) {
+        let severity = 'medium';
+        if (dropoff > 50) severity = 'critical';
+        else if (dropoff > 35) severity = 'high';
+
+        painPoints.push({
+          step: `${journeySteps[i].step} → ${journeySteps[i+1].step}`,
+          issue: `High dropoff (${dropoff}%)`,
+          suggestion: `Investigate user behavior between these steps. Consider simplifying the flow or providing clearer instructions.`,
+          severity,
+        });
+      }
     }
-  ];
+  }
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -91,6 +63,24 @@ export const UserJourneyMap = () => {
       default: return 'bg-blue-100 text-blue-800';
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {[...Array(3)].map((_, i) => (
+          <Card key={i}>
+            <CardHeader>
+              <Skeleton className="h-6 w-1/2" />
+              <Skeleton className="h-4 w-3/4" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-40 w-full" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -126,9 +116,11 @@ export const UserJourneyMap = () => {
                   {index < journeySteps.length - 1 && (
                     <div className="mx-4 flex flex-col items-center">
                       <ArrowRight className="h-6 w-6 text-muted-foreground" />
-                      <div className="text-xs text-red-500 mt-1">
-                        -{journeySteps[index + 1].dropoffRate}%
-                      </div>
+                      {journeySteps[index + 1].dropoffRate > 0 &&
+                        <div className="text-xs text-red-500 mt-1">
+                          -{journeySteps[index + 1].dropoffRate}%
+                        </div>
+                      }
                     </div>
                   )}
                 </div>
@@ -147,7 +139,7 @@ export const UserJourneyMap = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {journeySteps.map((step, index) => (
+            {journeySteps.map((step) => (
               <div key={step.step} className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">{step.step}</span>
@@ -174,7 +166,7 @@ export const UserJourneyMap = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {painPoints.map((point, index) => (
+            {painPoints.length > 0 ? painPoints.map((point, index) => (
               <div key={index} className="p-4 border rounded-lg space-y-2">
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium">{point.step}</h4>
@@ -185,7 +177,9 @@ export const UserJourneyMap = () => {
                 <p className="text-sm text-red-600">{point.issue}</p>
                 <p className="text-sm text-muted-foreground">{point.suggestion}</p>
               </div>
-            ))}
+            )) : (
+              <p className="text-sm text-muted-foreground text-center py-4">No significant pain points identified. Great job!</p>
+            )}
           </div>
         </CardContent>
       </Card>

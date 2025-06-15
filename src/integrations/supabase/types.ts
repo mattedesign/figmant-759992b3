@@ -1141,6 +1141,13 @@ export type Database = {
           fallback_logo_url: string
         }[]
       }
+      get_user_journey_analytics: {
+        Args: { days_back?: number }
+        Returns: {
+          step_name: string
+          user_count: number
+        }[]
+      }
       has_role: {
         Args: {
           _user_id: string

@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -34,6 +33,29 @@ export const useAnalyticsSummary = (daysBack: number = 30) => {
         success_rate: 0
       };
     }
+  });
+};
+
+export interface UserJourneyStep {
+  step_name: string;
+  user_count: number;
+}
+
+export const useUserJourneyAnalytics = (daysBack: number = 30) => {
+  return useQuery<UserJourneyStep[], Error>({
+    queryKey: ['user-journey-analytics', daysBack],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_user_journey_analytics', {
+        days_back: daysBack,
+      });
+
+      if (error) {
+        console.error('Error fetching user journey analytics:', error);
+        throw new Error(error.message);
+      }
+
+      return data || [];
+    },
   });
 };
 
