@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Loader2, Paperclip, Upload, Link } from 'lucide-react';
@@ -31,6 +32,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   getInputProps,
   isDragActive,
 }) => {
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  
   const isDisabled = !hasContent || isLoading || !canSend;
   const { open: openDropzone, ...restRootProps } = getRootProps();
   const inputProps = getInputProps();
@@ -59,6 +62,16 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     return "Send message";
   };
 
+  const handleUploadFile = () => {
+    setIsPopoverOpen(false);
+    openDropzone();
+  };
+
+  const handleAddUrl = () => {
+    setIsPopoverOpen(false);
+    onToggleUrlInput();
+  };
+
   return (
     <div
       {...restRootProps}
@@ -70,7 +83,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     >
       <input {...inputProps} />
       <div className="flex items-start p-2 gap-2">
-        <Popover>
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
@@ -84,11 +97,20 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           </PopoverTrigger>
           <PopoverContent className="w-56 p-1 mb-2">
             <div className="grid gap-1">
-              <Button variant="ghost" className="w-full justify-start h-9" onClick={openDropzone} disabled={isLoading}>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start h-9" 
+                onClick={handleUploadFile}
+                disabled={isLoading}
+              >
                 <Upload className="mr-2 h-4 w-4" />
                 Upload File
               </Button>
-              <Button variant="ghost" className="w-full justify-start h-9" onClick={onToggleUrlInput}>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start h-9" 
+                onClick={handleAddUrl}
+              >
                 <Link className="mr-2 h-4 w-4" />
                 Add URL
               </Button>
