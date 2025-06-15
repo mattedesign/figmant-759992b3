@@ -104,9 +104,9 @@ export const useAllAnalysisDataEnhanced = (): UseAllAnalysisDataEnhancedReturn =
         )
         .subscribe((status) => {
           console.log('Real-time subscription status:', status);
-          if (status === 'SUBSCRIPTION_ERROR') {
-            console.error('Real-time subscription failed');
-            setError(new Error('Real-time updates failed to connect'));
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            console.error('Real-time subscription failed with status:', status);
+            setError(new Error(`Real-time updates failed to connect: ${status}`));
           }
         });
     } catch (err) {
