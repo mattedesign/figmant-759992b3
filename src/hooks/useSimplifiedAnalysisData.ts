@@ -4,7 +4,6 @@ import { useDesignUploads } from '@/hooks/useDesignUploads';
 import { useDesignBatchAnalyses } from '@/hooks/useDesignBatchAnalyses';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { useGroupedAnalyses } from '@/hooks/useGroupedAnalyses';
-import { useSimplifiedRealTimeConnection } from './useSimplifiedRealTimeConnection';
 import { useAnalysisErrorHandling } from '@/hooks/useAnalysisErrorHandling';
 import { useAnalysisRefreshOperations } from '@/hooks/useAnalysisRefreshOperations';
 import { useAnalysisDataProcessor } from '@/hooks/useAnalysisDataProcessor';
@@ -18,32 +17,14 @@ interface UseSimplifiedAnalysisDataReturn {
   isLoading: boolean;
   isRefreshing: boolean;
   error: Error | null;
-  connectionStatus: 'connecting' | 'connected' | 'error' | 'fallback' | 'disabled';
-  isRealTimeEnabled: boolean;
   handleManualRefresh: () => Promise<void>;
   retryFailedQueries: () => Promise<void>;
   clearError: () => void;
-  toggleRealTime: () => void;
-  retryConnection: () => void;
 }
 
 export const useSimplifiedAnalysisData = (): UseSimplifiedAnalysisDataReturn => {
-  // Error handling - only for data fetching errors, not real-time connection issues
+  // Error handling - only for data fetching errors
   const { error: localError, clearError, handleError } = useAnalysisErrorHandling();
-
-  // Real-time connection - failures are handled gracefully and don't block data loading
-  const { 
-    connectionStatus, 
-    isEnabled: isRealTimeEnabled,
-    toggleConnection: toggleRealTime,
-    retryConnection
-  } = useSimplifiedRealTimeConnection({ 
-    onError: (error) => {
-      // Log real-time connection issues but don't treat them as blocking errors
-      console.warn('Real-time connection issue (non-blocking):', error.message);
-      // Explicitly don't call handleError here to avoid showing error state to user
-    }
-  });
 
   // Fetch data - these are the critical queries that must succeed
   const { 
@@ -67,7 +48,7 @@ export const useSimplifiedAnalysisData = (): UseSimplifiedAnalysisDataReturn => 
     refetch: refetchIndividual 
   } = useDesignAnalyses();
 
-  // Only combine actual data fetching errors - not real-time connection issues
+  // Only combine actual data fetching errors
   const combinedError = useMemo(() => {
     const dataErrors = [uploadsError, batchError, individualError].filter(Boolean);
     if (dataErrors.length > 0) {
@@ -90,7 +71,7 @@ export const useSimplifiedAnalysisData = (): UseSimplifiedAnalysisDataReturn => 
     onError: handleError
   });
 
-  // Only consider data loading states - not real-time connection status
+  // Only consider data loading states
   const isLoading = uploadsLoading || batchLoading || individualLoading;
 
   return {
@@ -101,13 +82,9 @@ export const useSimplifiedAnalysisData = (): UseSimplifiedAnalysisDataReturn => 
     allAnalyses,
     isLoading,
     isRefreshing,
-    error: combinedError, // Only data errors, not real-time connection errors
-    connectionStatus,
-    isRealTimeEnabled,
+    error: combinedError, // Only data errors
     handleManualRefresh,
     retryFailedQueries,
-    clearError,
-    toggleRealTime,
-    retryConnection
+    clearError
   };
 };

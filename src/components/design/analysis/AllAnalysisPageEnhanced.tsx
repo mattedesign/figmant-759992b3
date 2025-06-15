@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { AllAnalysisViewContent } from './AllAnalysisViewContent';
 import { AllAnalysisLoadingState } from './AllAnalysisLoadingState';
@@ -6,41 +7,22 @@ import { useSimplifiedAnalysisData } from '@/hooks/useSimplifiedAnalysisData';
 import { useEnhancedAnalysisFiltersRefactored } from '@/hooks/useEnhancedAnalysisFiltersRefactored';
 import { useAllAnalysisPageState } from './hooks/useAllAnalysisPageState';
 import { ErrorDisplay } from './components/ErrorDisplay';
-import { PageHeader } from './components/PageHeader';
-import { DiagnosticsSection } from './components/DiagnosticsSection';
 import { EnhancedErrorBoundary } from './components/EnhancedErrorBoundary';
 import { EnhancedFiltersPanel } from './components/filters/EnhancedFiltersPanel';
-import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 import { useEnhancedAnalysisDataProcessor } from '@/hooks/useEnhancedAnalysisDataProcessor';
-import { useEnhancedRealTimeConnection } from '@/hooks/useEnhancedRealTimeConnection';
-import { useEffect } from 'react';
+import { SimplifiedPageHeader } from './components/SimplifiedPageHeader';
 
 const AllAnalysisPageEnhanced = () => {
   const {
     selectedAnalysis,
     viewMode,
     setViewMode,
-    showDiagnostics,
-    setShowDiagnostics,
     handleViewAnalysis,
     handleRowClick,
     handleBackToList
   } = useAllAnalysisPageState();
 
-  const { measureAsync, getReport } = usePerformanceMonitor();
-
-  // Enhanced real-time connection
-  const {
-    connectionStatus,
-    isEnabled: isRealTimeEnabled,
-    toggleConnection: toggleRealTime,
-    retryConnection,
-    metrics: connectionMetrics,
-    recentEvents,
-    connectionQuality
-  } = useEnhancedRealTimeConnection();
-
-  // Use simplified hook for data management with performance monitoring
+  // Use simplified hook for data management
   const {
     groupedAnalyses,
     allAnalyses,
@@ -77,30 +59,6 @@ const AllAnalysisPageEnhanced = () => {
     deleteFilterPreset,
     quickFilters
   } = useEnhancedAnalysisFiltersRefactored(processedData.allAnalyses, groupedAnalyses);
-
-  // Log performance metrics periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const report = getReport();
-      if (report.totalOperations > 0) {
-        console.log('Enhanced Analysis Page Performance:', {
-          averageLoadTime: `${report.averageDuration.toFixed(2)}ms`,
-          totalOperations: report.totalOperations,
-          slowestOperation: report.slowestOperation?.name,
-          slowestDuration: report.slowestOperation?.duration?.toFixed(2),
-          connectionQuality,
-          realtimeEvents: recentEvents.length
-        });
-      }
-    }, 60000); // Every minute
-
-    return () => clearInterval(interval);
-  }, [getReport, connectionQuality, recentEvents.length]);
-
-  // Enhanced manual refresh with performance monitoring
-  const handleEnhancedRefresh = async () => {
-    await measureAsync('enhanced-manual-refresh', handleManualRefresh);
-  };
 
   // Show error state only for critical data fetching errors
   if (error) {
@@ -139,26 +97,15 @@ const AllAnalysisPageEnhanced = () => {
   return (
     <EnhancedErrorBoundary enableRecovery={true}>
       <div className="p-6 space-y-6 h-full overflow-y-auto">
-        <PageHeader
+        <SimplifiedPageHeader
           viewMode={viewMode}
           onViewModeChange={setViewMode}
-          onManualRefresh={handleEnhancedRefresh}
+          onManualRefresh={handleManualRefresh}
           isRefreshing={isRefreshing}
           filteredGroupedAnalysesCount={filteredGroupedAnalyses.length}
           totalGroupedAnalysesCount={groupedAnalyses.length}
           filteredAnalysesCount={filteredAnalyses.length}
           totalAnalysesCount={processedData.allAnalyses.length}
-          connectionStatus={connectionStatus}
-          showDiagnostics={showDiagnostics}
-          onShowDiagnosticsChange={setShowDiagnostics}
-        />
-
-        <DiagnosticsSection
-          showDiagnostics={showDiagnostics}
-          connectionStatus={connectionStatus}
-          isRealTimeEnabled={isRealTimeEnabled}
-          onToggleRealTime={toggleRealTime}
-          onRetryConnection={retryConnection}
         />
 
         <EnhancedFiltersPanel
