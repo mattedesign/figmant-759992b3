@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -27,46 +26,12 @@ import {
   Bookmark
 } from 'lucide-react';
 import { format } from 'date-fns';
-
-interface DateRange {
-  from: Date | null;
-  to: Date | null;
-}
-
-interface AdvancedFilters {
-  searchTerm: string;
-  statusFilter: string;
-  typeFilter: string;
-  confidenceRange: [number, number];
-  dateRange: DateRange;
-  analysisTypes: string[];
-  sortField: string;
-  sortDirection: 'asc' | 'desc';
-}
-
-interface FilterOptions {
-  statuses: string[];
-  types: string[];
-  analysisTypes: string[];
-  confidenceRange: {
-    min: number;
-    max: number;
-  };
-}
-
-interface FilterPreset {
-  id: string;
-  name: string;
-  filters: Partial<AdvancedFilters>;
-}
-
-interface QuickFilters {
-  today: () => void;
-  thisWeek: () => void;
-  thisMonth: () => void;
-  highConfidence: () => void;
-  lowConfidence: () => void;
-}
+import { 
+  AdvancedFilters, 
+  FilterOptions, 
+  FilterPreset, 
+  QuickFilters 
+} from '@/hooks/filters/types';
 
 interface EnhancedFiltersPanelProps {
   filters: AdvancedFilters;

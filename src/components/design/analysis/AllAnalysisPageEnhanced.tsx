@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { AllAnalysisViewContent } from './AllAnalysisViewContent';
 import { AllAnalysisLoadingState } from './AllAnalysisLoadingState';
 import { AnalysisDetailView } from './AnalysisDetailView';
 import { useSimplifiedAnalysisData } from '@/hooks/useSimplifiedAnalysisData';
-import { useEnhancedAnalysisFilters } from '@/hooks/useEnhancedAnalysisFilters';
+import { useEnhancedAnalysisFiltersRefactored } from '@/hooks/useEnhancedAnalysisFiltersRefactored';
 import { useAllAnalysisPageState } from './hooks/useAllAnalysisPageState';
 import { ErrorDisplay } from './components/ErrorDisplay';
 import { PageHeader } from './components/PageHeader';
@@ -61,7 +60,7 @@ const AllAnalysisPageEnhanced = () => {
     sortField: 'created_at'
   });
 
-  // Enhanced filtering with advanced features
+  // Enhanced filtering with refactored hook
   const {
     filters,
     filteredAnalyses,
@@ -77,7 +76,7 @@ const AllAnalysisPageEnhanced = () => {
     loadFilterPreset,
     deleteFilterPreset,
     quickFilters
-  } = useEnhancedAnalysisFilters(processedData.allAnalyses, groupedAnalyses);
+  } = useEnhancedAnalysisFiltersRefactored(processedData.allAnalyses, groupedAnalyses);
 
   // Log performance metrics periodically
   useEffect(() => {
