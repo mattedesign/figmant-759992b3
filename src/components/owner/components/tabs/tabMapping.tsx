@@ -12,6 +12,7 @@ import { UserManagementTab } from './UserManagementTab';
 import { SubscriptionPlansTab } from './SubscriptionPlansTab';
 import { ClaudeSettingsTab } from './ClaudeSettingsTab';
 import { AdminSettingsTab } from './AdminSettingsTab';
+import { PromptManagerTab } from './PromptManagerTab';
 
 export const tabMapping: Record<string, React.ComponentType> = {
   design: DesignAnalysisTab,
@@ -27,4 +28,5 @@ export const tabMapping: Record<string, React.ComponentType> = {
   plans: SubscriptionPlansTab,
   claude: ClaudeSettingsTab,
   settings: AdminSettingsTab,
+  'prompt-manager': PromptManagerTab,
 };

@@ -1,4 +1,4 @@
-import { BarChart3, Users, CreditCard, Bot, Settings, Bell, MessageSquare, Target, History, FileText, Lightbulb, Crown, Plug } from 'lucide-react';
+import { BarChart3, Users, CreditCard, Bot, Settings, Bell, MessageSquare, Target, History, FileText, Lightbulb, Crown, Plug, Brain } from 'lucide-react';
 
 export const sectionConfig = {
   workspace: {
@@ -22,22 +22,13 @@ export const sectionConfig = {
       { id: 'users', label: 'All Users', icon: Users },
     ]
   },
-  products: {
-    title: 'Products & Plans',
-    items: [
-      { id: 'plans', label: 'Subscription Plans', icon: CreditCard },
-    ]
-  },
-  apps: {
-    title: 'Applications',
-    items: [
-      { id: 'claude', label: 'Claude AI', icon: Bot },
-    ]
-  },
   settings: {
     title: 'Settings',
     items: [
       { id: 'settings', label: 'Admin Settings', icon: Settings },
+      { id: 'claude', label: 'Applications', icon: Bot },
+      { id: 'plans', label: 'Plans & Products', icon: CreditCard },
+      { id: 'prompt-manager', label: 'Prompt Manager', icon: Brain },
       { 
         id: 'alerts', 
         label: 'Alerts', 

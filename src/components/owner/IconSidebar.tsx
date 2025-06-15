@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { BarChart3, Users, CreditCard, Settings, Bot, Building2 } from 'lucide-react';
+import { BarChart3, Users, Settings } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -21,16 +21,6 @@ const sections = [{
   label: 'Users',
   icon: Users,
   activeColor: '#20BF88'
-}, {
-  id: 'products',
-  label: 'Products',
-  icon: CreditCard,
-  activeColor: '#AF20BF'
-}, {
-  id: 'apps',
-  label: 'Apps',
-  icon: Bot,
-  activeColor: '#0AA9FF'
 }, {
   id: 'settings',
   label: 'Settings',

@@ -19,10 +19,11 @@ const tabToSectionMap: Record<string, string> = {
   history: 'workspace', // Hidden but functional
   legacy: 'workspace', // Hidden but functional
   users: 'users',
-  plans: 'products',
-  claude: 'apps',
+  plans: 'settings', // Moved to settings
+  claude: 'settings', // Moved to settings
   settings: 'settings',
   alerts: 'settings',
+  'prompt-manager': 'settings', // New tab under settings
 };
 
 const OwnerDashboard = () => {
@@ -35,7 +36,7 @@ const OwnerDashboard = () => {
   const [activeSection, setActiveSection] = useState(tabToSectionMap[tabFromUrl] || 'workspace');
 
   // Valid tab options - including hidden tabs for direct access
-  const validTabs = ['design', 'all-analysis', 'insights', 'prompts', 'premium-analysis', 'integrations', 'batch', 'history', 'legacy', 'users', 'plans', 'claude', 'settings'];
+  const validTabs = ['design', 'all-analysis', 'insights', 'prompts', 'premium-analysis', 'integrations', 'batch', 'history', 'legacy', 'users', 'plans', 'claude', 'settings', 'prompt-manager'];
   console.log('Current tab:', activeTab, 'Current section:', activeSection);
 
   // Update URL when tab changes
@@ -59,13 +60,18 @@ const OwnerDashboard = () => {
       .map(([tab, _]) => tab);
     
     if (sectionTabs.length > 0) {
-      // For workspace, prefer 'design' first, then 'all-analysis'
       let firstTab = sectionTabs[0];
       if (newSection === 'workspace') {
+        // For workspace, prefer 'design' first, then 'all-analysis'
         if (sectionTabs.includes('design')) {
           firstTab = 'design';
         } else if (sectionTabs.includes('all-analysis')) {
           firstTab = 'all-analysis';
+        }
+      } else if (newSection === 'settings') {
+        // For settings, prefer 'settings' first
+        if (sectionTabs.includes('settings')) {
+          firstTab = 'settings';
         }
       }
       

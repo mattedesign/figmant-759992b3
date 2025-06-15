@@ -12,4 +12,5 @@ export { UserManagementTab } from './UserManagementTab';
 export { SubscriptionPlansTab } from './SubscriptionPlansTab';
 export { ClaudeSettingsTab } from './ClaudeSettingsTab';
 export { AdminSettingsTab } from './AdminSettingsTab';
+export { PromptManagerTab } from './PromptManagerTab';
 export { tabMapping } from './tabMapping';
