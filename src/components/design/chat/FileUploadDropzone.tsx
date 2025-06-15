@@ -22,15 +22,15 @@ export const FileUploadDropzone: React.FC<FileUploadDropzoneProps> = ({
   return (
     <div
       {...getRootProps()}
-      className={`border-2 border-dashed rounded-lg p-4 text-center mb-4 transition-colors cursor-pointer ${
+      className={`border-2 border-dashed rounded-lg p-2 text-center mb-4 transition-colors cursor-pointer ${
         isDragActive 
           ? 'border-primary bg-primary/5' 
           : 'border-muted-foreground/25 hover:border-primary/50'
       }`}
     >
       <input {...getInputProps()} />
-      <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-      <p className="text-sm text-muted-foreground">
+      <Upload className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+      <p className="text-xs text-muted-foreground">
         {isDragActive 
           ? 'Drop files here...' 
           : 'Drag & drop images or PDFs, or click to select'

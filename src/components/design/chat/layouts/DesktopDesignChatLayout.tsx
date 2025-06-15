@@ -15,7 +15,7 @@ export const DesktopDesignChatLayout = () => {
         setStorageErrorDetails={chatLogic.setStorageErrorDetails}
       />
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
         <ChatContainer
           messages={chatLogic.messages}
           attachments={chatLogic.attachments}

@@ -16,7 +16,7 @@ export const MobileDesignChatLayout = () => {
         setStorageErrorDetails={chatLogic.setStorageErrorDetails}
       />
       
-      <div className="h-[calc(100vh-120px)] flex flex-col">
+      <div className="h-full flex flex-col">
         <Tabs defaultValue="chat" className="flex-1 flex flex-col">
           <TabsList className="grid w-full grid-cols-2 mb-2">
             <TabsTrigger value="chat">Chat</TabsTrigger>
