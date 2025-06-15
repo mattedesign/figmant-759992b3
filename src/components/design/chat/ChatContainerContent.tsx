@@ -85,6 +85,7 @@ export const ChatContainerContent: React.FC<ChatContainerContentProps> = ({
           onRemoveAttachment={onRemoveAttachment}
           onRetryAttachment={onRetryAttachment}
           onClearAllAttachments={onClearAllAttachments}
+          isLoading={isLoading}
         />
       </div>
 

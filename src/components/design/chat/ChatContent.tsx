@@ -23,6 +23,7 @@ interface ChatContentProps {
   onRemoveAttachment: (id: string) => void;
   onRetryAttachment: (id: string) => void;
   onClearAllAttachments: () => void;
+  isLoading?: boolean;
 }
 
 export const ChatContent: React.FC<ChatContentProps> = ({
@@ -36,7 +37,8 @@ export const ChatContent: React.FC<ChatContentProps> = ({
   onStorageStatusChange,
   onRemoveAttachment,
   onRetryAttachment,
-  onClearAllAttachments
+  onClearAllAttachments,
+  isLoading = false
 }) => {
   const isMobile = useIsMobile();
   
@@ -62,13 +64,14 @@ export const ChatContent: React.FC<ChatContentProps> = ({
         errorDetails={storageErrorDetails}
       />
 
-      {/* File Upload Dropzone */}
+      {/* File Upload Dropzone - Always show but handle disabled state */}
       {getRootProps && getInputProps && (
         <DropzoneComponent
           storageStatus={storageStatus}
           getRootProps={getRootProps}
           getInputProps={getInputProps}
           isDragActive={isDragActive}
+          isLoading={isLoading}
         />
       )}
 

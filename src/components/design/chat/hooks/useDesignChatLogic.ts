@@ -72,11 +72,19 @@ export const useDesignChatLogic = () => {
     setLastAnalysisResult
   );
 
+  // Configure dropzone without disabled property - handle disabled state in UI
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (acceptedFiles) => {
       console.log('=== DROPZONE FILE DROP ===');
       console.log('Files dropped:', acceptedFiles.length);
       console.log('Current storage status:', storageStatus);
+      console.log('Is loading:', loadingState.isLoading);
+      
+      // Don't process files if loading or storage not ready
+      if (loadingState.isLoading) {
+        console.warn('Dropzone: Currently loading, ignoring file drop');
+        return;
+      }
       
       if (storageStatus !== 'ready') {
         console.warn('Dropzone: Storage not ready, files will be queued');
@@ -89,7 +97,8 @@ export const useDesignChatLogic = () => {
       'application/pdf': ['.pdf']
     },
     maxSize: 50 * 1024 * 1024, // 50MB
-    disabled: loadingState.isLoading
+    noClick: loadingState.isLoading, // Disable click when loading
+    noDrag: loadingState.isLoading // Disable drag when loading
   });
 
   const handleSuggestedPrompt = (prompt: string) => {
