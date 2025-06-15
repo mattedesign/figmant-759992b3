@@ -2,8 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Navigation } from '@/components/layout/Navigation';
 import { SubscriberDashboardErrorBoundary } from '@/components/subscriber/SubscriberDashboardErrorBoundary';
-import { IconSidebar } from '@/components/subscriber/IconSidebar';
-import { SecondaryNavigation } from '@/components/subscriber/SecondaryNavigation';
+import { SubscriberSidebar } from '@/components/subscriber/SubscriberSidebar';
 import { TabContentRenderer } from '@/components/subscriber/components/TabContentRenderer';
 import { useSearchParams } from 'react-router-dom';
 
@@ -43,34 +42,6 @@ const SubscriberDashboard = () => {
     });
   };
 
-  // Handle section change from icon sidebar
-  const handleSectionChange = (newSection: string) => {
-    console.log('Changing section to:', newSection);
-    setActiveSection(newSection);
-    
-    // Set the first available tab for the section (prioritize visible tabs)
-    const sectionTabs = Object.entries(tabToSectionMap)
-      .filter(([_, section]) => section === newSection)
-      .map(([tab, _]) => tab);
-    
-    if (sectionTabs.length > 0) {
-      // For workspace, prefer 'design' first, then 'all-analysis'
-      let firstTab = sectionTabs[0];
-      if (newSection === 'workspace') {
-        if (sectionTabs.includes('design')) {
-          firstTab = 'design';
-        } else if (sectionTabs.includes('all-analysis')) {
-          firstTab = 'all-analysis';
-        }
-      }
-      
-      setActiveTab(firstTab);
-      setSearchParams({
-        tab: firstTab
-      });
-    }
-  };
-
   // Sync tab state with URL changes and handle invalid tabs
   useEffect(() => {
     const currentTab = searchParams.get('tab') || 'design';
@@ -88,7 +59,7 @@ const SubscriberDashboard = () => {
       setActiveTab(currentTab);
       setActiveSection(tabToSectionMap[currentTab] || 'workspace');
     }
-  }, [searchParams]);
+  }, [searchParams, setSearchParams]);
 
   console.log('Rendering SubscriberDashboard with tab:', activeTab, 'section:', activeSection);
   
@@ -102,17 +73,9 @@ const SubscriberDashboard = () => {
         
         {/* Main Content Area - Flexible */}
         <div className="flex-1 flex overflow-hidden">
-          {/* Left Navigation Container - Fixed Width, No Scroll */}
-          <div className="flex-none flex">
-            {/* Icon Sidebar */}
-            <IconSidebar 
-              activeSection={activeSection} 
-              onSectionChange={handleSectionChange} 
-            />
-            
-            {/* Secondary Navigation */}
-            <SecondaryNavigation 
-              activeSection={activeSection}
+          {/* Left Navigation Container */}
+          <div className="flex-none">
+            <SubscriberSidebar
               activeTab={activeTab}
               onTabChange={handleTabChange}
             />
