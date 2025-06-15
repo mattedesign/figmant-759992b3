@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { verifyStorageForRole, RoleAwareStorageResult } from '@/utils/storage/roleAwareStorageVerification';
+import { verifyStorageSimplified, SimplifiedStorageResult } from '@/utils/storage/simplifiedStorageVerification';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface RoleAwareStorageManagerProps {
@@ -42,7 +42,7 @@ export const RoleAwareStorageManager: React.FC<RoleAwareStorageManagerProps> = (
       return;
     }
 
-    console.log('Starting role-aware storage verification...', { 
+    console.log('Starting simplified, role-aware storage verification...', { 
       user: user?.id, 
       authLoading, 
       isOwner 
@@ -71,10 +71,10 @@ export const RoleAwareStorageManager: React.FC<RoleAwareStorageManagerProps> = (
           description: "Storage check took too long. Please try again.",
         });
       }
-    }, 10000); // 10 second timeout
+    }, 7000); // 7 second timeout
     
     try {
-      const result: RoleAwareStorageResult = await verifyStorageForRole();
+      const result: SimplifiedStorageResult = await verifyStorageSimplified();
       
       if (!mounted.current) return;
       
@@ -83,7 +83,7 @@ export const RoleAwareStorageManager: React.FC<RoleAwareStorageManagerProps> = (
         clearTimeout(timeoutRef.current);
       }
       
-      console.log('Storage verification result:', result);
+      console.log('Simplified storage verification result:', result);
       
       if (result.success) {
         setStorageStatus('ready');
@@ -98,18 +98,7 @@ export const RoleAwareStorageManager: React.FC<RoleAwareStorageManagerProps> = (
         }
       } else {
         // Handle different failure scenarios
-        if (result.status === 'checking') {
-          // Don't get stuck in checking - treat as temporary error
-          setTimeout(() => {
-            if (mounted.current) {
-              setStorageStatus('error');
-              setStorageErrorDetails({ 
-                ...result.details, 
-                fallbackFromChecking: true 
-              });
-            }
-          }, 2000);
-        } else if (result.status === 'unavailable') {
+        if (result.status === 'unavailable') {
           setStorageStatus('error');
           setStorageErrorDetails(result.details);
           
