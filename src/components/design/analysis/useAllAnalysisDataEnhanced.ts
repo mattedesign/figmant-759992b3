@@ -69,13 +69,13 @@ export const useAllAnalysisDataEnhanced = (): UseAllAnalysisDataEnhancedReturn =
     onError: handleError
   });
 
-  // Real-time subscriptions with enhanced error handling
+  // Real-time subscriptions with improved error handling
   const { connectionStatus } = useAnalysisRealTimeSubscriptions({ 
     onError: (error) => {
       // Only treat connection errors as warnings, not blocking errors
       console.warn('Real-time connection issue:', error.message);
       // Don't call handleError here as it would show error state to user
-      // Instead, the fallback polling will handle data updates
+      // The fallback polling will handle data updates automatically
     }
   });
 
