@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { DesignChatInterface } from '@/components/design/DesignChatInterface';
-import { AllAnalysisPageEnhanced } from '@/components/design/analysis/AllAnalysisPageEnhanced';
+import AllAnalysisPageEnhanced from '@/components/design/analysis/AllAnalysisPageEnhanced';
 import { AnalysisDetailView } from '@/components/design/analysis/AnalysisDetailView';
-import { Dashboard } from '@/pages/Dashboard';
+import Dashboard from '@/pages/Dashboard';
 
 interface FigmantMainContentProps {
   activeSection: string;
