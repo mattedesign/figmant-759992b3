@@ -1,18 +1,19 @@
 
 import React from 'react';
-import { AllAnalysisFilters } from './AllAnalysisFilters';
 import { AllAnalysisViewContent } from './AllAnalysisViewContent';
 import { AllAnalysisLoadingState } from './AllAnalysisLoadingState';
 import { AnalysisDetailView } from './AnalysisDetailView';
 import { useSimplifiedAnalysisData } from '@/hooks/useSimplifiedAnalysisData';
-import { useAllAnalysisFilters } from './useAllAnalysisFilters';
+import { useEnhancedAnalysisFilters } from '@/hooks/useEnhancedAnalysisFilters';
 import { useAllAnalysisPageState } from './hooks/useAllAnalysisPageState';
 import { ErrorDisplay } from './components/ErrorDisplay';
 import { PageHeader } from './components/PageHeader';
 import { DiagnosticsSection } from './components/DiagnosticsSection';
 import { EnhancedErrorBoundary } from './components/EnhancedErrorBoundary';
+import { EnhancedFiltersPanel } from './components/EnhancedFiltersPanel';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 import { useEnhancedAnalysisDataProcessor } from '@/hooks/useEnhancedAnalysisDataProcessor';
+import { useEnhancedRealTimeConnection } from '@/hooks/useEnhancedRealTimeConnection';
 import { useEffect } from 'react';
 
 const AllAnalysisPageEnhanced = () => {
@@ -29,6 +30,17 @@ const AllAnalysisPageEnhanced = () => {
 
   const { measureAsync, getReport } = usePerformanceMonitor();
 
+  // Enhanced real-time connection
+  const {
+    connectionStatus,
+    isEnabled: isRealTimeEnabled,
+    toggleConnection: toggleRealTime,
+    retryConnection,
+    metrics: connectionMetrics,
+    recentEvents,
+    connectionQuality
+  } = useEnhancedRealTimeConnection();
+
   // Use simplified hook for data management with performance monitoring
   const {
     groupedAnalyses,
@@ -36,13 +48,9 @@ const AllAnalysisPageEnhanced = () => {
     isLoading,
     isRefreshing,
     error,
-    connectionStatus,
-    isRealTimeEnabled,
     handleManualRefresh,
     retryFailedQueries,
-    clearError,
-    toggleRealTime,
-    retryConnection
+    clearError
   } = useSimplifiedAnalysisData();
 
   // Enhanced data processing with caching
@@ -53,41 +61,49 @@ const AllAnalysisPageEnhanced = () => {
     sortField: 'created_at'
   });
 
-  // Use processed data for filtering
+  // Enhanced filtering with advanced features
   const {
-    searchTerm,
-    setSearchTerm,
-    statusFilter,
-    setStatusFilter,
-    typeFilter,
-    setTypeFilter,
+    filters,
     filteredAnalyses,
-    filteredGroupedAnalyses
-  } = useAllAnalysisFilters(processedData.allAnalyses, groupedAnalyses);
+    filteredGroupedAnalyses,
+    filterOptions,
+    searchHistory,
+    filterPresets,
+    debouncedSearchTerm,
+    updateFilter,
+    updateMultipleFilters,
+    resetFilters,
+    saveFilterPreset,
+    loadFilterPreset,
+    deleteFilterPreset,
+    quickFilters
+  } = useEnhancedAnalysisFilters(processedData.allAnalyses, groupedAnalyses);
 
   // Log performance metrics periodically
   useEffect(() => {
     const interval = setInterval(() => {
       const report = getReport();
       if (report.totalOperations > 0) {
-        console.log('Analysis Page Performance:', {
+        console.log('Enhanced Analysis Page Performance:', {
           averageLoadTime: `${report.averageDuration.toFixed(2)}ms`,
           totalOperations: report.totalOperations,
           slowestOperation: report.slowestOperation?.name,
-          slowestDuration: report.slowestOperation?.duration?.toFixed(2)
+          slowestDuration: report.slowestOperation?.duration?.toFixed(2),
+          connectionQuality,
+          realtimeEvents: recentEvents.length
         });
       }
     }, 60000); // Every minute
 
     return () => clearInterval(interval);
-  }, [getReport]);
+  }, [getReport, connectionQuality, recentEvents.length]);
 
   // Enhanced manual refresh with performance monitoring
   const handleEnhancedRefresh = async () => {
-    await measureAsync('manual-refresh', handleManualRefresh);
+    await measureAsync('enhanced-manual-refresh', handleManualRefresh);
   };
 
-  // Show error state only for critical data fetching errors, not real-time connection issues
+  // Show error state only for critical data fetching errors
   if (error) {
     return (
       <EnhancedErrorBoundary enableRecovery={true}>
@@ -146,13 +162,19 @@ const AllAnalysisPageEnhanced = () => {
           onRetryConnection={retryConnection}
         />
 
-        <AllAnalysisFilters
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
-          typeFilter={typeFilter}
-          onTypeChange={setTypeFilter}
+        <EnhancedFiltersPanel
+          filters={filters}
+          filterOptions={filterOptions}
+          searchHistory={searchHistory}
+          filterPresets={filterPresets}
+          debouncedSearchTerm={debouncedSearchTerm}
+          updateFilter={updateFilter}
+          updateMultipleFilters={updateMultipleFilters}
+          resetFilters={resetFilters}
+          saveFilterPreset={saveFilterPreset}
+          loadFilterPreset={loadFilterPreset}
+          deleteFilterPreset={deleteFilterPreset}
+          quickFilters={quickFilters}
         />
 
         <AllAnalysisViewContent
