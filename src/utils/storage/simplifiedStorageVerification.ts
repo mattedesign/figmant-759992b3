@@ -10,16 +10,16 @@ export interface SimplifiedStorageResult {
   isAuthenticated: boolean;
 }
 
-const SIMPLIFIED_TIMEOUT = 5000; // 5 seconds timeout
+const SIMPLIFIED_TIMEOUT = 8000; // Reduced to 8 seconds for faster response
 
 export const verifyStorageSimplified = async (): Promise<SimplifiedStorageResult> => {
   try {
     console.log('=== SIMPLIFIED STORAGE VERIFICATION START ===');
     
-    // Step 1: Quick auth check with timeout
+    // Step 1: Quick auth check with reduced timeout
     const authPromise = supabase.auth.getUser();
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Auth timeout')), 3000);
+      setTimeout(() => reject(new Error('Auth timeout')), 2000); // Reduced to 2 seconds
     });
 
     let user;
@@ -30,7 +30,7 @@ export const verifyStorageSimplified = async (): Promise<SimplifiedStorageResult
       user = authUser;
       authError = error;
     } catch (error) {
-      console.warn('Simplified verification: Auth check failed:', error);
+      console.warn('❌ Simplified verification: Auth check failed:', error);
       return {
         success: false,
         status: 'error',
@@ -41,7 +41,7 @@ export const verifyStorageSimplified = async (): Promise<SimplifiedStorageResult
     }
 
     if (authError || !user) {
-      console.log('Simplified verification: User not authenticated');
+      console.log('🚫 Simplified verification: User not authenticated');
       return {
         success: false,
         status: 'unavailable',
@@ -51,42 +51,49 @@ export const verifyStorageSimplified = async (): Promise<SimplifiedStorageResult
       };
     }
 
-    console.log('✓ Simplified verification: User authenticated:', user.id);
+    console.log('✅ Simplified verification: User authenticated:', user.id);
 
     // Step 2: Get user role quickly (with fallback)
     let userRole = 'subscriber';
     try {
-      const { data: profile } = await supabase
+      const rolePromise = supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single();
+
+      const roleTimeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Role fetch timeout')), 2000);
+      });
+
+      const { data: profile } = await Promise.race([rolePromise, roleTimeoutPromise]) as any;
       
       if (profile?.role) {
         userRole = profile.role;
       }
     } catch (error) {
-      console.warn('Simplified verification: Could not fetch role, using default:', error);
+      console.warn('⚠️ Simplified verification: Could not fetch role, using default subscriber:', error);
+      // Continue with default role instead of failing
     }
 
-    console.log('✓ Simplified verification: User role:', userRole);
+    console.log('👤 Simplified verification: User role:', userRole);
 
     // Step 3: Quick bucket check based on role
     if (userRole === 'owner') {
-      // For owners, do a quick bucket test
+      // For owners, do a quick bucket test with reduced timeout
       try {
         const listPromise = supabase.storage
           .from('design-uploads')
           .list('', { limit: 1 });
         
         const listTimeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Bucket timeout')), 3000);
+          setTimeout(() => reject(new Error('Bucket timeout')), 3000); // Reduced to 3 seconds
         });
 
         const { error: listError } = await Promise.race([listPromise, listTimeoutPromise]) as any;
         
         if (listError) {
-          console.error('Simplified verification: Bucket access failed for owner:', listError);
+          console.error('❌ Simplified verification: Bucket access failed for owner:', listError);
           return {
             success: false,
             status: 'error',
@@ -97,7 +104,7 @@ export const verifyStorageSimplified = async (): Promise<SimplifiedStorageResult
           };
         }
 
-        console.log('✓ Simplified verification: Owner storage access confirmed');
+        console.log('✅ Simplified verification: Owner storage access confirmed');
         return {
           success: true,
           status: 'ready',
@@ -107,7 +114,7 @@ export const verifyStorageSimplified = async (): Promise<SimplifiedStorageResult
         };
 
       } catch (error) {
-        console.error('Simplified verification: Owner bucket check failed:', error);
+        console.error('❌ Simplified verification: Owner bucket check failed:', error);
         return {
           success: false,
           status: 'error',
@@ -119,7 +126,7 @@ export const verifyStorageSimplified = async (): Promise<SimplifiedStorageResult
       }
     } else {
       // For subscribers, assume storage is available but limited
-      console.log('✓ Simplified verification: Subscriber access granted');
+      console.log('✅ Simplified verification: Subscriber access granted');
       return {
         success: true,
         status: 'ready',
@@ -130,7 +137,7 @@ export const verifyStorageSimplified = async (): Promise<SimplifiedStorageResult
     }
 
   } catch (error) {
-    console.error('Simplified verification: Unexpected error:', error);
+    console.error('💥 Simplified verification: Unexpected error:', error);
     return {
       success: false,
       status: 'error',

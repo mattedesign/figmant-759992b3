@@ -20,98 +20,152 @@ export const useStorageVerification = ({
   const verificationAttempted = useRef(false);
   const mounted = useRef(true);
   const timeoutRef = useRef<NodeJS.Timeout>();
+  const verificationInProgress = useRef(false);
+  const verificationCompleted = useRef(false);
 
   useEffect(() => {
     mounted.current = true;
+    verificationCompleted.current = false;
     return () => {
       mounted.current = false;
+      verificationCompleted.current = true;
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+        timeoutRef.current = undefined;
       }
     };
   }, []);
 
-  const performRoleAwareVerification = useCallback(async () => {
-    if (verificationAttempted.current || authLoading || !mounted.current || storageStatus === 'ready') {
+  const clearExistingTimeout = useCallback(() => {
+    if (timeoutRef.current) {
+      console.log('🕒 Clearing existing timeout');
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = undefined;
+    }
+  }, []);
+
+  const handleVerificationComplete = useCallback((success: boolean, result?: SimplifiedStorageResult, error?: any) => {
+    // Guard against race conditions
+    if (!mounted.current || verificationCompleted.current) {
+      console.log('🚫 Verification complete called but component unmounted or already completed');
       return;
     }
 
-    console.log('Starting storage verification...');
+    console.log('✅ Storage verification completed:', { success, userRole: result?.userRole });
     
-    verificationAttempted.current = true;
-    setStorageStatus('checking');
-    setStorageErrorDetails(null);
+    // Mark verification as completed and clear timeout
+    verificationCompleted.current = true;
+    verificationInProgress.current = false;
+    clearExistingTimeout();
 
-    // Set a longer timeout (15 seconds) and make it less aggressive
-    timeoutRef.current = setTimeout(() => {
-      if (!mounted.current) return;
-      
-      console.warn('Storage verification timeout - setting to ready state to prevent blocking UI');
-      // Instead of showing an error, set to ready state for better UX
+    if (success && result) {
       setStorageStatus('ready');
       setStorageErrorDetails(null);
       
-      // Only show toast for owners who need to know about configuration issues
-      if (user && isOwner) {
+      // Only show success toast for owners
+      if (result.userRole === 'owner') {
         toast({
-          title: "Storage Check Timeout",
-          description: "Storage verification took longer than expected, but file uploads should still work.",
+          title: "Storage Ready",
+          description: "File uploads are configured and ready to use.",
         });
       }
-    }, 15000); // Increased to 15 seconds
+    } else {
+      // For subscribers, default to ready state unless there's a critical error
+      if (result?.userRole === 'subscriber') {
+        setStorageStatus('ready');
+        setStorageErrorDetails(null);
+      } else {
+        setStorageStatus('error');
+        setStorageErrorDetails(error || result?.details);
+        
+        if (result?.userRole === 'owner') {
+          toast({
+            variant: "destructive",
+            title: "Storage Configuration Issue",
+            description: result.error || "Unable to access file storage.",
+          });
+        }
+      }
+    }
+  }, [toast, setStorageStatus, setStorageErrorDetails, clearExistingTimeout]);
+
+  const handleVerificationTimeout = useCallback(() => {
+    // Guard against race conditions - only handle timeout if verification hasn't completed
+    if (!mounted.current || verificationCompleted.current || !verificationInProgress.current) {
+      console.log('🚫 Timeout fired but verification already completed or component unmounted');
+      return;
+    }
+
+    console.warn('⏰ Storage verification timeout - setting to ready state to prevent blocking UI');
+    
+    // Mark as completed to prevent further race conditions
+    verificationCompleted.current = true;
+    verificationInProgress.current = false;
+    
+    // Set to ready state for better UX
+    setStorageStatus('ready');
+    setStorageErrorDetails(null);
+    
+    // Only show toast for owners who need to know about configuration issues
+    if (user && isOwner) {
+      toast({
+        title: "Storage Check Timeout",
+        description: "Storage verification took longer than expected, but file uploads should still work.",
+      });
+    }
+  }, [user, isOwner, toast, setStorageStatus, setStorageErrorDetails]);
+
+  const performRoleAwareVerification = useCallback(async () => {
+    if (verificationAttempted.current || authLoading || !mounted.current || storageStatus === 'ready') {
+      console.log('🚫 Skipping verification:', { 
+        attempted: verificationAttempted.current, 
+        authLoading, 
+        mounted: mounted.current, 
+        status: storageStatus 
+      });
+      return;
+    }
+
+    console.log('🚀 Starting storage verification...');
+    
+    verificationAttempted.current = true;
+    verificationInProgress.current = true;
+    verificationCompleted.current = false;
+    setStorageStatus('checking');
+    setStorageErrorDetails(null);
+
+    // Clear any existing timeout before setting a new one
+    clearExistingTimeout();
+
+    // Set timeout with race condition protection
+    timeoutRef.current = setTimeout(handleVerificationTimeout, 12000); // Reduced to 12 seconds
     
     try {
       const result: SimplifiedStorageResult = await verifyStorageSimplified();
       
-      if (!mounted.current) return;
-      
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      // Check if we should still process this result
+      if (!mounted.current || verificationCompleted.current) {
+        console.log('🚫 Verification result received but component unmounted or already completed');
+        return;
       }
       
-      console.log('Storage verification result:', result);
+      console.log('📊 Storage verification result:', result);
+      handleVerificationComplete(result.success, result);
       
-      if (result.success) {
-        setStorageStatus('ready');
-        setStorageErrorDetails(null);
-        
-        // Only show success toast for owners
-        if (result.userRole === 'owner') {
-          toast({
-            title: "Storage Ready",
-            description: "File uploads are configured and ready to use.",
-          });
-        }
-      } else {
-        // For subscribers, default to ready state unless there's a critical error
-        if (result.userRole === 'subscriber') {
-          setStorageStatus('ready');
-          setStorageErrorDetails(null);
-        } else {
-          setStorageStatus('error');
-          setStorageErrorDetails(result.details);
-          
-          if (result.userRole === 'owner') {
-            toast({
-              variant: "destructive",
-              title: "Storage Configuration Issue",
-              description: result.error || "Unable to access file storage.",
-            });
-          }
-        }
-      }
     } catch (error) {
-      if (!mounted.current) return;
-      
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      if (!mounted.current || verificationCompleted.current) {
+        console.log('🚫 Verification error but component unmounted or already completed');
+        return;
       }
       
-      console.error('Storage verification error:', error);
+      console.error('❌ Storage verification error:', error);
       
       // For better UX, default to ready state instead of blocking the UI
       setStorageStatus('ready');
       setStorageErrorDetails(null);
+      verificationCompleted.current = true;
+      verificationInProgress.current = false;
+      clearExistingTimeout();
       
       // Only show error for owners
       if (user && isOwner) {
@@ -122,16 +176,32 @@ export const useStorageVerification = ({
         });
       }
     }
-  }, [user, authLoading, isOwner, storageStatus, toast, setStorageStatus, setStorageErrorDetails]);
+  }, [
+    user, 
+    authLoading, 
+    isOwner, 
+    storageStatus, 
+    toast, 
+    setStorageStatus, 
+    setStorageErrorDetails, 
+    clearExistingTimeout,
+    handleVerificationComplete,
+    handleVerificationTimeout
+  ]);
 
   useEffect(() => {
-    // Reset verification flag when user or auth state changes
+    // Reset verification flags when user or auth state changes
     verificationAttempted.current = false;
+    verificationCompleted.current = false;
+    verificationInProgress.current = false;
+    
+    // Clear any existing timeouts
+    clearExistingTimeout();
     
     // Only start verification if we have a user and auth is not loading
     if (!authLoading && user) {
       const timeoutId = setTimeout(performRoleAwareVerification, 500); // Slight delay
       return () => clearTimeout(timeoutId);
     }
-  }, [user, authLoading, isOwner, performRoleAwareVerification]);
+  }, [user, authLoading, isOwner, performRoleAwareVerification, clearExistingTimeout]);
 };
