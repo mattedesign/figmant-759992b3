@@ -99,7 +99,6 @@ export const SubscriptionPlansManager = () => {
         <CardContent>
           {!creditPlans || creditPlans.length === 0 ? (
             <EmptyStateCard 
-              activeFilter="credits"
               onCreatePlan={handleCreatePlan}
             />
           ) : (

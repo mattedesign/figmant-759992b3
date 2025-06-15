@@ -40,7 +40,6 @@ export const PlansManagerContent = ({
 
       {!filteredPlans || filteredPlans.length === 0 ? (
         <EmptyStateCard 
-          activeFilter={activeFilter}
           onCreatePlan={onCreatePlan}
         />
       ) : (
