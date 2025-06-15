@@ -1,7 +1,9 @@
 
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, CreditCard, Coins } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { MoreHorizontal, Edit, Trash2, Coins, DollarSign } from 'lucide-react';
 import { SubscriptionPlan } from '@/types/subscription';
 
 interface ProductPlanCardProps {
@@ -19,105 +21,87 @@ export const ProductPlanCard = ({
   isDeleting, 
   isUpdating 
 }: ProductPlanCardProps) => {
-  const formatPrice = (price: number | null) => {
-    return price ? `$${price.toFixed(2)}` : 'N/A';
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(price);
   };
 
-  const getPlanTypeIcon = (planType: string) => {
-    return planType === 'credits' ? <Coins className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />;
-  };
-
-  const getPlanTypeLabel = (planType: string) => {
-    return planType === 'credits' ? 'Credit Pack' : 'Subscription';
-  };
-
-  const getPlanTypeColor = (planType: string) => {
-    return planType === 'credits' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800';
-  };
+  const pricePerCredit = plan.credit_price && plan.credits > 0 
+    ? (plan.credit_price / plan.credits) 
+    : 0;
 
   return (
-    <div className="border rounded-lg p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center space-x-3 mb-3">
-            <h3 className="font-semibold text-lg">{plan.name}</h3>
+    <Card className="relative">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center space-x-2">
+            <Coins className="h-5 w-5 text-primary" />
+            <div>
+              <CardTitle className="text-lg">{plan.name}</CardTitle>
+              <CardDescription className="mt-1">
+                {plan.description || 'Credit pack for analysis services'}
+              </CardDescription>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
             <Badge variant={plan.is_active ? "default" : "secondary"}>
               {plan.is_active ? "Active" : "Inactive"}
             </Badge>
-            <Badge className={`flex items-center space-x-1 ${getPlanTypeColor(plan.plan_type)}`}>
-              {getPlanTypeIcon(plan.plan_type)}
-              <span>{getPlanTypeLabel(plan.plan_type)}</span>
-            </Badge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onEdit(plan)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Pack
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onDelete(plan)}
+                  className="text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Pack
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          
-          {plan.description && (
-            <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
-          )}
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="bg-muted/50 p-3 rounded">
-              <p className="font-medium text-muted-foreground">Credits</p>
-              <p className="text-lg font-bold">{plan.credits.toLocaleString()}</p>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <div className="text-sm text-muted-foreground">Credits</div>
+            <div className="text-2xl font-bold">{plan.credits}</div>
+          </div>
+          <div className="space-y-1">
+            <div className="text-sm text-muted-foreground">Total Price</div>
+            <div className="text-2xl font-bold">
+              {plan.credit_price ? formatPrice(plan.credit_price) : 'Free'}
             </div>
-            
-            {plan.plan_type === 'recurring' ? (
-              <>
-                <div className="bg-muted/50 p-3 rounded">
-                  <p className="font-medium text-muted-foreground">Monthly</p>
-                  <p className="text-lg font-bold">{formatPrice(plan.price_monthly)}</p>
-                </div>
-                <div className="bg-muted/50 p-3 rounded">
-                  <p className="font-medium text-muted-foreground">Annual</p>
-                  <p className="text-lg font-bold">{formatPrice(plan.price_annual)}</p>
-                </div>
-                <div className="bg-muted/50 p-3 rounded">
-                  <p className="font-medium text-muted-foreground">Billing</p>
-                  <p className="text-sm font-medium">Recurring</p>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="bg-muted/50 p-3 rounded">
-                  <p className="font-medium text-muted-foreground">Pack Price</p>
-                  <p className="text-lg font-bold">{formatPrice(plan.credit_price)}</p>
-                </div>
-                <div className="bg-muted/50 p-3 rounded">
-                  <p className="font-medium text-muted-foreground">Per Credit</p>
-                  <p className="text-sm font-bold">
-                    {plan.credit_price && plan.credits > 0 
-                      ? `$${(plan.credit_price / plan.credits).toFixed(3)}`
-                      : 'N/A'
-                    }
-                  </p>
-                </div>
-                <div className="bg-muted/50 p-3 rounded">
-                  <p className="font-medium text-muted-foreground">Type</p>
-                  <p className="text-sm font-medium">One-time</p>
-                </div>
-              </>
-            )}
           </div>
         </div>
         
-        <div className="flex space-x-2 ml-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onEdit(plan)}
-            disabled={isUpdating}
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onDelete(plan)}
-            disabled={isDeleting}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+        {pricePerCredit > 0 && (
+          <div className="mt-4 p-3 bg-muted rounded-lg">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Price per credit:</span>
+              <span className="font-medium flex items-center">
+                <DollarSign className="h-3 w-3 mr-1" />
+                {pricePerCredit.toFixed(3)}
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4 text-xs text-muted-foreground">
+          Created {new Date(plan.created_at).toLocaleDateString()}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

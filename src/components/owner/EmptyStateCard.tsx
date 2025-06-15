@@ -1,6 +1,7 @@
 
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Package } from 'lucide-react';
+import { Plus, Coins } from 'lucide-react';
 
 interface EmptyStateCardProps {
   activeFilter: string;
@@ -8,40 +9,42 @@ interface EmptyStateCardProps {
 }
 
 export const EmptyStateCard = ({ activeFilter, onCreatePlan }: EmptyStateCardProps) => {
-  const getEmptyStateConfig = () => {
+  const getEmptyStateContent = () => {
     switch (activeFilter) {
-      case 'recurring':
-        return {
-          title: 'No subscription plans found',
-          description: 'Create recurring subscription plans for ongoing access',
-          buttonText: 'Add Subscription Plan'
-        };
       case 'credits':
         return {
-          title: 'No credit packs found',
-          description: 'Create credit packs for one-time purchases',
-          buttonText: 'Add Credit Pack'
+          title: "No Credit Packs",
+          description: "Create your first credit pack to allow users to purchase analysis credits.",
+          icon: Coins
         };
       default:
         return {
-          title: 'No products found',
-          description: 'Create your first product to get started',
-          buttonText: 'Add Product'
+          title: "No Credit Packs",
+          description: "Get started by creating your first credit pack for users to purchase.",
+          icon: Coins
         };
     }
   };
 
-  const config = getEmptyStateConfig();
+  const { title, description, icon: Icon } = getEmptyStateContent();
 
   return (
-    <div className="text-center py-12 text-muted-foreground">
-      <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
-      <h3 className="text-lg font-medium mb-2">{config.title}</h3>
-      <p className="text-sm mb-4">{config.description}</p>
-      <Button onClick={onCreatePlan} variant="outline">
-        <Plus className="h-4 w-4 mr-2" />
-        {config.buttonText}
-      </Button>
-    </div>
+    <Card className="text-center py-8">
+      <CardHeader>
+        <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+          <Icon className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription className="max-w-md mx-auto">
+          {description}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Button onClick={onCreatePlan}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Credit Pack
+        </Button>
+      </CardContent>
+    </Card>
   );
 };

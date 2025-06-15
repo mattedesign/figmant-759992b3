@@ -10,7 +10,7 @@ export interface SubscriptionPlan {
   created_at: string;
   updated_at: string;
   created_by: string | null;
-  plan_type: 'recurring' | 'credits';
+  plan_type: 'credits'; // Only credit-based plans supported
   credit_price: number | null;
 }
 
@@ -18,10 +18,10 @@ export interface CreateSubscriptionPlanData {
   name: string;
   description?: string;
   credits: number;
-  price_monthly?: number;
-  price_annual?: number;
+  price_monthly?: undefined; // Not used for credit packs
+  price_annual?: undefined; // Not used for credit packs
   is_active?: boolean;
-  plan_type: 'recurring' | 'credits';
+  plan_type: 'credits'; // Only credit-based plans
   credit_price?: number;
 }
 

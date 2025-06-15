@@ -23,12 +23,12 @@ export const SubscriptionPlanDialog = ({
   const [formData, setFormData] = useState<CreateSubscriptionPlanData>({
     name: '',
     description: '',
-    credits: 0,
+    credits: 10,
     price_monthly: undefined,
     price_annual: undefined,
     is_active: true,
-    plan_type: 'recurring',
-    credit_price: undefined
+    plan_type: 'credits', // Force credit-based plans only
+    credit_price: 1.00
   });
 
   useEffect(() => {
@@ -37,22 +37,22 @@ export const SubscriptionPlanDialog = ({
         name: plan.name,
         description: plan.description || '',
         credits: plan.credits,
-        price_monthly: plan.price_monthly || undefined,
-        price_annual: plan.price_annual || undefined,
+        price_monthly: undefined, // Remove monthly pricing
+        price_annual: undefined, // Remove annual pricing
         is_active: plan.is_active,
-        plan_type: plan.plan_type,
-        credit_price: plan.credit_price || undefined
+        plan_type: 'credits', // Force credit-based
+        credit_price: plan.credit_price || 1.00
       });
     } else {
       setFormData({
         name: '',
         description: '',
-        credits: 0,
+        credits: 10,
         price_monthly: undefined,
         price_annual: undefined,
         is_active: true,
-        plan_type: 'recurring',
-        credit_price: undefined
+        plan_type: 'credits',
+        credit_price: 1.00
       });
     }
   }, [plan, open]);
@@ -69,12 +69,12 @@ export const SubscriptionPlanDialog = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Edit Subscription Plan' : 'Create Subscription Plan'}
+            {isEditing ? 'Edit Credit Pack' : 'Create Credit Pack'}
           </DialogTitle>
           <DialogDescription>
             {isEditing 
-              ? 'Update the subscription plan details below.' 
-              : 'Create a new subscription plan with pricing and credits.'}
+              ? 'Update the credit pack details below.' 
+              : 'Create a new credit pack with pricing and credit amounts.'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -88,7 +88,7 @@ export const SubscriptionPlanDialog = ({
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : (isEditing ? 'Update Plan' : 'Create Plan')}
+              {isLoading ? 'Saving...' : (isEditing ? 'Update Pack' : 'Create Pack')}
             </Button>
           </div>
         </form>

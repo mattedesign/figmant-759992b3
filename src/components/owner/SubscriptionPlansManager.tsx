@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Package } from 'lucide-react';
+import { Plus, Coins } from 'lucide-react';
 import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans';
 import { SubscriptionPlanDialog } from './SubscriptionPlanDialog';
 import { DeletePlanDialog } from './DeletePlanDialog';
@@ -16,6 +16,9 @@ export const SubscriptionPlansManager = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<SubscriptionPlan | null>(null);
   const [activeFilter, setActiveFilter] = useState('all');
+
+  // Filter to only show credit-based plans
+  const creditPlans = plans?.filter(plan => plan.plan_type === 'credits') || [];
 
   const handleCreatePlan = () => {
     setEditingPlan(null);
@@ -33,10 +36,18 @@ export const SubscriptionPlansManager = () => {
   };
 
   const handleSubmit = (data: CreateSubscriptionPlanData) => {
+    // Ensure we're always creating credit-based plans
+    const creditData = {
+      ...data,
+      plan_type: 'credits' as const,
+      price_monthly: undefined,
+      price_annual: undefined
+    };
+
     if (editingPlan) {
-      updatePlan({ ...data, id: editingPlan.id });
+      updatePlan({ ...creditData, id: editingPlan.id });
     } else {
-      createPlan(data);
+      createPlan(creditData);
     }
     setDialogOpen(false);
   };
@@ -53,8 +64,8 @@ export const SubscriptionPlansManager = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Plans & Products</CardTitle>
-          <CardDescription>Loading subscription plans and credit packs...</CardDescription>
+          <CardTitle>Credit Packs</CardTitle>
+          <CardDescription>Loading credit packs...</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -73,21 +84,21 @@ export const SubscriptionPlansManager = () => {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Package className="h-5 w-5" />
-              <span>Plans & Products</span>
+              <Coins className="h-5 w-5" />
+              <span>Credit Packs</span>
             </div>
             <Button onClick={handleCreatePlan} size="sm">
               <Plus className="h-4 w-4 mr-2" />
-              Add Product
+              Add Credit Pack
             </Button>
           </CardTitle>
           <CardDescription>
-            Manage subscription plans and credit packs for your platform
+            Manage credit packs for your platform. Users purchase credits to perform design analysis.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <PlansManagerContent
-            plans={plans}
+            plans={creditPlans}
             activeFilter={activeFilter}
             onFilterChange={setActiveFilter}
             onCreatePlan={handleCreatePlan}
