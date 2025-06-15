@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Brain, Plus, TrendingUp, Target, Zap } from 'lucide-react';
+import { Brain, Plus, TrendingUp, Target, Zap, Crown } from 'lucide-react';
 import { ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
 import { PromptCategoryCard } from './PromptCategoryCard';
 
@@ -11,6 +11,7 @@ const CATEGORIES = [
   { value: 'copy_messaging', label: 'Copy & Messaging', icon: Zap },
   { value: 'ecommerce_revenue', label: 'E-commerce Revenue', icon: TrendingUp },
   { value: 'ab_testing', label: 'A/B Testing', icon: Target },
+  { value: 'premium', label: 'Premium Analysis', icon: Crown },
   { value: 'general', label: 'General Analysis', icon: Brain }
 ] as const;
 

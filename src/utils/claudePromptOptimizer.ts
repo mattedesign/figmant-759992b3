@@ -93,6 +93,9 @@ export class ClaudePromptOptimizer {
   static getCategoryForUseCase(useCase: string): string {
     const useCaseLower = useCase.toLowerCase();
     
+    if (useCaseLower.includes('premium') || useCaseLower.includes('advanced') || useCaseLower.includes('enterprise')) {
+      return 'premium';
+    }
     if (useCaseLower.includes('ecommerce') || useCaseLower.includes('revenue') || useCaseLower.includes('conversion')) {
       return 'ecommerce_revenue';
     }

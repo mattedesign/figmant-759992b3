@@ -10,7 +10,7 @@ export interface PromptUpdaterProps {
   accentColor: string;
 }
 
-export type CategoryType = 'master' | 'competitor' | 'visual_hierarchy' | 'copy_messaging' | 'ecommerce_revenue' | 'ab_testing' | 'general';
+export type CategoryType = 'master' | 'competitor' | 'visual_hierarchy' | 'copy_messaging' | 'ecommerce_revenue' | 'ab_testing' | 'premium' | 'general';
 
 export const CATEGORY_OPTIONS = [
   { value: 'master' as const, label: 'Master UX Analysis' },
@@ -19,5 +19,6 @@ export const CATEGORY_OPTIONS = [
   { value: 'copy_messaging' as const, label: 'Copy & Messaging' },
   { value: 'ecommerce_revenue' as const, label: 'E-commerce Revenue' },
   { value: 'ab_testing' as const, label: 'A/B Testing' },
+  { value: 'premium' as const, label: 'Premium Analysis' },
   { value: 'general' as const, label: 'General' }
 ];

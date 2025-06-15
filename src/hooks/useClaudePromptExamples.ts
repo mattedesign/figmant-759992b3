@@ -7,7 +7,7 @@ export interface ClaudePromptExample {
   id: string;
   title: string;
   description?: string;
-  category: 'master' | 'competitor' | 'visual_hierarchy' | 'copy_messaging' | 'ecommerce_revenue' | 'ab_testing' | 'general';
+  category: 'master' | 'competitor' | 'visual_hierarchy' | 'copy_messaging' | 'ecommerce_revenue' | 'ab_testing' | 'premium' | 'general';
   original_prompt: string;
   claude_response: string;
   effectiveness_rating?: number;

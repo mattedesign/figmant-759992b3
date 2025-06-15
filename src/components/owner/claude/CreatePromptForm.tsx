@@ -15,6 +15,7 @@ const CATEGORIES = [
   { value: 'copy_messaging', label: 'Copy & Messaging' },
   { value: 'ecommerce_revenue', label: 'E-commerce Revenue' },
   { value: 'ab_testing', label: 'A/B Testing' },
+  { value: 'premium', label: 'Premium Analysis' },
   { value: 'general', label: 'General Analysis' }
 ] as const;
 
