@@ -5,12 +5,14 @@ import { AllAnalysisPageHeader } from './AllAnalysisPageHeader';
 import { AllAnalysisViewContent } from './AllAnalysisViewContent';
 import { AllAnalysisLoadingState } from './AllAnalysisLoadingState';
 import { AnalysisDetailView } from './AnalysisDetailView';
-import { useAllAnalysisDataEnhanced } from './useAllAnalysisDataEnhanced';
+import { ConnectionDiagnostics } from './ConnectionDiagnostics';
+import { useSimplifiedAnalysisData } from '@/hooks/useSimplifiedAnalysisData';
 import { useAllAnalysisFilters } from './useAllAnalysisFilters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, RefreshCw, Wifi, WifiOff, Clock } from 'lucide-react';
+import { AlertCircle, RefreshCw, Wifi, WifiOff, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const ErrorDisplay: React.FC<{ 
   error: Error; 
@@ -51,20 +53,20 @@ const ErrorDisplay: React.FC<{
 };
 
 const ConnectionStatusBadge: React.FC<{ 
-  status: 'connecting' | 'connected' | 'error' | 'fallback' 
+  status: 'connecting' | 'connected' | 'error' | 'fallback' | 'disabled'
 }> = ({ status }) => {
   const getStatusConfig = () => {
     switch (status) {
       case 'connected':
         return {
           icon: <Wifi className="h-3 w-3" />,
-          text: 'Live Updates',
+          text: 'Live',
           className: 'bg-green-100 text-green-800 border-green-200'
         };
       case 'connecting':
         return {
           icon: <Clock className="h-3 w-3 animate-pulse" />,
-          text: 'Connecting...',
+          text: 'Connecting',
           className: 'bg-blue-100 text-blue-800 border-blue-200'
         };
       case 'fallback':
@@ -73,10 +75,16 @@ const ConnectionStatusBadge: React.FC<{
           text: 'Auto-refresh',
           className: 'bg-yellow-100 text-yellow-800 border-yellow-200'
         };
+      case 'disabled':
+        return {
+          icon: <WifiOff className="h-3 w-3" />,
+          text: 'Disabled',
+          className: 'bg-gray-100 text-gray-800 border-gray-200'
+        };
       case 'error':
         return {
           icon: <WifiOff className="h-3 w-3" />,
-          text: 'Offline',
+          text: 'Error',
           className: 'bg-red-100 text-red-800 border-red-200'
         };
       default:
@@ -101,8 +109,9 @@ const ConnectionStatusBadge: React.FC<{
 const AllAnalysisPageEnhanced = () => {
   const [selectedAnalysis, setSelectedAnalysis] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'grouped' | 'table'>('grouped');
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
 
-  // Use enhanced custom hook for data management
+  // Use simplified hook for data management
   const {
     groupedAnalyses,
     allAnalyses,
@@ -110,10 +119,13 @@ const AllAnalysisPageEnhanced = () => {
     isRefreshing,
     error,
     connectionStatus,
+    isRealTimeEnabled,
     handleManualRefresh,
     retryFailedQueries,
-    clearError
-  } = useAllAnalysisDataEnhanced();
+    clearError,
+    toggleRealTime,
+    retryConnection
+  } = useSimplifiedAnalysisData();
 
   // Use custom hook for filtering
   const {
@@ -175,8 +187,32 @@ const AllAnalysisPageEnhanced = () => {
           totalAnalysesCount={allAnalyses.length}
         />
         
-        <ConnectionStatusBadge status={connectionStatus} />
+        <div className="flex items-center gap-2">
+          <ConnectionStatusBadge status={connectionStatus} />
+          <Collapsible open={showDiagnostics} onOpenChange={setShowDiagnostics}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm">
+                {showDiagnostics ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+          </Collapsible>
+        </div>
       </div>
+
+      <Collapsible open={showDiagnostics} onOpenChange={setShowDiagnostics}>
+        <CollapsibleContent>
+          <ConnectionDiagnostics
+            connectionStatus={connectionStatus}
+            isEnabled={isRealTimeEnabled}
+            onToggleConnection={toggleRealTime}
+            onRetryConnection={retryConnection}
+          />
+        </CollapsibleContent>
+      </Collapsible>
 
       <AllAnalysisFilters
         searchTerm={searchTerm}
