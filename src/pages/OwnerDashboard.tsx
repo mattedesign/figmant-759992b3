@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Navigation } from '@/components/layout/Navigation';
 import { OwnerDashboardErrorBoundary } from '@/components/owner/OwnerDashboardErrorBoundary';
@@ -123,7 +124,7 @@ const OwnerDashboard = () => {
           </div>
           
           {/* Main Content Area - Scrollable */}
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto bg-[#F5F6FA]">
             <TabContentRenderer activeTab={activeTab} />
           </div>
         </div>

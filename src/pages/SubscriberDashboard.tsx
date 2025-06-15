@@ -119,7 +119,7 @@ const SubscriberDashboard = () => {
           </div>
           
           {/* Main Content Area - Scrollable */}
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto bg-[#F5F6FA]">
             <TabContentRenderer activeTab={activeTab} />
           </div>
         </div>
