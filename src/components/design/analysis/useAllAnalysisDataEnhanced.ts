@@ -18,6 +18,7 @@ interface UseAllAnalysisDataEnhancedReturn {
   isLoading: boolean;
   isRefreshing: boolean;
   error: Error | null;
+  connectionStatus: 'connecting' | 'connected' | 'error' | 'fallback';
   handleManualRefresh: () => Promise<void>;
   retryFailedQueries: () => Promise<void>;
   clearError: () => void;
@@ -68,8 +69,15 @@ export const useAllAnalysisDataEnhanced = (): UseAllAnalysisDataEnhancedReturn =
     onError: handleError
   });
 
-  // Real-time subscriptions
-  useAnalysisRealTimeSubscriptions({ onError: handleError });
+  // Real-time subscriptions with enhanced error handling
+  const { connectionStatus } = useAnalysisRealTimeSubscriptions({ 
+    onError: (error) => {
+      // Only treat connection errors as warnings, not blocking errors
+      console.warn('Real-time connection issue:', error.message);
+      // Don't call handleError here as it would show error state to user
+      // Instead, the fallback polling will handle data updates
+    }
+  });
 
   const isLoading = uploadsLoading || batchLoading || individualLoading;
 
@@ -82,6 +90,7 @@ export const useAllAnalysisDataEnhanced = (): UseAllAnalysisDataEnhancedReturn =
     isLoading,
     isRefreshing,
     error: combinedError,
+    connectionStatus,
     handleManualRefresh,
     retryFailedQueries,
     clearError

@@ -9,7 +9,8 @@ import { useAllAnalysisDataEnhanced } from './useAllAnalysisDataEnhanced';
 import { useAllAnalysisFilters } from './useAllAnalysisFilters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { AlertCircle, RefreshCw, Wifi, WifiOff, Clock } from 'lucide-react';
 
 const ErrorDisplay: React.FC<{ 
   error: Error; 
@@ -49,6 +50,52 @@ const ErrorDisplay: React.FC<{
   );
 };
 
+const ConnectionStatusBadge: React.FC<{ 
+  status: 'connecting' | 'connected' | 'error' | 'fallback' 
+}> = ({ status }) => {
+  const getStatusConfig = () => {
+    switch (status) {
+      case 'connected':
+        return {
+          icon: <Wifi className="h-3 w-3" />,
+          text: 'Live Updates',
+          variant: 'default' as const,
+          className: 'bg-green-100 text-green-800 border-green-200'
+        };
+      case 'connecting':
+        return {
+          icon: <Clock className="h-3 w-3 animate-pulse" />,
+          text: 'Connecting...',
+          variant: 'outline' as const,
+          className: 'bg-blue-100 text-blue-800 border-blue-200'
+        };
+      case 'fallback':
+        return {
+          icon: <RefreshCw className="h-3 w-3" />,
+          text: 'Auto-refresh',
+          variant: 'outline' as const,
+          className: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+        };
+      case 'error':
+        return {
+          icon: <WifiOff className="h-3 w-3" />,
+          text: 'Offline',
+          variant: 'outline' as const,
+          className: 'bg-red-100 text-red-800 border-red-200'
+        };
+    }
+  };
+
+  const { icon, text, className } = getStatusConfig();
+
+  return (
+    <Badge variant="outline" className={`flex items-center gap-1 ${className}`}>
+      {icon}
+      <span className="text-xs">{text}</span>
+    </Badge>
+  );
+};
+
 const AllAnalysisPageEnhanced = () => {
   const [selectedAnalysis, setSelectedAnalysis] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'grouped' | 'table'>('grouped');
@@ -60,6 +107,7 @@ const AllAnalysisPageEnhanced = () => {
     isLoading,
     isRefreshing,
     error,
+    connectionStatus,
     handleManualRefresh,
     retryFailedQueries,
     clearError
@@ -113,16 +161,20 @@ const AllAnalysisPageEnhanced = () => {
 
   return (
     <div className="p-6 space-y-6 h-full overflow-y-auto">
-      <AllAnalysisPageHeader
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        onManualRefresh={handleManualRefresh}
-        isRefreshing={isRefreshing}
-        filteredGroupedAnalysesCount={filteredGroupedAnalyses.length}
-        totalGroupedAnalysesCount={groupedAnalyses.length}
-        filteredAnalysesCount={filteredAnalyses.length}
-        totalAnalysesCount={allAnalyses.length}
-      />
+      <div className="flex items-center justify-between">
+        <AllAnalysisPageHeader
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          onManualRefresh={handleManualRefresh}
+          isRefreshing={isRefreshing}
+          filteredGroupedAnalysesCount={filteredGroupedAnalyses.length}
+          totalGroupedAnalysesCount={groupedAnalyses.length}
+          filteredAnalysesCount={filteredAnalyses.length}
+          totalAnalysesCount={allAnalyses.length}
+        />
+        
+        <ConnectionStatusBadge status={connectionStatus} />
+      </div>
 
       <AllAnalysisFilters
         searchTerm={searchTerm}
