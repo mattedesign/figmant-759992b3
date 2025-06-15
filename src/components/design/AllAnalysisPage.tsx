@@ -3,13 +3,16 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useDesignUploads } from '@/hooks/useDesignUploads';
 import { useDesignBatchAnalyses } from '@/hooks/useDesignBatchAnalyses';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
+import { useGroupedAnalyses } from '@/hooks/useGroupedAnalyses';
 import { AllAnalysisFilters } from './analysis/AllAnalysisFilters';
 import { AllAnalysisTable } from './analysis/AllAnalysisTable';
+import { GroupedAnalysisTable } from './analysis/GroupedAnalysisTable';
 import { AnalysisDetailView } from './analysis/AnalysisDetailView';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RefreshCw, Grid, List } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export const AllAnalysisPage = () => {
@@ -18,6 +21,7 @@ export const AllAnalysisPage = () => {
   const [typeFilter, setTypeFilter] = useState('all');
   const [selectedAnalysis, setSelectedAnalysis] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [viewMode, setViewMode] = useState<'grouped' | 'table'>('grouped');
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -26,6 +30,9 @@ export const AllAnalysisPage = () => {
   const { data: uploads = [], isLoading: uploadsLoading, refetch: refetchUploads } = useDesignUploads();
   const { data: batchAnalyses = [], isLoading: batchLoading, refetch: refetchBatch } = useDesignBatchAnalyses();
   const { data: individualAnalyses = [], isLoading: individualLoading, refetch: refetchIndividual } = useDesignAnalyses();
+
+  // Group analyses using the new hook
+  const groupedAnalyses = useGroupedAnalyses(uploads, individualAnalyses, batchAnalyses);
 
   // Set up real-time subscriptions for analysis updates
   useEffect(() => {
@@ -42,10 +49,8 @@ export const AllAnalysisPage = () => {
         },
         (payload) => {
           console.log('Real-time: New analysis inserted:', payload);
-          // Invalidate queries to refresh data
           queryClient.invalidateQueries({ queryKey: ['design-analyses'] });
           
-          // Show toast notification for new analysis
           toast({
             title: "New Analysis Available",
             description: "A new analysis has been completed and is now visible.",
@@ -105,67 +110,23 @@ export const AllAnalysisPage = () => {
     }
   };
 
-  // Combine and process all analyses
+  // Convert grouped analyses back to flat list for filtering in table view
   const allAnalyses = useMemo(() => {
-    console.log('Processing all analyses:', {
-      individualCount: individualAnalyses.length,
-      batchCount: batchAnalyses.length,
-      uploadsCount: uploads.length
+    const flatAnalyses: any[] = [];
+    
+    groupedAnalyses.forEach(group => {
+      // Add the primary analysis
+      flatAnalyses.push(group.primaryAnalysis);
+      // Add all related analyses
+      flatAnalyses.push(...group.relatedAnalyses);
     });
-
-    const individual = individualAnalyses.map(analysis => {
-      const upload = uploads.find(u => u.id === analysis.design_upload_id);
-      return {
-        id: analysis.id,
-        type: 'individual',
-        title: upload?.file_name || 'Chat Analysis',
-        status: upload?.status || 'completed',
-        created_at: analysis.created_at,
-        confidence_score: analysis.confidence_score,
-        analysis_type: analysis.analysis_type,
-        upload_count: 1,
-        winner_upload_id: null,
-        batch_name: null,
-        rawData: analysis,
-        relatedUpload: upload
-      };
-    });
-
-    const batch = batchAnalyses.map(analysis => {
-      const batchUploads = uploads.filter(u => u.batch_id === analysis.batch_id);
-      const batchName = batchUploads[0]?.batch_name || `Batch ${analysis.batch_id.slice(0, 8)}`;
-      
-      return {
-        id: analysis.id,
-        type: 'batch',
-        title: batchName,
-        status: 'completed',
-        created_at: analysis.created_at,
-        confidence_score: analysis.confidence_score,
-        analysis_type: analysis.analysis_type,
-        upload_count: batchUploads.length,
-        winner_upload_id: analysis.winner_upload_id,
-        batch_name: batchName,
-        rawData: analysis,
-        relatedUploads: batchUploads
-      };
-    });
-
-    const combined = [...individual, ...batch].sort((a, b) => 
+    
+    return flatAnalyses.sort((a, b) => 
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
+  }, [groupedAnalyses]);
 
-    console.log('Combined analyses result:', {
-      totalCount: combined.length,
-      individualCount: individual.length,
-      batchCount: batch.length,
-      latestAnalysis: combined[0]?.created_at
-    });
-
-    return combined;
-  }, [individualAnalyses, batchAnalyses, uploads]);
-
-  // Filter analyses
+  // Filter analyses based on current filters
   const filteredAnalyses = useMemo(() => {
     return allAnalyses.filter(analysis => {
       const matchesSearch = analysis.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -176,6 +137,18 @@ export const AllAnalysisPage = () => {
       return matchesSearch && matchesStatus && matchesType;
     });
   }, [allAnalyses, searchTerm, statusFilter, typeFilter]);
+
+  // Filter grouped analyses
+  const filteredGroupedAnalyses = useMemo(() => {
+    return groupedAnalyses.filter(group => {
+      const matchesSearch = group.groupTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          group.primaryAnalysis.analysis_type.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || group.primaryAnalysis.status === statusFilter;
+      const matchesType = typeFilter === 'all' || group.groupType === typeFilter;
+      
+      return matchesSearch && matchesStatus && matchesType;
+    });
+  }, [groupedAnalyses, searchTerm, statusFilter, typeFilter]);
 
   const handleViewAnalysis = (analysis: any) => {
     setSelectedAnalysis(analysis);
@@ -216,6 +189,26 @@ export const AllAnalysisPage = () => {
           </p>
         </div>
         <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Button
+              variant={viewMode === 'grouped' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grouped')}
+              className="flex items-center gap-2"
+            >
+              <Grid className="h-4 w-4" />
+              Grouped
+            </Button>
+            <Button
+              variant={viewMode === 'table' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('table')}
+              className="flex items-center gap-2"
+            >
+              <List className="h-4 w-4" />
+              Table
+            </Button>
+          </div>
           <Button
             variant="outline"
             onClick={handleManualRefresh}
@@ -226,7 +219,10 @@ export const AllAnalysisPage = () => {
             Refresh
           </Button>
           <div className="text-sm text-muted-foreground">
-            {filteredAnalyses.length} of {allAnalyses.length} analyses
+            {viewMode === 'grouped' 
+              ? `${filteredGroupedAnalyses.length} of ${groupedAnalyses.length} groups`
+              : `${filteredAnalyses.length} of ${allAnalyses.length} analyses`
+            }
           </div>
         </div>
       </div>
@@ -240,11 +236,18 @@ export const AllAnalysisPage = () => {
         onTypeChange={setTypeFilter}
       />
 
-      <AllAnalysisTable
-        analyses={filteredAnalyses}
-        onRowClick={handleRowClick}
-        onViewAnalysis={handleViewAnalysis}
-      />
+      {viewMode === 'grouped' ? (
+        <GroupedAnalysisTable
+          groupedAnalyses={filteredGroupedAnalyses}
+          onViewAnalysis={handleViewAnalysis}
+        />
+      ) : (
+        <AllAnalysisTable
+          analyses={filteredAnalyses}
+          onRowClick={handleRowClick}
+          onViewAnalysis={handleViewAnalysis}
+        />
+      )}
     </div>
   );
 };
