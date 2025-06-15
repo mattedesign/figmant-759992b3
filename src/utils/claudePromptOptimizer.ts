@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
+import { ContentAnalyzer, UserInput, ContentAnalysis } from './contentAnalyzer';
 
 export interface PromptOptimizationContext {
   category: string;
@@ -8,14 +8,121 @@ export interface PromptOptimizationContext {
   businessDomain?: string;
   userGoals?: string;
   analysisType?: string;
+  contentAnalysis?: ContentAnalysis;
+}
+
+export interface IntelligentPromptSelection {
+  selectedPrompt: string | null;
+  category: string;
+  analysisType: string;
+  confidence: number;
+  reasoning: string;
+  fallbackUsed: boolean;
 }
 
 export class ClaudePromptOptimizer {
-  static async getBestPromptForContext(context: PromptOptimizationContext): Promise<string | null> {
+  static async getOptimalPromptForUserInput(input: UserInput): Promise<IntelligentPromptSelection> {
+    try {
+      console.log('=== INTELLIGENT PROMPT SELECTION ===');
+      console.log('Analyzing user input:', {
+        messageLength: input.message.length,
+        attachmentCount: input.attachments?.length || 0
+      });
+
+      // Analyze the content to understand intent
+      const contentAnalysis = ContentAnalyzer.analyzeContent(input);
+      
+      console.log('Content analysis result:', {
+        suggestedCategory: contentAnalysis.suggestedCategory,
+        suggestedAnalysisType: contentAnalysis.suggestedAnalysisType,
+        confidence: contentAnalysis.confidenceScore,
+        keywords: contentAnalysis.textKeywords,
+        imageTypes: contentAnalysis.imageTypes
+      });
+
+      // Try to get the best prompt for the suggested category
+      let selectedPrompt = await this.getBestPromptForCategory(contentAnalysis.suggestedCategory);
+      let fallbackUsed = false;
+      let finalCategory = contentAnalysis.suggestedCategory;
+
+      // If no prompt found for suggested category, try fallback strategies
+      if (!selectedPrompt) {
+        console.log('No prompt found for suggested category, trying fallbacks...');
+        
+        // Fallback 1: Try 'master' category for comprehensive analysis
+        if (contentAnalysis.analysisIntent === 'analysis' || contentAnalysis.confidenceScore < 0.5) {
+          selectedPrompt = await this.getBestPromptForCategory('master');
+          if (selectedPrompt) {
+            finalCategory = 'master';
+            fallbackUsed = true;
+          }
+        }
+        
+        // Fallback 2: Try 'general' category
+        if (!selectedPrompt) {
+          selectedPrompt = await this.getBestPromptForCategory('general');
+          if (selectedPrompt) {
+            finalCategory = 'general';
+            fallbackUsed = true;
+          }
+        }
+
+        // Fallback 3: Use any available active prompt
+        if (!selectedPrompt) {
+          selectedPrompt = await this.getAnyActivePrompt();
+          if (selectedPrompt) {
+            finalCategory = 'general';
+            fallbackUsed = true;
+          }
+        }
+      }
+
+      // Generate reasoning for the selection
+      const reasoning = this.generateSelectionReasoning(
+        contentAnalysis, 
+        finalCategory, 
+        fallbackUsed
+      );
+
+      const result: IntelligentPromptSelection = {
+        selectedPrompt,
+        category: finalCategory,
+        analysisType: contentAnalysis.suggestedAnalysisType,
+        confidence: contentAnalysis.confidenceScore,
+        reasoning,
+        fallbackUsed
+      };
+
+      console.log('Prompt selection complete:', {
+        hasPrompt: !!selectedPrompt,
+        category: finalCategory,
+        fallbackUsed,
+        confidence: contentAnalysis.confidenceScore
+      });
+      
+      console.log('=== SELECTION COMPLETE ===');
+      return result;
+
+    } catch (error) {
+      console.error('Error in intelligent prompt selection:', error);
+      
+      // Return safe fallback
+      return {
+        selectedPrompt: null,
+        category: 'general',
+        analysisType: 'usability',
+        confidence: 0.1,
+        reasoning: 'Error occurred during analysis, using safe defaults',
+        fallbackUsed: true
+      };
+    }
+  }
+
+  static async getBestPromptForCategory(category: string): Promise<string | null> {
     try {
       // First try to get the best performing prompt for the category
       const { data: bestPrompt, error } = await supabase.rpc('get_best_prompt_for_category', {
-        category_name: context.category
+        category_name: category
       });
 
       if (error) {
@@ -31,7 +138,7 @@ export class ClaudePromptOptimizer {
       const { data: fallbackPrompts, error: fallbackError } = await supabase
         .from('claude_prompt_examples')
         .select('original_prompt')
-        .eq('category', context.category)
+        .eq('category', category)
         .eq('is_active', true)
         .limit(1);
 
@@ -42,9 +149,62 @@ export class ClaudePromptOptimizer {
 
       return fallbackPrompts?.[0]?.original_prompt || null;
     } catch (error) {
-      console.error('Error in getBestPromptForContext:', error);
+      console.error('Error in getBestPromptForCategory:', error);
       return null;
     }
+  }
+
+  private static async getAnyActivePrompt(): Promise<string | null> {
+    try {
+      const { data: prompts, error } = await supabase
+        .from('claude_prompt_examples')
+        .select('original_prompt')
+        .eq('is_active', true)
+        .order('effectiveness_rating', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error('Error fetching any active prompt:', error);
+        return null;
+      }
+
+      return prompts?.[0]?.original_prompt || null;
+    } catch (error) {
+      console.error('Error in getAnyActivePrompt:', error);
+      return null;
+    }
+  }
+
+  private static generateSelectionReasoning(
+    analysis: ContentAnalysis,
+    selectedCategory: string,
+    fallbackUsed: boolean
+  ): string {
+    const reasons: string[] = [];
+
+    if (fallbackUsed) {
+      reasons.push('Used fallback prompt selection');
+    } else {
+      reasons.push(`Selected based on content analysis (${Math.round(analysis.confidenceScore * 100)}% confidence)`);
+    }
+
+    if (analysis.textKeywords.length > 0) {
+      reasons.push(`Detected keywords: ${analysis.textKeywords.slice(0, 3).join(', ')}`);
+    }
+
+    if (analysis.imageTypes.length > 0) {
+      reasons.push(`Image types detected: ${analysis.imageTypes.join(', ')}`);
+    }
+
+    reasons.push(`Analysis intent: ${analysis.analysisIntent}`);
+    reasons.push(`Category: ${selectedCategory}`);
+
+    return reasons.join('. ');
+  }
+
+  // Keep existing methods for backward compatibility
+  static async getBestPromptForContext(context: PromptOptimizationContext): Promise<string | null> {
+    return this.getBestPromptForCategory(context.category);
   }
 
   static async optimizePromptWithVariables(
