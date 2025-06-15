@@ -1,3 +1,4 @@
+
 import { Suspense, lazy } from 'react';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
@@ -52,6 +53,11 @@ const NotFound = lazy(() => import('./pages/NotFound').catch(err => {
 const ProcessingPage = lazy(() => import('./components/design/ProcessingPage').then(module => ({ default: module.ProcessingPage })).catch(err => {
   console.error('Failed to load ProcessingPage:', err);
   return { default: () => <div>Error loading processing page</div> };
+}));
+
+const Figmant = lazy(() => import('./pages/Figmant').catch(err => {
+  console.error('Failed to load Figmant page:', err);
+  return { default: () => <div>Error loading Figmant page</div> };
 }));
 
 const queryClient = new QueryClient({
@@ -130,6 +136,15 @@ function App() {
                   <Route path="/admin/assets" element={
                     <AuthGuard>
                       <AdminAssets />
+                    </AuthGuard>
+                  } />
+
+                  {/* New Figmant route */}
+                  <Route path="/figmant" element={
+                    <AuthGuard>
+                      <Suspense fallback={<LoadingFallback message="Loading Figmant..." />}>
+                        <Figmant />
+                      </Suspense>
                     </AuthGuard>
                   } />
                   
