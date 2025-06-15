@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { ChatContainer } from './chat/ChatContainer';
+import { useDesignChatLogic } from './chat/hooks/useDesignChatLogic';
 
 // Type definitions
 export interface ChatAttachment {
@@ -25,12 +27,49 @@ export interface ChatMessage {
 }
 
 export const DesignChatInterface: React.FC = () => {
+  const chatLogic = useDesignChatLogic();
+
   return (
-    <div className="h-full flex items-center justify-center">
-      <div className="text-center">
-        <h2 className="text-xl font-semibold mb-2">Design Chat Interface</h2>
-        <p className="text-gray-600">Chat interface component will be implemented here</p>
-      </div>
+    <div className="h-full">
+      <ChatContainer
+        messages={chatLogic.messages}
+        attachments={chatLogic.attachments}
+        message={chatLogic.message}
+        urlInput={chatLogic.urlInput}
+        showUrlInput={chatLogic.showUrlInput}
+        storageStatus={chatLogic.storageStatus}
+        storageErrorDetails={chatLogic.storageErrorDetails}
+        showDebugPanel={chatLogic.showDebugPanel}
+        showProcessingMonitor={chatLogic.showProcessingMonitor}
+        lastAnalysisResult={chatLogic.lastAnalysisResult}
+        pendingImageProcessing={chatLogic.pendingImageProcessing}
+        jobs={chatLogic.jobs}
+        systemHealth={chatLogic.systemHealth}
+        onMessageChange={chatLogic.setMessage}
+        onSendMessage={chatLogic.handleSendMessageWrapper}
+        onToggleUrlInput={chatLogic.onToggleUrlInput}
+        onUrlInputChange={chatLogic.onUrlInputChange}
+        onAddUrl={chatLogic.handleAddUrl}
+        onCancelUrl={chatLogic.onCancelUrl}
+        onRemoveAttachment={chatLogic.removeAttachment}
+        onRetryAttachment={chatLogic.retryAttachment}
+        onClearAllAttachments={chatLogic.clearAllAttachments}
+        onImageProcessed={chatLogic.onImageProcessed}
+        onImageProcessingError={chatLogic.onImageProcessingError}
+        onToggleDebugPanel={() => chatLogic.setShowDebugPanel(!chatLogic.showDebugPanel)}
+        onToggleProcessingMonitor={() => chatLogic.setShowProcessingMonitor(!chatLogic.showProcessingMonitor)}
+        onStorageStatusChange={chatLogic.setStorageStatus}
+        getRootProps={chatLogic.getRootProps}
+        getInputProps={chatLogic.getInputProps}
+        isDragActive={chatLogic.isDragActive}
+        isLoading={chatLogic.isLoading}
+        canSendMessage={chatLogic.canSendMessage}
+        pauseJob={chatLogic.pauseJob}
+        resumeJob={chatLogic.resumeJob}
+        cancelJob={chatLogic.cancelJob}
+        loadingState={chatLogic.loadingState}
+        getStageMessage={chatLogic.getStageMessage}
+      />
     </div>
   );
 };

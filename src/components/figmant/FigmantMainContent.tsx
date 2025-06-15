@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Mic, MoreHorizontal } from 'lucide-react';
-import { DesignChatInterface } from '@/components/design/DesignChatInterface';
 import { AnalysisDetailView } from '@/components/design/analysis/AnalysisDetailView';
 import Dashboard from '@/pages/Dashboard';
+import { ChatContainer } from '@/components/design/chat/ChatContainer';
+import { useDesignChatLogic } from '@/components/design/chat/hooks/useDesignChatLogic';
 
 interface FigmantMainContentProps {
   activeSection: string;
@@ -22,6 +22,9 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   onRightSidebarModeChange
 }) => {
   const [activeTab, setActiveTab] = useState('chat');
+
+  // Initialize chat logic for the analysis section
+  const chatLogic = useDesignChatLogic();
 
   const renderAnalysisContent = () => {
     if (selectedAnalysis) {
@@ -61,65 +64,46 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
         <div className="flex-1 flex flex-col">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsContent value="chat" className="flex-1 flex flex-col m-0">
-              <div className="flex-1 p-6 overflow-y-auto">
-                {/* Initial Message */}
-                <div className="max-w-2xl mx-auto space-y-6">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <MoreHorizontal className="h-4 w-4 text-gray-500" />
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-4 max-w-lg">
-                      <p className="text-gray-700">
-                        Hi! Let's create a new GPT together. How about "a creative GPT for generating product visuals" or "a GPT for formatting code"? What do you think?
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 justify-end">
-                    <div className="bg-orange-500 rounded-lg p-4 max-w-lg text-white">
-                      <p>
-                        I'm an interior designer and want to create layout and design for my clients alongside with the precise material dimension measurement
-                      </p>
-                    </div>
-                    <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarFallback className="bg-orange-500 text-white text-sm">R</AvatarFallback>
-                    </Avatar>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <MoreHorizontal className="h-4 w-4 text-gray-500" />
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-4 max-w-lg">
-                      <div className="flex items-center gap-2 text-gray-500">
-                        <div className="flex gap-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Chat Input */}
-              <div className="border-t border-gray-200 p-4">
-                <div className="max-w-2xl mx-auto">
-                  <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
-                    <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-medium text-gray-600">+</span>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Type '/' for commands"
-                      className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-500"
-                    />
-                    <Button size="sm" variant="ghost" className="p-1 h-6 w-6">
-                      <Mic className="h-4 w-4 text-gray-500" />
-                    </Button>
-                  </div>
-                </div>
+              <div className="flex-1 overflow-hidden">
+                <ChatContainer
+                  messages={chatLogic.messages}
+                  attachments={chatLogic.attachments}
+                  message={chatLogic.message}
+                  urlInput={chatLogic.urlInput}
+                  showUrlInput={chatLogic.showUrlInput}
+                  storageStatus={chatLogic.storageStatus}
+                  storageErrorDetails={chatLogic.storageErrorDetails}
+                  showDebugPanel={chatLogic.showDebugPanel}
+                  showProcessingMonitor={chatLogic.showProcessingMonitor}
+                  lastAnalysisResult={chatLogic.lastAnalysisResult}
+                  pendingImageProcessing={chatLogic.pendingImageProcessing}
+                  jobs={chatLogic.jobs}
+                  systemHealth={chatLogic.systemHealth}
+                  onMessageChange={chatLogic.setMessage}
+                  onSendMessage={chatLogic.handleSendMessageWrapper}
+                  onToggleUrlInput={chatLogic.onToggleUrlInput}
+                  onUrlInputChange={chatLogic.onUrlInputChange}
+                  onAddUrl={chatLogic.handleAddUrl}
+                  onCancelUrl={chatLogic.onCancelUrl}
+                  onRemoveAttachment={chatLogic.removeAttachment}
+                  onRetryAttachment={chatLogic.retryAttachment}
+                  onClearAllAttachments={chatLogic.clearAllAttachments}
+                  onImageProcessed={chatLogic.onImageProcessed}
+                  onImageProcessingError={chatLogic.onImageProcessingError}
+                  onToggleDebugPanel={() => chatLogic.setShowDebugPanel(!chatLogic.showDebugPanel)}
+                  onToggleProcessingMonitor={() => chatLogic.setShowProcessingMonitor(!chatLogic.showProcessingMonitor)}
+                  onStorageStatusChange={chatLogic.setStorageStatus}
+                  getRootProps={chatLogic.getRootProps}
+                  getInputProps={chatLogic.getInputProps}
+                  isDragActive={chatLogic.isDragActive}
+                  isLoading={chatLogic.isLoading}
+                  canSendMessage={chatLogic.canSendMessage}
+                  pauseJob={chatLogic.pauseJob}
+                  resumeJob={chatLogic.resumeJob}
+                  cancelJob={chatLogic.cancelJob}
+                  loadingState={chatLogic.loadingState}
+                  getStageMessage={chatLogic.getStageMessage}
+                />
               </div>
             </TabsContent>
 
