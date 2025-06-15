@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MessageInput } from './MessageInput';
 import { MobileMessageInput } from './MobileMessageInput';
@@ -20,6 +19,9 @@ interface ChatFooterProps {
   onUrlInputChange: (url: string) => void;
   onAddUrl: () => void;
   onCancelUrl: () => void;
+  getRootProps: any;
+  getInputProps: any;
+  isDragActive: boolean;
 }
 
 export const ChatFooter: React.FC<ChatFooterProps> = ({
@@ -36,7 +38,10 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
   onToggleUrlInput,
   onUrlInputChange,
   onAddUrl,
-  onCancelUrl
+  onCancelUrl,
+  getRootProps,
+  getInputProps,
+  isDragActive,
 }) => {
   const isMobile = useIsMobile();
   const InputComponent = isMobile ? MobileMessageInput : MessageInput;
@@ -65,6 +70,9 @@ export const ChatFooter: React.FC<ChatFooterProps> = ({
           hasContent={hasContent}
           canSend={canSendMessage}
           loadingStage={getStageMessage(loadingState.stage)}
+          getRootProps={getRootProps}
+          getInputProps={getInputProps}
+          isDragActive={isDragActive}
         />
       </div>
     </>

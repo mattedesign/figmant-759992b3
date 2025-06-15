@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MessageSquarePlus } from 'lucide-react';
 import { ChatMessage } from './ChatMessage';
@@ -6,8 +5,6 @@ import { MobileChatMessage } from './MobileChatMessage';
 import { ChatAttachments } from './ChatAttachments';
 import { ClaudeAISetupPrompt } from '../ClaudeAISetupPrompt';
 import { RoleAwareStorageStatus } from './RoleAwareStorageStatus';
-import { FileUploadDropzone } from './FileUploadDropzone';
-import { MobileFileUploadDropzone } from './MobileFileUploadDropzone';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { ChatMessage as ChatMessageType, ChatAttachment } from '../DesignChatInterface';
 
@@ -16,9 +13,6 @@ interface ChatContentProps {
   attachments: ChatAttachment[];
   storageStatus: 'checking' | 'ready' | 'error';
   storageErrorDetails?: any;
-  getRootProps?: any;
-  getInputProps?: any;
-  isDragActive?: boolean;
   onStorageStatusChange: (status: 'checking' | 'ready' | 'error') => void;
   onRemoveAttachment: (id: string) => void;
   onRetryAttachment: (id: string) => void;
@@ -31,9 +25,6 @@ export const ChatContent: React.FC<ChatContentProps> = ({
   attachments,
   storageStatus,
   storageErrorDetails,
-  getRootProps,
-  getInputProps,
-  isDragActive = false,
   onStorageStatusChange,
   onRemoveAttachment,
   onRetryAttachment,
@@ -49,7 +40,6 @@ export const ChatContent: React.FC<ChatContentProps> = ({
 
   // Choose the appropriate components based on mobile state
   const MessageComponent = isMobile ? MobileChatMessage : ChatMessage;
-  const DropzoneComponent = isMobile ? MobileFileUploadDropzone : FileUploadDropzone;
 
   return (
     <>
@@ -63,17 +53,6 @@ export const ChatContent: React.FC<ChatContentProps> = ({
         onStatusChange={onStorageStatusChange}
         errorDetails={storageErrorDetails}
       />
-
-      {/* File Upload Dropzone - Always show but handle disabled state */}
-      {getRootProps && getInputProps && (
-        <DropzoneComponent
-          storageStatus={storageStatus}
-          getRootProps={getRootProps}
-          getInputProps={getInputProps}
-          isDragActive={isDragActive}
-          isLoading={isLoading}
-        />
-      )}
 
       {/* Chat Messages */}
       <div className={`flex-1 overflow-y-auto space-y-4 mb-4 min-h-0 ${isMobile ? 'pb-4' : ''}`}>

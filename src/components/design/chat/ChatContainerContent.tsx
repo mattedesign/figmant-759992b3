@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatContent } from './ChatContent';
@@ -6,9 +5,6 @@ import { ChatFooter } from './ChatFooter';
 import type { ChatMessage as ChatMessageType, ChatAttachment } from '../DesignChatInterface';
 
 interface ChatContainerContentProps {
-  messages: ChatMessageType[];
-  attachments: ChatAttachment[];
-  message: string;
   urlInput: string;
   showUrlInput: boolean;
   storageStatus: 'checking' | 'ready' | 'error';
@@ -32,24 +28,16 @@ interface ChatContainerContentProps {
   canSendMessage: boolean;
   loadingState: any;
   getStageMessage: (stage: string) => string;
+  messages: ChatMessageType[];
+  attachments: ChatAttachment[];
+  message: string;
 }
 
 export const ChatContainerContent: React.FC<ChatContainerContentProps> = ({
   messages,
-  attachments,
-  message,
-  urlInput,
-  showUrlInput,
-  storageStatus,
   storageErrorDetails,
   onMessageChange,
   onSendMessage,
-  onToggleUrlInput,
-  onUrlInputChange,
-  onAddUrl,
-  onCancelUrl,
-  onRemoveAttachment,
-  onRetryAttachment,
   onClearAllAttachments,
   onToggleDebugPanel,
   onToggleProcessingMonitor,
@@ -60,9 +48,19 @@ export const ChatContainerContent: React.FC<ChatContainerContentProps> = ({
   isLoading,
   canSendMessage,
   loadingState,
-  getStageMessage
+  getStageMessage,
+  attachments,
+  message,
+  urlInput,
+  showUrlInput,
+  storageStatus,
+  onToggleUrlInput,
+  onUrlInputChange,
+  onAddUrl,
+  onCancelUrl,
+  onRemoveAttachment,
+  onRetryAttachment,
 }) => {
-  // Calculate if we have content for MessageInput
   const hasContent = message.trim().length > 0 || attachments.length > 0;
 
   return (
@@ -78,9 +76,6 @@ export const ChatContainerContent: React.FC<ChatContainerContentProps> = ({
           attachments={attachments}
           storageStatus={storageStatus}
           storageErrorDetails={storageErrorDetails}
-          getRootProps={getRootProps}
-          getInputProps={getInputProps}
-          isDragActive={isDragActive}
           onStorageStatusChange={onStorageStatusChange}
           onRemoveAttachment={onRemoveAttachment}
           onRetryAttachment={onRetryAttachment}
@@ -104,6 +99,9 @@ export const ChatContainerContent: React.FC<ChatContainerContentProps> = ({
         onUrlInputChange={onUrlInputChange}
         onAddUrl={onAddUrl}
         onCancelUrl={onCancelUrl}
+        getRootProps={getRootProps}
+        getInputProps={getInputProps}
+        isDragActive={isDragActive}
       />
     </>
   );

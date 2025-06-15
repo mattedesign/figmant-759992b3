@@ -2,7 +2,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Plus, Loader2 } from 'lucide-react';
+import { Send, Loader2, Paperclip, Upload, Link } from 'lucide-react';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 interface MessageInputProps {
   message: string;
@@ -13,6 +14,9 @@ interface MessageInputProps {
   hasContent: boolean;
   canSend?: boolean;
   loadingStage?: string;
+  getRootProps: any;
+  getInputProps: any;
+  isDragActive: boolean;
 }
 
 export const MessageInput: React.FC<MessageInputProps> = ({
@@ -23,9 +27,13 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   isLoading,
   hasContent,
   canSend = true,
-  loadingStage
+  loadingStage,
+  getRootProps,
+  getInputProps,
+  isDragActive,
 }) => {
   const isDisabled = !hasContent || isLoading || !canSend;
+  const inputProps = getInputProps();
 
   const getSendButtonContent = () => {
     if (isLoading) {
@@ -52,44 +60,71 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   return (
-    <div className="flex gap-2">
-      <Textarea
-        value={message}
-        onChange={(e) => onMessageChange(e.target.value)}
-        placeholder={isLoading ? "Processing your message..." : "Ask me about your designs..."}
-        className={`flex-1 min-h-[80px] resize-none transition-all duration-200 ${
-          isLoading ? 'opacity-60' : ''
-        }`}
-        disabled={isLoading}
-        onKeyPress={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey && !isDisabled) {
-            e.preventDefault();
-            onSendMessage();
-          }
-        }}
-      />
-      <div className="flex flex-col gap-2">
-        <Button
-          onClick={onToggleUrlInput}
-          variant="outline"
-          size="icon"
-          title="Add website URL"
+    <div
+      {...getRootProps()}
+      className={`relative border rounded-lg transition-colors bg-background ${
+        isDragActive
+          ? 'border-primary ring-2 ring-primary ring-offset-2'
+          : 'border-input'
+      } ${isLoading ? 'opacity-70' : ''}`}
+    >
+      <div className="flex items-start p-2 gap-2">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Attach file or link"
+              disabled={isLoading}
+              className="flex-shrink-0 h-9 w-9 mt-0.5"
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-1 mb-2">
+            <div className="grid gap-1">
+              <Button variant="ghost" className="w-full justify-start h-9" asChild>
+                <label className="cursor-pointer flex items-center w-full">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload File
+                  <input {...inputProps} className="sr-only" />
+                </label>
+              </Button>
+              <Button variant="ghost" className="w-full justify-start h-9" onClick={onToggleUrlInput}>
+                <Link className="mr-2 h-4 w-4" />
+                Add URL
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        <Textarea
+          value={message}
+          onChange={(e) => onMessageChange(e.target.value)}
+          placeholder={isDragActive ? "Drop files to attach" : "Ask about your designs, or paste an image..."}
+          className="flex-1 resize-none border-0 shadow-none focus-visible:ring-0 p-0 m-0 min-h-[40px] max-h-48 bg-transparent"
+          style={{lineHeight: '1.5rem', paddingTop: '0.375rem', paddingBottom: '0.375rem'}}
           disabled={isLoading}
-          className={`transition-all duration-200 ${isLoading ? 'opacity-50' : ''}`}
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
-        <Button
-          onClick={onSendMessage}
-          disabled={isDisabled}
-          size={isLoading ? "default" : "icon"}
-          title={getSendButtonTitle()}
-          className={`transition-all duration-200 ${
-            isLoading ? 'w-auto px-3' : 'w-10'
-          }`}
-        >
-          {getSendButtonContent()}
-        </Button>
+          onKeyPress={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey && !isDisabled) {
+              e.preventDefault();
+              onSendMessage();
+            }
+          }}
+        />
+        <div className="flex items-end">
+          <Button
+            onClick={onSendMessage}
+            disabled={isDisabled}
+            size={isLoading ? "default" : "icon"}
+            title={getSendButtonTitle()}
+            className={`transition-all duration-200 flex-shrink-0 h-9 ${
+              isLoading ? 'w-auto px-3' : 'w-9'
+            }`}
+          >
+            {getSendButtonContent()}
+          </Button>
+        </div>
       </div>
     </div>
   );

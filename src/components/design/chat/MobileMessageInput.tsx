@@ -2,8 +2,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Plus, Loader2, Paperclip } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Send, Loader2, Paperclip, Upload, Link } from 'lucide-react';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerClose } from '@/components/ui/drawer';
 
 interface MobileMessageInputProps {
   message: string;
@@ -14,6 +14,9 @@ interface MobileMessageInputProps {
   hasContent: boolean;
   canSend?: boolean;
   loadingStage?: string;
+  getRootProps: any;
+  getInputProps: any;
+  isDragActive: boolean;
 }
 
 export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
@@ -24,35 +27,66 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
   isLoading,
   hasContent,
   canSend = true,
-  loadingStage
+  loadingStage,
+  getRootProps,
+  getInputProps,
+  isDragActive,
 }) => {
-  const isMobile = useIsMobile();
   const isDisabled = !hasContent || isLoading || !canSend;
+  const inputProps = getInputProps();
 
   const getSendButtonContent = () => {
     if (isLoading) {
-      return (
-        <>
-          <Loader2 className="h-4 w-4 animate-spin" />
-          {!isMobile && (
-            <span className="ml-1 text-xs">
-              {loadingStage || 'Sending...'}
-            </span>
-          )}
-        </>
-      );
+      return <Loader2 className="h-5 w-5 animate-spin" />;
     }
-    return <Send className="h-4 w-4" />;
+    return <Send className="h-5 w-5" />;
   };
 
-  if (isMobile) {
-    return (
-      <div className="bg-background border-t p-4 space-y-3">
+  return (
+    <div className="bg-background border-t p-2">
+      <div
+        {...getRootProps()}
+        className={`relative border rounded-lg transition-colors bg-background flex items-start p-1 gap-1 ${
+          isDragActive ? 'border-primary ring-2 ring-primary' : 'border-input'
+        } ${isLoading ? 'opacity-70' : ''}`}
+      >
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button variant="ghost" size="icon" className="flex-shrink-0 h-10 w-10" disabled={isLoading}>
+              <Paperclip className="h-5 w-5" />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <div className="mx-auto w-full max-w-sm">
+              <DrawerHeader>
+                <DrawerTitle>Attach Content</DrawerTitle>
+              </DrawerHeader>
+              <div className="p-4 pt-0 space-y-2">
+                <DrawerClose asChild>
+                  <Button variant="outline" className="w-full" asChild>
+                    <label className="cursor-pointer flex items-center justify-center w-full h-full">
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload File
+                      <input {...inputProps} className="sr-only" />
+                    </label>
+                  </Button>
+                </DrawerClose>
+                <DrawerClose asChild>
+                  <Button variant="outline" className="w-full" onClick={onToggleUrlInput}>
+                    <Link className="mr-2 h-4 w-4" />
+                    Add URL
+                  </Button>
+                </DrawerClose>
+              </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
+
         <Textarea
           value={message}
           onChange={(e) => onMessageChange(e.target.value)}
-          placeholder={isLoading ? "Processing your message..." : "Ask me about your designs..."}
-          className="min-h-[60px] resize-none text-base"
+          placeholder={isDragActive ? "Drop files..." : "Message..."}
+          className="flex-1 min-h-[40px] max-h-32 resize-none border-0 shadow-none focus-visible:ring-0 text-base bg-transparent self-center"
           disabled={isLoading}
           onKeyPress={(e) => {
             if (e.key === 'Enter' && !e.shiftKey && !isDisabled) {
@@ -60,80 +94,26 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
               onSendMessage();
             }
           }}
+          rows={1}
         />
-        
-        <div className="flex gap-3">
-          <Button
-            onClick={onToggleUrlInput}
-            variant="outline"
-            size="lg"
-            className="flex-1 h-12"
-            disabled={isLoading}
-          >
-            <Paperclip className="h-4 w-4 mr-2" />
-            Add URL
-          </Button>
-          
+
+        <div className="flex items-end">
           <Button
             onClick={onSendMessage}
             disabled={isDisabled}
-            size="lg"
-            className="h-12 min-w-[80px]"
+            size="icon"
+            className="h-10 w-10 flex-shrink-0"
           >
             {getSendButtonContent()}
           </Button>
         </div>
-        
-        {isLoading && loadingStage && (
-          <div className="text-center text-sm text-muted-foreground">
-            {loadingStage}
-          </div>
-        )}
       </div>
-    );
-  }
-
-  // Desktop layout - use existing MessageInput logic
-  return (
-    <div className="flex gap-2">
-      <Textarea
-        value={message}
-        onChange={(e) => onMessageChange(e.target.value)}
-        placeholder={isLoading ? "Processing your message..." : "Ask me about your designs..."}
-        className={`flex-1 min-h-[80px] resize-none transition-all duration-200 ${
-          isLoading ? 'opacity-60' : ''
-        }`}
-        disabled={isLoading}
-        onKeyPress={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey && !isDisabled) {
-            e.preventDefault();
-            onSendMessage();
-          }
-        }}
-      />
-      <div className="flex flex-col gap-2">
-        <Button
-          onClick={onToggleUrlInput}
-          variant="outline"
-          size="icon"
-          title="Add website URL"
-          disabled={isLoading}
-          className={`transition-all duration-200 ${isLoading ? 'opacity-50' : ''}`}
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
-        <Button
-          onClick={onSendMessage}
-          disabled={isDisabled}
-          size={isLoading ? "default" : "icon"}
-          title={canSend ? "Send message" : "Please wait for uploads to complete"}
-          className={`transition-all duration-200 ${
-            isLoading ? 'w-auto px-3' : 'w-10'
-          }`}
-        >
-          {getSendButtonContent()}
-        </Button>
-      </div>
+      
+      {isLoading && loadingStage && (
+        <div className="text-center text-xs text-muted-foreground pt-2">
+          {loadingStage}
+        </div>
+      )}
     </div>
   );
 };
