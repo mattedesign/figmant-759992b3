@@ -8,7 +8,7 @@ import { AnalysisDetailView } from './analysis/AnalysisDetailView';
 import { useAllAnalysisData } from './analysis/useAllAnalysisData';
 import { useAllAnalysisFilters } from './analysis/useAllAnalysisFilters';
 
-export const AllAnalysisPage = () => {
+const AllAnalysisPage = () => {
   const [selectedAnalysis, setSelectedAnalysis] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'grouped' | 'table'>('grouped');
 
@@ -86,3 +86,5 @@ export const AllAnalysisPage = () => {
     </div>
   );
 };
+
+export default AllAnalysisPage;

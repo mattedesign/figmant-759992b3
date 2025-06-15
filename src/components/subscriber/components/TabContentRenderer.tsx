@@ -5,9 +5,7 @@ import { LoadingSpinner } from './LoadingSpinner';
 const DesignChatInterface = lazy(() => import('@/components/design/DesignChatInterface').then(module => ({
   default: module.DesignChatInterface
 })));
-const AllAnalysisPage = lazy(() => import('@/components/design/AllAnalysisPage').then(module => ({
-  default: module.AllAnalysisPage
-})));
+const AllAnalysisPage = lazy(() => import('@/components/design/AllAnalysisPage'));
 const InsightsPage = lazy(() => import('@/components/design/InsightsPage').then(module => ({
   default: module.InsightsPage
 })));
