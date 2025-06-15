@@ -1,6 +1,6 @@
 
-import AllAnalysisPage from '@/components/design/AllAnalysisPage';
+import { AllAnalysisPageWrapper } from '@/components/design/analysis/AllAnalysisPageWrapper';
 
 export const AllAnalysisTab = () => {
-  return <AllAnalysisPage />;
+  return <AllAnalysisPageWrapper />;
 };

@@ -1,6 +1,7 @@
+
 import { lazy, Suspense } from 'react';
 import { LoadingSpinner } from './LoadingSpinner';
-import AllAnalysisPage from '@/components/design/AllAnalysisPage';
+import { AllAnalysisPageWrapper } from '@/components/design/analysis/AllAnalysisPageWrapper';
 
 // Lazy load other content components
 const DesignChatInterface = lazy(() => import('@/components/design/DesignChatInterface').then(module => ({
@@ -52,7 +53,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
           </div>
         );
       case 'all-analysis':
-        return <AllAnalysisPage />;
+        return <AllAnalysisPageWrapper />;
       case 'insights':
         return (
           <Suspense fallback={<LoadingSpinner />}>
