@@ -1,115 +1,27 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { AllAnalysisFilters } from './AllAnalysisFilters';
-import { AllAnalysisPageHeader } from './AllAnalysisPageHeader';
 import { AllAnalysisViewContent } from './AllAnalysisViewContent';
 import { AllAnalysisLoadingState } from './AllAnalysisLoadingState';
 import { AnalysisDetailView } from './AnalysisDetailView';
-import { ConnectionDiagnostics } from './ConnectionDiagnostics';
 import { useSimplifiedAnalysisData } from '@/hooks/useSimplifiedAnalysisData';
 import { useAllAnalysisFilters } from './useAllAnalysisFilters';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { AlertCircle, RefreshCw, Wifi, WifiOff, Clock, ChevronDown, ChevronUp } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-
-const ErrorDisplay: React.FC<{ 
-  error: Error; 
-  onRetry: () => void; 
-  onClear: () => void; 
-}> = ({ error, onRetry, onClear }) => {
-  return (
-    <div className="p-6">
-      <Card className="border-red-200">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-red-600">
-            <AlertCircle className="h-5 w-5" />
-            <span>Analysis Loading Error</span>
-          </CardTitle>
-          <CardDescription>
-            There was an error loading the analysis data. Please try refreshing or contact support if the issue persists.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="bg-red-50 border border-red-200 rounded p-3">
-            <p className="text-sm text-red-800 font-medium">Error:</p>
-            <p className="text-sm text-red-700">{error.message}</p>
-          </div>
-          
-          <div className="flex space-x-2">
-            <Button onClick={onClear} variant="outline">
-              Dismiss
-            </Button>
-            <Button onClick={onRetry} className="flex items-center space-x-2">
-              <RefreshCw className="h-4 w-4" />
-              <span>Retry</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-const ConnectionStatusBadge: React.FC<{ 
-  status: 'connecting' | 'connected' | 'error' | 'fallback' | 'disabled'
-}> = ({ status }) => {
-  const getStatusConfig = () => {
-    switch (status) {
-      case 'connected':
-        return {
-          icon: <Wifi className="h-3 w-3" />,
-          text: 'Live',
-          className: 'bg-green-100 text-green-800 border-green-200'
-        };
-      case 'connecting':
-        return {
-          icon: <Clock className="h-3 w-3 animate-pulse" />,
-          text: 'Connecting',
-          className: 'bg-blue-100 text-blue-800 border-blue-200'
-        };
-      case 'fallback':
-        return {
-          icon: <RefreshCw className="h-3 w-3" />,
-          text: 'Auto-refresh',
-          className: 'bg-yellow-100 text-yellow-800 border-yellow-200'
-        };
-      case 'disabled':
-        return {
-          icon: <WifiOff className="h-3 w-3" />,
-          text: 'Disabled',
-          className: 'bg-gray-100 text-gray-800 border-gray-200'
-        };
-      case 'error':
-        return {
-          icon: <WifiOff className="h-3 w-3" />,
-          text: 'Error',
-          className: 'bg-red-100 text-red-800 border-red-200'
-        };
-      default:
-        return {
-          icon: <Clock className="h-3 w-3" />,
-          text: 'Unknown',
-          className: 'bg-gray-100 text-gray-800 border-gray-200'
-        };
-    }
-  };
-
-  const { icon, text, className } = getStatusConfig();
-
-  return (
-    <Badge variant="outline" className={`flex items-center gap-1 ${className}`}>
-      {icon}
-      <span className="text-xs">{text}</span>
-    </Badge>
-  );
-};
+import { useAllAnalysisPageState } from './hooks/useAllAnalysisPageState';
+import { ErrorDisplay } from './components/ErrorDisplay';
+import { PageHeader } from './components/PageHeader';
+import { DiagnosticsSection } from './components/DiagnosticsSection';
 
 const AllAnalysisPageEnhanced = () => {
-  const [selectedAnalysis, setSelectedAnalysis] = useState<any>(null);
-  const [viewMode, setViewMode] = useState<'grouped' | 'table'>('grouped');
-  const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const {
+    selectedAnalysis,
+    viewMode,
+    setViewMode,
+    showDiagnostics,
+    setShowDiagnostics,
+    handleViewAnalysis,
+    handleRowClick,
+    handleBackToList
+  } = useAllAnalysisPageState();
 
   // Use simplified hook for data management
   const {
@@ -139,14 +51,6 @@ const AllAnalysisPageEnhanced = () => {
     filteredGroupedAnalyses
   } = useAllAnalysisFilters(allAnalyses, groupedAnalyses);
 
-  const handleViewAnalysis = (analysis: any) => {
-    setSelectedAnalysis(analysis);
-  };
-
-  const handleRowClick = (analysis: any) => {
-    handleViewAnalysis(analysis);
-  };
-
   // Show error state if there's an error
   if (error) {
     return (
@@ -168,51 +72,34 @@ const AllAnalysisPageEnhanced = () => {
     return (
       <AnalysisDetailView 
         analysis={selectedAnalysis} 
-        onBack={() => setSelectedAnalysis(null)} 
+        onBack={handleBackToList} 
       />
     );
   }
 
   return (
     <div className="p-6 space-y-6 h-full overflow-y-auto">
-      <div className="flex items-center justify-between">
-        <AllAnalysisPageHeader
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          onManualRefresh={handleManualRefresh}
-          isRefreshing={isRefreshing}
-          filteredGroupedAnalysesCount={filteredGroupedAnalyses.length}
-          totalGroupedAnalysesCount={groupedAnalyses.length}
-          filteredAnalysesCount={filteredAnalyses.length}
-          totalAnalysesCount={allAnalyses.length}
-        />
-        
-        <div className="flex items-center gap-2">
-          <ConnectionStatusBadge status={connectionStatus} />
-          <Collapsible open={showDiagnostics} onOpenChange={setShowDiagnostics}>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm">
-                {showDiagnostics ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </Button>
-            </CollapsibleTrigger>
-          </Collapsible>
-        </div>
-      </div>
+      <PageHeader
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        onManualRefresh={handleManualRefresh}
+        isRefreshing={isRefreshing}
+        filteredGroupedAnalysesCount={filteredGroupedAnalyses.length}
+        totalGroupedAnalysesCount={groupedAnalyses.length}
+        filteredAnalysesCount={filteredAnalyses.length}
+        totalAnalysesCount={allAnalyses.length}
+        connectionStatus={connectionStatus}
+        showDiagnostics={showDiagnostics}
+        onShowDiagnosticsChange={setShowDiagnostics}
+      />
 
-      <Collapsible open={showDiagnostics} onOpenChange={setShowDiagnostics}>
-        <CollapsibleContent>
-          <ConnectionDiagnostics
-            connectionStatus={connectionStatus}
-            isEnabled={isRealTimeEnabled}
-            onToggleConnection={toggleRealTime}
-            onRetryConnection={retryConnection}
-          />
-        </CollapsibleContent>
-      </Collapsible>
+      <DiagnosticsSection
+        showDiagnostics={showDiagnostics}
+        connectionStatus={connectionStatus}
+        isRealTimeEnabled={isRealTimeEnabled}
+        onToggleRealTime={toggleRealTime}
+        onRetryConnection={retryConnection}
+      />
 
       <AllAnalysisFilters
         searchTerm={searchTerm}
