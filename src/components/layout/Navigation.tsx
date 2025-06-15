@@ -1,7 +1,6 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Settings } from 'lucide-react';
 import { UserMenu } from './UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
@@ -65,14 +64,6 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
           <div className="flex items-center space-x-4">
             {user && (
               <>
-                <Button variant="ghost" size="icon">
-                  <Bell className="h-4 w-4" />
-                </Button>
-                {(isOwner || location.pathname === '/owner') && (
-                  <Button variant="ghost" size="icon">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                )}
                 <UserMenu />
               </>
             )}

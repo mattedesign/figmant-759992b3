@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { BarChart3, Users, Settings } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
@@ -32,21 +31,7 @@ export const IconSidebar = ({
   activeSection,
   onSectionChange
 }: IconSidebarProps) => {
-  const {
-    user,
-    profile
-  } = useAuth();
   
-  const getInitials = () => {
-    if (profile?.full_name) {
-      return profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
-    }
-    if (user?.email) {
-      return user.email.substring(0, 2).toUpperCase();
-    }
-    return 'U';
-  };
-
   const getButtonStyle = (section: any, isActive: boolean) => {
     if (isActive) {
       return {
@@ -105,17 +90,6 @@ export const IconSidebar = ({
               </Button>
             );
           })}
-        </div>
-      </div>
-
-      {/* Footer - User Avatar */}
-      <div className="flex-none p-2 border-t border-border">
-        <div className="flex items-center justify-center">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="text-xs bg-muted">
-              {getInitials()}
-            </AvatarFallback>
-          </Avatar>
         </div>
       </div>
     </div>
