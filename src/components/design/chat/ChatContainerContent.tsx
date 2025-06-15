@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ChatHeader } from './ChatHeader';
 import { ChatContent } from './ChatContent';
@@ -64,13 +65,13 @@ export const ChatContainerContent: React.FC<ChatContainerContentProps> = ({
   const hasContent = message.trim().length > 0 || attachments.length > 0;
 
   return (
-    <>
+    <div className="h-full flex flex-col">
       <ChatHeader
         onToggleProcessingMonitor={onToggleProcessingMonitor}
         onToggleDebugPanel={onToggleDebugPanel}
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden">
         <ChatContent
           messages={messages}
           attachments={attachments}
@@ -103,6 +104,6 @@ export const ChatContainerContent: React.FC<ChatContainerContentProps> = ({
         getInputProps={getInputProps}
         isDragActive={isDragActive}
       />
-    </>
+    </div>
   );
 };

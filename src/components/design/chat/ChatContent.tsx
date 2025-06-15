@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { MessageSquarePlus } from 'lucide-react';
 import { ChatMessage } from './ChatMessage';
@@ -42,7 +43,7 @@ export const ChatContent: React.FC<ChatContentProps> = ({
   const MessageComponent = isMobile ? MobileChatMessage : ChatMessage;
 
   return (
-    <>
+    <div className="h-full flex flex-col p-4">
       <ClaudeAISetupPrompt 
         storageStatus={storageStatus}
         showStorageRelatedAlert={showStorageRelatedAlert}
@@ -54,8 +55,8 @@ export const ChatContent: React.FC<ChatContentProps> = ({
         errorDetails={storageErrorDetails}
       />
 
-      {/* Chat Messages */}
-      <div className={`flex-1 overflow-y-auto space-y-4 mb-4 min-h-0 ${isMobile ? 'pb-4' : ''}`}>
+      {/* Chat Messages - This is the scrollable area */}
+      <div className="flex-1 overflow-y-auto space-y-4 min-h-0">
         {messages.length === 0 && (
           <div className={`text-center text-muted-foreground ${isMobile ? 'py-12 px-4' : 'py-8'}`}>
             <MessageSquarePlus className={`${isMobile ? 'h-16 w-16' : 'h-12 w-12'} mx-auto mb-4 opacity-50`} />
@@ -72,9 +73,9 @@ export const ChatContent: React.FC<ChatContentProps> = ({
         ))}
       </div>
 
-      {/* File Attachments */}
+      {/* File Attachments - Fixed at bottom */}
       {attachments.length > 0 && (
-        <div className={isMobile ? 'px-4' : ''}>
+        <div className="mt-4">
           <ChatAttachments
             attachments={attachments}
             onRemove={onRemoveAttachment}
@@ -83,6 +84,6 @@ export const ChatContent: React.FC<ChatContentProps> = ({
           />
         </div>
       )}
-    </>
+    </div>
   );
 };
