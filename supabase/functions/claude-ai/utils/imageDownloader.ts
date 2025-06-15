@@ -1,9 +1,7 @@
 
-import { AttachmentData } from './types.ts';
 import { verifyStorageBucket, arrayBufferToBase64 } from './storage.ts';
-import { fetchWebsiteContent } from './websiteFetcher.ts';
 
-async function downloadImageFromStorage(supabase: any, filePath: string): Promise<{ base64: string; mimeType: string } | null> {
+export async function downloadImageFromStorage(supabase: any, filePath: string): Promise<{ base64: string; mimeType: string } | null> {
   const maxRetries = 2;
   let attempt = 0;
   
@@ -124,7 +122,7 @@ async function downloadImageFromStorage(supabase: any, filePath: string): Promis
   return null;
 }
 
-async function downloadImageFromUrl(url: string): Promise<{ base64: string; mimeType: string } | null> {
+export async function downloadImageFromUrl(url: string): Promise<{ base64: string; mimeType: string } | null> {
   try {
     console.log('=== DOWNLOADING IMAGE FROM URL ===');
     console.log('URL:', url);
@@ -204,154 +202,4 @@ async function downloadImageFromUrl(url: string): Promise<{ base64: string; mime
     
     return null;
   }
-}
-
-export async function processAttachmentsForVision(supabase: any, attachments: AttachmentData[]): Promise<Array<{ type: 'text' | 'image'; text?: string; source?: any }>> {
-  console.log('=== PROCESSING ATTACHMENTS FOR VISION ===');
-  console.log('Processing', attachments.length, 'attachments');
-  
-  const contentItems: Array<{ type: 'text' | 'image'; text?: string; source?: any }> = [];
-  let successfulImages = 0;
-  let failedImages = 0;
-  let websitesFetched = 0;
-  
-  for (let i = 0; i < attachments.length; i++) {
-    const attachment = attachments[i];
-    console.log(`Processing attachment ${i + 1}/${attachments.length}:`, {
-      type: attachment.type,
-      name: attachment.name,
-      hasUploadPath: !!attachment.uploadPath,
-      hasUrl: !!attachment.url
-    });
-
-    if (attachment.type === 'file' && attachment.uploadPath) {
-      console.log('Processing file attachment with upload path:', attachment.uploadPath);
-      
-      const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(attachment.name);
-      console.log('Is image file:', isImage);
-      
-      if (isImage) {
-        try {
-          const imageData = await downloadImageFromStorage(supabase, attachment.uploadPath);
-          
-          if (imageData) {
-            contentItems.push({
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: imageData.mimeType,
-                data: imageData.base64
-              }
-            });
-            successfulImages++;
-            console.log('Successfully added image to vision analysis:', attachment.name);
-          } else {
-            failedImages++;
-            contentItems.push({
-              type: 'text',
-              text: `[Image attachment: ${attachment.name} - Failed to load for analysis. The image may be corrupted, too large, or in an unsupported format. Please try uploading a smaller JPEG or PNG file.]`
-            });
-            console.log('Failed to load image, added detailed error message:', attachment.name);
-          }
-        } catch (error) {
-          failedImages++;
-          console.error('Image processing error:', error);
-          contentItems.push({
-            type: 'text',
-            text: `[Image attachment: ${attachment.name} - Processing error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try re-uploading the image.]`
-          });
-        }
-      } else {
-        contentItems.push({
-          type: 'text',
-          text: `[File attachment: ${attachment.name} - Non-image files cannot be analyzed visually. For document analysis, please describe the content or provide screenshots.]`
-        });
-        console.log('Added non-image file as text reference:', attachment.name);
-      }
-    } else if (attachment.type === 'url' && attachment.url) {
-      console.log('Processing URL attachment:', attachment.url);
-      
-      const isImageUrl = /\.(jpg|jpeg|png|gif|webp)$/i.test(attachment.url) || 
-                        attachment.url.includes('image') ||
-                        attachment.url.includes('img');
-      
-      console.log('Is image URL:', isImageUrl);
-      
-      if (isImageUrl) {
-        try {
-          const imageData = await downloadImageFromUrl(attachment.url);
-          
-          if (imageData) {
-            contentItems.push({
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: imageData.mimeType,
-                data: imageData.base64
-              }
-            });
-            successfulImages++;
-            console.log('Successfully added URL image to vision analysis:', attachment.url);
-          } else {
-            failedImages++;
-            contentItems.push({
-              type: 'text',
-              text: `[Image URL: ${attachment.url} - Could not be loaded for analysis. The URL may be inaccessible, the image may be too large, or it may not be a valid image. Please check the URL and try again.]`
-            });
-            console.log('Failed to load URL image, added detailed error message:', attachment.url);
-          }
-        } catch (error) {
-          failedImages++;
-          console.error('URL image processing error:', error);
-          contentItems.push({
-            type: 'text',
-            text: `[Image URL: ${attachment.url} - Processing error: ${error instanceof Error ? error.message : 'Unknown error'}]`
-          });
-        }
-      } else {
-        // This is a website URL - fetch content
-        console.log('Fetching website content for:', attachment.url);
-        try {
-          const websiteContent = await fetchWebsiteContent(attachment.url);
-          
-          if (websiteContent) {
-            websitesFetched++;
-            contentItems.push({
-              type: 'text',
-              text: `[Website: ${attachment.url}]\n\nPage Content:\n${websiteContent}`
-            });
-            console.log('Successfully fetched website content:', {
-              url: attachment.url,
-              contentLength: websiteContent.length
-            });
-          }
-        } catch (error) {
-          console.error('Website content fetch error:', error);
-          contentItems.push({
-            type: 'text',
-            text: `[Website URL: ${attachment.url} - Could not fetch content due to an error. Please provide screenshots of the specific pages you'd like me to analyze.]`
-          });
-        }
-      }
-    } else {
-      console.log('Skipping attachment (no valid path or URL):', {
-        type: attachment.type,
-        name: attachment.name,
-        hasUploadPath: !!attachment.uploadPath,
-        hasUrl: !!attachment.url
-      });
-    }
-  }
-  
-  console.log('Vision processing complete:', {
-    totalContentItems: contentItems.length,
-    imageItems: contentItems.filter(item => item.type === 'image').length,
-    textItems: contentItems.filter(item => item.type === 'text').length,
-    successfulImages,
-    failedImages,
-    websitesFetched
-  });
-  
-  console.log('=== VISION PROCESSING END ===');
-  return contentItems;
 }

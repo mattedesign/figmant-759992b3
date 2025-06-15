@@ -6,7 +6,7 @@ import { corsHeaders } from './utils/cors.ts';
 import { ClaudeMessage, AttachmentData } from './utils/types.ts';
 import { logClaudeUsage } from './utils/logging.ts';
 import { getClaudeSettings } from './utils/claudeSettings.ts';
-import { processAttachmentsForVision } from './utils/imageProcessor.ts';
+import { processAttachmentsForVision } from './utils/visionProcessor.ts';
 
 serve(async (req) => {
   console.log('=== CLAUDE AI FUNCTION START ===');
