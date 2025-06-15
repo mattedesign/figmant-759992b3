@@ -28,19 +28,59 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 
+interface DateRange {
+  from: Date | null;
+  to: Date | null;
+}
+
+interface AdvancedFilters {
+  searchTerm: string;
+  statusFilter: string;
+  typeFilter: string;
+  confidenceRange: [number, number];
+  dateRange: DateRange;
+  analysisTypes: string[];
+  sortField: string;
+  sortDirection: 'asc' | 'desc';
+}
+
+interface FilterOptions {
+  statuses: string[];
+  types: string[];
+  analysisTypes: string[];
+  confidenceRange: {
+    min: number;
+    max: number;
+  };
+}
+
+interface FilterPreset {
+  id: string;
+  name: string;
+  filters: Partial<AdvancedFilters>;
+}
+
+interface QuickFilters {
+  today: () => void;
+  thisWeek: () => void;
+  thisMonth: () => void;
+  highConfidence: () => void;
+  lowConfidence: () => void;
+}
+
 interface EnhancedFiltersPanelProps {
-  filters: any;
-  filterOptions: any;
+  filters: AdvancedFilters;
+  filterOptions: FilterOptions;
   searchHistory: string[];
-  filterPresets: any[];
+  filterPresets: FilterPreset[];
   debouncedSearchTerm: string;
-  updateFilter: (key: string, value: any) => void;
-  updateMultipleFilters: (updates: any) => void;
+  updateFilter: (key: keyof AdvancedFilters, value: any) => void;
+  updateMultipleFilters: (updates: Partial<AdvancedFilters>) => void;
   resetFilters: () => void;
   saveFilterPreset: (name: string) => void;
-  loadFilterPreset: (preset: any) => void;
+  loadFilterPreset: (preset: FilterPreset) => void;
   deleteFilterPreset: (presetId: string) => void;
-  quickFilters: any;
+  quickFilters: QuickFilters;
 }
 
 export const EnhancedFiltersPanel: React.FC<EnhancedFiltersPanelProps> = ({
