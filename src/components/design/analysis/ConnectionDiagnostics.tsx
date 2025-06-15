@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Wifi, WifiOff, RefreshCw, Settings, Clock, CheckCircle } from 'lucide-react';
+import { AlertCircle, Wifi, WifiOff, RefreshCw, Settings, Clock, CheckCircle, Info } from 'lucide-react';
 
 interface ConnectionDiagnosticsProps {
   connectionStatus: 'connecting' | 'connected' | 'error' | 'fallback' | 'disabled';
@@ -24,7 +24,7 @@ export const ConnectionDiagnostics: React.FC<ConnectionDiagnosticsProps> = ({
         return {
           icon: <Wifi className="h-4 w-4" />,
           text: 'Live Updates Active',
-          description: 'Real-time updates are working properly',
+          description: 'Real-time updates are working properly. New data will appear automatically.',
           badgeClass: 'bg-green-100 text-green-800 border-green-200',
           cardClass: 'border-green-200'
         };
@@ -32,15 +32,15 @@ export const ConnectionDiagnostics: React.FC<ConnectionDiagnosticsProps> = ({
         return {
           icon: <Clock className="h-4 w-4 animate-pulse" />,
           text: 'Connecting...',
-          description: 'Establishing real-time connection',
+          description: 'Attempting to establish real-time connection. Will fallback to auto-refresh if needed.',
           badgeClass: 'bg-blue-100 text-blue-800 border-blue-200',
           cardClass: 'border-blue-200'
         };
       case 'fallback':
         return {
           icon: <RefreshCw className="h-4 w-4" />,
-          text: 'Auto-refresh Mode',
-          description: 'Using automatic refresh every 30 seconds',
+          text: 'Auto-refresh Active',
+          description: 'Real-time connection unavailable, but data refreshes automatically every 30 seconds. All features work normally.',
           badgeClass: 'bg-yellow-100 text-yellow-800 border-yellow-200',
           cardClass: 'border-yellow-200'
         };
@@ -48,17 +48,17 @@ export const ConnectionDiagnostics: React.FC<ConnectionDiagnosticsProps> = ({
         return {
           icon: <WifiOff className="h-4 w-4" />,
           text: 'Real-time Disabled',
-          description: 'Real-time updates are manually disabled',
+          description: 'Real-time updates are manually disabled. Use manual refresh to see new data.',
           badgeClass: 'bg-gray-100 text-gray-800 border-gray-200',
           cardClass: 'border-gray-200'
         };
       case 'error':
         return {
           icon: <AlertCircle className="h-4 w-4" />,
-          text: 'Connection Failed',
-          description: 'Real-time connection failed, using fallback mode',
-          badgeClass: 'bg-red-100 text-red-800 border-red-200',
-          cardClass: 'border-red-200'
+          text: 'Connection Issue',
+          description: 'Real-time connection encountered issues. Auto-refresh is active as backup.',
+          badgeClass: 'bg-orange-100 text-orange-800 border-orange-200',
+          cardClass: 'border-orange-200'
         };
       default:
         return {
@@ -92,10 +92,10 @@ export const ConnectionDiagnostics: React.FC<ConnectionDiagnosticsProps> = ({
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex gap-2">
-          {connectionStatus === 'error' && (
+          {(connectionStatus === 'error' || connectionStatus === 'fallback') && (
             <Button onClick={onRetryConnection} size="sm" variant="outline">
               <RefreshCw className="h-3 w-3 mr-1" />
-              Retry Connection
+              Retry Real-time
             </Button>
           )}
           
@@ -119,15 +119,30 @@ export const ConnectionDiagnostics: React.FC<ConnectionDiagnosticsProps> = ({
         </div>
 
         {connectionStatus === 'fallback' && (
-          <div className="text-xs text-muted-foreground p-2 bg-muted rounded">
-            <CheckCircle className="h-3 w-3 inline mr-1" />
-            Data will refresh automatically every 30 seconds
+          <div className="text-xs text-muted-foreground p-2 bg-muted rounded flex items-start gap-2">
+            <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
+            <span>
+              App is fully functional! Data refreshes automatically every 30 seconds. 
+              Real-time updates will be restored when connection improves.
+            </span>
           </div>
         )}
 
         {connectionStatus === 'disabled' && (
-          <div className="text-xs text-muted-foreground p-2 bg-muted rounded">
-            Manual refresh required to see new data
+          <div className="text-xs text-muted-foreground p-2 bg-muted rounded flex items-start gap-2">
+            <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
+            <span>
+              Real-time updates are disabled. Use the manual refresh button to see new data.
+            </span>
+          </div>
+        )}
+
+        {connectionStatus === 'connected' && (
+          <div className="text-xs text-muted-foreground p-2 bg-green-50 rounded flex items-start gap-2">
+            <CheckCircle className="h-3 w-3 mt-0.5 flex-shrink-0 text-green-600" />
+            <span className="text-green-700">
+              Real-time connection is active. New analyses will appear automatically.
+            </span>
           </div>
         )}
       </CardContent>

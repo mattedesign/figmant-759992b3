@@ -51,7 +51,7 @@ const AllAnalysisPageEnhanced = () => {
     filteredGroupedAnalyses
   } = useAllAnalysisFilters(allAnalyses, groupedAnalyses);
 
-  // Show error state if there's an error
+  // Show error state only for critical data fetching errors, not real-time connection issues
   if (error) {
     return (
       <ErrorDisplay 
@@ -62,7 +62,7 @@ const AllAnalysisPageEnhanced = () => {
     );
   }
 
-  // Show loading state
+  // Show loading state only for initial data loading
   if (isLoading) {
     return <AllAnalysisLoadingState />;
   }

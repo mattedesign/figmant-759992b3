@@ -28,20 +28,24 @@ interface UseSimplifiedAnalysisDataReturn {
 }
 
 export const useSimplifiedAnalysisData = (): UseSimplifiedAnalysisDataReturn => {
-  // Error handling
+  // Error handling - only for data fetching errors, not real-time connection issues
   const { error: localError, clearError, handleError } = useAnalysisErrorHandling();
 
-  // Real-time connection with simplified logic
+  // Real-time connection - failures are handled gracefully and don't block data loading
   const { 
     connectionStatus, 
     isEnabled: isRealTimeEnabled,
     toggleConnection: toggleRealTime,
     retryConnection
   } = useSimplifiedRealTimeConnection({ 
-    onError: handleError 
+    onError: (error) => {
+      // Log real-time connection issues but don't treat them as blocking errors
+      console.warn('Real-time connection issue (non-blocking):', error.message);
+      // Explicitly don't call handleError here to avoid showing error state to user
+    }
   });
 
-  // Fetch data with error handling
+  // Fetch data - these are the critical queries that must succeed
   const { 
     data: uploads = [], 
     isLoading: uploadsLoading, 
@@ -63,9 +67,13 @@ export const useSimplifiedAnalysisData = (): UseSimplifiedAnalysisDataReturn => 
     refetch: refetchIndividual 
   } = useDesignAnalyses();
 
-  // Combine all errors
+  // Only combine actual data fetching errors - not real-time connection issues
   const combinedError = useMemo(() => {
-    return uploadsError || batchError || individualError || localError;
+    const dataErrors = [uploadsError, batchError, individualError].filter(Boolean);
+    if (dataErrors.length > 0) {
+      return dataErrors[0]; // Return the first data error
+    }
+    return localError; // Only return local error if no data errors
   }, [uploadsError, batchError, individualError, localError]);
 
   // Group analyses using the hook
@@ -82,6 +90,7 @@ export const useSimplifiedAnalysisData = (): UseSimplifiedAnalysisDataReturn => 
     onError: handleError
   });
 
+  // Only consider data loading states - not real-time connection status
   const isLoading = uploadsLoading || batchLoading || individualLoading;
 
   return {
@@ -92,7 +101,7 @@ export const useSimplifiedAnalysisData = (): UseSimplifiedAnalysisDataReturn => 
     allAnalyses,
     isLoading,
     isRefreshing,
-    error: combinedError,
+    error: combinedError, // Only data errors, not real-time connection errors
     connectionStatus,
     isRealTimeEnabled,
     handleManualRefresh,

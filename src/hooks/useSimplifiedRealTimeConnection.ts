@@ -9,16 +9,18 @@ interface UseSimplifiedRealTimeConnectionProps {
 
 export const useSimplifiedRealTimeConnection = ({ onError }: UseSimplifiedRealTimeConnectionProps = {}) => {
   const queryClient = useQueryClient();
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error' | 'fallback' | 'disabled'>('connecting');
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error' | 'fallback' | 'disabled'>('disabled');
   const [isEnabled, setIsEnabled] = useState(true);
   
   const channelRef = useRef<any>(null);
   const fallbackIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isCleaningUpRef = useRef(false);
+  const retryCountRef = useRef(0);
   
-  const CONNECTION_TIMEOUT = 5000; // Reduced to 5 seconds
+  const CONNECTION_TIMEOUT = 3000; // Reduced to 3 seconds for faster fallback
   const FALLBACK_POLL_INTERVAL = 30000; // 30 seconds
+  const MAX_RETRIES = 2; // Reduced retries for faster fallback
 
   const startFallbackPolling = useCallback(() => {
     console.log('Starting fallback polling for real-time updates...');
@@ -57,7 +59,7 @@ export const useSimplifiedRealTimeConnection = ({ onError }: UseSimplifiedRealTi
         supabase.removeChannel(channelRef.current);
         console.log('Real-time channel removed successfully');
       } catch (err) {
-        console.error('Error removing real-time channel:', err);
+        console.warn('Error removing real-time channel:', err);
       }
       channelRef.current = null;
     }
@@ -68,15 +70,19 @@ export const useSimplifiedRealTimeConnection = ({ onError }: UseSimplifiedRealTi
       return;
     }
 
-    console.log('Setting up simplified real-time connection...');
+    console.log('Attempting real-time connection...');
     setConnectionStatus('connecting');
     
-    // Set connection timeout
+    // Set aggressive timeout for faster fallback
     connectionTimeoutRef.current = setTimeout(() => {
-      console.warn('Real-time connection timed out, falling back to polling');
-      setConnectionStatus('error');
+      console.log('Real-time connection timed out, switching to fallback polling');
+      setConnectionStatus('fallback');
       startFallbackPolling();
-      onError?.(new Error('Real-time connection timed out'));
+      
+      // Don't treat this as an error - it's expected behavior
+      if (retryCountRef.current >= MAX_RETRIES) {
+        console.log('Max retries reached, staying in fallback mode');
+      }
     }, CONNECTION_TIMEOUT);
 
     try {
@@ -86,10 +92,15 @@ export const useSimplifiedRealTimeConnection = ({ onError }: UseSimplifiedRealTi
         channelRef.current = null;
       }
 
-      // Create a simple channel with minimal configuration
-      const channelName = `analysis-updates-${Date.now()}`;
+      // Create a minimal channel configuration
+      const channelName = `analysis-updates-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
       channelRef.current = supabase
-        .channel(channelName)
+        .channel(channelName, {
+          config: {
+            broadcast: { self: false },
+            presence: { key: '' }
+          }
+        })
         .on(
           'postgres_changes',
           {
@@ -98,7 +109,7 @@ export const useSimplifiedRealTimeConnection = ({ onError }: UseSimplifiedRealTi
             table: 'design_analysis'
           },
           (payload) => {
-            console.log('Real-time update received for design_analysis:', payload);
+            console.log('Real-time update received for design_analysis');
             if (!isCleaningUpRef.current) {
               queryClient.invalidateQueries({ queryKey: ['design-analyses'] });
             }
@@ -112,7 +123,7 @@ export const useSimplifiedRealTimeConnection = ({ onError }: UseSimplifiedRealTi
             table: 'design_uploads'
           },
           (payload) => {
-            console.log('Real-time update received for design_uploads:', payload);
+            console.log('Real-time update received for design_uploads');
             if (!isCleaningUpRef.current) {
               queryClient.invalidateQueries({ queryKey: ['design-uploads'] });
             }
@@ -126,14 +137,14 @@ export const useSimplifiedRealTimeConnection = ({ onError }: UseSimplifiedRealTi
             table: 'design_batch_analysis'
           },
           (payload) => {
-            console.log('Real-time update received for design_batch_analysis:', payload);
+            console.log('Real-time update received for design_batch_analysis');
             if (!isCleaningUpRef.current) {
               queryClient.invalidateQueries({ queryKey: ['design-batch-analyses'] });
             }
           }
         )
         .subscribe((status, err) => {
-          console.log('Real-time subscription status:', status, err);
+          console.log('Real-time subscription status:', status);
           
           if (isCleaningUpRef.current) {
             return;
@@ -148,6 +159,7 @@ export const useSimplifiedRealTimeConnection = ({ onError }: UseSimplifiedRealTi
             case 'SUBSCRIBED':
               console.log('Real-time connection established successfully');
               setConnectionStatus('connected');
+              retryCountRef.current = 0;
               // Clear any existing fallback polling since we're connected
               if (fallbackIntervalRef.current) {
                 clearInterval(fallbackIntervalRef.current);
@@ -157,21 +169,32 @@ export const useSimplifiedRealTimeConnection = ({ onError }: UseSimplifiedRealTi
             case 'CHANNEL_ERROR':
             case 'TIMED_OUT':
             case 'CLOSED':
-              console.warn('Real-time connection failed with status:', status);
-              setConnectionStatus('error');
+              console.log('Real-time connection failed, switching to fallback:', status);
+              setConnectionStatus('fallback');
               startFallbackPolling();
-              onError?.(new Error(`Real-time connection failed: ${status}`));
+              
+              // Only retry if we haven't exceeded max retries
+              if (retryCountRef.current < MAX_RETRIES) {
+                retryCountRef.current++;
+                console.log(`Will retry connection (${retryCountRef.current}/${MAX_RETRIES}) in 5 seconds...`);
+                setTimeout(() => {
+                  if (!isCleaningUpRef.current && isEnabled) {
+                    setupConnection();
+                  }
+                }, 5000);
+              } else {
+                console.log('Max retries reached, staying in fallback mode');
+              }
               break;
           }
         });
         
     } catch (err) {
-      console.error('Failed to set up real-time connection:', err);
-      setConnectionStatus('error');
+      console.warn('Failed to set up real-time connection, using fallback:', err);
+      setConnectionStatus('fallback');
       startFallbackPolling();
-      onError?.(err as Error);
     }
-  }, [queryClient, startFallbackPolling, onError, isEnabled]);
+  }, [queryClient, startFallbackPolling, isEnabled]);
 
   const toggleConnection = useCallback(() => {
     if (isEnabled) {
@@ -179,40 +202,44 @@ export const useSimplifiedRealTimeConnection = ({ onError }: UseSimplifiedRealTi
       setIsEnabled(false);
       setConnectionStatus('disabled');
       cleanupConnection();
-      startFallbackPolling();
+      // Don't start fallback when manually disabled
     } else {
       console.log('Enabling real-time connection...');
       setIsEnabled(true);
       isCleaningUpRef.current = false;
+      retryCountRef.current = 0;
       if (fallbackIntervalRef.current) {
         clearInterval(fallbackIntervalRef.current);
         fallbackIntervalRef.current = null;
       }
       setupConnection();
     }
-  }, [isEnabled, cleanupConnection, startFallbackPolling, setupConnection]);
+  }, [isEnabled, cleanupConnection, setupConnection]);
 
   const retryConnection = useCallback(() => {
     if (!isEnabled) {
       return;
     }
     
-    console.log('Retrying real-time connection...');
+    console.log('Manual retry of real-time connection...');
+    retryCountRef.current = 0;
     cleanupConnection();
     isCleaningUpRef.current = false;
-    setTimeout(setupConnection, 1000); // Small delay before retry
+    setTimeout(setupConnection, 1000);
   }, [cleanupConnection, setupConnection, isEnabled]);
 
   useEffect(() => {
     if (isEnabled) {
       isCleaningUpRef.current = false;
+      // Start with fallback immediately, then try real-time
+      startFallbackPolling();
       setupConnection();
     }
 
     return () => {
       cleanupConnection();
     };
-  }, [setupConnection, cleanupConnection, isEnabled]);
+  }, [setupConnection, cleanupConnection, isEnabled, startFallbackPolling]);
 
   return { 
     connectionStatus, 
