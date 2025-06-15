@@ -1,6 +1,29 @@
 
 import React from 'react';
 
+// Type definitions
+export interface ChatAttachment {
+  id: string;
+  type: 'file' | 'url';
+  name: string;
+  file?: File;
+  url?: string;
+  status: 'pending' | 'processing' | 'uploading' | 'uploaded' | 'error';
+  errorMessage?: string;
+  uploadPath?: string;
+  processingInfo?: any;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  attachments?: ChatAttachment[];
+  timestamp: Date;
+  uploadIds?: string[];
+  batchId?: string;
+}
+
 export const DesignChatInterface: React.FC = () => {
   return (
     <div className="h-full flex items-center justify-center">
