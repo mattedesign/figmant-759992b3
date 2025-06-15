@@ -8,11 +8,13 @@ import Dashboard from '@/pages/Dashboard';
 interface FigmantMainContentProps {
   activeSection: string;
   selectedAnalysis: any;
+  onBackToList: () => void;
 }
 
 export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   activeSection,
-  selectedAnalysis
+  selectedAnalysis,
+  onBackToList
 }) => {
   const renderContent = () => {
     switch (activeSection) {
@@ -21,7 +23,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
           return (
             <AnalysisDetailView 
               analysis={selectedAnalysis}
-              onBack={() => {}}
+              onBack={onBackToList}
             />
           );
         }

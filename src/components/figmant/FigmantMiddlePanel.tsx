@@ -52,7 +52,7 @@ export const FigmantMiddlePanel: React.FC<FigmantMiddlePanelProps> = ({
                   </div>
                 ) : allAnalyses.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    No analyses found
+                    No analyses found. Start by uploading a design in the main area.
                   </div>
                 ) : (
                   allAnalyses.map((analysis) => (
@@ -66,6 +66,30 @@ export const FigmantMiddlePanel: React.FC<FigmantMiddlePanelProps> = ({
                 )}
               </div>
             </ScrollArea>
+          </div>
+        );
+
+      case 'analytics':
+        return (
+          <div className="p-4">
+            <h2 className="text-lg font-semibold mb-4">Analytics Overview</h2>
+            <div className="space-y-3">
+              <div className="p-3 bg-muted rounded-lg">
+                <div className="text-sm font-medium">Total Analyses</div>
+                <div className="text-xl font-bold text-primary">
+                  {allAnalyses.length}
+                </div>
+              </div>
+              <div className="p-3 bg-muted rounded-lg">
+                <div className="text-sm font-medium">Avg. Confidence</div>
+                <div className="text-xl font-bold text-primary">
+                  {allAnalyses.length > 0 
+                    ? Math.round((allAnalyses.reduce((acc, analysis) => acc + ((analysis.confidence_score || 0.8) * 100), 0) / allAnalyses.length))
+                    : 0
+                  }%
+                </div>
+              </div>
+            </div>
           </div>
         );
 
@@ -86,16 +110,6 @@ export const FigmantMiddlePanel: React.FC<FigmantMiddlePanelProps> = ({
                   Upload new design
                 </div>
               </div>
-            </div>
-          </div>
-        );
-
-      case 'analytics':
-        return (
-          <div className="p-4">
-            <h2 className="text-lg font-semibold mb-4">Analytics</h2>
-            <div className="text-sm text-muted-foreground">
-              Analytics overview coming soon...
             </div>
           </div>
         );

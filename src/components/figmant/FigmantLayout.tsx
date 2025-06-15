@@ -11,6 +11,10 @@ export const FigmantLayout = () => {
   const [activeSection, setActiveSection] = useState('design-analysis');
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
 
+  const handleBackToList = () => {
+    setSelectedAnalysis(null);
+  };
+
   return (
     <div className="h-screen flex bg-background">
       {/* Left Sidebar - Navigation */}
@@ -35,6 +39,7 @@ export const FigmantLayout = () => {
         <FigmantMainContent 
           activeSection={activeSection}
           selectedAnalysis={selectedAnalysis}
+          onBackToList={handleBackToList}
         />
       </div>
 
