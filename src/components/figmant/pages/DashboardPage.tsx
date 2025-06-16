@@ -7,15 +7,60 @@ import { PatternAnalysisSection } from './dashboard/PatternAnalysisSection';
 import { MyPromptsSection } from './dashboard/MyPromptsSection';
 import { NotesSection } from './dashboard/NotesSection';
 import { AnalysisData, InsightData, PromptData, NoteData } from './dashboard/types/dashboard';
+import { useAuth } from '@/contexts/AuthContext';
+import { 
+  useDashboardAnalyses, 
+  useDashboardInsights, 
+  useDashboardPrompts, 
+  useDashboardNotes 
+} from '@/hooks/useDashboardData';
+import { 
+  transformToAnalysisData, 
+  transformToInsightData, 
+  transformToPromptData, 
+  transformToNoteData 
+} from '@/hooks/useDashboardDataTransformers';
 
 export const DashboardPage: React.FC = () => {
-  // Sample data for dashboard sections
-  const analysisData: AnalysisData[] = [
+  const { user } = useAuth();
+  
+  // Fetch real data from database
+  const { 
+    data: rawAnalysisData, 
+    isLoading: analysisLoading, 
+    error: analysisError,
+    refetch: refetchAnalysis 
+  } = useDashboardAnalyses();
+  
+  const { 
+    data: rawInsightsData, 
+    isLoading: insightsLoading, 
+    error: insightsError,
+    refetch: refetchInsights 
+  } = useDashboardInsights();
+  
+  const { 
+    data: rawPromptsData, 
+    isLoading: promptsLoading, 
+    error: promptsError,
+    refetch: refetchPrompts 
+  } = useDashboardPrompts();
+  
+  const { 
+    data: rawNotesData, 
+    isLoading: notesLoading, 
+    error: notesError,
+    refetch: refetchNotes 
+  } = useDashboardNotes();
+
+  // Transform data or use fallback sample data
+  const analysisData: AnalysisData[] = rawAnalysisData ? 
+    transformToAnalysisData(rawAnalysisData) : [
     {
       id: 1,
       title: "E-commerce Landing Page",
       status: "Completed",
-      type: "UX Analysis",
+      type: "UX Analysis", 
       progress: 100,
       suggestions: 8,
       documents: 3
@@ -31,7 +76,8 @@ export const DashboardPage: React.FC = () => {
     }
   ];
 
-  const insightsData: InsightData[] = [
+  const insightsData: InsightData[] = rawInsightsData ? 
+    transformToInsightData(rawInsightsData, user) : [
     {
       id: 1,
       name: "Sarah Wilson",
@@ -64,7 +110,8 @@ export const DashboardPage: React.FC = () => {
     }
   ];
 
-  const promptsData: PromptData[] = [
+  const promptsData: PromptData[] = rawPromptsData ? 
+    transformToPromptData(rawPromptsData) : [
     {
       title: "Competitor Analysis Template",
       subtitle: "Analyze competitor design patterns",
@@ -85,7 +132,8 @@ export const DashboardPage: React.FC = () => {
     }
   ];
 
-  const notesData: NoteData[] = [
+  const notesData: NoteData[] = rawNotesData ? 
+    transformToNoteData(rawNotesData) : [
     {
       title: "Design System Updates",
       items: [
@@ -112,15 +160,35 @@ export const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            <RecentAnalysisSection analysisData={analysisData} />
-            <InsightsSection insightsData={insightsData} />
+            <RecentAnalysisSection 
+              analysisData={analysisData}
+              isLoading={analysisLoading}
+              error={analysisError}
+              onRetry={refetchAnalysis}
+            />
+            <InsightsSection 
+              insightsData={insightsData}
+              isLoading={insightsLoading}
+              error={insightsError}
+              onRetry={refetchInsights}
+            />
             <PatternAnalysisSection />
           </div>
           
           {/* Sidebar */}
           <div className="space-y-8">
-            <MyPromptsSection promptsData={promptsData} />
-            <NotesSection notesData={notesData} />
+            <MyPromptsSection 
+              promptsData={promptsData}
+              isLoading={promptsLoading}
+              error={promptsError}
+              onRetry={refetchPrompts}
+            />
+            <NotesSection 
+              notesData={notesData}
+              isLoading={notesLoading}
+              error={notesError}
+              onRetry={refetchNotes}
+            />
           </div>
         </div>
       </div>
