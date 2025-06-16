@@ -8,7 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useFigmantPromptTemplates, useBestFigmantPrompt } from '@/hooks/useFigmantChatAnalysis';
 import { AnalysisChatPanel } from './analysis/AnalysisChatPanel';
 import { PromptTemplateSelector } from './analysis/PromptTemplateSelector';
-import { AnalysisListSidebar } from './analysis/AnalysisListSidebar';
+import { CollapsibleHistorySidebar } from './analysis/CollapsibleHistorySidebar';
 import { useChatState } from './analysis/ChatStateManager';
 
 interface AnalysisPageProps {
@@ -37,7 +37,6 @@ export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) 
   const { data: bestPrompt } = useBestFigmantPrompt(selectedPromptCategory);
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const [showTemplateDetails, setShowTemplateDetails] = useState(false);
-  const [selectedAnalysis, setSelectedAnalysis] = useState<any>(null);
   const isMobile = useIsMobile();
 
   // Handle template from navigation
@@ -70,9 +69,15 @@ export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) 
     setSelectedPromptTemplate('');
   };
 
-  const handleAnalysisSelect = (analysis: any) => {
-    setSelectedAnalysis(analysis);
-    // You could also load the analysis content into the chat here
+  const handleNewAnalysis = () => {
+    // Clear current state to start fresh
+    setMessages([]);
+    setAttachments([]);
+    setMessage('');
+    setUrlInput('');
+    setShowUrlInput(false);
+    clearTemplateSelection();
+    setLastAnalysisResult(null);
   };
 
   const currentTemplate = promptTemplates?.find(t => t.id === selectedPromptTemplate);
@@ -185,27 +190,15 @@ export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) 
     );
   }
 
-  // Desktop layout with sidebar
+  // Desktop layout with collapsible history sidebar
   return (
     <div className="h-full flex overflow-hidden">
-      {/* Analysis History Sidebar */}
-      <AnalysisListSidebar
-        selectedAnalysis={selectedAnalysis}
-        onAnalysisSelect={handleAnalysisSelect}
-      />
+      {/* Collapsible Analysis History Sidebar */}
+      <CollapsibleHistorySidebar onNewAnalysis={handleNewAnalysis} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-shrink-0 p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold">Design Analysis</h1>
-              <p className="text-muted-foreground">
-                Analyze your designs with AI-powered insights
-              </p>
-            </div>
-          </div>
-
           {/* Template Selection Section */}
           <div className="space-y-4">
             <PromptTemplateSelector
