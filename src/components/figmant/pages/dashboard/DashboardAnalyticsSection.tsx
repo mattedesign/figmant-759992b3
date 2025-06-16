@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,21 +7,12 @@ import { AnalyticsMetricsGrid } from '../../analytics/components/AnalyticsMetric
 import { TrendAnalysisChart } from '../../analytics/components/TrendAnalysisChart';
 import { ActivityHeatMap } from '../../analytics/components/ActivityHeatMap';
 import { PerformanceInsights } from '../../analytics/components/PerformanceInsights';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Calendar, 
-  Lightbulb,
-  ChevronDown,
-  ChevronUp
-} from 'lucide-react';
-
+import { BarChart3, TrendingUp, Calendar, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
 interface DashboardAnalyticsSectionProps {
   dataStats: any;
   analysisData: any[];
   className?: string;
 }
-
 export const DashboardAnalyticsSection: React.FC<DashboardAnalyticsSectionProps> = ({
   dataStats,
   analysisData,
@@ -30,34 +20,24 @@ export const DashboardAnalyticsSection: React.FC<DashboardAnalyticsSectionProps>
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-
-  return (
-    <div className={className}>
+  return <div className={className}>
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-blue-600" />
-                <CardTitle>Dashboard Analytics</CardTitle>
+                <CardTitle className="font-normal">Dashboard Analytics</CardTitle>
               </div>
               <CollapsibleTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  {isExpanded ? (
-                    <>
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  {isExpanded ? <>
                       <span>Collapse</span>
                       <ChevronUp className="h-4 w-4" />
-                    </>
-                  ) : (
-                    <>
+                    </> : <>
                       <span>Expand Analytics</span>
                       <ChevronDown className="h-4 w-4" />
-                    </>
-                  )}
+                    </>}
                 </Button>
               </CollapsibleTrigger>
             </div>
@@ -92,10 +72,7 @@ export const DashboardAnalyticsSection: React.FC<DashboardAnalyticsSectionProps>
 
                   <div className="mt-6">
                     <TabsContent value="overview" className="space-y-6">
-                      <TrendAnalysisChart 
-                        data={analysisData}
-                        title="Activity Trends Overview"
-                      />
+                      <TrendAnalysisChart data={analysisData} title="Activity Trends Overview" />
                     </TabsContent>
 
                     <TabsContent value="activity" className="space-y-6">
@@ -108,10 +85,7 @@ export const DashboardAnalyticsSection: React.FC<DashboardAnalyticsSectionProps>
 
                     <TabsContent value="performance" className="space-y-6">
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <TrendAnalysisChart 
-                          data={analysisData}
-                          title="Performance Metrics"
-                        />
+                        <TrendAnalysisChart data={analysisData} title="Performance Metrics" />
                         <PerformanceInsights dataStats={dataStats} />
                       </div>
                     </TabsContent>
@@ -122,6 +96,5 @@ export const DashboardAnalyticsSection: React.FC<DashboardAnalyticsSectionProps>
           </CardContent>
         </Card>
       </Collapsible>
-    </div>
-  );
+    </div>;
 };
