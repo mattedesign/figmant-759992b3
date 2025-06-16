@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Star, MoreHorizontal } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { AnalysisData } from './types/dashboard';
 
 interface RecentAnalysisSectionProps {
@@ -11,8 +12,10 @@ interface RecentAnalysisSectionProps {
 }
 
 export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({ analysisData }) => {
+  const isMobile = useIsMobile();
+
   return (
-    <div className="col-span-8">
+    <div className={isMobile ? "w-full" : "col-span-8"}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">Recent Analysis</h2>
         <Button variant="ghost" size="sm" className="text-gray-500">
@@ -20,7 +23,7 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({ an
         </Button>
       </div>
       
-      <div className="grid grid-cols-2 gap-4 mb-8">
+      <div className={`grid gap-4 mb-8 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
         {analysisData.map((analysis) => (
           <Card key={analysis.id} className="border border-gray-200">
             <CardHeader className="pb-3">

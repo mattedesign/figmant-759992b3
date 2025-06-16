@@ -7,9 +7,12 @@ import { MyPromptsSection } from './dashboard/MyPromptsSection';
 import { PatternAnalysisSection } from './dashboard/PatternAnalysisSection';
 import { NotesSection } from './dashboard/NotesSection';
 import { RecentSection } from './dashboard/RecentSection';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { AnalysisData, InsightData, PromptData, NoteData } from './dashboard/types/dashboard';
 
 export const DashboardPage: React.FC = () => {
+  const isMobile = useIsMobile();
+
   const analysisData: AnalysisData[] = [
     {
       id: 1,
@@ -76,26 +79,41 @@ export const DashboardPage: React.FC = () => {
       <div className="h-full flex flex-col">
         <DashboardHeader />
 
-        {/* Main Content with no border or border radius */}
+        {/* Main Content with mobile-responsive layout */}
         <div 
           className="flex-1 overflow-y-auto px-6"
           style={{
             background: '#F9FAFB'
           }}
         >
-          <div className="grid grid-cols-12 gap-6">
-            <RecentAnalysisSection analysisData={analysisData} />
-            <InsightsSection insightsData={insightsData} />
-
-            {/* Right Column */}
-            <div className="col-span-4 space-y-6">
+          {isMobile ? (
+            // Mobile: Single column stack layout
+            <div className="space-y-6">
+              <RecentAnalysisSection analysisData={analysisData} />
+              <InsightsSection insightsData={insightsData} />
               <MyPromptsSection promptsData={promptsData} />
               <PatternAnalysisSection />
               <NotesSection notesData={notesData} />
+              <RecentSection />
             </div>
-          </div>
+          ) : (
+            // Desktop: Grid layout
+            <>
+              <div className="grid grid-cols-12 gap-6">
+                <RecentAnalysisSection analysisData={analysisData} />
+                <InsightsSection insightsData={insightsData} />
 
-          <RecentSection />
+                {/* Right Column */}
+                <div className="col-span-4 space-y-6">
+                  <MyPromptsSection promptsData={promptsData} />
+                  <PatternAnalysisSection />
+                  <NotesSection notesData={notesData} />
+                </div>
+              </div>
+
+              <RecentSection />
+            </>
+          )}
         </div>
       </div>
     </div>
