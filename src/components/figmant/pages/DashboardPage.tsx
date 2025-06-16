@@ -96,14 +96,17 @@ export const DashboardPage: React.FC = () => {
             onRetry={refreshAnalyses}
           />
           
-          <PatternAnalysisSection />
-          
-          <InsightsSection 
-            insightsData={memoizedInsightsData}
-            isLoading={loadingStates.insights}
-            error={errorStates.insights}
-            onRetry={refreshInsights}
-          />
+          {/* Pattern Analysis and Insights Side by Side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <PatternAnalysisSection />
+            
+            <InsightsSection 
+              insightsData={memoizedInsightsData}
+              isLoading={loadingStates.insights}
+              error={errorStates.insights}
+              onRetry={refreshInsights}
+            />
+          </div>
         </div>
       </div>
     </div>
