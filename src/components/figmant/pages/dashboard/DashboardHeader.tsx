@@ -27,7 +27,7 @@ export const DashboardHeader: React.FC = () => {
   };
 
   return (
-    <div className="flex-none px-8 py-6 pb-4" style={{ backgroundColor: 'transparent' }}>
+    <div className="flex-none px-16 py-6 pb-4" style={{ backgroundColor: 'transparent' }}>
       <div className="mb-4">
         <div className="text-sm text-gray-500 mb-1">{currentDate}</div>
         <h1 className="text-2xl text-gray-900">

@@ -79,9 +79,9 @@ export const DashboardPage: React.FC = () => {
       <div className="h-full flex flex-col">
         <DashboardHeader />
 
-        {/* Main Content - removed px-8 padding */}
+        {/* Main Content with px-8 padding */}
         <div 
-          className="flex-1 overflow-y-auto"
+          className="flex-1 overflow-y-auto px-8"
           style={{
             background: '#F9FAFB'
           }}
