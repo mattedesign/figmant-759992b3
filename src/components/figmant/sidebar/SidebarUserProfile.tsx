@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   User,
   LogOut,
@@ -7,7 +7,7 @@ import {
   LayoutDashboard,
   Shield,
   UserCog,
-  Upload
+  Settings
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -19,8 +19,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
 interface SidebarUserProfileProps {
   isOwner: boolean;
@@ -39,7 +37,6 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [uploading, setUploading] = useState(false);
 
   const handleSignOut = async () => {
     console.log('SidebarUserProfile: Initiating sign out...');
@@ -49,55 +46,6 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
       navigate('/auth', { replace: true });
     } catch (error) {
       console.error('SidebarUserProfile: Sign out error:', error);
-    }
-  };
-
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      setUploading(true);
-      const file = event.target.files?.[0];
-      if (!file || !user) return;
-
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please select an image file');
-        return;
-      }
-
-      // Upload to Supabase storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
-      const filePath = `profile-images/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('design-uploads')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('design-uploads')
-        .getPublicUrl(filePath);
-
-      // Update profile with new avatar URL
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_url: publicUrl })
-        .eq('id', user.id);
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      toast.success('Profile image updated successfully');
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      toast.error('Failed to upload image');
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -138,19 +86,10 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           
-          {/* Profile Image Upload */}
-          <DropdownMenuItem asChild>
-            <label className="cursor-pointer flex items-center">
-              <Upload className="mr-2 h-4 w-4" />
-              <span>{uploading ? 'Uploading...' : 'Update Profile Image'}</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                disabled={uploading}
-                className="hidden"
-              />
-            </label>
+          {/* Profile Management */}
+          <DropdownMenuItem onClick={() => navigate('/profile')}>
+            <Settings className="mr-2 h-4 w-4" />
+            Profile & Settings
           </DropdownMenuItem>
           
           <DropdownMenuSeparator />
