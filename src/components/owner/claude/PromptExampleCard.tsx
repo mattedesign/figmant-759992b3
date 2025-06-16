@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ClaudePromptExample, useUpdatePromptExample } from '@/hooks/useClaudePromptExamples';
 import { useToast } from '@/hooks/use-toast';
 import { PromptExampleView } from './PromptExampleView';
@@ -10,13 +10,11 @@ interface PromptExampleCardProps {
 }
 
 export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) => {
-  console.log('🔄 PromptExampleCard rendering - prompt ID:', prompt.id, 'title:', prompt.title);
-  
   const { toast } = useToast();
   const updatePromptMutation = useUpdatePromptExample();
   const [isEditing, setIsEditing] = useState(false);
   
-  console.log('📝 Current editing state for prompt', prompt.id, ':', isEditing);
+  console.log('🔄 PromptExampleCard render - ID:', prompt.id, 'isEditing:', isEditing);
   
   const [editedPrompt, setEditedPrompt] = useState({
     title: prompt.title,
@@ -31,14 +29,13 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
     is_active: prompt.is_active
   });
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     console.log('🖱️ handleEdit called for prompt:', prompt.id);
-    console.log('🔄 Setting isEditing from', isEditing, 'to true');
     setIsEditing(true);
-    console.log('✅ handleEdit completed - state should update');
-  };
+    console.log('✅ Edit mode activated for prompt:', prompt.id);
+  }, [prompt.id]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     console.log('💾 Saving prompt changes for:', prompt.id);
     try {
       await updatePromptMutation.mutateAsync({
@@ -58,11 +55,10 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
         variant: "destructive",
       });
     }
-  };
+  }, [prompt.id, editedPrompt, updatePromptMutation, toast]);
 
-  const handleCancel = () => {
-    console.log('❌ Canceling edit mode for prompt:', prompt.id);
-    // Reset to original values
+  const handleCancel = useCallback(() => {
+    console.log('❌ Canceling edit for prompt:', prompt.id);
     setEditedPrompt({
       title: prompt.title,
       description: prompt.description || '',
@@ -76,11 +72,10 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
       is_active: prompt.is_active
     });
     setIsEditing(false);
-  };
+  }, [prompt]);
 
   // Update editedPrompt when prompt prop changes
   React.useEffect(() => {
-    console.log('📋 Updating editedPrompt for prompt:', prompt.id);
     setEditedPrompt({
       title: prompt.title,
       description: prompt.description || '',
@@ -95,10 +90,9 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
     });
   }, [prompt]);
 
-  console.log('🎨 About to render - isEditing:', isEditing, 'for prompt:', prompt.id);
+  console.log('🎨 Rendering mode for prompt:', prompt.id, '- isEditing:', isEditing);
 
   if (isEditing) {
-    console.log('✏️ Rendering edit form for prompt:', prompt.id);
     return (
       <PromptExampleEditForm
         editedPrompt={editedPrompt}
@@ -110,7 +104,6 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
     );
   }
 
-  console.log('👁️ Rendering view mode for prompt:', prompt.id);
   return (
     <PromptExampleView
       prompt={prompt}

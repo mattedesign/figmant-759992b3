@@ -32,7 +32,7 @@ export const PromptCategoryCard: React.FC<PromptCategoryCardProps> = ({ category
         ) : (
           <div className="space-y-3">
             {prompts.map(prompt => (
-              <PromptExampleCard key={prompt.id} prompt={prompt} />
+              <PromptExampleCard key={`prompt-${prompt.id}`} prompt={prompt} />
             ))}
           </div>
         )}

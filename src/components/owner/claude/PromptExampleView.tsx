@@ -13,18 +13,13 @@ interface PromptExampleViewProps {
 export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, onEdit }) => {
   console.log('👁️ PromptExampleView rendering for prompt:', prompt.id);
   
-  const handleEditClick = (e: React.MouseEvent) => {
+  const handleEditClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('🖱️ Edit button clicked in view for prompt:', prompt.id);
-    console.log('🔄 About to call onEdit function');
-    
-    if (typeof onEdit === 'function') {
-      onEdit();
-      console.log('✅ onEdit function called successfully');
-    } else {
-      console.error('❌ onEdit is not a function:', typeof onEdit);
-    }
+    console.log('🖱️ Edit button clicked for prompt:', prompt.id);
+    console.log('🔄 Calling onEdit function...');
+    onEdit();
+    console.log('✅ onEdit function called');
   };
 
   return (
