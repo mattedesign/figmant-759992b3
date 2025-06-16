@@ -6,272 +6,432 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { 
   TrendingUp, 
-  Users, 
   FileText, 
   Clock, 
   Star,
   ArrowRight,
-  Zap,
-  Target,
-  Award,
-  Activity
+  Activity,
+  BarChart3,
+  Users,
+  ChevronRight,
+  MoreHorizontal
 } from 'lucide-react';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { useDesignUploads } from '@/hooks/useDesignUploads';
-import { LiveActivityFeed } from '../activity/LiveActivityFeed';
-import { RealTimeStatusIndicator } from '../status/RealTimeStatusIndicator';
 
 export const DashboardPage: React.FC = () => {
   const { data: analyses = [] } = useDesignAnalyses();
   const { data: uploads = [] } = useDesignUploads();
 
-  const recentAnalyses = analyses.slice(0, 3);
-  const completedAnalyses = analyses.filter(a => a.confidence_score && a.confidence_score > 0.7).length;
-  const averageScore = analyses.length > 0 
-    ? analyses.reduce((acc, a) => acc + (a.confidence_score || 0), 0) / analyses.length 
-    : 0;
+  const currentDate = new Date();
+  const dateString = currentDate.toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
 
-  const stats = [
+  // Mock data for the dashboard
+  const recentAnalyses = [
     {
-      title: 'Total Analyses',
-      value: analyses.length.toString(),
-      description: 'Completed this month',
-      icon: FileText,
-      trend: '+12%'
+      id: 1,
+      title: 'Analysis 1',
+      status: 'Complete',
+      type: 'Comprehensive Analysis',
+      score: 62,
+      suggestions: 32,
+      documents: 2,
+      progress: 100
     },
     {
-      title: 'Avg. Score',
-      value: `${Math.round(averageScore * 100)}%`,
-      description: 'Design quality score',
-      icon: TrendingUp,
-      trend: '+5%'
+      id: 2,
+      title: 'Analysis 1',
+      status: 'Completed',
+      type: 'Comprehensive',
+      score: 30,
+      suggestions: 32,
+      documents: 2,
+      progress: 100
     },
     {
-      title: 'Completed',
-      value: completedAnalyses.toString(),
-      description: 'High-quality analyses',
-      icon: Target,
-      trend: '+8%'
+      id: 3,
+      title: 'Analysis 1',
+      status: 'Completed',
+      type: 'Comprehensive Analysis',
+      score: 80,
+      suggestions: 32,
+      documents: 2,
+      progress: 100
     },
     {
-      title: 'Credits Used',
-      value: '47',
-      description: 'This billing cycle',
-      icon: Zap,
-      trend: '23 remaining'
+      id: 4,
+      title: 'Analysis 1',
+      status: 'Completed',
+      type: 'Comprehensive Analysis',
+      score: 40,
+      suggestions: 6,
+      documents: 2,
+      progress: 100
     }
   ];
 
-  const quickActions = [
+  const insights = [
     {
-      title: 'New Analysis',
-      description: 'Start analyzing a new design',
-      icon: FileText,
-      color: 'bg-blue-500',
-      action: () => console.log('New analysis')
+      id: 1,
+      title: 'Insight #1',
+      role: 'Data Analyst Lead',
+      change: '+20%',
+      totalTask: 16,
+      running: 12,
+      complete: 4,
+      avatar: '👤'
     },
     {
-      title: 'Premium Analysis',
-      description: 'Get advanced insights',
-      icon: Star,
-      color: 'bg-purple-500',
-      action: () => console.log('Premium analysis')
+      id: 2,
+      title: 'Insight #2',
+      role: 'Product Designer',
+      change: '+20%',
+      totalTask: 16,
+      running: 12,
+      complete: 4,
+      avatar: '👤'
     },
     {
-      title: 'View Templates',
-      description: 'Browse analysis templates',
-      icon: Award,
-      color: 'bg-green-500',
-      action: () => console.log('Templates')
+      id: 3,
+      title: 'Insight #3',
+      role: 'Design Operation Lead',
+      change: '+20%',
+      totalTask: 16,
+      running: 12,
+      complete: 4,
+      avatar: '👩'
+    },
+    {
+      id: 4,
+      title: 'Insight #4',
+      role: 'Engineering Lead (Backend)',
+      change: '+20%',
+      totalTask: 16,
+      running: 12,
+      complete: 4,
+      avatar: '👤'
+    },
+    {
+      id: 5,
+      title: 'Insight #5',
+      role: 'Product Executive',
+      change: '+20%',
+      totalTask: 16,
+      running: 12,
+      complete: 4,
+      avatar: '👤'
     }
   ];
+
+  const myPrompts = [
+    {
+      id: 1,
+      title: 'Figma Design System',
+      subtitle: 'Update button component',
+      date: '26 July',
+      status: 'Today'
+    },
+    {
+      id: 2,
+      title: 'Project management dash...',
+      subtitle: 'Fix errors',
+      date: '25 July',
+      status: 'Tomorrow'
+    },
+    {
+      id: 3,
+      title: 'Meeting with dev. team',
+      date: '26 July',
+      status: ''
+    },
+    {
+      id: 4,
+      title: 'Figma Design System',
+      subtitle: 'Update button component',
+      date: '26 July',
+      status: 'Today'
+    },
+    {
+      id: 5,
+      title: 'Fix errors',
+      date: '25 July',
+      status: ''
+    }
+  ];
+
+  const notes = [
+    {
+      title: 'Tomorrow Note',
+      items: [
+        'Confirm meeting room booking.',
+        'Bring a laptop and notepad for taking notes.',
+        'Follow up on any action items after the meeting.'
+      ]
+    },
+    {
+      title: 'Tomorrow Note',
+      items: [
+        'Confirm meeting room booking.',
+        'Bring a laptop and notepad for taking notes.',
+        'Follow up on any action items after the meeting.'
+      ]
+    }
+  ];
+
+  const getScoreColor = (score: number) => {
+    if (score >= 70) return 'bg-gradient-to-r from-green-400 to-blue-500';
+    if (score >= 50) return 'bg-gradient-to-r from-yellow-400 to-orange-500';
+    return 'bg-gradient-to-r from-red-400 to-pink-500';
+  };
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto bg-gray-50">
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-gray-600">
-            Welcome back! Here's an overview of your design analysis activity.
-          </p>
+          <p className="text-gray-600 mb-2">{dateString}</p>
+          <h1 className="text-3xl font-bold text-gray-900">Good afternoon, Zakir Hossen</h1>
         </div>
 
-        {/* Real-time Status Banner */}
-        <div className="mb-6">
-          <RealTimeStatusIndicator className="w-full" />
-        </div>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Recent Analysis */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Recent Analysis Section */}
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">Recent Analysis</h2>
+                <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+                  See all
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat) => (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon className="h-4 w-4 text-gray-400" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {recentAnalyses.map((analysis) => (
+                  <Card key={analysis.id} className="p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Activity className="h-5 w-5 text-blue-600" />
+                        <span className="font-medium">{analysis.title}</span>
+                      </div>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Status:</span>
+                        <span className="text-gray-900">{analysis.status}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Analysis Type:</span>
+                        <span className="text-gray-900">{analysis.type}</span>
+                      </div>
+                    </div>
+
+                    <div className="relative mb-3">
+                      <div className={`h-2 rounded-full ${getScoreColor(analysis.score)}`} />
+                      <div className="absolute right-0 -top-6 text-sm font-medium">
+                        {analysis.score}%
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Suggestions: {analysis.suggestions}</span>
+                      <span>Documents: {analysis.documents}</span>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Insights and Pattern Analysis */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Insights */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Insights</CardTitle>
+                    <Button variant="ghost" size="sm" className="text-gray-600">
+                      This month
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-4 gap-4 text-sm text-gray-600 border-b pb-2">
+                      <span>Name & role</span>
+                      <span>Total task</span>
+                      <span>Running</span>
+                      <span>Complete</span>
+                    </div>
+                    {insights.map((insight) => (
+                      <div key={insight.id} className="grid grid-cols-4 gap-4 items-center text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <span className="text-xs">{insight.avatar}</span>
+                          </div>
+                          <div>
+                            <div className="font-medium">{insight.title}</div>
+                            <div className="text-gray-600 text-xs">{insight.role}</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span>{insight.totalTask}</span>
+                          <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+                            {insight.change}
+                          </Badge>
+                        </div>
+                        <span>{insight.running}</span>
+                        <span>{insight.complete}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Pattern Analysis Chart */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Pattern Analysis</CardTitle>
+                    <Button variant="ghost" size="sm" className="text-gray-600">
+                      This week
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-center h-32">
+                    <div className="relative w-24 h-24">
+                      <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 36 36">
+                        <path
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke="#e5e7eb"
+                          strokeWidth="2"
+                        />
+                        <path
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke="#06b6d4"
+                          strokeWidth="2"
+                          strokeDasharray="76, 100"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-xl font-bold">76%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full" />
+                        <span>Total task</span>
+                      </div>
+                      <span className="font-medium">23</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-green-500 rounded-full" />
+                        <span>Running</span>
+                      </div>
+                      <span className="font-medium">16</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-purple-500 rounded-full" />
+                        <span>Completed</span>
+                      </div>
+                      <span className="font-medium">7</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            {/* My Prompts */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>My Prompts</CardTitle>
+                  <Button variant="ghost" size="sm" className="text-gray-600">
+                    Today
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-xs text-gray-600">{stat.description}</p>
-                  <Badge variant="secondary" className="text-xs">
-                    {stat.trend}
-                  </Badge>
+                <div className="space-y-3">
+                  {myPrompts.map((prompt) => (
+                    <div key={prompt.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg">
+                      <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
+                        <FileText className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm truncate">{prompt.title}</div>
+                        {prompt.subtitle && (
+                          <div className="text-xs text-gray-600 truncate">{prompt.subtitle}</div>
+                        )}
+                        <div className="text-xs text-gray-500">{prompt.date}</div>
+                      </div>
+                      {prompt.status && (
+                        <Badge variant="secondary" className={
+                          prompt.status === 'Today' ? 'bg-red-100 text-red-800' :
+                          prompt.status === 'Tomorrow' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }>
+                          {prompt.status}
+                        </Badge>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Get started with common tasks</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {quickActions.map((action) => (
-                <Button
-                  key={action.title}
-                  variant="outline"
-                  className="h-auto p-4 justify-start"
-                  onClick={action.action}
-                >
-                  <div className={`w-10 h-10 rounded-lg ${action.color} flex items-center justify-center mr-4`}>
-                    <action.icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="text-left">
-                    <div className="font-medium">{action.title}</div>
-                    <div className="text-sm text-gray-500">{action.description}</div>
-                  </div>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity and Performance */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Live Activity Feed */}
-          <LiveActivityFeed className="h-fit" />
-
-          {/* Performance Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Performance Overview</CardTitle>
-              <CardDescription>Your analysis quality trends</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Overall Quality Score</span>
-                  <span>{Math.round(averageScore * 100)}%</span>
+            {/* Notes */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Notes</CardTitle>
+                  <Button variant="ghost" size="sm" className="text-blue-600">
+                    Private
+                  </Button>
                 </div>
-                <Progress value={averageScore * 100} className="h-2" />
-              </div>
-              
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Completion Rate</span>
-                  <span>{analyses.length > 0 ? Math.round((completedAnalyses / analyses.length) * 100) : 0}%</span>
-                </div>
-                <Progress 
-                  value={analyses.length > 0 ? (completedAnalyses / analyses.length) * 100 : 0} 
-                  className="h-2" 
-                />
-              </div>
-
-              <div className="pt-4 border-t">
-                <div className="flex items-center justify-between text-sm">
-                  <span>This Month's Progress</span>
-                  <Badge variant="secondary">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    +15%
-                  </Badge>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  You're improving! Keep up the great work.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Analyses */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Analyses</CardTitle>
-              <CardDescription>Your latest design evaluations</CardDescription>
-            </div>
-            <Button variant="ghost" size="sm">
-              View All
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentAnalyses.length > 0 ? (
-                recentAnalyses.map((analysis) => (
-                  <div key={analysis.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
-                        <FileText className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">
-                          {analysis.analysis_type} Analysis
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(analysis.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {notes.map((note, index) => (
+                    <div key={index}>
+                      <h4 className="font-medium text-sm mb-2">{note.title}</h4>
+                      <ul className="space-y-1">
+                        {note.items.map((item, itemIndex) => (
+                          <li key={itemIndex} className="text-sm text-gray-600 flex items-start gap-2">
+                            <span className="text-gray-400 mt-1">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <Badge variant="outline">
-                      {Math.round((analysis.confidence_score || 0) * 100)}%
-                    </Badge>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">No analyses yet</p>
-                  <p className="text-sm text-gray-400">Start your first analysis to see it here</p>
+                  ))}
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* AI Insights & Tips */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-yellow-500" />
-              AI Insights & Tips
-            </CardTitle>
-            <CardDescription>Personalized recommendations based on your analysis patterns</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-blue-900 mb-2">Design Consistency</h4>
-                <p className="text-sm text-blue-700">
-                  Your recent analyses show strong typography choices. Consider exploring color harmony in your next designs.
-                </p>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg">
-                <h4 className="font-medium text-green-900 mb-2">Premium Opportunity</h4>
-                <p className="text-sm text-green-700">
-                  You're ready for premium analysis! Get 3x more detailed insights and competitive analysis.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

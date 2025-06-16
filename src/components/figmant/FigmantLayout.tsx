@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { FigmantSidebar } from './FigmantSidebar';
 import { FigmantMiddlePanel } from './FigmantMiddlePanel';
@@ -46,7 +47,7 @@ const getSectionBreadcrumbs = (activeSection: string, selectedAnalysis: any) => 
 export const FigmantLayout = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const [activeSection, setActiveSection] = useState('analysis');
+  const [activeSection, setActiveSection] = useState('dashboard');
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const [rightSidebarMode, setRightSidebarMode] = useState('attachments');
 
@@ -61,6 +62,9 @@ export const FigmantLayout = () => {
   };
 
   const breadcrumbs = getSectionBreadcrumbs(activeSection, selectedAnalysis);
+
+  // Determine if right sidebar should be shown
+  const shouldShowRightSidebar = activeSection === 'analysis';
 
   if (isMobile) {
     return (
@@ -111,14 +115,16 @@ export const FigmantLayout = () => {
         />
       </div>
 
-      {/* Middle Panel - Analysis List */}
-      <div className="w-80 bg-white border-r border-gray-200 flex-shrink-0">
-        <FigmantMiddlePanel 
-          activeSection={activeSection}
-          onAnalysisSelect={handleAnalysisSelect}
-          selectedAnalysis={selectedAnalysis}
-        />
-      </div>
+      {/* Middle Panel - Only show for analysis section */}
+      {activeSection === 'analysis' && (
+        <div className="w-80 bg-white border-r border-gray-200 flex-shrink-0">
+          <FigmantMiddlePanel 
+            activeSection={activeSection}
+            onAnalysisSelect={handleAnalysisSelect}
+            selectedAnalysis={selectedAnalysis}
+          />
+        </div>
+      )}
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 bg-white">
@@ -139,13 +145,15 @@ export const FigmantLayout = () => {
         </div>
       </div>
 
-      {/* Right Sidebar - Attachments/Preview */}
-      <div className="w-80 bg-white border-l border-gray-200 flex-shrink-0">
-        <FigmantRightSidebar 
-          mode={rightSidebarMode}
-          activeSection={activeSection}
-        />
-      </div>
+      {/* Right Sidebar - Only show for analysis section */}
+      {shouldShowRightSidebar && (
+        <div className="w-80 bg-white border-l border-gray-200 flex-shrink-0">
+          <FigmantRightSidebar 
+            mode={rightSidebarMode}
+            activeSection={activeSection}
+          />
+        </div>
+      )}
     </div>
   );
 };
