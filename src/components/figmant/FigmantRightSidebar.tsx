@@ -17,13 +17,13 @@ import {
 } from 'lucide-react';
 
 interface FigmantRightSidebarProps {
-  mode: string;
-  activeSection: string;
+  mode?: string;
+  activeSection?: string;
 }
 
 export const FigmantRightSidebar: React.FC<FigmantRightSidebarProps> = ({
-  mode,
-  activeSection
+  mode = 'attachments',
+  activeSection = 'dashboard'
 }) => {
   const [attachments, setAttachments] = useState([
     {
