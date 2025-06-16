@@ -21,6 +21,9 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
     if (location.pathname === '/dashboard') {
       return isOwner ? 'Subscriber View' : 'Dashboard';
     }
+    if (location.pathname === '/figmant' || location.pathname === '/') {
+      return 'figmant';
+    }
     return 'Dashboard';
   };
 
@@ -37,6 +40,13 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
       return (
         <Badge variant="secondary" className="bg-blue-100 text-blue-800">
           Subscriber Mode
+        </Badge>
+      );
+    }
+    if (location.pathname === '/figmant' || location.pathname === '/') {
+      return (
+        <Badge variant="secondary" className="bg-green-100 text-green-800">
+          Live
         </Badge>
       );
     }

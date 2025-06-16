@@ -1,5 +1,5 @@
 
-import { User, Settings, LogOut, CreditCard, Shield, LayoutDashboard, UserCog } from 'lucide-react';
+import { User, Settings, LogOut, CreditCard, Shield, LayoutDashboard, UserCog, Home } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -22,8 +22,8 @@ export const UserMenu = () => {
     console.log('UserMenu: Initiating sign out...');
     try {
       await signOut();
-      console.log('UserMenu: Sign out successful, navigating to root');
-      navigate('/');
+      console.log('UserMenu: Sign out successful, navigating to auth');
+      navigate('/auth');
     } catch (error) {
       console.error('UserMenu: Sign out error:', error);
     }
@@ -54,7 +54,7 @@ export const UserMenu = () => {
   const isOwner = profile?.role === 'owner';
   const isOnOwnerDashboard = location.pathname === '/owner';
   const isOnSubscriberDashboard = location.pathname === '/dashboard';
-  const isOnFigmant = location.pathname === '/figmant';
+  const isOnFigmant = location.pathname === '/figmant' || location.pathname === '/';
 
   return (
     <DropdownMenu>
@@ -80,7 +80,16 @@ export const UserMenu = () => {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        {/* Dashboard Navigation - Only show for owners */}
+        {/* Main App - now points to figmant as default */}
+        <DropdownMenuItem 
+          onClick={() => navigate('/figmant')}
+          className={isOnFigmant ? 'bg-accent' : ''}
+        >
+          <Home className="mr-2 h-4 w-4" />
+          Main App
+        </DropdownMenuItem>
+        
+        {/* Dashboard Navigation - Only show for owners or as additional option */}
         {isOwner && (
           <>
             <DropdownMenuItem 

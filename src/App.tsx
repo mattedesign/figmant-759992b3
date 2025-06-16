@@ -92,10 +92,26 @@ function App() {
             <div className="min-h-screen bg-background font-sans antialiased">
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
-                  {/* Auth route - accessible to all, but authenticated users see different content */}
-                  <Route path="/" element={<Auth />} />
+                  {/* Root route now redirects to figmant - this is the new default experience */}
+                  <Route path="/" element={
+                    <AuthGuard>
+                      <Navigate to="/figmant" replace />
+                    </AuthGuard>
+                  } />
                   
-                  {/* Protected dashboard routes - Updated to allow owners access to both */}
+                  {/* Auth route - accessible to all, but authenticated users will be redirected */}
+                  <Route path="/auth" element={<Auth />} />
+                  
+                  {/* Main Figmant route - now the default experience */}
+                  <Route path="/figmant" element={
+                    <AuthGuard>
+                      <Suspense fallback={<LoadingFallback message="Loading Figmant..." />}>
+                        <Figmant />
+                      </Suspense>
+                    </AuthGuard>
+                  } />
+                  
+                  {/* Protected dashboard routes - preserved functionality */}
                   <Route path="/dashboard" element={
                     <AuthGuard>
                       <RoleRedirect>
@@ -136,15 +152,6 @@ function App() {
                   <Route path="/admin/assets" element={
                     <AuthGuard>
                       <AdminAssets />
-                    </AuthGuard>
-                  } />
-
-                  {/* New Figmant route */}
-                  <Route path="/figmant" element={
-                    <AuthGuard>
-                      <Suspense fallback={<LoadingFallback message="Loading Figmant..." />}>
-                        <Figmant />
-                      </Suspense>
                     </AuthGuard>
                   } />
                   
