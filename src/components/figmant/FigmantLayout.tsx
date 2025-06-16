@@ -1,9 +1,7 @@
 
 import React, { useState } from 'react';
 import { FigmantSidebar } from './FigmantSidebar';
-import { FigmantMiddlePanel } from './FigmantMiddlePanel';
 import { FigmantMainContent } from './FigmantMainContent';
-import { FigmantRightSidebar } from './FigmantRightSidebar';
 import { MobileNavigation } from './navigation/MobileNavigation';
 import { FigmantBreadcrumbs } from './navigation/FigmantBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -57,14 +55,7 @@ export const FigmantLayout = () => {
     setSelectedAnalysis(null);
   };
 
-  const handleAnalysisSelect = (analysis: any) => {
-    setSelectedAnalysis(analysis);
-  };
-
   const breadcrumbs = getSectionBreadcrumbs(activeSection, selectedAnalysis);
-
-  // Determine if right sidebar should be shown
-  const shouldShowRightSidebar = activeSection === 'analysis';
 
   if (isMobile) {
     return (
@@ -80,7 +71,7 @@ export const FigmantLayout = () => {
               <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md flex items-center justify-center">
                 <span className="text-white text-xs font-bold">F</span>
               </div>
-              <span className="font-semibold">Figmant</span>
+              <span className="font-semibold">figmant</span>
             </div>
             <div className="w-8" /> {/* Spacer for alignment */}
           </div>
@@ -115,21 +106,10 @@ export const FigmantLayout = () => {
         />
       </div>
 
-      {/* Middle Panel - Only show for analysis section */}
-      {activeSection === 'analysis' && (
-        <div className="w-80 bg-white border-r border-gray-200 flex-shrink-0">
-          <FigmantMiddlePanel 
-            activeSection={activeSection}
-            onAnalysisSelect={handleAnalysisSelect}
-            selectedAnalysis={selectedAnalysis}
-          />
-        </div>
-      )}
-
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 bg-white">
-        {/* Breadcrumbs */}
-        {breadcrumbs.length > 0 && (
+        {/* Breadcrumbs - Only show for non-analysis sections */}
+        {breadcrumbs.length > 0 && activeSection !== 'analysis' && (
           <div className="flex-none p-4 border-b border-gray-200">
             <FigmantBreadcrumbs items={breadcrumbs} />
           </div>
@@ -144,16 +124,6 @@ export const FigmantLayout = () => {
           />
         </div>
       </div>
-
-      {/* Right Sidebar - Only show for analysis section */}
-      {shouldShowRightSidebar && (
-        <div className="w-80 bg-white border-l border-gray-200 flex-shrink-0">
-          <FigmantRightSidebar 
-            mode={rightSidebarMode}
-            activeSection={activeSection}
-          />
-        </div>
-      )}
     </div>
   );
 };

@@ -1,24 +1,16 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { 
+  Home,
   BarChart3, 
-  Search, 
-  Home, 
   Star, 
   FileText, 
-  CreditCard, 
   Settings,
-  Bell,
-  Activity,
-  ChevronDown,
-  ChevronRight
+  Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { NotificationCenter } from './notifications/NotificationCenter';
-import { RealTimeStatusIndicator } from './status/RealTimeStatusIndicator';
 
 interface FigmantSidebarProps {
   activeSection: string;
@@ -29,203 +21,104 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   activeSection,
   onSectionChange
 }) => {
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showActivity, setShowActivity] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<string[]>(['main']);
-
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => 
-      prev.includes(section) 
-        ? prev.filter(s => s !== section)
-        : [...prev, section]
-    );
-  };
-
   const mainSections = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'analysis', label: 'Analysis', icon: BarChart3, badge: '12' },
-    { id: 'search', label: 'Smart Search', icon: Search },
-  ];
-
-  const toolsSections = [
-    { id: 'premium-analysis', label: 'Premium Analysis', icon: Star, badge: 'Pro' },
+    { id: 'analysis', label: 'Analysis', icon: BarChart3 },
+    { id: 'premium-analysis', label: 'Premium Analysis', icon: Star },
     { id: 'templates', label: 'Templates', icon: FileText },
+    { id: 'preferences', label: 'Preferences', icon: Settings },
+    { id: 'search', label: 'Search', icon: Search },
   ];
 
-  const accountSections = [
-    { id: 'credits', label: 'Credits', icon: CreditCard, badge: '47' },
-    { id: 'preferences', label: 'Preferences', icon: Settings },
+  const recentAnalyses = [
+    'Analysis of something',
+    'Analysis of something', 
+    'Analysis of something'
   ];
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-gray-900">Figmant</h1>
-        <p className="text-sm text-gray-600">AI Design Analysis</p>
-      </div>
-
-      {/* Real-time Status */}
-      <div className="p-4 border-b border-gray-200">
-        <RealTimeStatusIndicator />
+        <h1 className="text-xl font-bold text-gray-900">figmant</h1>
       </div>
 
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Main Section */}
+        {/* Pages Section */}
         <div>
-          <button
-            onClick={() => toggleSection('main')}
-            className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-900 mb-3"
-          >
-            <span>Main</span>
-            {expandedSections.includes('main') ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </button>
-          
-          {expandedSections.includes('main') && (
-            <div className="space-y-1">
-              {mainSections.map((section) => (
-                <Button
-                  key={section.id}
-                  variant={activeSection === section.id ? 'secondary' : 'ghost'}
-                  className={cn(
-                    "w-full justify-start",
-                    activeSection === section.id && "bg-blue-50 text-blue-700 border-blue-200"
-                  )}
-                  onClick={() => onSectionChange(section.id)}
-                >
-                  <section.icon className="h-4 w-4 mr-3" />
-                  {section.label}
-                  {section.badge && (
-                    <Badge variant="secondary" className="ml-auto text-xs">
-                      {section.badge}
-                    </Badge>
-                  )}
-                </Button>
-              ))}
-            </div>
-          )}
+          <div className="text-sm font-medium text-gray-500 mb-3">Pages</div>
+          <div className="space-y-1">
+            {mainSections.map((section) => (
+              <Button
+                key={section.id}
+                variant="ghost"
+                className={cn(
+                  "w-full justify-start",
+                  activeSection === section.id && "bg-blue-50 text-blue-700 border-blue-200"
+                )}
+                onClick={() => onSectionChange(section.id)}
+              >
+                <section.icon className="h-4 w-4 mr-3" />
+                {section.label}
+              </Button>
+            ))}
+          </div>
         </div>
 
-        <Separator />
-
-        {/* Tools Section */}
+        {/* Recent Section */}
         <div>
-          <button
-            onClick={() => toggleSection('tools')}
-            className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-900 mb-3"
-          >
-            <span>Tools</span>
-            {expandedSections.includes('tools') ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </button>
-          
-          {expandedSections.includes('tools') && (
-            <div className="space-y-1">
-              {toolsSections.map((section) => (
-                <Button
-                  key={section.id}
-                  variant={activeSection === section.id ? 'secondary' : 'ghost'}
-                  className={cn(
-                    "w-full justify-start",
-                    activeSection === section.id && "bg-blue-50 text-blue-700 border-blue-200"
-                  )}
-                  onClick={() => onSectionChange(section.id)}
-                >
-                  <section.icon className="h-4 w-4 mr-3" />
-                  {section.label}
-                  {section.badge && (
-                    <Badge variant="secondary" className="ml-auto text-xs">
-                      {section.badge}
-                    </Badge>
-                  )}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <Separator />
-
-        {/* Account Section */}
-        <div>
-          <button
-            onClick={() => toggleSection('account')}
-            className="flex items-center justify-between w-full text-left text-sm font-medium text-gray-900 mb-3"
-          >
-            <span>Account</span>
-            {expandedSections.includes('account') ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </button>
-          
-          {expandedSections.includes('account') && (
-            <div className="space-y-1">
-              {accountSections.map((section) => (
-                <Button
-                  key={section.id}
-                  variant={activeSection === section.id ? 'secondary' : 'ghost'}
-                  className={cn(
-                    "w-full justify-start",
-                    activeSection === section.id && "bg-blue-50 text-blue-700 border-blue-200"
-                  )}
-                  onClick={() => onSectionChange(section.id)}
-                >
-                  <section.icon className="h-4 w-4 mr-3" />
-                  {section.label}
-                  {section.badge && (
-                    <Badge variant="secondary" className="ml-auto text-xs">
-                      {section.badge}
-                    </Badge>
-                  )}
-                </Button>
-              ))}
-            </div>
-          )}
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-sm font-medium text-gray-500">Recent</div>
+            <Button variant="ghost" size="sm" className="h-auto p-0 text-gray-400">
+              <div className="w-4 h-4 border border-gray-300 rounded-full flex items-center justify-center">
+                <span className="text-xs">i</span>
+              </div>
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {recentAnalyses.map((analysis, index) => (
+              <div key={index} className="text-sm text-gray-600 py-1">
+                {analysis}
+              </div>
+            ))}
+            <Button variant="ghost" className="w-full justify-center text-sm text-gray-500 mt-2">
+              See all ↓
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Footer with Notifications */}
+      {/* Footer */}
       <div className="p-4 border-t border-gray-200 space-y-2">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full justify-start"
-              onClick={() => setShowNotifications(!showNotifications)}
-            >
-              <Bell className="h-4 w-4 mr-2" />
-              Notifications
-              <Badge variant="secondary" className="ml-auto text-xs">
-                3
-              </Badge>
-            </Button>
-            <NotificationCenter 
-              isOpen={showNotifications}
-              onClose={() => setShowNotifications(false)}
-            />
-          </div>
-        </div>
-        
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full justify-start"
-          onClick={() => setShowActivity(!showActivity)}
-        >
-          <Activity className="h-4 w-4 mr-2" />
-          Activity
+        <Button variant="ghost" className="w-full justify-start">
+          <Star className="h-4 w-4 mr-3" />
+          Premium
         </Button>
+        <Button variant="ghost" className="w-full justify-start">
+          <Settings className="h-4 w-4 mr-3" />
+          Credits
+        </Button>
+        <Button variant="ghost" className="w-full justify-start">
+          <div className="w-4 h-4 mr-3 rounded-full bg-gray-300 flex items-center justify-center">
+            <span className="text-xs">?</span>
+          </div>
+          Help
+        </Button>
+        
+        {/* User Profile */}
+        <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+          <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-sm font-medium">R</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-gray-900">Ronald Richards</div>
+            <div className="text-xs text-gray-500 truncate">ronaldrichards@gmail.com</div>
+          </div>
+          <Button variant="ghost" size="sm" className="h-auto p-0">
+            <div className="w-4 h-4 text-gray-400">↓</div>
+          </Button>
+        </div>
       </div>
     </div>
   );
