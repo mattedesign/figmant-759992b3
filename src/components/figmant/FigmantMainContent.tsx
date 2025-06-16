@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { DashboardPage } from './pages/DashboardPage';
 import { AnalysisPage } from './pages/AnalysisPage';
 import { PremiumAnalysisPage } from './pages/PremiumAnalysisPage';
@@ -11,6 +12,7 @@ import { AdminPage } from './pages/AdminPage';
 
 interface FigmantMainContentProps {
   activeSection: string;
+  setActiveSection: (section: string) => void;
   selectedAnalysis: any;
   onBackToList: () => void;
   onRightSidebarModeChange: (mode: string) => void;
@@ -18,10 +20,20 @@ interface FigmantMainContentProps {
 
 export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   activeSection,
+  setActiveSection,
   selectedAnalysis,
   onBackToList,
   onRightSidebarModeChange
 }) => {
+  const location = useLocation();
+
+  // Handle navigation state from premium analysis
+  useEffect(() => {
+    if (location.state?.activeSection) {
+      setActiveSection(location.state.activeSection);
+    }
+  }, [location.state, setActiveSection]);
+
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':

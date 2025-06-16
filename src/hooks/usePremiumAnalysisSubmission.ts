@@ -46,7 +46,13 @@ export const usePremiumAnalysisSubmission = () => {
             message: contextPrompt,
             requestType: 'premium_analysis',
             analysisType: selectedPrompt.category,
-            promptTemplate: selectedPrompt.original_prompt
+            promptTemplate: selectedPrompt.original_prompt,
+            // Include uploaded files if any
+            attachments: stepData.uploadedFiles ? stepData.uploadedFiles.map(file => ({
+              name: file.name,
+              type: file.type,
+              size: file.size
+            })) : []
           }
         });
 
@@ -60,10 +66,15 @@ export const usePremiumAnalysisSubmission = () => {
           response: claudeResponse.analysis || claudeResponse.response,
           premium_analysis_data: JSON.parse(JSON.stringify(stepData)), // Ensure proper JSON serialization
           selected_prompt_id: selectedPrompt.id,
-          selected_prompt_category: selectedPrompt.category
+          selected_prompt_category: selectedPrompt.category,
+          project_name: stepData.projectName,
+          analysis_goals: stepData.analysisGoals,
+          desired_outcome: stepData.desiredOutcome,
+          files_uploaded: stepData.uploadedFiles?.length || 0,
+          reference_links: stepData.referenceLinks.filter(link => link.trim()).length
         };
 
-        // Save the premium analysis to chat history
+        // Save the premium analysis to chat history with proper labeling
         const { data: savedAnalysis, error: saveError } = await supabase
           .from('chat_analysis_history')
           .insert({
@@ -72,7 +83,14 @@ export const usePremiumAnalysisSubmission = () => {
             prompt_template_used: selectedPrompt.original_prompt,
             analysis_results: analysisResults,
             confidence_score: claudeResponse.confidence_score || 0.9,
-            analysis_type: `premium_${selectedPrompt.category}`
+            analysis_type: 'premium_analysis', // Clear labeling for premium analysis
+            // Additional metadata for premium analysis identification
+            metadata: {
+              is_premium: true,
+              premium_type: selectedPrompt.category,
+              project_name: stepData.projectName,
+              credits_used: 5
+            }
           })
           .select()
           .single();
@@ -81,6 +99,8 @@ export const usePremiumAnalysisSubmission = () => {
           console.error('Error saving premium analysis:', saveError);
           throw saveError;
         }
+
+        console.log('Premium analysis saved to chat history with ID:', savedAnalysis.id);
 
         return {
           analysis: claudeResponse.analysis || claudeResponse.response,
@@ -104,7 +124,7 @@ export const usePremiumAnalysisSubmission = () => {
     onSuccess: () => {
       toast({
         title: "Premium Analysis Complete",
-        description: "Your premium analysis has been generated successfully.",
+        description: "Your premium analysis has been generated and saved successfully.",
       });
     }
   });
@@ -142,6 +162,13 @@ function buildContextPrompt(stepData: StepData, selectedPrompt: any): string {
     prompt += `Reference Links:\n`;
     stepData.referenceLinks.filter(link => link.trim()).forEach(link => {
       prompt += `- ${link}\n`;
+    });
+  }
+
+  if (stepData.uploadedFiles && stepData.uploadedFiles.length > 0) {
+    prompt += `Uploaded Files:\n`;
+    stepData.uploadedFiles.forEach(file => {
+      prompt += `- ${file.name} (${file.type}, ${Math.round(file.size / 1024)} KB)\n`;
     });
   }
   

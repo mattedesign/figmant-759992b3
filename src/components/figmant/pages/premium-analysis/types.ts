@@ -1,24 +1,20 @@
 
+export interface Stakeholder {
+  name: string;
+  title: string;
+}
+
 export interface StepData {
-  selectedType: string;
   projectName: string;
+  selectedType: string;
   analysisGoals: string;
   desiredOutcome: string;
   improvementMetric: string;
   deadline: string;
-  date: string;
-  stakeholders: Array<{
-    name: string;
-    title: string;
-  }>;
+  stakeholders: Stakeholder[];
   referenceLinks: string[];
+  uploadedFiles?: File[];
   customPrompt: string;
-}
-
-export interface AnalysisType {
-  id: string;
-  title: string;
-  icon: any;
 }
 
 export interface StepProps {
