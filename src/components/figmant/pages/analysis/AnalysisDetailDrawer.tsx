@@ -33,6 +33,24 @@ interface AnalysisDetailDrawerProps {
   analysis: any;
 }
 
+// Helper function to safely format date
+const formatSafeDate = (dateString: string | null | undefined): string => {
+  if (!dateString) {
+    return 'Unknown time';
+  }
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    return formatDistanceToNow(date, { addSuffix: true });
+  } catch (error) {
+    console.error('Date formatting error:', error);
+    return 'Unknown time';
+  }
+};
+
 export const AnalysisDetailDrawer: React.FC<AnalysisDetailDrawerProps> = ({
   isOpen,
   onClose,
@@ -135,7 +153,7 @@ export const AnalysisDetailDrawer: React.FC<AnalysisDetailDrawerProps> = ({
               <DrawerDescription className="flex items-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
+                  {formatSafeDate(analysis.created_at)}
                 </div>
                 {analysis.confidence_score && (
                   <div className="flex items-center gap-1">
