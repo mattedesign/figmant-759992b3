@@ -50,6 +50,10 @@ export const PromptEditDrawer: React.FC<PromptEditDrawerProps> = ({
     promptTitle: prompt.title 
   });
   
+  useEffect(() => {
+    console.log('🎨 PromptEditDrawer useEffect - isOpen changed to:', isOpen);
+  }, [isOpen]);
+  
   const [editedPrompt, setEditedPrompt] = useState<EditedPromptData>({
     title: prompt.title,
     description: prompt.description || '',
@@ -111,10 +115,17 @@ export const PromptEditDrawer: React.FC<PromptEditDrawerProps> = ({
     onClose();
   };
 
+  const handleOpenChange = (open: boolean) => {
+    console.log('🎨 Drawer onOpenChange called with:', open);
+    if (!open) {
+      onClose();
+    }
+  };
+
   console.log('🎨 Drawer component will render with isOpen:', isOpen);
 
   return (
-    <Drawer open={isOpen} onOpenChange={onClose}>
+    <Drawer open={isOpen} onOpenChange={handleOpenChange}>
       <DrawerContent className="max-h-[85vh]">
         <DrawerHeader>
           <DrawerTitle>Edit Prompt: {prompt.title}</DrawerTitle>

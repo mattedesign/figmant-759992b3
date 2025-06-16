@@ -15,15 +15,25 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
   
   const handleEdit = () => {
     console.log('🖱️ PromptExampleCard handleEdit called for prompt:', prompt.id);
+    console.log('🔄 Current drawer state before opening:', isDrawerOpen);
     console.log('🔄 Opening edit drawer...');
     setIsDrawerOpen(true);
-    console.log('✅ Drawer state set to true');
+    console.log('✅ setIsDrawerOpen(true) called');
+    
+    // Add a small delay to check if state actually changes
+    setTimeout(() => {
+      console.log('🔄 Drawer state after 100ms:', isDrawerOpen);
+    }, 100);
   };
 
   const handleCloseDrawer = () => {
     console.log('❌ Closing edit drawer for prompt:', prompt.id);
+    console.log('🔄 Current drawer state before closing:', isDrawerOpen);
     setIsDrawerOpen(false);
+    console.log('✅ setIsDrawerOpen(false) called');
   };
+
+  console.log('🎨 About to render PromptEditDrawer with isOpen:', isDrawerOpen);
 
   return (
     <div className="relative">
