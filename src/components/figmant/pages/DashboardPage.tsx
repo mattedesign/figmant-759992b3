@@ -4,7 +4,8 @@ import { DashboardHeader } from './dashboard/DashboardHeader';
 import { RecentAnalysisSection } from './dashboard/RecentAnalysisSection';
 import { InsightsSection } from './dashboard/InsightsSection';
 import { PatternAnalysisSection } from './dashboard/PatternAnalysisSection';
-import { DashboardAnalyticsSection } from './dashboard/DashboardAnalyticsSection';
+import { DashboardMetricsSection } from './dashboard/DashboardMetricsSection';
+import { DashboardAnalyticsTabsSection } from './dashboard/DashboardAnalyticsTabsSection';
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
 import { useToast } from '@/hooks/use-toast';
@@ -75,8 +76,13 @@ export const DashboardPage: React.FC = () => {
           isRefreshing={isRefreshing}
         />
 
-        {/* Advanced Analytics Section */}
-        <DashboardAnalyticsSection
+        {/* Key Metrics Section */}
+        <DashboardMetricsSection
+          dataStats={memoizedDataStats}
+        />
+
+        {/* Analytics Dashboard Section */}
+        <DashboardAnalyticsTabsSection
           dataStats={memoizedDataStats}
           analysisData={memoizedAnalysisData}
         />
