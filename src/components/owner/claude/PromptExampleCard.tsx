@@ -14,10 +14,10 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
   console.log('🔄 PromptExampleCard render - ID:', prompt.id, 'drawerOpen:', isDrawerOpen);
   
   const handleEdit = () => {
-    console.log('🖱️ handleEdit called for prompt:', prompt.id);
+    console.log('🖱️ PromptExampleCard handleEdit called for prompt:', prompt.id);
     console.log('🔄 Opening edit drawer...');
     setIsDrawerOpen(true);
-    console.log('✅ Edit drawer should be opening for prompt:', prompt.id);
+    console.log('✅ Drawer state set to true');
   };
 
   const handleCloseDrawer = () => {
@@ -32,11 +32,13 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
         onEdit={handleEdit}
       />
       
-      <PromptEditDrawer
-        prompt={prompt}
-        isOpen={isDrawerOpen}
-        onClose={handleCloseDrawer}
-      />
+      {isDrawerOpen && (
+        <PromptEditDrawer
+          prompt={prompt}
+          isOpen={isDrawerOpen}
+          onClose={handleCloseDrawer}
+        />
+      )}
     </>
   );
 };

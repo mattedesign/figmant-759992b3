@@ -19,7 +19,7 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
   console.log('👁️ PromptExampleView rendering for prompt:', prompt.id);
   console.log('🔑 User permissions - isOwner:', isOwner);
   
-  const handleEditClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleEditClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -37,7 +37,12 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
     }
     
     console.log('✅ Permission granted, calling onEdit...');
-    onEdit();
+    try {
+      onEdit();
+      console.log('✅ onEdit called successfully');
+    } catch (error) {
+      console.error('❌ Error calling onEdit:', error);
+    }
   };
 
   const handleCopyClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -46,17 +51,17 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
     
     console.log('📋 Copy button clicked for prompt:', prompt.id);
     
-    if (!navigator.clipboard) {
-      console.error('❌ Clipboard API not available');
-      toast({
-        title: "Copy failed",
-        description: "Clipboard not available in this browser",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     try {
+      if (!navigator.clipboard) {
+        console.error('❌ Clipboard API not available');
+        toast({
+          title: "Copy failed",
+          description: "Clipboard not available in this browser",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       await navigator.clipboard.writeText(prompt.original_prompt);
       console.log('✅ Prompt copied to clipboard successfully');
       toast({
@@ -65,11 +70,33 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
       });
     } catch (error) {
       console.error('❌ Failed to copy prompt:', error);
-      toast({
-        title: "Copy failed",
-        description: "Failed to copy prompt to clipboard",
-        variant: "destructive",
-      });
+      
+      // Fallback method for copying
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = prompt.original_prompt;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        console.log('✅ Fallback copy method succeeded');
+        toast({
+          title: "Copied to clipboard",
+          description: "Prompt copied successfully",
+        });
+      } catch (fallbackError) {
+        console.error('❌ Fallback copy method failed:', fallbackError);
+        toast({
+          title: "Copy failed",
+          description: "Failed to copy prompt to clipboard",
+          variant: "destructive",
+        });
+      }
     }
   };
 
