@@ -72,66 +72,59 @@ export const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-50">
-      <div className="max-w-7xl mx-auto">
-        {/* Enhanced header with better spacing */}
-        <div className="bg-white">
-          <DashboardHeader 
-            dataStats={memoizedDataStats}
-            lastUpdated={lastUpdated}
-            onRefresh={refreshAllData}
-            isRefreshing={isRefreshing}
-          />
-        </div>
+    <div className="h-full overflow-y-auto">
+      <div className="container mx-auto px-6 py-6 space-y-8">
+        <DashboardHeader 
+          dataStats={memoizedDataStats}
+          lastUpdated={lastUpdated}
+          onRefresh={refreshAllData}
+          isRefreshing={isRefreshing}
+        />
 
-        {/* Main content with improved spacing */}
-        <div className="px-6 py-8 space-y-8">
-          {/* Enhanced Analytics Section */}
-          <DashboardAnalyticsSection
-            dataStats={memoizedDataStats}
-            analysisData={memoizedAnalysisData}
-          />
+        {/* Advanced Analytics Section */}
+        <DashboardAnalyticsSection
+          dataStats={memoizedDataStats}
+          analysisData={memoizedAnalysisData}
+        />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-8">
+            <RecentAnalysisSection 
+              analysisData={memoizedAnalysisData}
+              isLoading={loadingStates.analyses}
+              error={errorStates.analyses}
+              onRetry={refreshAnalyses}
+            />
+            <InsightsSection 
+              insightsData={memoizedInsightsData}
+              isLoading={loadingStates.insights}
+              error={errorStates.insights}
+              onRetry={refreshInsights}
+            />
+            <PatternAnalysisSection />
+          </div>
           
-          {/* Main grid layout with improved gaps */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content - Enhanced spacing */}
-            <div className="lg:col-span-2 space-y-8">
-              <RecentAnalysisSection 
-                analysisData={memoizedAnalysisData}
-                isLoading={loadingStates.analyses}
-                error={errorStates.analyses}
-                onRetry={refreshAnalyses}
-              />
-              <InsightsSection 
-                insightsData={memoizedInsightsData}
-                isLoading={loadingStates.insights}
-                error={errorStates.insights}
-                onRetry={refreshInsights}
-              />
-              <PatternAnalysisSection />
-            </div>
-            
-            {/* Sidebar - Enhanced spacing */}
-            <div className="space-y-8">
-              <MyPromptsSection 
-                promptsData={memoizedPromptsData}
-                isLoading={loadingStates.prompts}
-                error={errorStates.prompts}
-                onRetry={refreshPrompts}
-              />
-              <NotesSection 
-                notesData={memoizedNotesData}
-                isLoading={loadingStates.notes}
-                error={errorStates.notes}
-                onRetry={refreshNotes}
-              />
-            </div>
+          {/* Sidebar */}
+          <div className="space-y-8">
+            <MyPromptsSection 
+              promptsData={memoizedPromptsData}
+              isLoading={loadingStates.prompts}
+              error={errorStates.prompts}
+              onRetry={refreshPrompts}
+            />
+            <NotesSection 
+              notesData={memoizedNotesData}
+              isLoading={loadingStates.notes}
+              error={errorStates.notes}
+              onRetry={refreshNotes}
+            />
           </div>
         </div>
         
         {/* Performance Debug Info (only in development) */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="mx-6 mb-8 p-4 bg-gray-100 rounded-lg text-xs text-gray-600">
+          <div className="mt-8 p-4 bg-gray-100 rounded-lg text-xs text-gray-600">
             <div>Render Time: {performance.metrics.renderTime.toFixed(2)}ms</div>
             <div>Processing Time: {performance.metrics.dataProcessingTime.toFixed(2)}ms</div>
             <div>Cache Hit Rate: {performance.metrics.cacheHitRate.toFixed(1)}%</div>
