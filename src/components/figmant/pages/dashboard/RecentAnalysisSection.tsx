@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,9 @@ import { Progress } from '@/components/ui/progress';
 import { Star, MoreHorizontal } from 'lucide-react';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { AnalysisData } from './types/dashboard';
-import { RecentAnalysisLoading, RecentAnalysisEmpty, RecentAnalysisError } from './components/LoadingStates';
+import { RecentAnalysisLoading } from './components/LoadingStates';
+import { RecentAnalysisEmpty } from './components/EmptyStates';
+import { RecentAnalysisError } from './components/ErrorStates';
 
 interface RecentAnalysisSectionProps {
   analysisData: AnalysisData[];

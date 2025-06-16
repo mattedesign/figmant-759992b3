@@ -3,7 +3,9 @@ import { Button } from '@/components/ui/button';
 import { TrendingUp } from 'lucide-react';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { InsightData } from './types/dashboard';
-import { InsightsSectionLoading, InsightsSectionEmpty, InsightsSectionError } from './components/LoadingStates';
+import { InsightsSectionLoading } from './components/LoadingStates';
+import { InsightsSectionEmpty } from './components/EmptyStates';
+import { InsightsSectionError } from './components/ErrorStates';
 
 interface InsightsSectionProps {
   insightsData: InsightData[];

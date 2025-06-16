@@ -1,8 +1,9 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { NoteData } from './types/dashboard';
-import { NotesSectionLoading, NotesEmpty, NotesError } from './components/LoadingStates';
+import { NotesSectionLoading } from './components/LoadingStates';
+import { NotesEmpty } from './components/EmptyStates';
+import { NotesError } from './components/ErrorStates';
 
 interface NotesSectionProps {
   notesData: NoteData[];

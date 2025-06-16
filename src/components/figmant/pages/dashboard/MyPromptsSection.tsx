@@ -1,8 +1,9 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { PromptData } from './types/dashboard';
-import { MyPromptsSectionLoading, MyPromptsEmpty, MyPromptsError } from './components/LoadingStates';
+import { MyPromptsSectionLoading } from './components/LoadingStates';
+import { MyPromptsEmpty } from './components/EmptyStates';
+import { MyPromptsError } from './components/ErrorStates';
 
 interface MyPromptsSectionProps {
   promptsData: PromptData[];
