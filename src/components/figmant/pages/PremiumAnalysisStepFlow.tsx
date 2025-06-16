@@ -16,7 +16,10 @@ import {
   Globe,
   ChevronLeft,
   Plus,
-  X
+  X,
+  Upload,
+  Link,
+  Check
 } from 'lucide-react';
 
 interface StepData {
@@ -31,6 +34,8 @@ interface StepData {
     name: string;
     title: string;
   }>;
+  referenceLinks: string[];
+  customPrompt: string;
 }
 
 export const PremiumAnalysisStepFlow: React.FC = () => {
@@ -43,10 +48,12 @@ export const PremiumAnalysisStepFlow: React.FC = () => {
     improvementMetric: '5,000',
     deadline: '',
     date: '',
-    stakeholders: []
+    stakeholders: [],
+    referenceLinks: [''],
+    customPrompt: ''
   });
 
-  const totalSteps = 6;
+  const totalSteps = 7;
   const progress = (currentStep / totalSteps) * 100;
 
   const analysisTypes = [
@@ -86,6 +93,19 @@ export const PremiumAnalysisStepFlow: React.FC = () => {
     const newStakeholders = [...stepData.stakeholders];
     newStakeholders[index][field] = value;
     setStepData({ ...stepData, stakeholders: newStakeholders });
+  };
+
+  const handleReferenceLinkAdd = () => {
+    setStepData({
+      ...stepData,
+      referenceLinks: [...stepData.referenceLinks, '']
+    });
+  };
+
+  const handleReferenceLinkChange = (index: number, value: string) => {
+    const newLinks = [...stepData.referenceLinks];
+    newLinks[index] = value;
+    setStepData({ ...stepData, referenceLinks: newLinks });
   };
 
   const renderStepContent = () => {
@@ -284,6 +304,125 @@ export const PremiumAnalysisStepFlow: React.FC = () => {
           </div>
         );
 
+      case 5:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-4">Upload or share some links</h2>
+              <Badge variant="outline" className="text-blue-600 border-blue-200">
+                {currentStep} / {totalSteps}
+              </Badge>
+            </div>
+
+            <div className="max-w-2xl mx-auto space-y-6">
+              {/* File Upload Section */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
+                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-2">Drag and drop images, or <span className="text-blue-600 font-medium cursor-pointer">Browse</span></p>
+              </div>
+
+              {/* Reference Links Section */}
+              <div className="space-y-4">
+                <Label className="text-base font-medium">Reference link</Label>
+                {stepData.referenceLinks.map((link, index) => (
+                  <div key={index} className="space-y-2">
+                    <Input
+                      placeholder="Enter your URL"
+                      value={link}
+                      onChange={(e) => handleReferenceLinkChange(index, e.target.value)}
+                    />
+                  </div>
+                ))}
+                <Button 
+                  variant="outline" 
+                  onClick={handleReferenceLinkAdd}
+                  className="mt-2"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add link
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-4">Prompts us...</h2>
+              <Badge variant="outline" className="text-blue-600 border-blue-200">
+                {currentStep} / {totalSteps}
+              </Badge>
+            </div>
+
+            <div className="max-w-2xl mx-auto space-y-6">
+              <div>
+                <Label htmlFor="customPrompt" className="text-base font-medium">
+                  Add Your Custom Prompt
+                </Label>
+                <Textarea
+                  id="customPrompt"
+                  placeholder="e.g. Create a user-friendly mobile app to help people track their daily water intake"
+                  value={stepData.customPrompt}
+                  onChange={(e) => setStepData({ ...stepData, customPrompt: e.target.value })}
+                  className="mt-2 min-h-[200px]"
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Another
+                </Button>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Use Template
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 7:
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-4xl font-bold mb-6 text-gray-900">Your analysis is processing</h2>
+              
+              <div className="flex justify-center mb-8">
+                <div className="bg-white rounded-full px-6 py-3 shadow-lg flex items-center gap-3">
+                  <Check className="h-5 w-5 text-green-500" />
+                  <span className="text-gray-700 font-medium">Generating</span>
+                </div>
+              </div>
+
+              <div className="max-w-md mx-auto space-y-4">
+                <Card className="p-4 border border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <div className="flex-1 text-left">
+                      <div className="font-medium text-gray-900">My analysis</div>
+                      <div className="text-sm text-gray-600">Dashboard Design</div>
+                      <div className="text-xs text-gray-500">Comprehensive UX Analysis</div>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="p-4 border border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <div className="flex-1 text-left">
+                      <div className="font-medium text-gray-900">Premium</div>
+                      <div className="text-sm text-gray-600">Web app</div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </div>
+        );
+
       default:
         return (
           <div className="text-center py-12">
@@ -308,25 +447,27 @@ export const PremiumAnalysisStepFlow: React.FC = () => {
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 1}
-            className="flex items-center gap-2"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
+        {currentStep < 7 && (
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 1}
+              className="flex items-center gap-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
 
-          <Button
-            onClick={handleNext}
-            disabled={currentStep === totalSteps}
-            className="bg-gray-900 hover:bg-gray-800 text-white"
-          >
-            Continue
-          </Button>
-        </div>
+            <Button
+              onClick={handleNext}
+              disabled={currentStep === totalSteps}
+              className="bg-gray-900 hover:bg-gray-800 text-white"
+            >
+              Continue
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
