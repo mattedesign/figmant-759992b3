@@ -58,8 +58,9 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     onAnalysisComplete
   });
 
-  const handleFileUpload = (files: File[]) => {
-    const newAttachments = files.map(file => ({
+  const handleFileUpload = (files: FileList) => {
+    const fileArray = Array.from(files);
+    const newAttachments = fileArray.map(file => ({
       id: crypto.randomUUID(),
       type: 'file' as const,
       name: file.name,
@@ -110,8 +111,9 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         {/* URL Input */}
         {showUrlInput && (
           <URLInputSection
+            showUrlInput={showUrlInput}
             urlInput={urlInput}
-            setUrlInput={setUrlInput}
+            onUrlInputChange={setUrlInput}
             onAddUrl={handleAddUrl}
             onCancel={() => setShowUrlInput(false)}
           />
