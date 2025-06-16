@@ -1,9 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { 
   LayoutDashboard, 
   BarChart3, 
@@ -12,7 +20,11 @@ import {
   Search,
   Crown,
   CreditCard,
-  HelpCircle
+  HelpCircle,
+  Sparkles,
+  LogOut,
+  User,
+  ChevronDown
 } from 'lucide-react';
 
 interface FigmantSidebarProps {
@@ -32,6 +44,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
       items: [
         { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { id: 'analysis', icon: BarChart3, label: 'Analysis' },
+        { id: 'premium-analysis', icon: Sparkles, label: 'Premium Analysis' },
         { id: 'templates', icon: FileText, label: 'Templates' },
         { id: 'preferences', icon: Settings, label: 'Preferences' },
       ]
@@ -43,6 +56,18 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
     'Analysis of something',
     'Analysis of something'
   ];
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const handleBuyCredits = () => {
+    onSectionChange('credits');
+  };
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
@@ -87,7 +112,12 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
         <div className="px-4 pb-4">
           <Button
             variant="ghost"
-            className="w-full justify-start h-8 px-2 text-sm text-gray-600 hover:bg-gray-50"
+            onClick={() => onSectionChange('search')}
+            className={`w-full justify-start h-8 px-2 text-sm ${
+              activeSection === 'search'
+                ? 'bg-gray-100 text-gray-900'
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
           >
             <Search className="h-4 w-4 mr-2" />
             Search
@@ -105,12 +135,17 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
               <div
                 key={index}
                 className="text-sm text-gray-600 py-1 px-2 hover:bg-gray-50 rounded cursor-pointer"
+                onClick={() => onSectionChange('analysis')}
               >
                 {analysis}
               </div>
             ))}
           </div>
-          <Button variant="ghost" className="w-full justify-start h-6 px-2 text-xs text-gray-500 mt-2">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start h-6 px-2 text-xs text-gray-500 mt-2"
+            onClick={() => onSectionChange('analysis')}
+          >
             See all
           </Button>
         </div>
@@ -122,7 +157,12 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
         <div className="p-4 space-y-3">
           <Button
             variant="ghost"
-            className="w-full justify-start h-8 px-2 text-sm text-gray-600 hover:bg-gray-50"
+            onClick={() => onSectionChange('premium-analysis')}
+            className={`w-full justify-start h-8 px-2 text-sm ${
+              activeSection === 'premium-analysis'
+                ? 'bg-gray-100 text-gray-900'
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
           >
             <Crown className="h-4 w-4 mr-2" />
             Premium
@@ -135,7 +175,11 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
               <span className="text-sm text-gray-600">50/110</span>
             </div>
             <Progress value={45} className="h-2" />
-            <Button size="sm" className="w-full bg-blue-500 hover:bg-blue-600 text-white">
+            <Button 
+              size="sm" 
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+              onClick={handleBuyCredits}
+            >
               Buy More
             </Button>
           </div>
@@ -143,17 +187,45 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
 
         {/* User Profile */}
         <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center gap-3">
-            <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-orange-500 text-white text-sm">
-                {user?.email?.charAt(0).toUpperCase() || 'R'}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900">Ronald Richards</div>
-              <div className="text-xs text-gray-500 truncate">ronaldrichards@gmail.com</div>
-            </div>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="w-full p-0 h-auto">
+                <div className="flex items-center gap-3 w-full">
+                  <Avatar className="w-8 h-8">
+                    <AvatarFallback className="bg-orange-500 text-white text-sm">
+                      {user?.email?.charAt(0).toUpperCase() || 'R'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0 text-left">
+                    <div className="text-sm font-medium text-gray-900">Ronald Richards</div>
+                    <div className="text-xs text-gray-500 truncate">ronaldrichards@gmail.com</div>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => onSectionChange('preferences')}>
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onSectionChange('preferences')}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleBuyCredits}>
+                <CreditCard className="mr-2 h-4 w-4" />
+                <span>Billing</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>

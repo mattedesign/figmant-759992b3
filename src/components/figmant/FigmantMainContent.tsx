@@ -1,12 +1,16 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Mic, MoreHorizontal } from 'lucide-react';
 import { AnalysisDetailView } from '@/components/design/analysis/AnalysisDetailView';
-import Dashboard from '@/pages/Dashboard';
 import { ChatContainer } from '@/components/design/chat/ChatContainer';
 import { useDesignChatLogic } from '@/components/design/chat/hooks/useDesignChatLogic';
+import { DesignChatInterface } from '@/components/design/DesignChatInterface';
+import { DashboardPage } from './pages/DashboardPage';
+import { CreditsPage } from './pages/CreditsPage';
+import { PremiumAnalysisPage } from './pages/PremiumAnalysisPage';
 
 interface FigmantMainContentProps {
   activeSection: string;
@@ -22,9 +26,6 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   onRightSidebarModeChange
 }) => {
   const [activeTab, setActiveTab] = useState('chat');
-
-  // Initialize chat logic for the analysis section
-  const chatLogic = useDesignChatLogic();
 
   const renderAnalysisContent = () => {
     if (selectedAnalysis) {
@@ -65,45 +66,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsContent value="chat" className="flex-1 flex flex-col m-0">
               <div className="flex-1 overflow-hidden">
-                <ChatContainer
-                  messages={chatLogic.messages}
-                  attachments={chatLogic.attachments}
-                  message={chatLogic.message}
-                  urlInput={chatLogic.urlInput}
-                  showUrlInput={chatLogic.showUrlInput}
-                  storageStatus={chatLogic.storageStatus}
-                  storageErrorDetails={chatLogic.storageErrorDetails}
-                  showDebugPanel={chatLogic.showDebugPanel}
-                  showProcessingMonitor={chatLogic.showProcessingMonitor}
-                  lastAnalysisResult={chatLogic.lastAnalysisResult}
-                  pendingImageProcessing={chatLogic.pendingImageProcessing}
-                  jobs={chatLogic.jobs}
-                  systemHealth={chatLogic.systemHealth}
-                  onMessageChange={chatLogic.setMessage}
-                  onSendMessage={chatLogic.handleSendMessageWrapper}
-                  onToggleUrlInput={chatLogic.onToggleUrlInput}
-                  onUrlInputChange={chatLogic.onUrlInputChange}
-                  onAddUrl={chatLogic.handleAddUrl}
-                  onCancelUrl={chatLogic.onCancelUrl}
-                  onRemoveAttachment={chatLogic.removeAttachment}
-                  onRetryAttachment={chatLogic.retryAttachment}
-                  onClearAllAttachments={chatLogic.clearAllAttachments}
-                  onImageProcessed={chatLogic.onImageProcessed}
-                  onImageProcessingError={chatLogic.onImageProcessingError}
-                  onToggleDebugPanel={() => chatLogic.setShowDebugPanel(!chatLogic.showDebugPanel)}
-                  onToggleProcessingMonitor={() => chatLogic.setShowProcessingMonitor(!chatLogic.showProcessingMonitor)}
-                  onStorageStatusChange={chatLogic.setStorageStatus}
-                  getRootProps={chatLogic.getRootProps}
-                  getInputProps={chatLogic.getInputProps}
-                  isDragActive={chatLogic.isDragActive}
-                  isLoading={chatLogic.isLoading}
-                  canSendMessage={chatLogic.canSendMessage}
-                  pauseJob={chatLogic.pauseJob}
-                  resumeJob={chatLogic.resumeJob}
-                  cancelJob={chatLogic.cancelJob}
-                  loadingState={chatLogic.loadingState}
-                  getStageMessage={chatLogic.getStageMessage}
-                />
+                <DesignChatInterface />
               </div>
             </TabsContent>
 
@@ -143,15 +106,17 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
 
   const renderContent = () => {
     switch (activeSection) {
+      case 'dashboard':
+        return <DashboardPage />;
+
       case 'analysis':
         return renderAnalysisContent();
 
-      case 'dashboard':
-        return (
-          <div className="p-6">
-            <Dashboard />
-          </div>
-        );
+      case 'premium-analysis':
+        return <PremiumAnalysisPage />;
+
+      case 'credits':
+        return <CreditsPage />;
 
       case 'templates':
         return (
@@ -186,6 +151,23 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
                   <h3 className="font-semibold mb-2">Account Settings</h3>
                   <p className="text-sm text-gray-600">
                     Manage your account details and subscription.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'search':
+        return (
+          <div className="p-6">
+            <div className="max-w-2xl">
+              <h1 className="text-2xl font-bold mb-6">Search</h1>
+              <div className="space-y-6">
+                <div className="p-4 border border-gray-200 rounded-lg">
+                  <h3 className="font-semibold mb-2">Search Functionality</h3>
+                  <p className="text-sm text-gray-600">
+                    Search through your analyses, chats, and results. Coming soon with faceted search capabilities.
                   </p>
                 </div>
               </div>
