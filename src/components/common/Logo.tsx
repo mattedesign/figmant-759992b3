@@ -11,11 +11,11 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   const [imageStatus, setImageStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
   const { logoConfig, isLoading } = usePublicLogoConfig();
 
-  // Optimized size classes for the logo
+  // Optimized size classes for the logo - updated to make default size 32px
   const sizeClasses = {
-    sm: 'h-8 w-auto max-w-[120px]',
-    md: 'h-10 w-auto max-w-[150px]', 
-    lg: 'h-16 w-auto max-w-[200px]'
+    sm: 'h-6 w-auto max-w-[100px]',
+    md: 'h-8 w-auto max-w-[120px]', 
+    lg: 'h-12 w-auto max-w-[150px]'
   };
 
   useEffect(() => {
