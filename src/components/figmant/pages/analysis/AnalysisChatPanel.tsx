@@ -122,11 +122,11 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         {/* Message Input */}
         <MessageInputSection
           message={message}
-          setMessage={setMessage}
-          onSend={handleSendMessage}
+          onMessageChange={setMessage}
+          onSendMessage={handleSendMessage}
+          onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
           onKeyPress={handleKeyPress}
           onFileUpload={handleFileUpload}
-          onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
           canSend={canSend}
           isAnalyzing={isAnalyzing}
         />
