@@ -8,6 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useFigmantPromptTemplates, useBestFigmantPrompt } from '@/hooks/useFigmantChatAnalysis';
 import { AnalysisChatPanel } from './analysis/AnalysisChatPanel';
 import { PromptTemplateSelector } from './analysis/PromptTemplateSelector';
+import { AnalysisListSidebar } from './analysis/AnalysisListSidebar';
 import { useChatState } from './analysis/ChatStateManager';
 
 interface AnalysisPageProps {
@@ -36,6 +37,7 @@ export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) 
   const { data: bestPrompt } = useBestFigmantPrompt(selectedPromptCategory);
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const [showTemplateDetails, setShowTemplateDetails] = useState(false);
+  const [selectedAnalysis, setSelectedAnalysis] = useState<any>(null);
   const isMobile = useIsMobile();
 
   // Handle template from navigation
@@ -66,6 +68,11 @@ export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) 
   const clearTemplateSelection = () => {
     setSelectedPromptCategory('');
     setSelectedPromptTemplate('');
+  };
+
+  const handleAnalysisSelect = (analysis: any) => {
+    setSelectedAnalysis(analysis);
+    // You could also load the analysis content into the chat here
   };
 
   const currentTemplate = promptTemplates?.find(t => t.id === selectedPromptTemplate);
@@ -178,90 +185,99 @@ export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) 
     );
   }
 
-  // Desktop layout
+  // Desktop layout with sidebar
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex-shrink-0 p-6 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold">Design Analysis</h1>
-            <p className="text-muted-foreground">
-              Analyze your designs with AI-powered insights
-            </p>
+    <div className="h-full flex overflow-hidden">
+      {/* Analysis History Sidebar */}
+      <AnalysisListSidebar
+        selectedAnalysis={selectedAnalysis}
+        onAnalysisSelect={handleAnalysisSelect}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-shrink-0 p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold">Design Analysis</h1>
+              <p className="text-muted-foreground">
+                Analyze your designs with AI-powered insights
+              </p>
+            </div>
+          </div>
+
+          {/* Template Selection Section */}
+          <div className="space-y-4">
+            <PromptTemplateSelector
+              promptTemplates={promptTemplates}
+              promptsLoading={promptsLoading}
+              selectedPromptCategory={selectedPromptCategory}
+              selectedPromptTemplate={selectedPromptTemplate}
+              onPromptCategoryChange={setSelectedPromptCategory}
+              onPromptTemplateChange={setSelectedPromptTemplate}
+              bestPrompt={bestPrompt}
+            />
+
+            {/* Selected Template Display */}
+            {currentTemplate && (
+              <Card className="border-primary/20 bg-primary/5">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                      Active Template: {currentTemplate.title}
+                    </CardTitle>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={clearTemplateSelection}
+                      className="h-8 w-8 p-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {currentTemplate.description && (
+                    <CardDescription>
+                      {currentTemplate.description}
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex items-center gap-2">
+                    <Badge className={getCategoryColor(currentTemplate.category)}>
+                      {currentTemplate.category.replace('_', ' ')}
+                    </Badge>
+                    {currentTemplate.effectiveness_rating && (
+                      <Badge variant="secondary">
+                        Rating: {currentTemplate.effectiveness_rating}/10
+                      </Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
-        {/* Template Selection Section */}
-        <div className="space-y-4">
-          <PromptTemplateSelector
-            promptTemplates={promptTemplates}
-            promptsLoading={promptsLoading}
+        {/* Chat Interface */}
+        <div className="flex-1 overflow-hidden">
+          <AnalysisChatPanel
+            message={message}
+            setMessage={setMessage}
+            messages={messages}
+            setMessages={setMessages}
+            attachments={attachments}
+            setAttachments={setAttachments}
+            urlInput={urlInput}
+            setUrlInput={setUrlInput}
+            showUrlInput={showUrlInput}
+            setShowUrlInput={setShowUrlInput}
+            selectedPromptTemplate={currentTemplate}
             selectedPromptCategory={selectedPromptCategory}
-            selectedPromptTemplate={selectedPromptTemplate}
-            onPromptCategoryChange={setSelectedPromptCategory}
-            onPromptTemplateChange={setSelectedPromptTemplate}
-            bestPrompt={bestPrompt}
+            promptTemplates={promptTemplates}
+            onAnalysisComplete={handleAnalysisComplete}
           />
-
-          {/* Selected Template Display */}
-          {currentTemplate && (
-            <Card className="border-primary/20 bg-primary/5">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    Active Template: {currentTemplate.title}
-                  </CardTitle>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={clearTemplateSelection}
-                    className="h-8 w-8 p-0"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-                {currentTemplate.description && (
-                  <CardDescription>
-                    {currentTemplate.description}
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex items-center gap-2">
-                  <Badge className={getCategoryColor(currentTemplate.category)}>
-                    {currentTemplate.category.replace('_', ' ')}
-                  </Badge>
-                  {currentTemplate.effectiveness_rating && (
-                    <Badge variant="secondary">
-                      Rating: {currentTemplate.effectiveness_rating}/10
-                    </Badge>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
-      </div>
-
-      {/* Chat Interface */}
-      <div className="flex-1 overflow-hidden">
-        <AnalysisChatPanel
-          message={message}
-          setMessage={setMessage}
-          messages={messages}
-          setMessages={setMessages}
-          attachments={attachments}
-          setAttachments={setAttachments}
-          urlInput={urlInput}
-          setUrlInput={setUrlInput}
-          showUrlInput={showUrlInput}
-          setShowUrlInput={setShowUrlInput}
-          selectedPromptTemplate={currentTemplate}
-          selectedPromptCategory={selectedPromptCategory}
-          promptTemplates={promptTemplates}
-          onAnalysisComplete={handleAnalysisComplete}
-        />
       </div>
     </div>
   );
