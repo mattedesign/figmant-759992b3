@@ -13,10 +13,13 @@ import {
   ArrowRight,
   Zap,
   Target,
-  Award
+  Award,
+  Activity
 } from 'lucide-react';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { useDesignUploads } from '@/hooks/useDesignUploads';
+import { LiveActivityFeed } from '../activity/LiveActivityFeed';
+import { RealTimeStatusIndicator } from '../status/RealTimeStatusIndicator';
 
 export const DashboardPage: React.FC = () => {
   const { data: analyses = [] } = useDesignAnalyses();
@@ -94,6 +97,11 @@ export const DashboardPage: React.FC = () => {
           </p>
         </div>
 
+        {/* Real-time Status Banner */}
+        <div className="mb-6">
+          <RealTimeStatusIndicator className="w-full" />
+        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat) => (
@@ -145,53 +153,10 @@ export const DashboardPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
+        {/* Recent Activity and Performance */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Analyses */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Recent Analyses</CardTitle>
-                <CardDescription>Your latest design evaluations</CardDescription>
-              </div>
-              <Button variant="ghost" size="sm">
-                View All
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentAnalyses.length > 0 ? (
-                  recentAnalyses.map((analysis) => (
-                    <div key={analysis.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
-                          <FileText className="h-4 w-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">
-                            {analysis.analysis_type} Analysis
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(analysis.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant="outline">
-                        {Math.round((analysis.confidence_score || 0) * 100)}%
-                      </Badge>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">No analyses yet</p>
-                    <p className="text-sm text-gray-400">Start your first analysis to see it here</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Live Activity Feed */}
+          <LiveActivityFeed className="h-fit" />
 
           {/* Performance Overview */}
           <Card>
@@ -235,7 +200,53 @@ export const DashboardPage: React.FC = () => {
           </Card>
         </div>
 
-        {/* Insights & Tips */}
+        {/* Recent Analyses */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Recent Analyses</CardTitle>
+              <CardDescription>Your latest design evaluations</CardDescription>
+            </div>
+            <Button variant="ghost" size="sm">
+              View All
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentAnalyses.length > 0 ? (
+                recentAnalyses.map((analysis) => (
+                  <div key={analysis.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                        <FileText className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">
+                          {analysis.analysis_type} Analysis
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(analysis.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="outline">
+                      {Math.round((analysis.confidence_score || 0) * 100)}%
+                    </Badge>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">No analyses yet</p>
+                  <p className="text-sm text-gray-400">Start your first analysis to see it here</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* AI Insights & Tips */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
