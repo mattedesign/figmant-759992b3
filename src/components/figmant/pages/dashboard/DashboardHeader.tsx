@@ -1,23 +1,24 @@
+
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, TrendingUp, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
+
 interface DashboardHeaderProps {
   dataStats: any;
   lastUpdated?: Date | null;
   onRefresh?: () => void;
   isRefreshing?: boolean;
 }
+
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   dataStats,
   lastUpdated,
   onRefresh,
   isRefreshing = false
 }) => {
-  const {
-    profile
-  } = useAuth();
+  const { profile } = useAuth();
   const currentDate = new Date();
   const formattedDate = format(currentDate, 'EEEE, MMMM d');
 
@@ -36,30 +37,41 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     }
     return 'there';
   };
-  return <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-[12px]">
+
+  return (
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 px-6 py-8 border-b border-gray-100">
       <div>
-        <div className="text-sm text-gray-500 mb-1">{formattedDate}</div>
-        <h1 className="text-3xl text-gray-900">
-          <span className="font-normal">{getGreeting()}</span>, <span className="font-bold">{getFirstName()}</span>
+        <div className="text-sm font-medium text-gray-500 mb-2">{formattedDate}</div>
+        <h1 className="text-4xl font-bold text-gray-900 mb-3">
+          <span className="font-light">{getGreeting()}</span>, <span className="font-bold">{getFirstName()}</span>
         </h1>
-        {lastUpdated && <Badge variant="outline" className="flex items-center gap-1 mt-2">
+        {lastUpdated && (
+          <Badge variant="outline" className="flex items-center gap-2 bg-green-50 border-green-200 text-green-700">
             <Calendar className="h-3 w-3" />
             Updated {format(lastUpdated, 'MMM dd, HH:mm')}
-          </Badge>}
+          </Badge>
+        )}
       </div>
       
-      <div className="flex items-center gap-3">
-        {/* Quick stats */}
-        <div className="hidden md:flex items-center gap-4 text-sm text-gray-600">
-          <div className="flex items-center gap-1">
-            <BarChart3 className="h-4 w-4" />
-            <span>{dataStats.totalAnalyses} analyses</span>
+      <div className="flex items-center gap-6">
+        {/* Enhanced quick stats */}
+        <div className="hidden lg:flex items-center gap-8 text-sm">
+          <div className="flex items-center gap-3 bg-blue-50 px-4 py-2 rounded-lg">
+            <BarChart3 className="h-5 w-5 text-blue-600" />
+            <div>
+              <div className="font-semibold text-blue-900">{dataStats.totalAnalyses}</div>
+              <div className="text-blue-600">Total analyses</div>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <TrendingUp className="h-4 w-4" />
-            <span>{dataStats.completionRate}% complete</span>
+          <div className="flex items-center gap-3 bg-emerald-50 px-4 py-2 rounded-lg">
+            <TrendingUp className="h-5 w-5 text-emerald-600" />
+            <div>
+              <div className="font-semibold text-emerald-900">{dataStats.completionRate}%</div>
+              <div className="text-emerald-600">Success rate</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
