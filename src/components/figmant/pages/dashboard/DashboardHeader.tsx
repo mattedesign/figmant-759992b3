@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
-
 export const DashboardHeader: React.FC = () => {
-  const { profile } = useAuth();
+  const {
+    profile
+  } = useAuth();
 
   // Get current date and time
   const now = new Date();
@@ -25,16 +25,18 @@ export const DashboardHeader: React.FC = () => {
     }
     return 'there'; // fallback if no name available
   };
-
-  return (
-    <div className="flex-none px-16 py-6 pb-4" style={{ backgroundColor: 'transparent' }}>
+  return <div style={{
+    backgroundColor: 'transparent'
+  }} className="flex-none py-6 pb-4 px-[32px]">
       <div className="mb-4">
         <div className="text-sm text-gray-500 mb-1">{currentDate}</div>
         <h1 className="text-2xl text-gray-900">
-          <span style={{ fontWeight: 'normal', color: '#455468' }}>{getGreeting()} </span>
+          <span style={{
+          fontWeight: 'normal',
+          color: '#455468'
+        }}>{getGreeting()} </span>
           <span className="font-semibold">{getFirstName()}</span>
         </h1>
       </div>
-    </div>
-  );
+    </div>;
 };
