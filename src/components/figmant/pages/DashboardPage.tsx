@@ -6,6 +6,7 @@ import { InsightsSection } from './dashboard/InsightsSection';
 import { PatternAnalysisSection } from './dashboard/PatternAnalysisSection';
 import { MyPromptsSection } from './dashboard/MyPromptsSection';
 import { NotesSection } from './dashboard/NotesSection';
+import { DashboardAnalyticsSection } from './dashboard/DashboardAnalyticsSection';
 import { InteractiveDashboardActions } from './dashboard/components/InteractiveDashboardActions';
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
@@ -92,6 +93,12 @@ export const DashboardPage: React.FC = () => {
           onSearch={handleSearch}
           isLoading={isRefreshing}
           dataCount={memoizedAnalysisData.length}
+        />
+
+        {/* Advanced Analytics Section */}
+        <DashboardAnalyticsSection
+          dataStats={memoizedDataStats}
+          analysisData={memoizedAnalysisData}
         />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

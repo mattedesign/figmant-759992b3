@@ -1,16 +1,12 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, BarChart3, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { RefreshCw, Calendar, TrendingUp, BarChart3 } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface DashboardHeaderProps {
-  dataStats?: {
-    totalAnalyses: number;
-    completedAnalyses: number;
-    pendingAnalyses: number;
-    totalPrompts: number;
-    totalNotes: number;
-  };
+  dataStats: any;
   lastUpdated?: Date | null;
   onRefresh?: () => void;
   isRefreshing?: boolean;
@@ -22,59 +18,46 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   onRefresh,
   isRefreshing = false
 }) => {
-  const formatLastUpdated = (date: Date | null) => {
-    if (!date) return 'Never updated';
-    const now = new Date();
-    const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
-    if (diffMinutes < 1) return 'Just updated';
-    if (diffMinutes < 60) return `Updated ${diffMinutes}m ago`;
-    
-    const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) return `Updated ${diffHours}h ago`;
-    
-    return `Updated ${date.toLocaleDateString()}`;
-  };
-
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900 mb-2">Dashboard</h1>
-        {dataStats && (
-          <div className="flex items-center gap-4 text-sm text-gray-500">
-            <div className="flex items-center gap-1">
-              <BarChart3 className="h-4 w-4" />
-              <span>{dataStats.totalAnalyses} analyses</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              <span>{formatLastUpdated(lastUpdated)}</span>
-            </div>
-          </div>
-        )}
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <div className="flex items-center gap-4 mt-2">
+          <p className="text-gray-600">
+            Welcome back! Here's what's happening with your analyses.
+          </p>
+          {lastUpdated && (
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              Updated {format(lastUpdated, 'MMM dd, HH:mm')}
+            </Badge>
+          )}
+        </div>
       </div>
       
       <div className="flex items-center gap-3">
-        {dataStats && (
-          <div className="hidden sm:flex items-center gap-4 text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-lg">
-            <span className="text-green-600 font-medium">{dataStats.completedAnalyses} completed</span>
-            <span className="text-orange-600 font-medium">{dataStats.pendingAnalyses} pending</span>
-            <span className="text-blue-600 font-medium">{dataStats.totalPrompts} prompts</span>
+        {/* Quick stats */}
+        <div className="hidden md:flex items-center gap-4 text-sm text-gray-600">
+          <div className="flex items-center gap-1">
+            <BarChart3 className="h-4 w-4" />
+            <span>{dataStats.totalAnalyses} analyses</span>
           </div>
-        )}
+          <div className="flex items-center gap-1">
+            <TrendingUp className="h-4 w-4" />
+            <span>{dataStats.completionRate}% complete</span>
+          </div>
+        </div>
         
-        {onRefresh && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRefresh}
-            disabled={isRefreshing}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRefresh}
+          disabled={isRefreshing}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+        </Button>
       </div>
     </div>
   );
