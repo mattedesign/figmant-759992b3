@@ -30,6 +30,9 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
   const isTablet = useIsTablet();
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisData | null>(null);
 
+  // Limit to maximum of 4 items
+  const limitedAnalysisData = analysisData.slice(0, 4);
+
   const handleViewAnalysis = (analysis: AnalysisData) => {
     // Open the analysis detail drawer instead of navigating
     setSelectedAnalysis(analysis);
@@ -86,9 +89,9 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
         )}
         
         {/* Data State */}
-        {!isLoading && !error && analysisData.length > 0 && (
+        {!isLoading && !error && limitedAnalysisData.length > 0 && (
           <div className={`grid gap-4 mb-8 ${getGridColumns()}`}>
-            {analysisData.map((analysis) => (
+            {limitedAnalysisData.map((analysis) => (
               <Card 
                 key={analysis.id} 
                 className="border-0 cursor-pointer hover:shadow-md transition-shadow"
