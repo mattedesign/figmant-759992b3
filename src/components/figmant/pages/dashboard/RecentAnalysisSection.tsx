@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Star, MoreHorizontal, ExternalLink } from 'lucide-react';
+import { Star, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { AnalysisData } from './types/dashboard';
@@ -118,9 +118,6 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
                         }}
                       >
                         <ExternalLink className={`h-4 w-4 ${isTablet ? 'h-3 w-3' : ''}`} />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className={`h-4 w-4 ${isTablet ? 'h-3 w-3' : ''}`} />
                       </Button>
                     </div>
                   </div>
