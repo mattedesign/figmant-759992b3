@@ -20,10 +20,17 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
   console.log('🔑 User permissions - isOwner:', isOwner);
   
   const handleEditClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    console.log('🖱️ Edit button CLICKED! Event details:', {
+      type: e.type,
+      target: e.target,
+      currentTarget: e.currentTarget,
+      bubbles: e.bubbles,
+      defaultPrevented: e.defaultPrevented
+    });
+    
     e.preventDefault();
     e.stopPropagation();
     
-    console.log('🖱️ Edit button clicked for prompt:', prompt.id);
     console.log('🔐 Checking permissions - isOwner:', isOwner);
     
     if (!isOwner) {
@@ -46,10 +53,14 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
   };
 
   const handleCopyClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    console.log('📋 Copy button CLICKED! Event details:', {
+      type: e.type,
+      target: e.target,
+      currentTarget: e.currentTarget
+    });
+    
     e.preventDefault();
     e.stopPropagation();
-    
-    console.log('📋 Copy button clicked for prompt:', prompt.id);
     
     try {
       if (!navigator.clipboard) {
@@ -100,11 +111,19 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
     }
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    console.log('🃏 Card clicked:', e.target);
+    // Don't prevent default here - let button clicks through
+  };
+
   return (
-    <div className="border rounded p-3 space-y-2">
+    <div 
+      className="border rounded p-3 space-y-2 cursor-default" 
+      onClick={handleCardClick}
+    >
       <div className="flex items-center justify-between">
         <h4 className="font-medium">{prompt.title}</h4>
-        <div className="flex items-center space-x-2 relative z-10">
+        <div className="flex items-center space-x-2 ml-4">
           {prompt.effectiveness_rating && (
             <Badge variant="outline">
               ⭐ {prompt.effectiveness_rating}/5
@@ -115,24 +134,22 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
           )}
           <Button 
             size="sm" 
-            variant="ghost" 
+            variant="outline" 
             onClick={handleCopyClick}
-            className="hover:bg-gray-100 border border-gray-200 relative z-20"
+            className="shrink-0"
             type="button"
             title="Copy prompt"
-            style={{ pointerEvents: 'auto' }}
           >
             <Copy className="h-4 w-4" />
           </Button>
           {isOwner && (
             <Button 
               size="sm" 
-              variant="ghost" 
+              variant="outline" 
               onClick={handleEditClick}
-              className="hover:bg-gray-100 border border-gray-200 relative z-20"
-              type="button"
+              className="shrink-0"
+              type="button" 
               title="Edit prompt"
-              style={{ pointerEvents: 'auto' }}
             >
               <Edit2 className="h-4 w-4" />
             </Button>
