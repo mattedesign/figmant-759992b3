@@ -39,12 +39,6 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
     mainSections.push({ id: 'admin', label: 'Admin', icon: Shield });
   }
 
-  const recentAnalyses = [
-    'Analysis of something',
-    'Analysis of something', 
-    'Analysis of something'
-  ];
-
   return (
     <div className="w-64 bg-transparent border-r border-gray-200/30 flex flex-col h-full backdrop-blur-sm">
       {/* Header */}
@@ -78,28 +72,6 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
                 )}
               </Button>
             ))}
-          </div>
-        </div>
-
-        {/* Recent Section */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <div className="text-sm font-medium text-gray-500">Recent</div>
-            <Button variant="ghost" size="sm" className="h-auto p-0 text-gray-400">
-              <div className="w-4 h-4 border border-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-xs">i</span>
-              </div>
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {recentAnalyses.map((analysis, index) => (
-              <div key={index} className="text-sm text-gray-600 py-1">
-                {analysis}
-              </div>
-            ))}
-            <Button variant="ghost" className="w-full justify-center text-sm text-gray-500 mt-2">
-              See all ↓
-            </Button>
           </div>
         </div>
       </div>
