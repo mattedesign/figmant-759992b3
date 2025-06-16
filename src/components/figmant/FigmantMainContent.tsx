@@ -7,6 +7,7 @@ import { TemplatesPage } from './pages/TemplatesPage';
 import { SearchPage } from './pages/SearchPage';
 import { CreditsPage } from './pages/CreditsPage';
 import { PreferencesPage } from './pages/PreferencesPage';
+import { AdminPage } from './pages/AdminPage';
 
 interface FigmantMainContentProps {
   activeSection: string;
@@ -37,6 +38,8 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
         return <CreditsPage />;
       case 'preferences':
         return <PreferencesPage />;
+      case 'admin':
+        return <AdminPage />;
       default:
         return <DashboardPage />;
     }

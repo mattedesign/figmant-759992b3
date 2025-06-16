@@ -1,70 +1,46 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { 
   Menu,
-  LayoutDashboard,
-  FileText,
-  Star,
-  CreditCard,
-  FileSearch,
+  Home,
+  BarChart3, 
+  Star, 
+  FileText, 
   Settings,
   Search,
-  Sparkles
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MobileNavigationProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
 }
 
-const sidebarItems = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: LayoutDashboard,
-  },
-  {
-    id: 'analysis',
-    label: 'Analysis',
-    icon: FileText,
-    badge: 'New'
-  },
-  {
-    id: 'premium-analysis',
-    label: 'Premium Analysis',
-    icon: Star,
-  },
-  {
-    id: 'templates',
-    label: 'Templates',
-    icon: FileSearch,
-  },
-  {
-    id: 'search',
-    label: 'Search',
-    icon: Search,
-  },
-  {
-    id: 'credits',
-    label: 'Credits',
-    icon: CreditCard,
-  },
-  {
-    id: 'preferences',
-    label: 'Preferences',
-    icon: Settings,
-  },
-];
-
 export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   activeSection,
   onSectionChange
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { isOwner } = useAuth();
+
+  const mainSections = [
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'analysis', label: 'Analysis', icon: BarChart3 },
+    { id: 'premium-analysis', label: 'Premium Analysis', icon: Star },
+    { id: 'templates', label: 'Templates', icon: FileText },
+    { id: 'search', label: 'Search', icon: Search },
+    { id: 'preferences', label: 'Preferences', icon: Settings },
+  ];
+
+  // Add admin section for owners
+  if (isOwner) {
+    mainSections.push({ id: 'admin', label: 'Admin', icon: Shield });
+  }
 
   const handleSectionChange = (section: string) => {
     onSectionChange(section);
@@ -74,44 +50,42 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="sm" className="md:hidden">
-          <Menu className="h-5 w-5" />
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Menu className="h-4 w-4" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-80">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-white" />
+      <SheetContent side="left" className="w-64 p-0">
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="p-4 border-b border-gray-200">
+            <h1 className="text-xl font-bold text-gray-900">figmant</h1>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="space-y-1">
+              {mainSections.map((section) => (
+                <Button
+                  key={section.id}
+                  variant="ghost"
+                  className={cn(
+                    "w-full justify-start",
+                    activeSection === section.id && "bg-blue-50 text-blue-700 border-blue-200",
+                    section.id === 'admin' && "border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
+                  )}
+                  onClick={() => handleSectionChange(section.id)}
+                >
+                  <section.icon className="h-4 w-4 mr-3" />
+                  {section.label}
+                  {section.id === 'admin' && (
+                    <Badge variant="secondary" className="ml-auto bg-orange-100 text-orange-700">
+                      Owner
+                    </Badge>
+                  )}
+                </Button>
+              ))}
             </div>
-            Figmant
-          </SheetTitle>
-        </SheetHeader>
-        
-        <div className="mt-6 space-y-2">
-          {sidebarItems.map((item) => {
-            const isActive = activeSection === item.id;
-            
-            return (
-              <Button
-                key={item.id}
-                variant="ghost"
-                onClick={() => handleSectionChange(item.id)}
-                className={cn(
-                  "w-full justify-start h-12",
-                  isActive && "bg-blue-50 text-blue-700 border border-blue-200"
-                )}
-              >
-                <item.icon className="h-5 w-5 mr-3" />
-                <span className="flex-1 text-left">{item.label}</span>
-                {item.badge && (
-                  <Badge variant="secondary" className="ml-2 text-xs">
-                    {item.badge}
-                  </Badge>
-                )}
-              </Button>
-            );
-          })}
+          </div>
         </div>
       </SheetContent>
     </Sheet>

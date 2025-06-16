@@ -8,9 +8,11 @@ import {
   Star, 
   FileText, 
   Settings,
-  Search
+  Search,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface FigmantSidebarProps {
   activeSection: string;
@@ -21,6 +23,8 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   activeSection,
   onSectionChange
 }) => {
+  const { isOwner } = useAuth();
+
   const mainSections = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'analysis', label: 'Analysis', icon: BarChart3 },
@@ -29,6 +33,11 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
     { id: 'preferences', label: 'Preferences', icon: Settings },
     { id: 'search', label: 'Search', icon: Search },
   ];
+
+  // Add admin section for owners
+  if (isOwner) {
+    mainSections.push({ id: 'admin', label: 'Admin', icon: Shield });
+  }
 
   const recentAnalyses = [
     'Analysis of something',
@@ -55,12 +64,18 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
                 variant="ghost"
                 className={cn(
                   "w-full justify-start",
-                  activeSection === section.id && "bg-blue-50 text-blue-700 border-blue-200"
+                  activeSection === section.id && "bg-blue-50 text-blue-700 border-blue-200",
+                  section.id === 'admin' && "border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
                 )}
                 onClick={() => onSectionChange(section.id)}
               >
                 <section.icon className="h-4 w-4 mr-3" />
                 {section.label}
+                {section.id === 'admin' && (
+                  <Badge variant="secondary" className="ml-auto bg-orange-100 text-orange-700">
+                    Owner
+                  </Badge>
+                )}
               </Button>
             ))}
           </div>
