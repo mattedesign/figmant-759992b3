@@ -15,21 +15,17 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
   
   const handleEdit = () => {
     console.log('🖱️ PromptExampleCard handleEdit called for prompt:', prompt.id);
-    console.log('🔄 Switching to edit mode...');
     setIsEditing(true);
-    console.log('✅ setIsEditing(true) called');
   };
 
   const handleCancelEdit = () => {
     console.log('❌ Canceling edit for prompt:', prompt.id);
     setIsEditing(false);
-    console.log('✅ setIsEditing(false) called');
   };
 
   const handleSaveSuccess = () => {
     console.log('✅ Save successful for prompt:', prompt.id);
     setIsEditing(false);
-    console.log('✅ Switching back to view mode');
   };
 
   if (isEditing) {

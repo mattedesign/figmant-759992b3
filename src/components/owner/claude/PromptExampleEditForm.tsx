@@ -55,6 +55,25 @@ export const PromptExampleEditForm: React.FC<PromptExampleEditFormProps> = ({
 
   const handleSave = async () => {
     console.log('💾 Saving prompt changes for:', prompt.id);
+    
+    if (!editedPrompt.title.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Title is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!editedPrompt.original_prompt.trim()) {
+      toast({
+        title: "Validation Error", 
+        description: "Prompt text is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       await updatePromptMutation.mutateAsync({
         id: prompt.id,
@@ -84,14 +103,15 @@ export const PromptExampleEditForm: React.FC<PromptExampleEditFormProps> = ({
 
   return (
     <Card className="border-2 border-blue-200 bg-blue-50">
-      <CardHeader>
+      <CardHeader className="pb-4">
         <CardTitle className="flex items-center justify-between">
-          <span>Edit Prompt: {prompt.title}</span>
-          <div className="flex items-center space-x-2">
+          <span className="text-lg">Edit Prompt: {prompt.title}</span>
+          <div className="flex items-center gap-2">
             <Button 
               size="sm"
               onClick={handleSave} 
               disabled={updatePromptMutation.isPending}
+              className="h-8"
             >
               <Save className="h-4 w-4 mr-1" />
               {updatePromptMutation.isPending ? 'Saving...' : 'Save'}
@@ -100,6 +120,7 @@ export const PromptExampleEditForm: React.FC<PromptExampleEditFormProps> = ({
               size="sm"
               variant="outline" 
               onClick={handleCancel}
+              className="h-8"
             >
               <X className="h-4 w-4 mr-1" />
               Cancel
@@ -109,13 +130,14 @@ export const PromptExampleEditForm: React.FC<PromptExampleEditFormProps> = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="edit-title">Title</Label>
+            <Label htmlFor="edit-title">Title *</Label>
             <Input
               id="edit-title"
               value={editedPrompt.title}
               onChange={(e) => setEditedPrompt({ ...editedPrompt, title: e.target.value })}
+              placeholder="Enter prompt title"
             />
           </div>
 
@@ -145,16 +167,18 @@ export const PromptExampleEditForm: React.FC<PromptExampleEditFormProps> = ({
             id="edit-description"
             value={editedPrompt.description}
             onChange={(e) => setEditedPrompt({ ...editedPrompt, description: e.target.value })}
+            placeholder="Brief description of the prompt"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="edit-prompt">Prompt</Label>
+          <Label htmlFor="edit-prompt">Prompt Text *</Label>
           <Textarea
             id="edit-prompt"
             value={editedPrompt.original_prompt}
             onChange={(e) => setEditedPrompt({ ...editedPrompt, original_prompt: e.target.value })}
-            rows={4}
+            rows={6}
+            placeholder="Enter the prompt text"
           />
         </div>
 
@@ -164,11 +188,12 @@ export const PromptExampleEditForm: React.FC<PromptExampleEditFormProps> = ({
             id="edit-response"
             value={editedPrompt.claude_response}
             onChange={(e) => setEditedPrompt({ ...editedPrompt, claude_response: e.target.value })}
-            rows={3}
+            rows={4}
+            placeholder="Describe the expected response format"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="edit-rating">Effectiveness Rating (1-5)</Label>
             <Input
@@ -177,7 +202,7 @@ export const PromptExampleEditForm: React.FC<PromptExampleEditFormProps> = ({
               min="1"
               max="5"
               value={editedPrompt.effectiveness_rating}
-              onChange={(e) => setEditedPrompt({ ...editedPrompt, effectiveness_rating: parseInt(e.target.value) })}
+              onChange={(e) => setEditedPrompt({ ...editedPrompt, effectiveness_rating: parseInt(e.target.value) || 1 })}
             />
           </div>
           <div className="space-y-2">
@@ -186,6 +211,7 @@ export const PromptExampleEditForm: React.FC<PromptExampleEditFormProps> = ({
               id="edit-domain"
               value={editedPrompt.business_domain}
               onChange={(e) => setEditedPrompt({ ...editedPrompt, business_domain: e.target.value })}
+              placeholder="e.g., E-commerce, SaaS, Healthcare"
             />
           </div>
         </div>
@@ -196,6 +222,7 @@ export const PromptExampleEditForm: React.FC<PromptExampleEditFormProps> = ({
             id="edit-context"
             value={editedPrompt.use_case_context}
             onChange={(e) => setEditedPrompt({ ...editedPrompt, use_case_context: e.target.value })}
+            placeholder="When and how this prompt should be used"
           />
         </div>
       </CardContent>

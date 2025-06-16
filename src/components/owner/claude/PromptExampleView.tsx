@@ -19,18 +19,8 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
   console.log('👁️ PromptExampleView rendering for prompt:', prompt.id);
   console.log('🔑 User permissions - isOwner:', isOwner);
   
-  const handleEditClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    console.log('🖱️ Edit button CLICKED! Event details:', {
-      type: e.type,
-      target: e.target,
-      currentTarget: e.currentTarget,
-      bubbles: e.bubbles,
-      defaultPrevented: e.defaultPrevented
-    });
-    
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const handleEditClick = () => {
+    console.log('🖱️ Edit button clicked for prompt:', prompt.id);
     console.log('🔐 Checking permissions - isOwner:', isOwner);
     
     if (!isOwner) {
@@ -44,35 +34,13 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
     }
     
     console.log('✅ Permission granted, calling onEdit...');
-    try {
-      onEdit();
-      console.log('✅ onEdit called successfully');
-    } catch (error) {
-      console.error('❌ Error calling onEdit:', error);
-    }
+    onEdit();
   };
 
-  const handleCopyClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    console.log('📋 Copy button CLICKED! Event details:', {
-      type: e.type,
-      target: e.target,
-      currentTarget: e.currentTarget
-    });
-    
-    e.preventDefault();
-    e.stopPropagation();
+  const handleCopyClick = async () => {
+    console.log('📋 Copy button clicked for prompt:', prompt.id);
     
     try {
-      if (!navigator.clipboard) {
-        console.error('❌ Clipboard API not available');
-        toast({
-          title: "Copy failed",
-          description: "Clipboard not available in this browser",
-          variant: "destructive",
-        });
-        return;
-      }
-      
       await navigator.clipboard.writeText(prompt.original_prompt);
       console.log('✅ Prompt copied to clipboard successfully');
       toast({
@@ -81,63 +49,42 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
       });
     } catch (error) {
       console.error('❌ Failed to copy prompt:', error);
-      
-      // Fallback method for copying
-      try {
-        const textArea = document.createElement('textarea');
-        textArea.value = prompt.original_prompt;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        
-        console.log('✅ Fallback copy method succeeded');
-        toast({
-          title: "Copied to clipboard",
-          description: "Prompt copied successfully",
-        });
-      } catch (fallbackError) {
-        console.error('❌ Fallback copy method failed:', fallbackError);
-        toast({
-          title: "Copy failed",
-          description: "Failed to copy prompt to clipboard",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Copy failed",
+        description: "Failed to copy prompt to clipboard",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    console.log('🃏 Card clicked:', e.target);
-    // Don't prevent default here - let button clicks through
-  };
-
   return (
-    <div 
-      className="border rounded p-3 space-y-2 cursor-default" 
-      onClick={handleCardClick}
-    >
-      <div className="flex items-center justify-between">
-        <h4 className="font-medium">{prompt.title}</h4>
-        <div className="flex items-center space-x-2 ml-4">
-          {prompt.effectiveness_rating && (
-            <Badge variant="outline">
-              ⭐ {prompt.effectiveness_rating}/5
+    <div className="border rounded-lg p-4 space-y-3 bg-white shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-lg text-gray-900 truncate">{prompt.title}</h4>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <Badge variant="outline" className="text-xs">
+              {prompt.category}
             </Badge>
-          )}
-          {prompt.is_template && (
-            <Badge variant="secondary">Template</Badge>
-          )}
+            {prompt.effectiveness_rating && (
+              <Badge variant="secondary" className="text-xs">
+                ⭐ {prompt.effectiveness_rating}/5
+              </Badge>
+            )}
+            {prompt.is_template && (
+              <Badge variant="default" className="text-xs">
+                Template
+              </Badge>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2 ml-4 flex-shrink-0">
           <Button 
             size="sm" 
             variant="outline" 
             onClick={handleCopyClick}
-            className="shrink-0"
-            type="button"
+            className="h-8 w-8 p-0"
             title="Copy prompt"
           >
             <Copy className="h-4 w-4" />
@@ -147,8 +94,7 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
               size="sm" 
               variant="outline" 
               onClick={handleEditClick}
-              className="shrink-0"
-              type="button" 
+              className="h-8 w-8 p-0"
               title="Edit prompt"
             >
               <Edit2 className="h-4 w-4" />
@@ -156,16 +102,31 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
           )}
         </div>
       </div>
+      
       {prompt.description && (
-        <p className="text-sm text-muted-foreground">{prompt.description}</p>
+        <p className="text-sm text-gray-600 leading-relaxed">{prompt.description}</p>
       )}
-      <div className="text-xs text-muted-foreground">
-        {prompt.use_case_context && `Use Case: ${prompt.use_case_context}`}
-        {prompt.business_domain && ` | Domain: ${prompt.business_domain}`}
+      
+      <div className="bg-gray-50 rounded-md p-3">
+        <p className="text-sm font-mono text-gray-800 leading-relaxed">
+          {prompt.original_prompt.length > 200 
+            ? `${prompt.original_prompt.substring(0, 200)}...` 
+            : prompt.original_prompt
+          }
+        </p>
       </div>
-      <div className="text-xs text-muted-foreground truncate">
-        Prompt: {prompt.original_prompt.substring(0, 100)}...
-      </div>
+      
+      {(prompt.use_case_context || prompt.business_domain) && (
+        <div className="text-xs text-gray-500 border-t pt-2">
+          {prompt.use_case_context && (
+            <span>Use Case: {prompt.use_case_context}</span>
+          )}
+          {prompt.use_case_context && prompt.business_domain && <span> | </span>}
+          {prompt.business_domain && (
+            <span>Domain: {prompt.business_domain}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 };
