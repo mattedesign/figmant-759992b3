@@ -15,6 +15,16 @@ interface Notifications {
   emailNotifications: boolean;
 }
 
+interface Preferences {
+  theme: string;
+  compactMode: boolean;
+  language: string;
+  timezone: string;
+  emailNotifications: boolean;
+  analysisNotifications: boolean;
+  weeklyDigest: boolean;
+}
+
 export const useSettingsState = () => {
   const { toast } = useToast();
   
@@ -29,6 +39,16 @@ export const useSettingsState = () => {
     weeklyReports: true,
     anomalyDetection: true,
     emailNotifications: false
+  });
+
+  const [preferences, setPreferences] = useState<Preferences>({
+    theme: 'system',
+    compactMode: false,
+    language: 'en',
+    timezone: 'UTC',
+    emailNotifications: true,
+    analysisNotifications: true,
+    weeklyDigest: true,
   });
 
   const [dataRetention, setDataRetention] = useState('90');
@@ -46,6 +66,8 @@ export const useSettingsState = () => {
     setApiKeys,
     notifications,
     setNotifications,
+    preferences,
+    setPreferences,
     dataRetention,
     setDataRetention,
     analysisFrequency,

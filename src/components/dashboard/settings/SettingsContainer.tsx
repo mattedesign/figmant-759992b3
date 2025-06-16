@@ -2,7 +2,7 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useSettingsState } from './hooks/useSettingsState';
+import { useSettingsState } from '@/hooks/useSettingsState';
 import { createSettingsHandlers } from './utils/settingsHandlers';
 import { SettingsHeader } from './components/SettingsHeader';
 import { SettingsTabs } from './components/SettingsTabs';
