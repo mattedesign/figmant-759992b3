@@ -21,7 +21,7 @@ const CATEGORIES = [
 
 interface CreatePromptFormProps {
   newPrompt: Partial<ClaudePromptExample>;
-  setNewPrompt: (prompt: Partial<ClaudePromptExample>) => void;
+  setNewPrompt: React.Dispatch<React.SetStateAction<Partial<ClaudePromptExample>>>;
   onSave: () => void;
   onCancel: () => void;
   isSaving: boolean;

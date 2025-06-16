@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, CheckCircle, XCircle, Clock, Plus } from 'lucide-react';
-import { useClaudePromptExamples, useCreatePromptExample } from '@/hooks/useClaudePromptExamples';
+import { useClaudePromptExamples, useCreatePromptExample, ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
 import { useClaudeSettings } from '@/hooks/useClaudeSettings';
 import { ConnectionStatus } from '@/types/claude';
 import { CreatePromptForm } from './CreatePromptForm';
@@ -25,7 +25,7 @@ export const ClaudePromptManager: React.FC = () => {
   const { data: promptTemplates = [], isLoading: templatesLoading } = useClaudePromptExamples();
   const createPromptMutation = useCreatePromptExample();
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newPrompt, setNewPrompt] = useState({
+  const [newPrompt, setNewPrompt] = useState<Partial<ClaudePromptExample>>({
     title: '',
     description: '',
     category: 'general' as const,
@@ -91,7 +91,7 @@ export const ClaudePromptManager: React.FC = () => {
     }
 
     try {
-      await createPromptMutation.mutateAsync(newPrompt);
+      await createPromptMutation.mutateAsync(newPrompt as Omit<ClaudePromptExample, 'id' | 'created_at' | 'updated_at'>);
       setShowCreateForm(false);
       setNewPrompt({
         title: '',
