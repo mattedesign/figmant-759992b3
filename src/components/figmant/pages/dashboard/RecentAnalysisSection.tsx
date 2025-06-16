@@ -62,10 +62,6 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
     setSelectedAnalysis(null);
   };
 
-  const handleViewAllAnalyses = () => {
-    navigate('/figmant/analysis');
-  };
-
   const getGridColumns = () => {
     if (isMobile) return 'grid-cols-1';
     if (isTablet) return 'grid-cols-1 xl:grid-cols-2';
@@ -85,16 +81,8 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
         className={isMobile ? "w-full" : isTablet ? "w-full" : "col-span-8"}
         style={containerStyle}
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4">
           <h2 className="text-base font-medium">Recent Analysis</h2>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-gray-500"
-            onClick={handleViewAllAnalyses}
-          >
-            See all
-          </Button>
         </div>
         
         {/* Loading State */}
