@@ -103,7 +103,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   const isOnSubscriberDashboard = location.pathname === '/dashboard';
 
   return (
-    <div className="w-64 bg-transparent border-r border-gray-200/30 flex flex-col h-full backdrop-blur-sm">
+    <div className="w-64 bg-transparent border-r border-gray-200/30 flex flex-col min-h-screen backdrop-blur-sm">
       {/* Header */}
       <div className="p-4 border-b border-gray-200/30">
         <Logo size="md" className="w-auto" />
@@ -178,7 +178,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
       )}
 
       {/* User Profile - Always at bottom */}
-      <div className="p-4 border-t border-gray-200/30">
+      <div className="p-4 border-t border-gray-200/30 mt-auto">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <div className="flex items-center gap-3 p-2 hover:bg-gray-50/50 rounded-lg cursor-pointer transition-colors">

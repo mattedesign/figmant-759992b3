@@ -72,7 +72,7 @@ export const DashboardPage: React.FC = () => {
   ];
 
   return (
-    <div className="h-full bg-white overflow-hidden">
+    <div className="h-full overflow-hidden" style={{ background: '#F9FAFB' }}>
       <div className="h-full flex flex-col">
         <DashboardHeader />
 
