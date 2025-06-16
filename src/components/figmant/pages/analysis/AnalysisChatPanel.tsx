@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface AnalysisChatPanelProps {
   analysis: any;
+  onAttachmentsChange?: (attachments: ChatAttachment[]) => void;
 }
 
 interface ChatMessage {
@@ -27,7 +27,8 @@ interface ChatMessage {
 }
 
 export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
-  analysis
+  analysis,
+  onAttachmentsChange
 }) => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -41,6 +42,13 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   const { analyzeWithFigmantChat } = useFigmantChatAnalysis();
   const { data: promptTemplates, isLoading: promptsLoading } = useFigmantPromptTemplates();
   const { data: bestPrompt } = useBestFigmantPrompt(selectedPromptCategory);
+
+  // Notify parent component when attachments change
+  useEffect(() => {
+    if (onAttachmentsChange) {
+      onAttachmentsChange(attachments);
+    }
+  }, [attachments, onAttachmentsChange]);
 
   // Get unique categories from prompt templates
   const promptCategories = React.useMemo(() => {
