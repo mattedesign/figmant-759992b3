@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Calendar, TrendingUp, BarChart3 } from 'lucide-react';
+import { Calendar, TrendingUp, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -43,8 +42,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
         <div className="text-sm text-gray-500 mb-1">{formattedDate}</div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          {getGreeting()}, {getFirstName()}!
+        <h1 className="text-3xl text-gray-900">
+          <span className="font-normal">{getGreeting()}</span>, <span className="font-bold">{getFirstName()}</span>
         </h1>
         {lastUpdated && (
           <Badge variant="outline" className="flex items-center gap-1 mt-2">
@@ -66,17 +65,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <span>{dataStats.completionRate}% complete</span>
           </div>
         </div>
-        
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onRefresh}
-          disabled={isRefreshing}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          {isRefreshing ? 'Refreshing...' : 'Refresh'}
-        </Button>
       </div>
     </div>
   );
