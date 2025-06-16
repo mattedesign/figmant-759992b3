@@ -1,6 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { DashboardPage } from './pages/DashboardPage';
 import { AnalysisPage } from './pages/AnalysisPage';
 import { PremiumAnalysisPage } from './pages/PremiumAnalysisPage';
@@ -26,6 +27,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   onRightSidebarModeChange
 }) => {
   const location = useLocation();
+  const isMobile = useIsMobile();
 
   // Handle navigation state from premium analysis, template selection, or admin access
   useEffect(() => {
@@ -59,6 +61,18 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
 
   // Determine if we need scrolling based on the active section
   const needsScrolling = activeSection === 'premium-analysis';
+
+  if (isMobile) {
+    return (
+      <div className="flex-1 h-full overflow-hidden">
+        <div 
+          className={`h-full bg-[#F9FAFB] ${needsScrolling ? 'overflow-y-auto' : 'overflow-hidden'}`}
+        >
+          {renderContent()}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 h-screen overflow-hidden p-4" style={{ background: 'transparent' }}>

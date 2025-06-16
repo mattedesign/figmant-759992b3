@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Loader2, Paperclip, Upload, Link } from 'lucide-react';
+import { useIsSmallMobile } from '@/hooks/use-mobile';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerClose } from '@/components/ui/drawer';
 
 interface MobileMessageInputProps {
@@ -32,6 +34,7 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
   isDragActive,
 }) => {
   const isDisabled = !hasContent || isLoading || !canSend;
+  const isSmallMobile = useIsSmallMobile();
   const { open: openDropzone, ...restRootProps } = getRootProps();
   const inputProps = getInputProps();
 
@@ -43,17 +46,24 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
   };
 
   return (
-    <div className="bg-background border-t p-2">
+    <div className="bg-background border-t p-3 safe-bottom">
       <div
         {...restRootProps}
-        className={`relative border rounded-lg transition-colors bg-background flex items-start p-1 gap-1 ${
+        className={`relative border rounded-xl transition-colors bg-background flex items-start p-2 gap-2 ${
           isDragActive ? 'border-primary ring-2 ring-primary' : 'border-input'
         } ${isLoading ? 'opacity-70' : ''}`}
       >
         <input {...inputProps} />
+        
+        {/* Attachment Button */}
         <Drawer>
           <DrawerTrigger asChild>
-            <Button variant="ghost" size="icon" className="flex-shrink-0 h-10 w-10" disabled={isLoading}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={`flex-shrink-0 ${isSmallMobile ? 'h-11 w-11' : 'h-10 w-10'}`} 
+              disabled={isLoading}
+            >
               <Paperclip className="h-5 w-5" />
             </Button>
           </DrawerTrigger>
@@ -62,15 +72,24 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
               <DrawerHeader>
                 <DrawerTitle>Attach Content</DrawerTitle>
               </DrawerHeader>
-              <div className="p-4 pt-0 space-y-2">
+              <div className="p-4 pt-0 space-y-3">
                 <DrawerClose asChild>
-                  <Button variant="outline" className="w-full" onClick={openDropzone} disabled={isLoading}>
+                  <Button 
+                    variant="outline" 
+                    className={`w-full ${isSmallMobile ? 'h-12 text-base' : 'h-11'}`} 
+                    onClick={openDropzone} 
+                    disabled={isLoading}
+                  >
                     <Upload className="mr-2 h-4 w-4" />
                     Upload File
                   </Button>
                 </DrawerClose>
                 <DrawerClose asChild>
-                  <Button variant="outline" className="w-full" onClick={onToggleUrlInput}>
+                  <Button 
+                    variant="outline" 
+                    className={`w-full ${isSmallMobile ? 'h-12 text-base' : 'h-11'}`} 
+                    onClick={onToggleUrlInput}
+                  >
                     <Link className="mr-2 h-4 w-4" />
                     Add URL
                   </Button>
@@ -80,11 +99,14 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
           </DrawerContent>
         </Drawer>
 
+        {/* Message Input */}
         <Textarea
           value={message}
           onChange={(e) => onMessageChange(e.target.value)}
           placeholder={isDragActive ? "Drop files..." : "Message..."}
-          className="flex-1 min-h-[40px] max-h-32 resize-none border-0 shadow-none focus-visible:ring-0 text-base bg-transparent self-center"
+          className={`flex-1 resize-none border-0 shadow-none focus-visible:ring-0 bg-transparent self-center ${
+            isSmallMobile ? 'min-h-[44px] max-h-40 text-base' : 'min-h-[40px] max-h-32 text-sm'
+          }`}
           disabled={isLoading}
           onKeyPress={(e) => {
             if (e.key === 'Enter' && !e.shiftKey && !isDisabled) {
@@ -95,18 +117,20 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
           rows={1}
         />
 
+        {/* Send Button */}
         <div className="flex items-end">
           <Button
             onClick={onSendMessage}
             disabled={isDisabled}
             size="icon"
-            className="h-10 w-10 flex-shrink-0"
+            className={`flex-shrink-0 ${isSmallMobile ? 'h-11 w-11' : 'h-10 w-10'}`}
           >
             {getSendButtonContent()}
           </Button>
         </div>
       </div>
       
+      {/* Loading Stage */}
       {isLoading && loadingStage && (
         <div className="text-center text-xs text-muted-foreground pt-2">
           {loadingStage}
