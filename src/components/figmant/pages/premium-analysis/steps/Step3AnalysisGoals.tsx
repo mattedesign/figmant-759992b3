@@ -1,9 +1,8 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { StepProps } from '../types';
+import { StepHeader } from '../components/StepHeader';
+import { FormField } from '../components/FormField';
 
 export const Step3AnalysisGoals: React.FC<StepProps> = ({ 
   stepData, 
@@ -11,25 +10,26 @@ export const Step3AnalysisGoals: React.FC<StepProps> = ({
   currentStep, 
   totalSteps 
 }) => {
+  const handleAnalysisGoalsChange = (value: string) => {
+    setStepData({ ...stepData, analysisGoals: value });
+  };
+
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-4">Any specific feedback you would like?</h2>
-        <Badge variant="outline" className="text-blue-600 border-blue-200">
-          {currentStep} / {totalSteps}
-        </Badge>
-      </div>
+      <StepHeader 
+        title="Any specific feedback you would like?"
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+      />
 
       <div className="max-w-2xl mx-auto">
-        <Label htmlFor="analysisGoals" className="text-base font-medium">
-          Analysis Goals & Context
-        </Label>
-        <Textarea
+        <FormField
           id="analysisGoals"
+          type="textarea"
+          label="Analysis Goals & Context"
           placeholder="e.g. Create a user-friendly mobile app to help people track their daily water intake"
           value={stepData.analysisGoals}
-          onChange={(e) => setStepData({ ...stepData, analysisGoals: e.target.value })}
-          className="mt-2 min-h-[200px]"
+          onChange={handleAnalysisGoalsChange}
         />
       </div>
     </div>

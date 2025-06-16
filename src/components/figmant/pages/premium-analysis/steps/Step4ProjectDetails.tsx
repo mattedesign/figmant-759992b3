@@ -1,11 +1,9 @@
-
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import { StepProps } from '../types';
+import { StepHeader } from '../components/StepHeader';
+import { FormField } from '../components/FormField';
+import { ActionButton } from '../components/ActionButton';
 
 export const Step4ProjectDetails: React.FC<StepProps> = ({ 
   stepData, 
@@ -33,65 +31,48 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-4">Give us the deets... Please</h2>
-        <Badge variant="outline" className="text-blue-600 border-blue-200">
-          {currentStep} / {totalSteps}
-        </Badge>
-      </div>
+      <StepHeader 
+        title="Give us the deets... Please"
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+      />
 
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="desiredOutcome" className="text-base font-medium">
-              Desired Outcome
-            </Label>
-            <Input
-              id="desiredOutcome"
-              value={stepData.desiredOutcome}
-              onChange={(e) => setStepData({ ...stepData, desiredOutcome: e.target.value })}
-              className="mt-2"
-            />
-          </div>
-          <div>
-            <Label htmlFor="improvementMetric" className="text-base font-medium">
-              Improvement Metric
-            </Label>
-            <Input
-              id="improvementMetric"
-              placeholder="$ 5,000"
-              value={stepData.improvementMetric}
-              onChange={(e) => setStepData({ ...stepData, improvementMetric: e.target.value })}
-              className="mt-2"
-            />
-          </div>
+          <FormField
+            id="desiredOutcome"
+            type="input"
+            label="Desired Outcome"
+            value={stepData.desiredOutcome}
+            onChange={(value) => setStepData({ ...stepData, desiredOutcome: value })}
+          />
+          <FormField
+            id="improvementMetric"
+            type="input"
+            label="Improvement Metric"
+            placeholder="$ 5,000"
+            value={stepData.improvementMetric}
+            onChange={(value) => setStepData({ ...stepData, improvementMetric: value })}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="deadline" className="text-base font-medium">
-              Deadline
-            </Label>
-            <Input
-              id="deadline"
-              placeholder="e.g Landing page design"
-              value={stepData.deadline}
-              onChange={(e) => setStepData({ ...stepData, deadline: e.target.value })}
-              className="mt-2"
-            />
-          </div>
-          <div>
-            <Label htmlFor="date" className="text-base font-medium">
-              Date
-            </Label>
-            <Input
-              id="date"
-              placeholder="$ 0"
-              value={stepData.date}
-              onChange={(e) => setStepData({ ...stepData, date: e.target.value })}
-              className="mt-2"
-            />
-          </div>
+          <FormField
+            id="deadline"
+            type="input"
+            label="Deadline"
+            placeholder="e.g Landing page design"
+            value={stepData.deadline}
+            onChange={(value) => setStepData({ ...stepData, deadline: value })}
+          />
+          <FormField
+            id="date"
+            type="input"
+            label="Date"
+            placeholder="$ 0"
+            value={stepData.date}
+            onChange={(value) => setStepData({ ...stepData, date: value })}
+          />
         </div>
 
         <div>
@@ -112,26 +93,24 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
                 value={stakeholder.title}
                 onChange={(e) => handleStakeholderChange(index, 'title', e.target.value)}
               />
-              <Button 
-                variant="outline" 
-                size="sm"
+              <ActionButton 
+                variant="outline"
+                icon={X}
                 onClick={() => handleStakeholderRemove(index)}
                 className="px-2"
               >
-                <X className="h-4 w-4" />
                 Remove
-              </Button>
+              </ActionButton>
             </div>
           ))}
 
-          <Button 
-            variant="outline" 
+          <ActionButton 
+            icon={Plus}
             onClick={handleStakeholderAdd}
             className="mt-2"
           >
-            <Plus className="h-4 w-4 mr-2" />
             Add Another Stakeholder
-          </Button>
+          </ActionButton>
         </div>
       </div>
     </div>

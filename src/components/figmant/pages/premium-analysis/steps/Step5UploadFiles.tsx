@@ -1,11 +1,10 @@
-
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
+import { Upload, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Upload, Plus } from 'lucide-react';
 import { StepProps } from '../types';
+import { StepHeader } from '../components/StepHeader';
+import { ActionButton } from '../components/ActionButton';
 
 export const Step5UploadFiles: React.FC<StepProps> = ({ 
   stepData, 
@@ -28,12 +27,11 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-4">Upload or share some links</h2>
-        <Badge variant="outline" className="text-blue-600 border-blue-200">
-          {currentStep} / {totalSteps}
-        </Badge>
-      </div>
+      <StepHeader 
+        title="Upload or share some links"
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+      />
 
       <div className="max-w-2xl mx-auto space-y-6">
         {/* File Upload Section */}
@@ -54,14 +52,13 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
               />
             </div>
           ))}
-          <Button 
-            variant="outline" 
+          <ActionButton 
+            icon={Plus}
             onClick={handleReferenceLinkAdd}
             className="mt-2"
           >
-            <Plus className="h-4 w-4 mr-2" />
             Add link
-          </Button>
+          </ActionButton>
         </div>
       </div>
     </div>
