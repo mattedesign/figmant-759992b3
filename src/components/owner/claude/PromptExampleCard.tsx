@@ -32,13 +32,11 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
         onEdit={handleEdit}
       />
       
-      {isDrawerOpen && (
-        <PromptEditDrawer
-          prompt={prompt}
-          isOpen={isDrawerOpen}
-          onClose={handleCloseDrawer}
-        />
-      )}
+      <PromptEditDrawer
+        prompt={prompt}
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
+      />
     </>
   );
 };

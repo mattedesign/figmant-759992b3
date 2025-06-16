@@ -111,17 +111,10 @@ export const PromptEditDrawer: React.FC<PromptEditDrawerProps> = ({
     onClose();
   };
 
-  const handleOpenChange = (open: boolean) => {
-    console.log('🔄 Drawer open state changing:', open);
-    if (!open) {
-      onClose();
-    }
-  };
-
   console.log('🎨 Drawer component will render with isOpen:', isOpen);
 
   return (
-    <Drawer open={isOpen} onOpenChange={handleOpenChange}>
+    <Drawer open={isOpen} onOpenChange={onClose}>
       <DrawerContent className="max-h-[85vh]">
         <DrawerHeader>
           <DrawerTitle>Edit Prompt: {prompt.title}</DrawerTitle>
