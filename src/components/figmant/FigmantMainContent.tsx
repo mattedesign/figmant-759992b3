@@ -2,11 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Mic, MoreHorizontal } from 'lucide-react';
 import { AnalysisDetailView } from '@/components/design/analysis/AnalysisDetailView';
-import { ChatContainer } from '@/components/design/chat/ChatContainer';
-import { useDesignChatLogic } from '@/components/design/chat/hooks/useDesignChatLogic';
 import { DesignChatInterface } from '@/components/design/DesignChatInterface';
 import { DashboardPage } from './pages/DashboardPage';
 import { CreditsPage } from './pages/CreditsPage';
@@ -27,6 +23,16 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState('chat');
 
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    // Update right sidebar mode based on active tab
+    if (tab === 'chat') {
+      onRightSidebarModeChange('attachments');
+    } else {
+      onRightSidebarModeChange('preview');
+    }
+  };
+
   const renderAnalysisContent = () => {
     if (selectedAnalysis) {
       return (
@@ -41,19 +47,17 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       <div className="h-full flex flex-col">
         {/* Chat Header */}
         <div className="border-b border-gray-200 p-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="grid w-48 grid-cols-2 bg-gray-100">
               <TabsTrigger 
                 value="chat" 
                 className="data-[state=active]:bg-white data-[state=active]:text-gray-900"
-                onClick={() => onRightSidebarModeChange('attachments')}
               >
                 Chat
               </TabsTrigger>
               <TabsTrigger 
                 value="prompts" 
                 className="data-[state=active]:bg-white data-[state=active]:text-gray-900"
-                onClick={() => onRightSidebarModeChange('preview')}
               >
                 Prompts
               </TabsTrigger>
@@ -63,7 +67,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
 
         {/* Chat Content */}
         <div className="flex-1 flex flex-col">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
             <TabsContent value="chat" className="flex-1 flex flex-col m-0">
               <div className="flex-1 overflow-hidden">
                 <DesignChatInterface />

@@ -18,6 +18,10 @@ export const FigmantLayout = () => {
     setSelectedAnalysis(null);
   };
 
+  const handleAnalysisSelect = (analysis: any) => {
+    setSelectedAnalysis(analysis);
+  };
+
   return (
     <div className="h-screen flex bg-gray-50">
       {/* Left Sidebar - Navigation */}
@@ -32,7 +36,7 @@ export const FigmantLayout = () => {
       <div className="w-80 bg-white border-r border-gray-200 flex-shrink-0">
         <FigmantMiddlePanel 
           activeSection={activeSection}
-          onAnalysisSelect={setSelectedAnalysis}
+          onAnalysisSelect={handleAnalysisSelect}
           selectedAnalysis={selectedAnalysis}
         />
       </div>

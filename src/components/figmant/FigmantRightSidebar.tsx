@@ -1,8 +1,20 @@
 
 import React, { useState } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Check, X, Upload } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Paperclip, 
+  Image, 
+  FileText, 
+  Globe, 
+  X, 
+  Download,
+  Eye,
+  Upload,
+  Link
+} from 'lucide-react';
 
 interface FigmantRightSidebarProps {
   mode: string;
@@ -13,75 +25,94 @@ export const FigmantRightSidebar: React.FC<FigmantRightSidebarProps> = ({
   mode,
   activeSection
 }) => {
-  const [attachments] = useState([
-    { id: '1', name: 'Design file 1', status: 'completed' },
-    { id: '2', name: 'Design file 2', status: 'completed' },
-    { id: '3', name: 'Design file 3', status: 'completed' },
+  const [attachments, setAttachments] = useState([
+    {
+      id: '1',
+      name: 'homepage-design.png',
+      type: 'image',
+      size: '2.4 MB',
+      url: '/placeholder-image.jpg'
+    },
+    {
+      id: '2', 
+      name: 'analysis-report.pdf',
+      type: 'document',
+      size: '1.8 MB',
+      url: '#'
+    }
   ]);
 
   const renderAttachmentsMode = () => (
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        <h3 className="font-semibold text-gray-900">Attachments</h3>
-        <p className="text-sm text-gray-500 mt-1">Add an address so you can get paid</p>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold">Attachments</h3>
+          <Button size="sm" variant="outline">
+            <Upload className="h-4 w-4 mr-2" />
+            Upload
+          </Button>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" className="text-xs">
+            <Image className="h-3 w-3 mr-1" />
+            Images
+          </Button>
+          <Button size="sm" variant="outline" className="text-xs">
+            <FileText className="h-3 w-3 mr-1" />
+            Documents
+          </Button>
+          <Button size="sm" variant="outline" className="text-xs">
+            <Link className="h-3 w-3 mr-1" />
+            URLs
+          </Button>
+        </div>
       </div>
 
-      {/* Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-4 space-y-4">
-          {/* File List */}
-          <div className="space-y-3">
-            {attachments.map((attachment) => (
-              <div
-                key={attachment.id}
-                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-              >
-                <div className="w-8 h-8 bg-white border border-gray-200 rounded flex items-center justify-center flex-shrink-0">
-                  <div className="w-4 h-4 bg-gray-300 rounded-sm"></div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900 truncate">
-                    {attachment.name}
+      {/* Attachments List */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="space-y-3">
+          {attachments.map((attachment) => (
+            <div key={attachment.id} className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                    {attachment.type === 'image' ? (
+                      <Image className="h-4 w-4 text-blue-600" />
+                    ) : (
+                      <FileText className="h-4 w-4 text-blue-600" />
+                    )}
                   </div>
-                  <div className="text-xs text-gray-500">Completed</div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {attachment.name}
+                    </p>
+                    <p className="text-xs text-gray-500">{attachment.size}</p>
+                  </div>
                 </div>
-                <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Check className="h-3 w-3 text-white" />
+                <div className="flex items-center gap-1">
+                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                    <Eye className="h-3 w-3" />
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                    <Download className="h-3 w-3" />
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                    <X className="h-3 w-3" />
+                  </Button>
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* Upload Area */}
-          <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
-            <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-            <div className="text-sm text-gray-600 mb-2">
-              Add an address so you can get paid
             </div>
-            <Button variant="outline" size="sm" className="text-gray-600 border-gray-300">
-              Browse files
-            </Button>
-          </div>
-
-          {/* Additional Files */}
-          <div className="space-y-2">
-            <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Recently used
-            </div>
-            <div className="text-sm text-gray-600 p-2 hover:bg-gray-50 rounded cursor-pointer">
-              Previous design file
-            </div>
-          </div>
+          ))}
         </div>
-      </ScrollArea>
 
-      {/* Footer Actions */}
-      <div className="border-t border-gray-200 p-4 space-y-2">
-        <Button variant="ghost" size="sm" className="w-full text-gray-600">
-          <X className="h-4 w-4 mr-2" />
-          Clear all
-        </Button>
+        {/* Upload Area */}
+        <div className="mt-6 p-6 border-2 border-dashed border-gray-300 rounded-lg text-center">
+          <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+          <p className="text-sm text-gray-600">Drop files here or click to upload</p>
+          <p className="text-xs text-gray-500 mt-1">PNG, JPG, PDF up to 10MB</p>
+        </div>
       </div>
     </div>
   );
@@ -90,28 +121,38 @@ export const FigmantRightSidebar: React.FC<FigmantRightSidebarProps> = ({
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        <h3 className="font-semibold text-gray-900">Preview</h3>
-        <p className="text-sm text-gray-500 mt-1">Start by defining your GPT</p>
+        <h3 className="font-semibold">Preview</h3>
       </div>
 
-      {/* Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-4">
-          <div className="bg-gray-50 rounded-lg p-6 text-center">
-            <div className="w-16 h-16 bg-gray-200 rounded mx-auto mb-4"></div>
-            <h4 className="font-medium text-gray-900 mb-2">Design Analysis Preview</h4>
-            <p className="text-sm text-gray-500">
-              Your analysis will appear here once you start the conversation.
+      {/* Preview Content */}
+      <div className="flex-1 p-4">
+        <div className="h-full bg-gray-50 rounded-lg flex items-center justify-center">
+          <div className="text-center">
+            <Eye className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <h4 className="font-medium text-gray-900 mb-2">No Preview Available</h4>
+            <p className="text-sm text-gray-600">
+              Select an analysis or upload a file to preview
             </p>
           </div>
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 
+  const renderContent = () => {
+    switch (mode) {
+      case 'attachments':
+        return renderAttachmentsMode();
+      case 'preview':
+        return renderPreviewMode();
+      default:
+        return renderAttachmentsMode();
+    }
+  };
+
   return (
-    <div className="h-full bg-white">
-      {mode === 'attachments' ? renderAttachmentsMode() : renderPreviewMode()}
+    <div className="h-full bg-white border-l border-gray-200">
+      {renderContent()}
     </div>
   );
 };
