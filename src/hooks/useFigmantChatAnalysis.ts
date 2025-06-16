@@ -98,143 +98,116 @@ const analyzeWithFigmantChat = async (request: FigmantChatRequest): Promise<Figm
           .select('id')
           .single();
 
-        if (dbError || !uploadRecord) {
-          console.error('Failed to create upload record:', dbError);
-          throw new Error(`Failed to create upload record for ${attachment.name}`);
+        if (dbError) {
+          console.error('Database error creating upload record:', dbError);
+          throw dbError;
         }
 
         uploadIds.push(uploadRecord.id);
-        processedAttachments.push({
-          ...attachment,
-          uploadPath: attachment.uploadPath
-        });
-
-        console.log('Database record created:', uploadRecord.id);
+        processedAttachments.push(attachment);
+        console.log('Created upload record:', uploadRecord.id);
       } catch (error) {
         console.error('Error processing file attachment:', error);
+        // Continue with other attachments
       }
-    } else {
-      // For URL attachments or files without upload paths
-      processedAttachments.push(attachment);
+    } else if (attachment.type === 'url') {
+      // Handle URL attachments
+      try {
+        const { data: uploadRecord, error: dbError } = await supabase
+          .from('design_uploads')
+          .insert({
+            user_id: user.id,
+            file_name: attachment.name,
+            url: attachment.url,
+            use_case: 'figmant_chat_analysis'
+          })
+          .select('id')
+          .single();
+
+        if (dbError) {
+          console.error('Database error creating URL record:', dbError);
+          throw dbError;
+        }
+
+        uploadIds.push(uploadRecord.id);
+        processedAttachments.push(attachment);
+        console.log('Created URL record:', uploadRecord.id);
+      } catch (error) {
+        console.error('Error processing URL attachment:', error);
+      }
     }
   }
 
-  // Build the enhanced prompt using the prompt template if provided
-  let finalPrompt = request.message;
-  
-  if (request.promptTemplate) {
-    console.log('Using custom prompt template for analysis');
-    finalPrompt = `${request.promptTemplate}\n\nUser Request: ${request.message}`;
-  } else {
-    // Use a default comprehensive analysis prompt
-    finalPrompt = `You are an expert UX analyst with deep expertise in conversion optimization, user psychology, and design best practices. 
+  console.log('Processed attachments:', uploadIds.length);
 
-Please analyze the provided content and respond to the user's request with comprehensive, actionable insights.
-
-User Request: ${request.message}`;
-  }
-
-  // Prepare the payload for Claude AI
-  const claudePayload = {
-    message: finalPrompt,
-    attachments: processedAttachments,
-    uploadIds,
-    requestType: 'figmant_chat_analysis'
-  };
-
-  console.log('Calling Claude AI with enhanced prompt...');
-
-  // Call the Claude AI edge function
-  const { data, error } = await supabase.functions.invoke('claude-ai', {
-    body: claudePayload
+  // Call Claude AI function
+  const { data: claudeResponse, error: claudeError } = await supabase.functions.invoke('claude-ai', {
+    body: {
+      message: request.message,
+      attachments: processedAttachments,
+      promptTemplate: request.promptTemplate,
+      analysisType: request.analysisType || 'figmant_chat',
+      uploadIds: uploadIds
+    }
   });
 
-  console.log('Claude AI response:', {
-    hasError: !!error,
-    hasData: !!data,
-    success: data?.success
-  });
-
-  if (error) {
-    console.error('Claude AI function error:', error);
-    throw new Error(`Analysis failed: ${error.message}`);
+  if (claudeError) {
+    console.error('Claude AI error:', claudeError);
+    throw new Error(`Analysis failed: ${claudeError.message}`);
   }
 
-  if (!data?.success) {
-    console.error('Claude AI analysis failed:', data);
-    throw new Error(data?.error || 'Analysis failed');
-  }
+  console.log('Claude AI response received:', !!claudeResponse);
 
-  // Save the chat analysis result to database for persistence
-  console.log('Saving figmant chat analysis to database...');
+  // Save the chat analysis to database
   try {
     const { data: savedAnalysis, error: saveError } = await supabase
-      .from('design_analysis')
+      .from('chat_analysis_history')
       .insert({
-        design_upload_id: uploadIds[0] || null,
         user_id: user.id,
-        analysis_type: request.analysisType || 'figmant_chat_analysis',
-        prompt_used: finalPrompt,
-        analysis_results: { 
-          response: data.analysis,
-          attachments_processed: data.attachmentsProcessed || 0,
-          figmant_context: {
-            original_message: request.message,
-            prompt_template_used: !!request.promptTemplate,
-            analysis_type: request.analysisType,
-            attachments_count: processedAttachments.length,
-            upload_ids: uploadIds
-          }
+        prompt_used: request.message,
+        prompt_template_used: request.promptTemplate || null,
+        analysis_results: {
+          response: claudeResponse.analysis || claudeResponse.response,
+          attachments_processed: processedAttachments.length,
+          upload_ids: uploadIds,
+          debug_info: claudeResponse.debugInfo
         },
-        confidence_score: 0.8
+        confidence_score: claudeResponse.confidence_score || 0.8,
+        analysis_type: request.analysisType || 'figmant_chat'
       })
       .select()
       .single();
 
     if (saveError) {
-      console.error('Failed to save figmant analysis to database:', saveError);
+      console.error('Error saving analysis history:', saveError);
+      // Don't throw here as the analysis was successful
     } else {
-      console.log('Figmant analysis successfully saved:', savedAnalysis.id);
+      console.log('Analysis saved to history:', savedAnalysis.id);
     }
-  } catch (saveError) {
-    console.error('Error saving figmant analysis:', saveError);
+  } catch (error) {
+    console.error('Failed to save analysis history:', error);
   }
 
-  console.log('=== FIGMANT CHAT ANALYSIS COMPLETE ===');
-
   return {
-    analysis: data.analysis,
-    uploadIds: uploadIds.length > 0 ? uploadIds : undefined,
-    promptUsed: finalPrompt,
-    debugInfo: data.debugInfo
+    analysis: claudeResponse.analysis || claudeResponse.response || 'Analysis completed',
+    uploadIds: uploadIds,
+    promptUsed: request.promptTemplate || request.message,
+    debugInfo: claudeResponse.debugInfo
   };
 };
 
 export const useFigmantChatAnalysis = () => {
   const { toast } = useToast();
-
-  return {
-    analyzeWithFigmantChat: useMutation({
-      mutationFn: analyzeWithFigmantChat,
-      onError: (error) => {
-        console.error('Figmant chat analysis error:', error);
-        toast({
-          variant: "destructive",
-          title: "Analysis Failed",
-          description: error instanceof Error ? error.message : 'An unexpected error occurred',
-        });
-      },
-      onSuccess: (data) => {
-        console.log('Figmant chat analysis success:', {
-          analysisLength: data.analysis.length,
-          uploadIds: data.uploadIds?.length || 0
-        });
-        
-        toast({
-          title: "Analysis Complete",
-          description: "Your analysis has been completed and saved.",
-        });
-      }
-    })
-  };
+  
+  return useMutation({
+    mutationFn: analyzeWithFigmantChat,
+    onError: (error) => {
+      console.error('Figmant chat analysis failed:', error);
+      toast({
+        title: "Analysis Failed",
+        description: error.message || "An error occurred during analysis",
+        variant: "destructive"
+      });
+    }
+  });
 };

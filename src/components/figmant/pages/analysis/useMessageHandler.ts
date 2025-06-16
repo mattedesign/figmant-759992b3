@@ -1,27 +1,20 @@
 
+import { useState } from 'react';
 import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
+import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useToast } from '@/hooks/use-toast';
-import { ChatAttachment } from '@/components/design/DesignChatInterface';
-
-interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  attachments?: ChatAttachment[];
-  promptUsed?: string;
-}
 
 interface UseMessageHandlerProps {
   message: string;
-  setMessage: React.Dispatch<React.SetStateAction<string>>;
+  setMessage: (message: string) => void;
   attachments: ChatAttachment[];
-  setAttachments: React.Dispatch<React.SetStateAction<ChatAttachment[]>>;
+  setAttachments: (attachments: ChatAttachment[]) => void;
   messages: ChatMessage[];
-  setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
-  selectedPromptTemplate: string;
-  selectedPromptCategory: string;
+  setMessages: (messages: ChatMessage[]) => void;
+  selectedPromptTemplate?: any;
+  selectedPromptCategory?: string;
   promptTemplates?: any[];
+  onAnalysisComplete?: (analysisResult: any) => void;
 }
 
 export const useMessageHandler = ({
@@ -33,108 +26,106 @@ export const useMessageHandler = ({
   setMessages,
   selectedPromptTemplate,
   selectedPromptCategory,
-  promptTemplates
+  promptTemplates,
+  onAnalysisComplete
 }: UseMessageHandlerProps) => {
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
-  const { analyzeWithFigmantChat } = useFigmantChatAnalysis();
+  const figmantChat = useFigmantChatAnalysis();
+
+  const canSend = message.trim().length > 0 || attachments.length > 0;
 
   const handleSendMessage = async () => {
-    if (!message.trim() && attachments.length === 0) return;
+    if (!canSend || isAnalyzing) return;
 
-    // Check for any failed attachments
-    const failedAttachments = attachments.filter(att => att.status === 'error');
-    if (failedAttachments.length > 0) {
-      toast({
-        variant: "destructive",
-        title: "Upload Errors",
-        description: "Please remove failed uploads before sending.",
-      });
-      return;
-    }
-
-    // Check for any processing attachments
-    const processingAttachments = attachments.filter(att => 
-      att.status === 'uploading' || att.status === 'processing'
-    );
-    if (processingAttachments.length > 0) {
-      toast({
-        variant: "destructive",
-        title: "Processing Files",
-        description: "Please wait for all files to finish uploading.",
-      });
-      return;
-    }
-
-    // Create user message
-    const userMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content: message.trim(),
-      timestamp: new Date(),
-      attachments: [...attachments]
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    
-    // Store current values before clearing
-    const currentMessage = message;
-    const currentAttachments = [...attachments];
-    const promptTemplate = selectedPromptTemplate ? 
-      promptTemplates?.find(p => p.id === selectedPromptTemplate)?.original_prompt : 
-      undefined;
-
-    // Clear input
-    setMessage('');
-    setAttachments([]);
+    setIsAnalyzing(true);
 
     try {
-      // Call the analysis
-      const result = await analyzeWithFigmantChat.mutateAsync({
-        message: currentMessage,
-        attachments: currentAttachments,
-        promptTemplate,
-        analysisType: selectedPromptCategory || 'general_analysis'
+      // Add user message
+      const userMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: message,
+        attachments: [...attachments],
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, userMessage]);
+
+      // Determine prompt to use
+      let promptToUse = '';
+      if (selectedPromptTemplate) {
+        promptToUse = selectedPromptTemplate.prompt_text;
+      } else if (selectedPromptCategory && promptTemplates) {
+        const categoryTemplate = promptTemplates.find(
+          t => t.category === selectedPromptCategory
+        );
+        if (categoryTemplate) {
+          promptToUse = categoryTemplate.prompt_text;
+        }
+      }
+
+      // Call Figmant Chat Analysis
+      const result = await figmantChat.mutateAsync({
+        message,
+        attachments,
+        promptTemplate: promptToUse,
+        analysisType: selectedPromptCategory || 'general'
       });
 
-      // Create assistant message
+      // Add assistant response
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
         content: result.analysis,
         timestamp: new Date(),
-        promptUsed: result.promptUsed
+        uploadIds: result.uploadIds
       };
 
       setMessages(prev => [...prev, assistantMessage]);
 
+      // Call analysis complete callback
+      if (onAnalysisComplete) {
+        onAnalysisComplete({
+          analysis: result.analysis,
+          uploadIds: result.uploadIds,
+          debugInfo: result.debugInfo,
+          response: result.analysis
+        });
+      }
+
+      // Clear input and attachments
+      setMessage('');
+      setAttachments([]);
+
+      toast({
+        title: "Analysis Complete",
+        description: "Your design analysis has been generated successfully.",
+      });
+
     } catch (error) {
       console.error('Analysis failed:', error);
-      
-      // Create error message
-      const errorMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: 'I apologize, but I encountered an error while analyzing your request. Please check your files and try again.',
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
+      toast({
+        title: "Analysis Failed",
+        description: "There was an error generating your analysis. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
 
-  const canSend = !analyzeWithFigmantChat.isPending && (Boolean(message.trim()) || attachments.length > 0);
-
   return {
-    handleSendMessage,
-    handleKeyPress,
+    isAnalyzing,
     canSend,
-    isAnalyzing: analyzeWithFigmantChat.isPending
+    handleSendMessage,
+    handleKeyPress
   };
 };

@@ -14,11 +14,13 @@ import { useMessageHandler } from './useMessageHandler';
 interface AnalysisChatPanelProps {
   analysis: any;
   onAttachmentsChange?: (attachments: any[]) => void;
+  onAnalysisComplete?: (analysisResult: any) => void;
 }
 
 export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   analysis,
-  onAttachmentsChange
+  onAttachmentsChange,
+  onAnalysisComplete
 }) => {
   const {
     message,
@@ -43,7 +45,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   // Initialize file upload handler
   const fileUploadHandler = useFileUploadHandler({ attachments, setAttachments });
 
-  // Initialize message handler
+  // Initialize message handler with analysis complete callback
   const messageHandler = useMessageHandler({
     message,
     setMessage,
@@ -53,7 +55,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     setMessages,
     selectedPromptTemplate,
     selectedPromptCategory,
-    promptTemplates
+    promptTemplates,
+    onAnalysisComplete
   });
 
   const handleAddUrl = () => {

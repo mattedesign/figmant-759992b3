@@ -1,8 +1,10 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Clock, FileText } from 'lucide-react';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
+import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
+import { formatDistanceToNow } from 'date-fns';
 
 interface AnalysisListSidebarProps {
   selectedAnalysis: any;
@@ -14,6 +16,28 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
   onAnalysisSelect
 }) => {
   const { data: analyses = [], isLoading } = useDesignAnalyses();
+  const { data: chatAnalyses = [] } = useChatAnalysisHistory();
+
+  // Combine both types of analyses and sort by date
+  const allAnalyses = [
+    ...analyses.map(a => ({ ...a, type: 'design', title: a.file_name || 'Design Analysis' })),
+    ...chatAnalyses.map(a => ({ ...a, type: 'chat', title: 'Chat Analysis' }))
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  const recentAnalyses = allAnalyses.slice(0, 5);
+  const savedAnalyses = allAnalyses.slice(5, 8);
+
+  const truncateText = (text: string, maxLength: number = 50) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
+  const getAnalysisPreview = (analysis: any) => {
+    if (analysis.type === 'chat') {
+      return truncateText(analysis.prompt_used || 'Chat analysis');
+    }
+    return truncateText(analysis.analysis_results?.analysis || 'Design analysis');
+  };
 
   return (
     <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
@@ -33,8 +57,10 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
         <div className="text-sm font-medium text-gray-500 mb-2">Current Analysis</div>
         {selectedAnalysis ? (
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="font-medium">Analysis Name</div>
-            <div className="text-sm text-gray-600">General Synopsis of analysis goes here</div>
+            <div className="font-medium">{selectedAnalysis.title || 'Analysis'}</div>
+            <div className="text-sm text-gray-600">
+              {getAnalysisPreview(selectedAnalysis)}
+            </div>
           </div>
         ) : (
           <div className="text-sm text-gray-500">No analysis selected</div>
@@ -48,25 +74,31 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
           <div className="space-y-2">
             {isLoading ? (
               <div className="text-sm text-gray-500">Loading analyses...</div>
-            ) : analyses.length === 0 ? (
+            ) : recentAnalyses.length === 0 ? (
               <div className="text-sm text-gray-500">No analyses found</div>
             ) : (
-              analyses.map((analysis) => (
+              recentAnalyses.map((analysis) => (
                 <Button
-                  key={analysis.id}
+                  key={`${analysis.type}-${analysis.id}`}
                   variant="ghost"
                   className="w-full justify-start p-3 h-auto flex-col items-start"
                   onClick={() => onAnalysisSelect(analysis)}
                 >
                   <div className="flex items-center gap-2 w-full">
                     <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
-                      <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                      <FileText className="w-3 h-3 text-blue-500" />
                     </div>
                     <div className="text-left flex-1 min-w-0">
-                      <div className="font-medium text-sm">Analysis Name</div>
-                      <div className="text-xs text-gray-500">3 Files</div>
+                      <div className="font-medium text-sm">{analysis.title}</div>
+                      <div className="text-xs text-gray-500 flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
+                      </div>
                     </div>
                     <div className="text-xs text-gray-400">→</div>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1 text-left w-full">
+                    {getAnalysisPreview(analysis)}
                   </div>
                 </Button>
               ))
@@ -75,33 +107,38 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
         </div>
 
         {/* Saved Analyses */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-4 h-4 text-gray-400">⭐</div>
-            <div className="text-sm font-medium text-gray-500">Saved</div>
-          </div>
-          <div className="space-y-2">
-            {analyses.slice(0, 3).map((analysis) => (
-              <Button
-                key={`saved-${analysis.id}`}
-                variant="ghost"
-                className="w-full justify-start p-3 h-auto flex-col items-start"
-                onClick={() => onAnalysisSelect(analysis)}
-              >
-                <div className="flex items-center gap-2 w-full">
-                  <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
-                    <div className="w-3 h-3 bg-blue-500 rounded"></div>
+        {savedAnalyses.length > 0 && (
+          <div className="p-4 border-t border-gray-200">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-4 h-4 text-gray-400">⭐</div>
+              <div className="text-sm font-medium text-gray-500">Saved</div>
+            </div>
+            <div className="space-y-2">
+              {savedAnalyses.map((analysis) => (
+                <Button
+                  key={`saved-${analysis.type}-${analysis.id}`}
+                  variant="ghost"
+                  className="w-full justify-start p-3 h-auto flex-col items-start"
+                  onClick={() => onAnalysisSelect(analysis)}
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-3 h-3 text-blue-500" />
+                    </div>
+                    <div className="text-left flex-1 min-w-0">
+                      <div className="font-medium text-sm">{analysis.title}</div>
+                      <div className="text-xs text-gray-500 flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-400">→</div>
                   </div>
-                  <div className="text-left flex-1 min-w-0">
-                    <div className="font-medium text-sm">Analysis Name</div>
-                    <div className="text-xs text-gray-500">3 Files</div>
-                  </div>
-                  <div className="text-xs text-gray-400">→</div>
-                </div>
-              </Button>
-            ))}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
