@@ -6,9 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, Target, BarChart3, Users, ShoppingCart, FlaskConical, ChevronRight, FileText, Star } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
+interface PromptTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+}
+
 interface AnalysisDynamicRightPanelProps {
   mode: 'templates' | 'analysis';
-  promptTemplates?: any[];
+  promptTemplates?: PromptTemplate[];
   selectedPromptCategory?: string;
   selectedPromptTemplate?: string;
   onPromptTemplateSelect?: (templateId: string) => void;
@@ -59,7 +66,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
       if (!acc[category]) acc[category] = [];
       acc[category].push(template);
       return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, PromptTemplate[]>);
 
     return (
       <div className="h-full bg-white border-l border-gray-200 flex flex-col">
