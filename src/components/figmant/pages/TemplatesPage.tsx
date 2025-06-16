@@ -1,83 +1,196 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Star, Download } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { FileText, Star, Brain, Target, TrendingUp, Zap, Crown, Sparkles } from 'lucide-react';
+import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
+import { useNavigate } from 'react-router-dom';
+
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case 'master': return Brain;
+    case 'competitor': return Target;
+    case 'visual_hierarchy': return TrendingUp;
+    case 'copy_messaging': return Zap;
+    case 'ecommerce_revenue': return TrendingUp;
+    case 'ab_testing': return Target;
+    case 'premium': return Crown;
+    default: return Brain;
+  }
+};
+
+const getCategoryColor = (category: string) => {
+  switch (category) {
+    case 'master': return 'bg-purple-100 text-purple-800';
+    case 'competitor': return 'bg-blue-100 text-blue-800';
+    case 'visual_hierarchy': return 'bg-green-100 text-green-800';
+    case 'copy_messaging': return 'bg-orange-100 text-orange-800';
+    case 'ecommerce_revenue': return 'bg-emerald-100 text-emerald-800';
+    case 'ab_testing': return 'bg-pink-100 text-pink-800';
+    case 'premium': return 'bg-amber-100 text-amber-800';
+    default: return 'bg-gray-100 text-gray-800';
+  }
+};
 
 export const TemplatesPage: React.FC = () => {
-  const templates = [
-    {
-      id: 1,
-      name: 'E-commerce Landing Page',
-      description: 'Optimized template for product sales and conversions',
-      category: 'E-commerce',
-      rating: 4.8,
-      downloads: 1205
-    },
-    {
-      id: 2,
-      name: 'SaaS Dashboard',
-      description: 'Clean and modern dashboard design for web applications',
-      category: 'SaaS',
-      rating: 4.9,
-      downloads: 890
-    },
-    {
-      id: 3,
-      name: 'Portfolio Website',
-      description: 'Creative portfolio template for designers and developers',
-      category: 'Portfolio',
-      rating: 4.7,
-      downloads: 654
-    }
-  ];
+  const { data: promptTemplates = [], isLoading } = useClaudePromptExamples();
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const navigate = useNavigate();
+
+  const handleUseTemplate = (template) => {
+    // Navigate to analysis page with the selected template
+    navigate('/figmant', { 
+      state: { 
+        activeSection: 'analysis',
+        selectedTemplate: template
+      }
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-6 h-full overflow-y-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6 h-full overflow-y-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Templates</h1>
+          <h1 className="text-3xl font-bold">Prompt Templates</h1>
           <p className="text-muted-foreground">
-            Pre-designed templates to accelerate your design analysis workflow
+            Choose from optimized analysis templates to enhance your design insights
           </p>
         </div>
-        <Button>
-          <FileText className="h-4 w-4 mr-2" />
-          Create Template
-        </Button>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary">
+            {promptTemplates.length} templates available
+          </Badge>
+        </div>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {templates.map((template) => (
-          <Card key={template.id} className="transition-shadow hover:shadow-md">
-            <CardHeader>
-              <div className="w-full h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg mb-4"></div>
-              <CardTitle className="text-lg">{template.name}</CardTitle>
-              <p className="text-sm text-muted-foreground">{template.description}</p>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                  {template.category}
-                </span>
-                <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 text-yellow-500 fill-current" />
-                  <span className="text-xs text-muted-foreground">{template.rating}</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  <Download className="h-3 w-3 inline mr-1" />
-                  {template.downloads} downloads
-                </span>
-                <Button size="sm" variant="outline">
-                  Use Template
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {promptTemplates.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">No Templates Available</h3>
+            <p className="text-muted-foreground">
+              Prompt templates will appear here once they are created by administrators.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {promptTemplates.map((template) => {
+            const IconComponent = getCategoryIcon(template.category);
+            
+            return (
+              <Card key={template.id} className="transition-all hover:shadow-md cursor-pointer group">
+                <CardHeader>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <IconComponent className="h-5 w-5 text-primary" />
+                      <Badge className={getCategoryColor(template.category)}>
+                        {template.category.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    {template.effectiveness_rating && (
+                      <div className="flex items-center gap-1">
+                        <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                        <span className="text-xs text-muted-foreground">
+                          {template.effectiveness_rating}/10
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                    {template.title}
+                  </CardTitle>
+                  
+                  {template.description && (
+                    <CardDescription className="text-sm">
+                      {template.description}
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                
+                <CardContent>
+                  <div className="space-y-3">
+                    {template.use_case_context && (
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-1">Best for:</p>
+                        <p className="text-xs">{template.use_case_context}</p>
+                      </div>
+                    )}
+                    
+                    {template.business_domain && (
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-1">Industry:</p>
+                        <Badge variant="outline" className="text-xs">
+                          {template.business_domain}
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    <div className="flex gap-2 pt-2">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="flex-1">
+                            Preview
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                              <IconComponent className="h-5 w-5" />
+                              {template.title}
+                            </DialogTitle>
+                            <DialogDescription>
+                              {template.description || 'Analysis prompt template'}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <h4 className="font-medium mb-2">Prompt Template:</h4>
+                              <div className="bg-muted p-3 rounded-md text-sm max-h-40 overflow-y-auto">
+                                {template.original_prompt}
+                              </div>
+                            </div>
+                            {template.claude_response && (
+                              <div>
+                                <h4 className="font-medium mb-2">Expected Response Style:</h4>
+                                <div className="bg-muted/50 p-3 rounded-md text-sm max-h-32 overflow-y-auto">
+                                  {template.claude_response.slice(0, 300)}...
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      
+                      <Button 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => handleUseTemplate(template)}
+                      >
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Use Template
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
