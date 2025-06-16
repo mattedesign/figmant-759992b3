@@ -104,7 +104,7 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
     <div className="border rounded p-3 space-y-2">
       <div className="flex items-center justify-between">
         <h4 className="font-medium">{prompt.title}</h4>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 relative z-10">
           {prompt.effectiveness_rating && (
             <Badge variant="outline">
               ⭐ {prompt.effectiveness_rating}/5
@@ -117,9 +117,10 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
             size="sm" 
             variant="ghost" 
             onClick={handleCopyClick}
-            className="hover:bg-gray-100 border border-gray-200"
+            className="hover:bg-gray-100 border border-gray-200 relative z-20"
             type="button"
             title="Copy prompt"
+            style={{ pointerEvents: 'auto' }}
           >
             <Copy className="h-4 w-4" />
           </Button>
@@ -128,9 +129,10 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
               size="sm" 
               variant="ghost" 
               onClick={handleEditClick}
-              className="hover:bg-gray-100 border border-gray-200"
+              className="hover:bg-gray-100 border border-gray-200 relative z-20"
               type="button"
               title="Edit prompt"
+              style={{ pointerEvents: 'auto' }}
             >
               <Edit2 className="h-4 w-4" />
             </Button>

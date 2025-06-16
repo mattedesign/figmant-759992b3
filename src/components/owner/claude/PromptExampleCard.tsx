@@ -26,7 +26,7 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
   };
 
   return (
-    <>
+    <div className="relative">
       <PromptExampleView
         prompt={prompt}
         onEdit={handleEdit}
@@ -37,6 +37,6 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
         isOpen={isDrawerOpen}
         onClose={handleCloseDrawer}
       />
-    </>
+    </div>
   );
 };
