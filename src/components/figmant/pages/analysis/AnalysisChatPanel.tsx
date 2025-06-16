@@ -92,11 +92,13 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         />
       </div>
 
-      {/* Attachments Preview */}
-      <AttachmentPreview
-        attachments={attachments}
-        onRemove={fileUploadHandler.removeAttachment}
-      />
+      {/* Attachments Preview - Only show when there are attachments */}
+      {attachments.length > 0 && (
+        <AttachmentPreview
+          attachments={attachments}
+          onRemove={fileUploadHandler.removeAttachment}
+        />
+      )}
 
       {/* URL Input */}
       <URLInputSection
