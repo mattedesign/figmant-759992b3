@@ -20,7 +20,10 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
 
   useEffect(() => {
     const loadImage = async () => {
-      console.log('=== LOGO COMPONENT: LOADING LOGO FROM CONFIG ===');
+      console.log('=== LOGO COMPONENT DEBUG ===');
+      console.log('isLoading:', isLoading);
+      console.log('logoConfig:', logoConfig);
+      console.log('logoConfig.activeLogoUrl:', logoConfig.activeLogoUrl);
       
       setImageStatus('loading');
       
@@ -29,7 +32,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
       
       console.log('Logo component: Testing logo URL from config:', logoToTest);
       
-      if (!logoToTest) {
+      if (!logoToTest || logoToTest === '') {
         console.log('Logo component: No logo URL found in config, showing fallback');
         setImageStatus('error');
         return;
@@ -105,6 +108,9 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     </div>
   );
 
+  // Always show the default logo image first, fallback to text only if it fails
+  const defaultLogoUrl = '/lovable-uploads/235bdb67-21d3-44ed-968a-518226eef780.png';
+
   // Loading placeholder
   if (isLoading || imageStatus === 'loading') {
     return (
@@ -114,24 +120,53 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     );
   }
 
-  // Show fallback if image failed to load or no logo configured
-  if (imageStatus === 'error' || !logoConfig.activeLogoUrl) {
-    console.log('Logo component: Showing Figmant fallback due to load errors or no configured logo');
-    return <FallbackLogo />;
+  // If we have a configured logo URL and it loaded successfully, show it
+  if (imageStatus === 'loaded' && logoConfig.activeLogoUrl) {
+    console.log('Logo component: Displaying configured logo:', logoConfig.activeLogoUrl);
+    return (
+      <img
+        src={logoConfig.activeLogoUrl}
+        alt="Figmant Logo"
+        className={`${sizeClasses[size]} ${className} object-contain`}
+        onError={(e) => {
+          console.error('Logo component: Image onError triggered for:', logoConfig.activeLogoUrl);
+          setImageStatus('error');
+        }}
+        onLoad={() => {
+          console.log('✓ Logo component: Image onLoad triggered successfully for:', logoConfig.activeLogoUrl);
+        }}
+      />
+    );
   }
 
-  // Display the actual logo from admin configuration
+  // Try to show the default logo image before falling back to text
+  console.log('Logo component: Trying to show default logo image:', defaultLogoUrl);
   return (
     <img
-      src={logoConfig.activeLogoUrl}
+      src={defaultLogoUrl}
       alt="Figmant Logo"
       className={`${sizeClasses[size]} ${className} object-contain`}
       onError={(e) => {
-        console.error('Logo component: Image onError triggered for:', logoConfig.activeLogoUrl);
-        setImageStatus('error');
+        console.error('Logo component: Default logo also failed, showing text fallback');
+        // If even the default logo fails, replace with fallback component
+        e.currentTarget.style.display = 'none';
+        const fallbackEl = document.createElement('div');
+        fallbackEl.innerHTML = `
+          <div class="${sizeClasses[size]} ${className} flex items-center justify-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg px-3 py-1">
+            <div class="flex items-center space-x-1">
+              <span class="text-white font-bold text-sm tracking-wide">FIGMANT</span>
+              <div class="flex space-x-1 ml-2">
+                <div class="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                <div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                <div class="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        `;
+        e.currentTarget.parentNode?.appendChild(fallbackEl);
       }}
       onLoad={() => {
-        console.log('✓ Logo component: Image onLoad triggered successfully for:', logoConfig.activeLogoUrl);
+        console.log('✓ Logo component: Default logo loaded successfully');
       }}
     />
   );
