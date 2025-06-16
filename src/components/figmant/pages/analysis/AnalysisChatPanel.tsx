@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFigmantChatAnalysis, useFigmantPromptTemplates, useBestFigmantPrompt } from '@/hooks/useFigmantChatAnalysis';
@@ -289,7 +290,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         onKeyPress={handleKeyPress}
         isAnalyzing={analyzeWithFigmantChat.isPending}
         canSend={canSend}
-        isDragActive={isDragActive === true}
+        isDragActive={!!isDragActive}
         getRootProps={getRootProps}
         getInputProps={getInputProps}
       />
