@@ -27,7 +27,7 @@ export const DashboardAnalyticsSection: React.FC<DashboardAnalyticsSectionProps>
   return (
     <div className={className}>
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <Card>
+        <Card className="w-full">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg font-semibold">Dashboard Analytics</CardTitle>
@@ -49,16 +49,16 @@ export const DashboardAnalyticsSection: React.FC<DashboardAnalyticsSectionProps>
             </div>
           </CardHeader>
           
-          <CardContent>
-            {/* Always show metrics grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <AnalyticsMetricsGrid dataStats={dataStats} />
+          <CardContent className="w-full">
+            {/* Always show metrics grid - now full width */}
+            <div className="w-full">
+              <AnalyticsMetricsGrid dataStats={dataStats} className="w-full" />
             </div>
             
             {/* Expandable analytics sections */}
             <CollapsibleContent className="data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
-              <div className="mt-8">
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <div className="mt-8 w-full">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="overview" className="flex items-center gap-2">
                       <TrendingUp className="h-4 w-4" />
@@ -78,21 +78,21 @@ export const DashboardAnalyticsSection: React.FC<DashboardAnalyticsSectionProps>
                     </TabsTrigger>
                   </TabsList>
 
-                  <div className="mt-6">
-                    <TabsContent value="overview" className="space-y-6">
+                  <div className="mt-6 w-full">
+                    <TabsContent value="overview" className="space-y-6 w-full">
                       <TrendAnalysisChart data={analysisData} title="Activity Trends Overview" />
                     </TabsContent>
 
-                    <TabsContent value="activity" className="space-y-6">
+                    <TabsContent value="activity" className="space-y-6 w-full">
                       <ActivityHeatMap />
                     </TabsContent>
 
-                    <TabsContent value="insights" className="space-y-6">
+                    <TabsContent value="insights" className="space-y-6 w-full">
                       <PerformanceInsights dataStats={dataStats} />
                     </TabsContent>
 
-                    <TabsContent value="performance" className="space-y-6">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <TabsContent value="performance" className="space-y-6 w-full">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
                         <TrendAnalysisChart data={analysisData} title="Performance Metrics" />
                         <PerformanceInsights dataStats={dataStats} />
                       </div>

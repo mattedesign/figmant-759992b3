@@ -61,7 +61,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   };
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-gray-600">
           {title}
@@ -164,7 +164,7 @@ export const AnalyticsMetricsGrid: React.FC<AnalyticsMetricsGridProps> = ({
   ];
 
   return (
-    <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", className)}>
+    <div className={cn("w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4", className)}>
       {metrics.map((metric) => (
         <MetricCard key={metric.title} {...metric} />
       ))}
