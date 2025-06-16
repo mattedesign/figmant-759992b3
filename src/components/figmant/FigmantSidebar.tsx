@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { SidebarHeader } from './sidebar/SidebarHeader';
@@ -18,36 +18,50 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
 }) => {
   const { isOwner, profile, user, subscription, signOut } = useAuth();
   const { credits, creditsLoading } = useUserCredits();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const currentBalance = credits?.current_balance || 0;
   const totalPurchased = credits?.total_purchased || 0;
 
+  const handleToggleCollapse = (collapsed: boolean) => {
+    setIsCollapsed(collapsed);
+  };
+
   return (
-    <div className="w-64 border-r border-gray-200/30 flex flex-col min-h-screen" style={{ background: 'transparent' }}>
-      <SidebarHeader />
+    <div 
+      className={`border-r border-gray-200/30 flex flex-col min-h-screen transition-all duration-300 ${
+        isCollapsed ? 'w-16' : 'w-64 xl:max-w-[240px]'
+      }`}
+      style={{ background: 'transparent' }}
+    >
+      <SidebarHeader onToggleCollapse={handleToggleCollapse} />
       
-      <SidebarNavigation 
-        activeSection={activeSection}
-        onSectionChange={onSectionChange}
-        isOwner={isOwner}
-      />
+      {!isCollapsed && (
+        <>
+          <SidebarNavigation 
+            activeSection={activeSection}
+            onSectionChange={onSectionChange}
+            isOwner={isOwner}
+          />
 
-      {/* Credits Section - Only show for non-owners */}
-      {!isOwner && (
-        <SidebarCredits 
-          currentBalance={currentBalance}
-          totalPurchased={totalPurchased}
-          creditsLoading={creditsLoading}
-        />
+          {/* Credits Section - Only show for non-owners */}
+          {!isOwner && (
+            <SidebarCredits 
+              currentBalance={currentBalance}
+              totalPurchased={totalPurchased}
+              creditsLoading={creditsLoading}
+            />
+          )}
+
+          <SidebarUserProfile 
+            isOwner={isOwner}
+            profile={profile}
+            user={user}
+            subscription={subscription}
+            signOut={signOut}
+          />
+        </>
       )}
-
-      <SidebarUserProfile 
-        isOwner={isOwner}
-        profile={profile}
-        user={user}
-        subscription={subscription}
-        signOut={signOut}
-      />
     </div>
   );
 };

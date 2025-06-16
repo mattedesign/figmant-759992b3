@@ -50,10 +50,14 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             >
               <section.icon className={cn(
                 "h-4 w-4 mr-3",
-                activeSection === section.id && "text-[#3D4A5C]"
+                activeSection === section.id 
+                  ? "text-[#3D4A5C] font-bold stroke-[2.5]" 
+                  : "text-[#455468]"
               )} />
               <span className={cn(
-                activeSection === section.id && "text-[#3D4A5C]"
+                activeSection === section.id 
+                  ? "text-[#3D4A5C] font-semibold" 
+                  : "text-[#455468] font-medium"
               )}>
                 {section.label}
               </span>

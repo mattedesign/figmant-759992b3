@@ -1,23 +1,21 @@
+
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, TrendingUp, BarChart3 } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
+
 interface DashboardHeaderProps {
   dataStats: any;
   lastUpdated?: Date | null;
   onRefresh?: () => void;
   isRefreshing?: boolean;
 }
+
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
-  dataStats,
-  lastUpdated,
-  onRefresh,
-  isRefreshing = false
+  lastUpdated
 }) => {
-  const {
-    profile
-  } = useAuth();
+  const { profile } = useAuth();
   const currentDate = new Date();
   const formattedDate = format(currentDate, 'EEEE, MMMM d');
 
@@ -36,30 +34,21 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     }
     return 'there';
   };
-  return <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-[12px]">
+
+  return (
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-[12px] pt-2">
       <div>
         <div className="text-sm text-gray-500 mb-1">{formattedDate}</div>
-        <h1 className="text-3xl text-gray-900">
+        <h1 className="text-[24px] text-gray-900">
           <span className="font-normal">{getGreeting()}</span>, <span className="font-bold">{getFirstName()}</span>
         </h1>
-        {lastUpdated && <Badge variant="outline" className="flex items-center gap-1 mt-2">
+        {lastUpdated && (
+          <Badge variant="outline" className="flex items-center gap-1 mt-2">
             <Calendar className="h-3 w-3" />
             Updated {format(lastUpdated, 'MMM dd, HH:mm')}
-          </Badge>}
+          </Badge>
+        )}
       </div>
-      
-      <div className="flex items-center gap-3">
-        {/* Quick stats */}
-        <div className="hidden md:flex items-center gap-4 text-sm text-gray-600">
-          <div className="flex items-center gap-1">
-            <BarChart3 className="h-4 w-4" />
-            <span>{dataStats.totalAnalyses} analyses</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <TrendingUp className="h-4 w-4" />
-            <span>{dataStats.completionRate}% complete</span>
-          </div>
-        </div>
-      </div>
-    </div>;
+    </div>
+  );
 };
