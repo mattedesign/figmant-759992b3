@@ -43,18 +43,8 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
         </Badge>
       );
     }
-    if (location.pathname === '/figmant' || location.pathname === '/') {
-      return (
-        <Badge variant="secondary" className="bg-green-100 text-green-800">
-          Live
-        </Badge>
-      );
-    }
-    return (
-      <Badge variant="secondary" className="bg-green-100 text-green-800">
-        Live
-      </Badge>
-    );
+    // Removed the "Live" badge for figmant and default routes
+    return null;
   };
 
   return (
