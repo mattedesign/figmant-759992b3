@@ -1,13 +1,13 @@
 
-import React from 'react';
-import { Badge } from '@/components/ui/badge';
+import React, { useState } from 'react';
 import { 
   User,
   LogOut,
   CreditCard,
   LayoutDashboard,
   Shield,
-  UserCog
+  UserCog,
+  Upload
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -18,6 +18,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface SidebarUserProfileProps {
   isOwner: boolean;
@@ -36,38 +39,66 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-
-  const getInitials = () => {
-    if (profile?.full_name) {
-      return profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase();
-    }
-    if (profile?.email) {
-      return profile.email.substring(0, 2).toUpperCase();
-    }
-    return 'U';
-  };
+  const [uploading, setUploading] = useState(false);
 
   const handleSignOut = async () => {
     console.log('SidebarUserProfile: Initiating sign out...');
     try {
       await signOut();
       console.log('SidebarUserProfile: Sign out successful, navigating to auth');
-      navigate('/auth');
+      navigate('/auth', { replace: true });
     } catch (error) {
       console.error('SidebarUserProfile: Sign out error:', error);
     }
   };
 
-  const getSubscriptionBadge = () => {
-    if (profile?.role === 'owner') {
-      return <Badge variant="default" className="ml-2">Owner</Badge>;
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploading(true);
+      const file = event.target.files?.[0];
+      if (!file || !user) return;
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file');
+        return;
+      }
+
+      // Upload to Supabase storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      const filePath = `profile-images/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('design-uploads')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('design-uploads')
+        .getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      toast.success('Profile image updated successfully');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploading(false);
     }
-    
-    if (subscription?.status === 'active') {
-      return <Badge variant="default" className="ml-2">Pro</Badge>;
-    }
-    
-    return <Badge variant="secondary" className="ml-2">Free</Badge>;
   };
 
   const isOnOwnerDashboard = location.pathname === '/owner';
@@ -86,13 +117,15 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
               background: '#FFF'
             }}
           >
-            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-sm font-medium">{getInitials()}</span>
-            </div>
+            <Avatar className="w-8 h-8">
+              <AvatarImage src={profile?.avatar_url} />
+              <AvatarFallback className="bg-gray-100">
+                <User className="h-4 w-4 text-gray-500" />
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900 flex items-center">
+              <div className="text-sm font-medium text-gray-900">
                 {profile?.full_name || user?.email?.split('@')[0] || 'User'}
-                {getSubscriptionBadge()}
               </div>
               <div className="text-xs text-gray-500 truncate">
                 {profile?.email || user?.email || 'user@example.com'}
@@ -103,6 +136,23 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          
+          {/* Profile Image Upload */}
+          <DropdownMenuItem asChild>
+            <label className="cursor-pointer flex items-center">
+              <Upload className="mr-2 h-4 w-4" />
+              <span>{uploading ? 'Uploading...' : 'Update Profile Image'}</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={uploading}
+                className="hidden"
+              />
+            </label>
+          </DropdownMenuItem>
+          
           <DropdownMenuSeparator />
           
           {/* Dashboard Navigation - Only show for owners */}

@@ -13,12 +13,35 @@ import { CreditDepletionPrompt } from '@/components/onboarding/CreditDepletionPr
 import { DesignUpload } from '@/types/design';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { useUserOnboarding } from '@/hooks/useUserOnboarding';
+import { format } from 'date-fns';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Dashboard = () => {
   const { credits } = useUserCredits();
+  const { profile } = useAuth();
   const { onboardingState, loading, markWelcomePromptSeen, markCreditDepletionPromptSeen } = useUserOnboarding();
   const [showWelcomePrompt, setShowWelcomePrompt] = useState(false);
   const [showCreditDepletionPrompt, setShowCreditDepletionPrompt] = useState(false);
+
+  // Get current date and time
+  const now = new Date();
+  const currentDate = format(now, 'EEEE, MMMM d');
+  const currentHour = now.getHours();
+
+  // Determine greeting based on time of day (Title Case)
+  const getGreeting = () => {
+    if (currentHour < 12) return 'Good Morning';
+    if (currentHour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
+  // Get user's first name from profile
+  const getFirstName = () => {
+    if (profile?.full_name) {
+      return profile.full_name.split(' ')[0];
+    }
+    return 'there'; // fallback if no name available
+  };
 
   useEffect(() => {
     if (!loading && onboardingState && credits) {
@@ -54,44 +77,50 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Monitor your UX analytics and design performance
-          </p>
+      <main>
+        {/* Standardized header */}
+        <div className="flex-none px-8 py-6 pb-4" style={{ backgroundColor: 'transparent' }}>
+          <div className="mb-4">
+            <div className="text-sm text-gray-500 mb-1">{currentDate}</div>
+            <h1 className="text-2xl text-gray-900">
+              <span style={{ fontWeight: 'normal', color: '#455468' }}>{getGreeting()} </span>
+              <span className="font-semibold">{getFirstName()}</span>
+            </h1>
+          </div>
         </div>
 
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="design">Design Analysis</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
+        <div className="px-8">
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="design">Design Analysis</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="overview" className="mt-6">
-            <div className="grid gap-6">
-              <div className="grid gap-6 md:grid-cols-2">
-                <QuickActions />
-                <CreditStatus />
+            <TabsContent value="overview" className="mt-6">
+              <div className="grid gap-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <QuickActions />
+                  <CreditStatus />
+                </div>
+                <RecentAnalyses onViewAnalysis={handleViewAnalysis} />
               </div>
-              <RecentAnalyses onViewAnalysis={handleViewAnalysis} />
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="design" className="mt-6">
-            <AdvancedDesignAnalysisPage />
-          </TabsContent>
+            <TabsContent value="design" className="mt-6">
+              <AdvancedDesignAnalysisPage />
+            </TabsContent>
 
-          <TabsContent value="analytics" className="mt-6">
-            <AnalyticsOverview />
-          </TabsContent>
+            <TabsContent value="analytics" className="mt-6">
+              <AnalyticsOverview />
+            </TabsContent>
 
-          <TabsContent value="settings" className="mt-6">
-            <Settings />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="settings" className="mt-6">
+              <Settings />
+            </TabsContent>
+          </Tabs>
+        </div>
       </main>
 
       {/* Onboarding Prompts */}

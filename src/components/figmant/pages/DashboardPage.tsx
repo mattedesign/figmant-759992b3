@@ -79,9 +79,9 @@ export const DashboardPage: React.FC = () => {
       <div className="h-full flex flex-col">
         <DashboardHeader />
 
-        {/* Main Content with responsive layout optimization */}
+        {/* Main Content with responsive layout optimization and increased padding */}
         <div 
-          className="flex-1 overflow-y-auto px-6"
+          className="flex-1 overflow-y-auto px-8"
           style={{
             background: '#F9FAFB'
           }}
