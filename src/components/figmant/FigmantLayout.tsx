@@ -1,88 +1,38 @@
 
-import React, { useState } from 'react';
-import { FigmantMainContent } from './FigmantMainContent';
+import React, { useState, useEffect } from 'react';
 import { FigmantSidebar } from './FigmantSidebar';
-import { MobileNavigation } from './navigation/MobileNavigation';
-import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
+import { FigmantMainContent } from './FigmantMainContent';
+import { FigmantRightSidebar } from './FigmantRightSidebar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const FigmantLayout: React.FC = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
-  const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
 
-  const handleBackToList = () => {
-    setSelectedAnalysis(null);
-  };
+  // Listen for navigation events from other components
+  useEffect(() => {
+    const handleNavigateToAnalysis = () => {
+      setActiveSection('analysis');
+    };
 
-  const handleRightSidebarModeChange = (mode: string) => {
-    console.log('Right sidebar mode changed to:', mode);
-  };
+    window.addEventListener('navigate-to-analysis', handleNavigateToAnalysis);
+    
+    return () => {
+      window.removeEventListener('navigate-to-analysis', handleNavigateToAnalysis);
+    };
+  }, []);
 
-  if (isMobile) {
-    return (
-      <div className="min-h-screen flex flex-col w-full" style={{ background: 'transparent' }}>
-        {/* Mobile Header with Navigation */}
-        <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">figmant</h1>
-          <MobileNavigation 
-            activeSection={activeSection}
-            onSectionChange={setActiveSection}
-          />
-        </div>
-        
-        {/* Mobile Main Content */}
-        <div className="flex-1 overflow-hidden">
-          <FigmantMainContent
-            activeSection={activeSection}
-            setActiveSection={setActiveSection}
-            selectedAnalysis={selectedAnalysis}
-            onBackToList={handleBackToList}
-            onRightSidebarModeChange={handleRightSidebarModeChange}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  if (isTablet) {
-    return (
-      <div className="min-h-screen flex w-full" style={{ background: 'transparent' }}>
-        {/* Tablet sidebar - more compact */}
-        <div className="w-64 flex-shrink-0">
-          <FigmantSidebar 
-            activeSection={activeSection}
-            onSectionChange={setActiveSection}
-          />
-        </div>
-        {/* Tablet main content */}
-        <div className="flex-1 min-w-0">
-          <FigmantMainContent
-            activeSection={activeSection}
-            setActiveSection={setActiveSection}
-            selectedAnalysis={selectedAnalysis}
-            onBackToList={handleBackToList}
-            onRightSidebarModeChange={handleRightSidebarModeChange}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // Desktop layout
   return (
-    <div className="min-h-screen flex w-full" style={{ background: 'transparent' }}>
+    <div className="h-screen flex bg-white">
       <FigmantSidebar 
         activeSection={activeSection}
         onSectionChange={setActiveSection}
       />
-      <FigmantMainContent
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-        selectedAnalysis={selectedAnalysis}
-        onBackToList={handleBackToList}
-        onRightSidebarModeChange={handleRightSidebarModeChange}
-      />
+      
+      <div className="flex-1 flex overflow-hidden">
+        <FigmantMainContent activeSection={activeSection} />
+        {!isMobile && <FigmantRightSidebar />}
+      </div>
     </div>
   );
 };
