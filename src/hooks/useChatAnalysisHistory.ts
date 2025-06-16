@@ -33,7 +33,14 @@ export const useChatAnalysisHistory = () => {
       }
       
       console.log('Fetched chat analysis history:', data?.length || 0);
-      return data || [];
+      
+      // Transform the data to match our interface
+      return (data || []).map(item => ({
+        ...item,
+        analysis_results: typeof item.analysis_results === 'string' 
+          ? { response: item.analysis_results }
+          : item.analysis_results as SavedChatAnalysis['analysis_results']
+      }));
     }
   });
 };

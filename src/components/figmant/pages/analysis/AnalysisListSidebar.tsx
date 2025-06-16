@@ -89,7 +89,7 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
                 <Button
                   key={`${analysis.type}-${analysis.id}`}
                   variant="ghost"
-                  className="w-full justify-start p-3 h-auto flex-col items-start"
+                  className="w-full justify-start p-3 h-auto flex-col items-start hover:bg-blue-50"
                   onClick={() => onAnalysisSelect(analysis)}
                 >
                   <div className="flex items-center gap-2 w-full">
@@ -126,7 +126,7 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
                 <Button
                   key={`saved-${analysis.type}-${analysis.id}`}
                   variant="ghost"
-                  className="w-full justify-start p-3 h-auto flex-col items-start"
+                  className="w-full justify-start p-3 h-auto flex-col items-start hover:bg-blue-50"
                   onClick={() => onAnalysisSelect(analysis)}
                 >
                   <div className="flex items-center gap-2 w-full">
