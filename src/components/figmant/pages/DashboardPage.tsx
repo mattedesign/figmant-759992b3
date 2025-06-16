@@ -87,27 +87,23 @@ export const DashboardPage: React.FC = () => {
           analysisData={memoizedAnalysisData}
         />
         
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-3 space-y-8">
-            <RecentAnalysisSection 
-              analysisData={memoizedAnalysisData}
-              isLoading={loadingStates.analyses}
-              error={errorStates.analyses}
-              onRetry={refreshAnalyses}
-            />
-            <InsightsSection 
-              insightsData={memoizedInsightsData}
-              isLoading={loadingStates.insights}
-              error={errorStates.insights}
-              onRetry={refreshInsights}
-            />
-          </div>
+        {/* Main Content - Single Column Layout */}
+        <div className="space-y-8">
+          <RecentAnalysisSection 
+            analysisData={memoizedAnalysisData}
+            isLoading={loadingStates.analyses}
+            error={errorStates.analyses}
+            onRetry={refreshAnalyses}
+          />
           
-          {/* Sidebar */}
-          <div className="space-y-8">
-            <PatternAnalysisSection />
-          </div>
+          <PatternAnalysisSection />
+          
+          <InsightsSection 
+            insightsData={memoizedInsightsData}
+            isLoading={loadingStates.insights}
+            error={errorStates.insights}
+            onRetry={refreshInsights}
+          />
         </div>
       </div>
     </div>
