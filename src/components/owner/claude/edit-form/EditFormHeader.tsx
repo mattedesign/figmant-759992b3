@@ -20,7 +20,7 @@ export const EditFormHeader: React.FC<EditFormHeaderProps> = ({
   return (
     <CardHeader className="pb-4">
       <CardTitle className="flex items-center justify-between">
-        <span className="text-lg">Edit Prompt: {promptTitle}</span>
+        <span className="text-lg">Edit Prompt Template: {promptTitle}</span>
         <div className="flex items-center gap-2">
           <Button 
             size="sm"

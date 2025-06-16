@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { CategoryType } from '@/types/promptTypes';
 
-interface EditedPromptData {
+interface EditedTemplateData {
   title: string;
   description: string;
   category: CategoryType;
@@ -18,8 +18,8 @@ interface EditedPromptData {
 }
 
 interface PromptContentFieldsProps {
-  editedPrompt: EditedPromptData;
-  setEditedPrompt: (prompt: EditedPromptData) => void;
+  editedPrompt: EditedTemplateData;
+  setEditedPrompt: (prompt: EditedTemplateData) => void;
 }
 
 export const PromptContentFields: React.FC<PromptContentFieldsProps> = ({
@@ -29,13 +29,13 @@ export const PromptContentFields: React.FC<PromptContentFieldsProps> = ({
   return (
     <>
       <div className="space-y-2">
-        <Label htmlFor="edit-prompt">Prompt Text *</Label>
+        <Label htmlFor="edit-prompt">Prompt Template Text *</Label>
         <Textarea
           id="edit-prompt"
           value={editedPrompt.original_prompt}
           onChange={(e) => setEditedPrompt({ ...editedPrompt, original_prompt: e.target.value })}
           rows={6}
-          placeholder="Enter the prompt text"
+          placeholder="Enter the prompt template text"
         />
       </div>
 

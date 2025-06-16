@@ -1,33 +1,33 @@
 
 import React, { useState, useEffect } from 'react';
 import { ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
-import { PromptExampleView } from './PromptExampleView';
-import { PromptExampleEditForm } from './PromptExampleEditForm';
+import { PromptTemplateView } from './PromptTemplateView';
+import { PromptTemplateEditForm } from './PromptTemplateEditForm';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface PromptExampleCardProps {
-  prompt: ClaudePromptExample;
+interface PromptTemplateItemProps {
+  template: ClaudePromptExample;
 }
 
-export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) => {
+export const PromptTemplateItem: React.FC<PromptTemplateItemProps> = ({ template }) => {
   const [isEditing, setIsEditing] = useState(false);
   const { isOwner, loading } = useAuth();
   
-  console.log('🔄 PromptExampleCard render - ID:', prompt.id, 'isEditing:', isEditing, 'isOwner:', isOwner, 'loading:', loading);
+  console.log('🔄 PromptTemplateItem render - ID:', template.id, 'isEditing:', isEditing, 'isOwner:', isOwner, 'loading:', loading);
   
   // Debug effect to track state changes
   useEffect(() => {
-    console.log('📊 PromptExampleCard state change:', {
-      promptId: prompt.id,
+    console.log('📊 PromptTemplateItem state change:', {
+      templateId: template.id,
       isEditing,
       isOwner,
       loading,
       authReady: !loading
     });
-  }, [isEditing, isOwner, loading, prompt.id]);
+  }, [isEditing, isOwner, loading, template.id]);
   
   const handleEdit = () => {
-    console.log('🖱️ PromptExampleCard handleEdit called for prompt:', prompt.id);
+    console.log('🖱️ PromptTemplateItem handleEdit called for template:', template.id);
     console.log('🔐 Auth state check:', { isOwner, loading });
     
     if (loading) {
@@ -50,12 +50,12 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
   };
 
   const handleCancelEdit = () => {
-    console.log('❌ Canceling edit for prompt:', prompt.id);
+    console.log('❌ Canceling edit for template:', template.id);
     setIsEditing(false);
   };
 
   const handleSaveSuccess = () => {
-    console.log('✅ Save successful for prompt:', prompt.id);
+    console.log('✅ Save successful for template:', template.id);
     setIsEditing(false);
   };
 
@@ -70,19 +70,19 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
     );
   }
 
-  console.log('🎨 PromptExampleCard rendering decision:', {
-    promptId: prompt.id,
+  console.log('🎨 PromptTemplateItem rendering decision:', {
+    templateId: template.id,
     isEditing,
     willShowEditForm: isEditing,
     willShowViewForm: !isEditing
   });
 
   if (isEditing) {
-    console.log('📝 Rendering edit form for prompt:', prompt.id);
+    console.log('📝 Rendering edit form for template:', template.id);
     return (
       <div className="w-full">
-        <PromptExampleEditForm
-          prompt={prompt}
+        <PromptTemplateEditForm
+          template={template}
           onCancel={handleCancelEdit}
           onSaveSuccess={handleSaveSuccess}
         />
@@ -90,11 +90,11 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
     );
   }
 
-  console.log('👁️ Rendering view form for prompt:', prompt.id);
+  console.log('👁️ Rendering view form for template:', template.id);
   return (
     <div className="w-full">
-      <PromptExampleView
-        prompt={prompt}
+      <PromptTemplateView
+        template={template}
         onEdit={handleEdit}
       />
     </div>

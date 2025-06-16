@@ -9,7 +9,7 @@ import { BasicInfoFields } from './edit-form/BasicInfoFields';
 import { PromptContentFields } from './edit-form/PromptContentFields';
 import { MetadataFields } from './edit-form/MetadataFields';
 
-interface EditedPromptData {
+interface EditedTemplateData {
   title: string;
   description: string;
   category: CategoryType;
@@ -22,39 +22,39 @@ interface EditedPromptData {
   is_active: boolean;
 }
 
-interface PromptExampleEditFormProps {
-  prompt: ClaudePromptExample;
+interface PromptTemplateEditFormProps {
+  template: ClaudePromptExample;
   onCancel: () => void;
   onSaveSuccess: () => void;
 }
 
-export const PromptExampleEditForm: React.FC<PromptExampleEditFormProps> = ({
-  prompt,
+export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
+  template,
   onCancel,
   onSaveSuccess
 }) => {
   const { toast } = useToast();
-  const updatePromptMutation = useUpdatePromptExample();
+  const updateTemplateMutation = useUpdatePromptExample();
   
-  console.log('✏️ PromptExampleEditForm rendering for prompt:', prompt.id);
+  console.log('✏️ PromptTemplateEditForm rendering for template:', template.id);
   
-  const [editedPrompt, setEditedPrompt] = useState<EditedPromptData>({
-    title: prompt.title,
-    description: prompt.description || '',
-    category: prompt.category,
-    original_prompt: prompt.original_prompt,
-    claude_response: prompt.claude_response,
-    effectiveness_rating: prompt.effectiveness_rating || 5,
-    use_case_context: prompt.use_case_context || '',
-    business_domain: prompt.business_domain || '',
-    is_template: prompt.is_template,
-    is_active: prompt.is_active
+  const [editedTemplate, setEditedTemplate] = useState<EditedTemplateData>({
+    title: template.title,
+    description: template.description || '',
+    category: template.category,
+    original_prompt: template.original_prompt,
+    claude_response: template.claude_response,
+    effectiveness_rating: template.effectiveness_rating || 5,
+    use_case_context: template.use_case_context || '',
+    business_domain: template.business_domain || '',
+    is_template: template.is_template,
+    is_active: template.is_active
   });
 
   const handleSave = async () => {
-    console.log('💾 Saving prompt changes for:', prompt.id);
+    console.log('💾 Saving template changes for:', template.id);
     
-    if (!editedPrompt.title.trim()) {
+    if (!editedTemplate.title.trim()) {
       toast({
         title: "Validation Error",
         description: "Title is required",
@@ -63,7 +63,7 @@ export const PromptExampleEditForm: React.FC<PromptExampleEditFormProps> = ({
       return;
     }
 
-    if (!editedPrompt.original_prompt.trim()) {
+    if (!editedTemplate.original_prompt.trim()) {
       toast({
         title: "Validation Error", 
         description: "Prompt text is required",
@@ -73,55 +73,55 @@ export const PromptExampleEditForm: React.FC<PromptExampleEditFormProps> = ({
     }
 
     try {
-      await updatePromptMutation.mutateAsync({
-        id: prompt.id,
-        updates: editedPrompt
+      await updateTemplateMutation.mutateAsync({
+        id: template.id,
+        updates: editedTemplate
       });
       
-      console.log('✅ Prompt saved successfully');
+      console.log('✅ Template saved successfully');
       toast({
         title: "Success",
-        description: "Prompt updated successfully",
+        description: "Prompt template updated successfully",
       });
       onSaveSuccess();
     } catch (error) {
-      console.error('❌ Failed to update prompt:', error);
+      console.error('❌ Failed to update template:', error);
       toast({
         title: "Error",
-        description: "Failed to update prompt",
+        description: "Failed to update prompt template",
         variant: "destructive",
       });
     }
   };
 
   const handleCancel = () => {
-    console.log('❌ Canceling edit for prompt:', prompt.id);
+    console.log('❌ Canceling edit for template:', template.id);
     onCancel();
   };
 
   return (
     <Card className="border-2 border-blue-200 bg-blue-50">
       <EditFormHeader
-        promptTitle={prompt.title}
+        promptTitle={template.title}
         onSave={handleSave}
         onCancel={handleCancel}
-        isSaving={updatePromptMutation.isPending}
+        isSaving={updateTemplateMutation.isPending}
       />
       
       <CardContent className="space-y-4">
         <BasicInfoFields
-          editedPrompt={editedPrompt}
-          setEditedPrompt={setEditedPrompt}
+          editedPrompt={editedTemplate}
+          setEditedPrompt={setEditedTemplate}
         />
         
         <PromptContentFields
-          editedPrompt={editedPrompt}
-          setEditedPrompt={setEditedPrompt}
+          editedPrompt={editedTemplate}
+          setEditedPrompt={setEditedTemplate}
         />
         
         <MetadataFields
-          editedPrompt={editedPrompt}
-          setEditedPrompt={setEditedPrompt}
+          editedPrompt={editedTemplate}
+          setEditedPrompt={setEditedTemplate}
         />
       </CardContent>
     </Card>

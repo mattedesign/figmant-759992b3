@@ -9,7 +9,7 @@ import { ConnectionStatus } from '@/types/claude';
 
 // Lazy load the heavy components
 const ClaudeHeader = React.lazy(() => import('./ClaudeHeader').then(module => ({ default: module.ClaudeHeader })));
-const PromptCategoryList = React.lazy(() => import('./PromptCategoryList').then(module => ({ default: module.PromptCategoryList })));
+const PromptTemplateList = React.lazy(() => import('./PromptTemplateList').then(module => ({ default: module.PromptTemplateList })));
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center py-8">
@@ -20,7 +20,7 @@ const LoadingSpinner = () => (
 export const ClaudePromptManager: React.FC = () => {
   const { isOwner, loading } = useAuth();
   const { data: claudeSettings, isLoading: settingsLoading } = useClaudeSettings();
-  const { data: prompts = [], isLoading: promptsLoading } = useClaudePromptExamples();
+  const { data: promptTemplates = [], isLoading: templatesLoading } = useClaudePromptExamples();
 
   console.log('🚀 ClaudePromptManager mounting with auth state:', { isOwner, loading });
 
@@ -34,7 +34,7 @@ export const ClaudePromptManager: React.FC = () => {
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            You don't have permission to access the prompt manager. Owner access required.
+            You don't have permission to access the prompt template manager. Owner access required.
           </AlertDescription>
         </Alert>
       </div>
@@ -69,19 +69,19 @@ export const ClaudePromptManager: React.FC = () => {
     };
   };
 
-  // Group prompts by category
-  const groupedPrompts = prompts.reduce((acc, prompt) => {
-    const category = prompt.category;
+  // Group prompt templates by category
+  const groupedTemplates = promptTemplates.reduce((acc, template) => {
+    const category = template.category;
     if (!acc[category]) {
       acc[category] = [];
     }
-    acc[category].push(prompt);
+    acc[category].push(template);
     return acc;
-  }, {} as Record<string, typeof prompts>);
+  }, {} as Record<string, typeof promptTemplates>);
 
   const connectionStatus = getConnectionStatus();
 
-  if (promptsLoading) {
+  if (templatesLoading) {
     return <LoadingSpinner />;
   }
 
@@ -92,7 +92,7 @@ export const ClaudePromptManager: React.FC = () => {
       </Suspense>
       
       <Suspense fallback={<LoadingSpinner />}>
-        <PromptCategoryList groupedPrompts={groupedPrompts} />
+        <PromptTemplateList groupedTemplates={groupedTemplates} />
       </Suspense>
     </div>
   );

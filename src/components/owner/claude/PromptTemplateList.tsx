@@ -2,7 +2,7 @@
 import React from 'react';
 import { Brain, Plus, TrendingUp, Target, Zap, Crown } from 'lucide-react';
 import { ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
-import { PromptCategoryCard } from './PromptCategoryCard';
+import { PromptTemplateCard } from './PromptTemplateCard';
 
 const CATEGORIES = [
   { value: 'master', label: 'Master Analysis', icon: Brain },
@@ -15,21 +15,21 @@ const CATEGORIES = [
   { value: 'general', label: 'General Analysis', icon: Brain }
 ] as const;
 
-interface PromptCategoryListProps {
-  groupedPrompts: Record<string, ClaudePromptExample[]>;
+interface PromptTemplateListProps {
+  groupedTemplates: Record<string, ClaudePromptExample[]>;
 }
 
-export const PromptCategoryList: React.FC<PromptCategoryListProps> = ({ groupedPrompts }) => {
+export const PromptTemplateList: React.FC<PromptTemplateListProps> = ({ groupedTemplates }) => {
   return (
     <div className="space-y-4">
       {CATEGORIES.map(category => {
-        const prompts = groupedPrompts[category.value] || [];
+        const templates = groupedTemplates[category.value] || [];
         
         return (
-          <PromptCategoryCard 
+          <PromptTemplateCard 
             key={category.value} 
             category={category} 
-            prompts={prompts} 
+            templates={templates} 
           />
         );
       })}
