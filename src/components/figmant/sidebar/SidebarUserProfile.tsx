@@ -76,7 +76,14 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
     <div className="p-4 border-t border-gray-200/30 mt-auto">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <div className="flex items-center gap-3 p-2 hover:bg-gray-50/50 rounded-lg cursor-pointer transition-colors">
+          <div 
+            className="flex items-center gap-3 p-2 hover:bg-gray-50/50 rounded-lg cursor-pointer transition-colors"
+            style={{
+              borderRadius: '11px',
+              border: '1px solid rgba(10, 12, 17, 0.10)',
+              background: '#FFF'
+            }}
+          >
             <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
               <span className="text-white text-sm font-medium">{getInitials()}</span>
             </div>
