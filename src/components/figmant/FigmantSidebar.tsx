@@ -46,9 +46,9 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full">
+    <div className="w-64 bg-transparent border-r border-gray-200/30 flex flex-col h-full backdrop-blur-sm">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200/30">
         <h1 className="text-xl font-bold text-gray-900">figmant</h1>
       </div>
 
@@ -64,8 +64,8 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
                 variant="ghost"
                 className={cn(
                   "w-full justify-start",
-                  activeSection === section.id && "bg-blue-50 text-blue-700 border-blue-200",
-                  section.id === 'admin' && "border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
+                  activeSection === section.id && "bg-blue-50/80 text-blue-700 border-blue-200",
+                  section.id === 'admin' && "border border-orange-200 bg-orange-50/80 text-orange-700 hover:bg-orange-100/80"
                 )}
                 onClick={() => onSectionChange(section.id)}
               >
@@ -105,7 +105,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200 space-y-2">
+      <div className="p-4 border-t border-gray-200/30 space-y-2">
         <Button variant="ghost" className="w-full justify-start">
           <Star className="h-4 w-4 mr-3" />
           Premium
@@ -122,7 +122,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
         </Button>
         
         {/* User Profile */}
-        <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+        <div className="flex items-center gap-3 p-2 hover:bg-gray-50/50 rounded-lg cursor-pointer">
           <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
             <span className="text-white text-sm font-medium">R</span>
           </div>
