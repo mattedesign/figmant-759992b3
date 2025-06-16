@@ -39,32 +39,30 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
         onToggleCollapse={handleToggleCollapse} 
       />
       
-      {!isCollapsed && (
-        <>
-          <SidebarNavigation 
-            activeSection={activeSection}
-            onSectionChange={onSectionChange}
-            isOwner={isOwner}
-          />
+      <SidebarNavigation 
+        activeSection={activeSection}
+        onSectionChange={onSectionChange}
+        isOwner={isOwner}
+        isCollapsed={isCollapsed}
+      />
 
-          {/* Credits Section - Only show for non-owners */}
-          {!isOwner && (
-            <SidebarCredits 
-              currentBalance={currentBalance}
-              totalPurchased={totalPurchased}
-              creditsLoading={creditsLoading}
-            />
-          )}
-
-          <SidebarUserProfile 
-            isOwner={isOwner}
-            profile={profile}
-            user={user}
-            subscription={subscription}
-            signOut={signOut}
-          />
-        </>
+      {/* Credits Section - Only show for non-owners and when not collapsed */}
+      {!isOwner && !isCollapsed && (
+        <SidebarCredits 
+          currentBalance={currentBalance}
+          totalPurchased={totalPurchased}
+          creditsLoading={creditsLoading}
+        />
       )}
+
+      <SidebarUserProfile 
+        isOwner={isOwner}
+        profile={profile}
+        user={user}
+        subscription={subscription}
+        signOut={signOut}
+        isCollapsed={isCollapsed}
+      />
     </div>
   );
 };

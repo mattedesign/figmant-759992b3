@@ -26,6 +26,7 @@ interface SidebarUserProfileProps {
   user: any;
   subscription: any;
   signOut: () => Promise<void>;
+  isCollapsed?: boolean;
 }
 
 export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
@@ -33,7 +34,8 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
   profile,
   user,
   subscription,
-  signOut
+  signOut,
+  isCollapsed = false
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,6 +54,86 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
   const isOnOwnerDashboard = location.pathname === '/owner';
   const isOnSubscriberDashboard = location.pathname === '/dashboard';
   const isOnFigmant = location.pathname === '/figmant';
+
+  if (isCollapsed) {
+    return (
+      <div className="p-2 border-t border-gray-200/30 mt-auto flex justify-center">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Avatar className="w-8 h-8 cursor-pointer hover:opacity-80">
+              <AvatarImage src={profile?.avatar_url} />
+              <AvatarFallback className="bg-gray-100">
+                <User className="h-4 w-4 text-gray-500" />
+              </AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            
+            {/* Profile Management */}
+            <DropdownMenuItem onClick={() => navigate('/profile')}>
+              <Settings className="mr-2 h-4 w-4" />
+              Profile & Settings
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            {/* Dashboard Navigation - Only show for owners */}
+            {isOwner && (
+              <>
+                <DropdownMenuItem 
+                  onClick={() => navigate('/dashboard')}
+                  className={isOnSubscriberDashboard ? 'bg-accent' : ''}
+                >
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Subscriber Dashboard
+                </DropdownMenuItem>
+                
+                <DropdownMenuItem 
+                  onClick={() => navigate('/owner')}
+                  className={isOnOwnerDashboard ? 'bg-accent' : ''}
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  Owner Dashboard
+                </DropdownMenuItem>
+
+                <DropdownMenuItem 
+                  onClick={() => navigate('/figmant', { state: { activeSection: 'admin' } })}
+                  className={isOnFigmant && location.state?.activeSection === 'admin' ? 'bg-accent' : ''}
+                >
+                  <UserCog className="mr-2 h-4 w-4" />
+                  Admin
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator />
+              </>
+            )}
+
+            {/* Regular dashboard link for non-owners */}
+            {!isOwner && (
+              <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                <User className="mr-2 h-4 w-4" />
+                Dashboard
+              </DropdownMenuItem>
+            )}
+            
+            <DropdownMenuItem onClick={() => navigate('/subscription')}>
+              <CreditCard className="mr-2 h-4 w-4" />
+              Subscription
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 border-t border-gray-200/30 mt-auto">
