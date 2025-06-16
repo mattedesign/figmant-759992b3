@@ -86,12 +86,15 @@ export const UserMenu = () => {
   const isOnSubscriberDashboard = location.pathname === '/dashboard';
   const isOnFigmant = location.pathname === '/figmant' || location.pathname === '/';
 
+  // Get avatar URL from the profiles table data, not from the UserProfile type
+  const avatarUrl = profile ? (profile as any).avatar_url : undefined;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <div className="flex items-center space-x-2 cursor-pointer hover:bg-accent p-2 rounded-md transition-colors">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={profile?.avatar_url} />
+            <AvatarImage src={avatarUrl} />
             <AvatarFallback className="bg-gray-100">
               <User className="h-4 w-4 text-gray-500" />
             </AvatarFallback>

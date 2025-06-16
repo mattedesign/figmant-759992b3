@@ -59,11 +59,15 @@ export const TemplatePromptIconUpload: React.FC<TemplatePromptIconUploadProps> =
         .from('design-uploads')
         .getPublicUrl(filePath);
 
-      // If we have a promptId, update the database
+      // If we have a promptId, update the claude_prompt_examples table
       if (promptId) {
         const { error: updateError } = await supabase
-          .from('prompt_templates')
-          .update({ icon_url: publicUrl })
+          .from('claude_prompt_examples')
+          .update({ 
+            metadata: {
+              icon_url: publicUrl
+            }
+          })
           .eq('id', promptId);
 
         if (updateError) {
