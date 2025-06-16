@@ -12,8 +12,8 @@ export const AnalysisPageHeader: React.FC<AnalysisPageHeaderProps> = ({
 }) => {
   return (
     <div>
-      <h1 className="text-2xl font-bold">{title}</h1>
-      <p className="text-sm text-muted-foreground">
+      <h1 className="text-3xl font-extrabold text-gray-900">{title}</h1>
+      <p className="text-base text-gray-600 mt-2">
         {description}
       </p>
     </div>
