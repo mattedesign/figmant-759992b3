@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { FigmantMainContent } from './FigmantMainContent';
+import { FigmantSidebar } from './FigmantSidebar';
 
 export const FigmantLayout: React.FC = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -16,12 +17,18 @@ export const FigmantLayout: React.FC = () => {
   };
 
   return (
-    <FigmantMainContent
-      activeSection={activeSection}
-      setActiveSection={setActiveSection}
-      selectedAnalysis={selectedAnalysis}
-      onBackToList={handleBackToList}
-      onRightSidebarModeChange={handleRightSidebarModeChange}
-    />
+    <div className="min-h-screen flex w-full bg-gray-50">
+      <FigmantSidebar 
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+      />
+      <FigmantMainContent
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        selectedAnalysis={selectedAnalysis}
+        onBackToList={handleBackToList}
+        onRightSidebarModeChange={handleRightSidebarModeChange}
+      />
+    </div>
   );
 };

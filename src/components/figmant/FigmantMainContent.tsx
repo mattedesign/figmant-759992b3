@@ -58,7 +58,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   };
 
   return (
-    <div className="flex-1 h-full overflow-hidden p-4">
+    <div className="flex-1 h-screen overflow-hidden p-4">
       <div 
         className="h-full overflow-hidden"
         style={{
