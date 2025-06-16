@@ -1,52 +1,51 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useFigmantPromptTemplates, useBestFigmantPrompt } from '@/hooks/useFigmantChatAnalysis';
-import { PromptTemplateSelector } from './PromptTemplateSelector';
 import { ChatMessages } from './ChatMessages';
-import { AttachmentPreview } from './AttachmentPreview';
-import { URLInputSection } from './URLInputSection';
 import { MessageInputSection } from './MessageInputSection';
-import { useChatState } from './ChatStateManager';
-import { useFileUploadHandler } from './useFileUploadHandler';
+import { URLInputSection } from './URLInputSection';
+import { AttachmentPreview } from './AttachmentPreview';
 import { useMessageHandler } from './useMessageHandler';
+import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
 interface AnalysisChatPanelProps {
-  analysis: any;
-  onAttachmentsChange?: (attachments: any[]) => void;
-  onAnalysisComplete?: (analysisResult: any) => void;
+  message: string;
+  setMessage: (message: string) => void;
+  messages: any[];
+  setMessages: (messages: any[]) => void;
+  attachments: ChatAttachment[];
+  setAttachments: (attachments: ChatAttachment[]) => void;
+  urlInput: string;
+  setUrlInput: (url: string) => void;
+  showUrlInput: boolean;
+  setShowUrlInput: (show: boolean) => void;
+  selectedPromptTemplate?: any;
+  selectedPromptCategory?: string;
+  promptTemplates?: any[];
+  onAnalysisComplete?: (result: any) => void;
 }
 
 export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
-  analysis,
-  onAttachmentsChange,
+  message,
+  setMessage,
+  messages,
+  setMessages,
+  attachments,
+  setAttachments,
+  urlInput,
+  setUrlInput,
+  showUrlInput,
+  setShowUrlInput,
+  selectedPromptTemplate,
+  selectedPromptCategory,
+  promptTemplates,
   onAnalysisComplete
 }) => {
   const {
-    message,
-    setMessage,
-    messages,
-    setMessages,
-    attachments,
-    setAttachments,
-    selectedPromptCategory,
-    setSelectedPromptCategory,
-    selectedPromptTemplate,
-    setSelectedPromptTemplate,
-    showUrlInput,
-    setShowUrlInput,
-    urlInput,
-    setUrlInput
-  } = useChatState({ onAttachmentsChange });
-
-  const { data: promptTemplates, isLoading: promptsLoading } = useFigmantPromptTemplates();
-  const { data: bestPrompt } = useBestFigmantPrompt(selectedPromptCategory);
-
-  // Initialize file upload handler
-  const fileUploadHandler = useFileUploadHandler({ attachments, setAttachments });
-
-  // Initialize message handler with analysis complete callback
-  const messageHandler = useMessageHandler({
+    isAnalyzing,
+    canSend,
+    handleSendMessage,
+    handleKeyPress
+  } = useMessageHandler({
     message,
     setMessage,
     attachments,
@@ -59,70 +58,77 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     onAnalysisComplete
   });
 
+  const handleFileUpload = (files: File[]) => {
+    const newAttachments = files.map(file => ({
+      id: crypto.randomUUID(),
+      type: 'file' as const,
+      name: file.name,
+      file,
+      status: 'pending' as const
+    }));
+
+    setAttachments([...attachments, ...newAttachments]);
+  };
+
   const handleAddUrl = () => {
-    fileUploadHandler.handleAddUrl(urlInput, setUrlInput, setShowUrlInput);
+    if (urlInput.trim()) {
+      const newAttachment = {
+        id: crypto.randomUUID(),
+        type: 'url' as const,
+        name: urlInput,
+        url: urlInput,
+        status: 'uploaded' as const
+      };
+
+      setAttachments([...attachments, newAttachment]);
+      setUrlInput('');
+      setShowUrlInput(false);
+    }
+  };
+
+  const handleRemoveAttachment = (id: string) => {
+    setAttachments(attachments.filter(att => att.id !== id));
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <Tabs defaultValue="chat" className="w-full">
-          <TabsList className="grid w-48 grid-cols-2">
-            <TabsTrigger value="chat">Chat</TabsTrigger>
-            <TabsTrigger value="prompts">Prompts</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="prompts" className="mt-4">
-            <PromptTemplateSelector
-              promptTemplates={promptTemplates}
-              promptsLoading={promptsLoading}
-              selectedPromptCategory={selectedPromptCategory}
-              selectedPromptTemplate={selectedPromptTemplate}
-              onPromptCategoryChange={setSelectedPromptCategory}
-              onPromptTemplateChange={setSelectedPromptTemplate}
-              bestPrompt={bestPrompt}
-            />
-          </TabsContent>
-        </Tabs>
+    <div className="h-full flex flex-col">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
       </div>
 
-      {/* Chat Content */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <ChatMessages 
-          messages={messages}
-          isAnalyzing={messageHandler.isAnalyzing}
+      {/* Input Area */}
+      <div className="flex-shrink-0 border-t border-gray-200 p-4 space-y-4">
+        {/* Attachments Preview */}
+        {attachments.length > 0 && (
+          <AttachmentPreview 
+            attachments={attachments}
+            onRemove={handleRemoveAttachment}
+          />
+        )}
+
+        {/* URL Input */}
+        {showUrlInput && (
+          <URLInputSection
+            urlInput={urlInput}
+            setUrlInput={setUrlInput}
+            onAddUrl={handleAddUrl}
+            onCancel={() => setShowUrlInput(false)}
+          />
+        )}
+
+        {/* Message Input */}
+        <MessageInputSection
+          message={message}
+          setMessage={setMessage}
+          onSend={handleSendMessage}
+          onKeyPress={handleKeyPress}
+          onFileUpload={handleFileUpload}
+          onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
+          canSend={canSend}
+          isAnalyzing={isAnalyzing}
         />
       </div>
-
-      {/* Attachments Preview - Only show when there are attachments */}
-      {attachments.length > 0 && (
-        <AttachmentPreview
-          attachments={attachments}
-          onRemove={fileUploadHandler.removeAttachment}
-        />
-      )}
-
-      {/* URL Input */}
-      <URLInputSection
-        showUrlInput={showUrlInput}
-        urlInput={urlInput}
-        onUrlInputChange={setUrlInput}
-        onAddUrl={handleAddUrl}
-        onCancel={() => setShowUrlInput(false)}
-      />
-
-      {/* Message Input */}
-      <MessageInputSection
-        message={message}
-        onMessageChange={setMessage}
-        onSendMessage={messageHandler.handleSendMessage}
-        onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
-        onKeyPress={messageHandler.handleKeyPress}
-        onFileUpload={fileUploadHandler.handleFileUpload}
-        isAnalyzing={messageHandler.isAnalyzing}
-        canSend={messageHandler.canSend}
-      />
     </div>
   );
 };

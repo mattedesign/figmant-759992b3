@@ -3,20 +3,45 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Brain, MessageSquare, Upload, Sparkles } from 'lucide-react';
+import { Sparkles, X } from 'lucide-react';
+import { useFigmantPromptTemplates, useBestFigmantPrompt } from '@/hooks/useFigmantChatAnalysis';
+import { AnalysisChatPanel } from './analysis/AnalysisChatPanel';
+import { PromptTemplateSelector } from './analysis/PromptTemplateSelector';
+import { useChatState } from './analysis/ChatStateManager';
 
 interface AnalysisPageProps {
   selectedTemplate?: any;
 }
 
 export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) => {
-  const [activeTemplate, setActiveTemplate] = useState(selectedTemplate);
+  const {
+    message,
+    setMessage,
+    messages,
+    setMessages,
+    attachments,
+    setAttachments,
+    selectedPromptCategory,
+    setSelectedPromptCategory,
+    selectedPromptTemplate,
+    setSelectedPromptTemplate,
+    showUrlInput,
+    setShowUrlInput,
+    urlInput,
+    setUrlInput
+  } = useChatState();
 
+  const { data: promptTemplates, isLoading: promptsLoading } = useFigmantPromptTemplates();
+  const { data: bestPrompt } = useBestFigmantPrompt(selectedPromptCategory);
+  const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
+
+  // Handle template from navigation
   useEffect(() => {
     if (selectedTemplate) {
-      setActiveTemplate(selectedTemplate);
+      setSelectedPromptCategory(selectedTemplate.category);
+      setSelectedPromptTemplate(selectedTemplate.id);
     }
-  }, [selectedTemplate]);
+  }, [selectedTemplate, setSelectedPromptCategory, setSelectedPromptTemplate]);
 
   const getCategoryColor = (category: string) => {
     switch (category) {
@@ -31,97 +56,100 @@ export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) 
     }
   };
 
+  const handleAnalysisComplete = (analysisResult: any) => {
+    setLastAnalysisResult(analysisResult);
+  };
+
+  const clearTemplateSelection = () => {
+    setSelectedPromptCategory('');
+    setSelectedPromptTemplate('');
+  };
+
+  const currentTemplate = promptTemplates?.find(t => t.id === selectedPromptTemplate);
+
   return (
-    <div className="p-6 space-y-6 h-full overflow-y-auto">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Design Analysis</h1>
-          <p className="text-muted-foreground">
-            Analyze your designs with AI-powered insights
-          </p>
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="flex-shrink-0 p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold">Design Analysis</h1>
+            <p className="text-muted-foreground">
+              Analyze your designs with AI-powered insights
+            </p>
+          </div>
+        </div>
+
+        {/* Template Selection Section */}
+        <div className="space-y-4">
+          <PromptTemplateSelector
+            promptTemplates={promptTemplates}
+            promptsLoading={promptsLoading}
+            selectedPromptCategory={selectedPromptCategory}
+            selectedPromptTemplate={selectedPromptTemplate}
+            onPromptCategoryChange={setSelectedPromptCategory}
+            onPromptTemplateChange={setSelectedPromptTemplate}
+            bestPrompt={bestPrompt}
+          />
+
+          {/* Selected Template Display */}
+          {currentTemplate && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    Active Template: {currentTemplate.title}
+                  </CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={clearTemplateSelection}
+                    className="h-8 w-8 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                {currentTemplate.description && (
+                  <CardDescription>
+                    {currentTemplate.description}
+                  </CardDescription>
+                )}
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="flex items-center gap-2">
+                  <Badge className={getCategoryColor(currentTemplate.category)}>
+                    {currentTemplate.category.replace('_', ' ')}
+                  </Badge>
+                  {currentTemplate.effectiveness_rating && (
+                    <Badge variant="secondary">
+                      Rating: {currentTemplate.effectiveness_rating}/10
+                    </Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
-      {activeTemplate && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                Selected Template: {activeTemplate.title}
-              </CardTitle>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setActiveTemplate(null)}
-              >
-                Clear Selection
-              </Button>
-            </div>
-            <CardDescription>
-              {activeTemplate.description || 'Ready to use this template for analysis'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Badge className={getCategoryColor(activeTemplate.category)}>
-                {activeTemplate.category.replace('_', ' ')}
-              </Badge>
-              {activeTemplate.effectiveness_rating && (
-                <Badge variant="secondary">
-                  Rating: {activeTemplate.effectiveness_rating}/10
-                </Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              Upload Design
-            </CardTitle>
-            <CardDescription>
-              Upload your design files to start the analysis
-              {activeTemplate && ' using the selected template'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-              <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-lg font-medium mb-2">Drop your design files here</p>
-              <p className="text-muted-foreground mb-4">
-                or click to browse (PNG, JPG, PDF, Figma links)
-              </p>
-              <Button>
-                Choose Files
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Chat Analysis
-            </CardTitle>
-            <CardDescription>
-              Have a conversation with AI about your design
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-muted/30 rounded-lg p-4 text-center">
-              <Brain className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">
-                Upload a design or start a conversation to begin analysis
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Chat Interface */}
+      <div className="flex-1 overflow-hidden">
+        <AnalysisChatPanel
+          message={message}
+          setMessage={setMessage}
+          messages={messages}
+          setMessages={setMessages}
+          attachments={attachments}
+          setAttachments={setAttachments}
+          urlInput={urlInput}
+          setUrlInput={setUrlInput}
+          showUrlInput={showUrlInput}
+          setShowUrlInput={setShowUrlInput}
+          selectedPromptTemplate={currentTemplate}
+          selectedPromptCategory={selectedPromptCategory}
+          promptTemplates={promptTemplates}
+          onAnalysisComplete={handleAnalysisComplete}
+        />
       </div>
     </div>
   );

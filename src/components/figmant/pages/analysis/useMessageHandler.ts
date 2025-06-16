@@ -55,13 +55,13 @@ export const useMessageHandler = ({
       // Determine prompt to use
       let promptToUse = '';
       if (selectedPromptTemplate) {
-        promptToUse = selectedPromptTemplate.prompt_text;
+        promptToUse = selectedPromptTemplate.original_prompt;
       } else if (selectedPromptCategory && promptTemplates) {
         const categoryTemplate = promptTemplates.find(
           t => t.category === selectedPromptCategory
         );
         if (categoryTemplate) {
-          promptToUse = categoryTemplate.prompt_text;
+          promptToUse = categoryTemplate.original_prompt;
         }
       }
 
