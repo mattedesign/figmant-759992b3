@@ -7,7 +7,6 @@ import { PatternAnalysisSection } from './dashboard/PatternAnalysisSection';
 import { MyPromptsSection } from './dashboard/MyPromptsSection';
 import { NotesSection } from './dashboard/NotesSection';
 import { DashboardAnalyticsSection } from './dashboard/DashboardAnalyticsSection';
-import { InteractiveDashboardActions } from './dashboard/components/InteractiveDashboardActions';
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
 import { useToast } from '@/hooks/use-toast';
@@ -33,9 +32,6 @@ export const DashboardPage: React.FC = () => {
     refreshInsights,
     refreshPrompts,
     refreshNotes,
-    handleExport,
-    handleSearch,
-    handleFilter,
     
     // Loading states
     loadingStates,
@@ -83,16 +79,6 @@ export const DashboardPage: React.FC = () => {
           lastUpdated={lastUpdated}
           onRefresh={refreshAllData}
           isRefreshing={isRefreshing}
-        />
-        
-        {/* Interactive Actions Bar */}
-        <InteractiveDashboardActions
-          onRefresh={refreshAllData}
-          onExport={handleExport}
-          onFilter={handleFilter}
-          onSearch={handleSearch}
-          isLoading={isRefreshing}
-          dataCount={memoizedAnalysisData.length}
         />
 
         {/* Advanced Analytics Section */}
