@@ -8,8 +8,8 @@ import { AttachmentPreview } from './AttachmentPreview';
 import { URLInputSection } from './URLInputSection';
 import { MessageInputSection } from './MessageInputSection';
 import { useChatState } from './ChatStateManager';
-import { FileUploadHandler } from './FileUploadHandler';
-import { MessageHandler } from './MessageHandler';
+import { useFileUploadHandler } from './useFileUploadHandler';
+import { useMessageHandler } from './useMessageHandler';
 
 interface AnalysisChatPanelProps {
   analysis: any;
@@ -41,10 +41,10 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   const { data: bestPrompt } = useBestFigmantPrompt(selectedPromptCategory);
 
   // Initialize file upload handler
-  const fileUploadHandler = FileUploadHandler({ attachments, setAttachments });
+  const fileUploadHandler = useFileUploadHandler({ attachments, setAttachments });
 
   // Initialize message handler
-  const messageHandler = MessageHandler({
+  const messageHandler = useMessageHandler({
     message,
     setMessage,
     attachments,
@@ -115,8 +115,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
         onKeyPress={messageHandler.handleKeyPress}
         onFileUpload={fileUploadHandler.handleFileUpload}
-        isAnalyzing={Boolean(messageHandler.isAnalyzing)}
-        canSend={Boolean(messageHandler.canSend)}
+        isAnalyzing={messageHandler.isAnalyzing}
+        canSend={messageHandler.canSend}
       />
     </div>
   );

@@ -1,18 +1,17 @@
 
-import React from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
-interface FileUploadHandlerProps {
+interface UseFileUploadHandlerProps {
   attachments: ChatAttachment[];
   setAttachments: React.Dispatch<React.SetStateAction<ChatAttachment[]>>;
 }
 
-export const FileUploadHandler: React.FC<FileUploadHandlerProps> = ({
+export const useFileUploadHandler = ({
   attachments,
   setAttachments
-}) => {
+}: UseFileUploadHandlerProps) => {
   const { toast } = useToast();
 
   const handleFileUpload = async (files: FileList) => {

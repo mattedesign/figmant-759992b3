@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
 import { useToast } from '@/hooks/use-toast';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
@@ -13,7 +12,7 @@ interface ChatMessage {
   promptUsed?: string;
 }
 
-interface MessageHandlerProps {
+interface UseMessageHandlerProps {
   message: string;
   setMessage: React.Dispatch<React.SetStateAction<string>>;
   attachments: ChatAttachment[];
@@ -25,7 +24,7 @@ interface MessageHandlerProps {
   promptTemplates?: any[];
 }
 
-export const MessageHandler: React.FC<MessageHandlerProps> = ({
+export const useMessageHandler = ({
   message,
   setMessage,
   attachments,
@@ -35,7 +34,7 @@ export const MessageHandler: React.FC<MessageHandlerProps> = ({
   selectedPromptTemplate,
   selectedPromptCategory,
   promptTemplates
-}) => {
+}: UseMessageHandlerProps) => {
   const { toast } = useToast();
   const { analyzeWithFigmantChat } = useFigmantChatAnalysis();
 
