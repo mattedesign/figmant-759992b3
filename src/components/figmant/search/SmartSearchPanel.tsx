@@ -71,10 +71,8 @@ export const SmartSearchPanel: React.FC<SmartSearchPanelProps> = ({
       let score = 0;
       const highlights: string[] = [];
 
-      // Search in analysis title/filename
-      const title = analysis.design_upload?.file_name || 
-                   analysis.batch_analysis?.name || 
-                   `Analysis ${analysis.id.slice(0, 8)}`;
+      // Create a basic title from analysis data
+      const title = `Analysis ${analysis.id.slice(0, 8)}`;
       
       if (title.toLowerCase().includes(searchLower)) {
         score += 10;
@@ -87,10 +85,10 @@ export const SmartSearchPanel: React.FC<SmartSearchPanelProps> = ({
         highlights.push('type');
       }
 
-      // Search in recommendations
+      // Search in recommendations from impact_summary
       if (analysis.impact_summary?.recommendations) {
         analysis.impact_summary.recommendations.forEach((rec: any) => {
-          if (rec.title?.toLowerCase().includes(searchLower) ||
+          if (rec.category?.toLowerCase().includes(searchLower) ||
               rec.description?.toLowerCase().includes(searchLower)) {
             score += 6;
             highlights.push('recommendation');
@@ -110,7 +108,7 @@ export const SmartSearchPanel: React.FC<SmartSearchPanelProps> = ({
           id: analysis.id,
           type: 'analysis',
           title,
-          description: analysis.impact_summary?.summary || 'No description available',
+          description: analysis.impact_summary?.key_metrics?.strengths?.join(', ') || 'No description available',
           analysis,
           score,
           highlights
@@ -119,12 +117,12 @@ export const SmartSearchPanel: React.FC<SmartSearchPanelProps> = ({
         // Add individual recommendations as separate results
         if (analysis.impact_summary?.recommendations) {
           analysis.impact_summary.recommendations.forEach((rec: any, index: number) => {
-            if (rec.title?.toLowerCase().includes(searchLower) ||
+            if (rec.category?.toLowerCase().includes(searchLower) ||
                 rec.description?.toLowerCase().includes(searchLower)) {
               results.push({
                 id: `${analysis.id}-rec-${index}`,
                 type: 'recommendation',
-                title: rec.title || `Recommendation ${index + 1}`,
+                title: rec.category || `Recommendation ${index + 1}`,
                 description: rec.description || '',
                 analysis,
                 score: score - 1,
