@@ -14,7 +14,7 @@ interface PromptTemplate {
 }
 
 interface BestPrompt {
-  example_id: string;
+  id: string;
 }
 
 interface PromptTemplateSelectorProps {
@@ -85,7 +85,7 @@ export const PromptTemplateSelector: React.FC<PromptTemplateSelectorProps> = ({
                 <SelectItem key={template.id} value={template.id}>
                   <div className="flex items-center gap-2">
                     {template.title}
-                    {bestPrompt?.example_id === template.id && (
+                    {bestPrompt?.id === template.id && (
                       <Badge variant="secondary" className="text-xs">
                         <Sparkles className="h-3 w-3 mr-1" />
                         Best
