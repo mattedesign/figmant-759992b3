@@ -8,9 +8,17 @@ import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
 interface PromptTemplate {
   id: string;
-  name: string;
+  title: string;
   description: string;
   category: string;
+  business_domain?: string;
+  claude_response?: string;
+  created_at?: string;
+  created_by?: string;
+  effectiveness_rating?: number;
+  is_active?: boolean;
+  original_prompt?: string;
+  use_case_context?: string;
 }
 
 interface AnalysisDynamicRightPanelProps {
@@ -97,7 +105,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
                           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                     >
-                      <div className="font-medium text-sm">{template.name}</div>
+                      <div className="font-medium text-sm">{template.title}</div>
                       <div className="text-xs text-gray-500 mt-1 line-clamp-2">
                         {template.description}
                       </div>
