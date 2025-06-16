@@ -27,7 +27,7 @@ export const DashboardHeader: React.FC = () => {
   };
 
   return (
-    <div className="flex-none p-6 pb-4">
+    <div className="flex-none p-6 pb-4" style={{ backgroundColor: 'transparent' }}>
       <div className="mb-4">
         <div className="text-sm text-gray-500 mb-1">{currentDate}</div>
         <h1 className="text-2xl font-semibold text-gray-900">{getGreeting()} {getFirstName()}</h1>

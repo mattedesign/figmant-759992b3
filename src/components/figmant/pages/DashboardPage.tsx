@@ -76,14 +76,11 @@ export const DashboardPage: React.FC = () => {
       <div className="h-full flex flex-col">
         <DashboardHeader />
 
-        {/* Main Content with Custom Styling */}
+        {/* Main Content with no border or border radius */}
         <div 
           className="flex-1 overflow-y-auto px-6"
           style={{
-            borderRadius: '32px',
-            border: '1px solid rgba(10, 12, 17, 0.10)',
-            background: '#F9FAFB',
-            boxShadow: '0px 0px 0px 1px rgba(255, 255, 255, 0.24), 0px 24px 48px 0px rgba(18, 18, 23, 0.03), 0px 10px 18px 0px rgba(18, 18, 23, 0.03), 0px 5px 8px 0px rgba(18, 18, 23, 0.04), 0px 2px 4px 0px rgba(18, 18, 23, 0.04)'
+            background: '#F9FAFB'
           }}
         >
           <div className="grid grid-cols-12 gap-6">
