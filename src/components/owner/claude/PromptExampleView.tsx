@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Edit2, Copy } from 'lucide-react';
 import { ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PromptExampleViewProps {
   prompt: ClaudePromptExample;
@@ -13,30 +14,55 @@ interface PromptExampleViewProps {
 
 export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, onEdit }) => {
   const { toast } = useToast();
+  const { isOwner } = useAuth();
   
   console.log('👁️ PromptExampleView rendering for prompt:', prompt.id);
+  console.log('🔑 User permissions - isOwner:', isOwner);
   
-  const handleEditClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleEditClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    
     console.log('🖱️ Edit button clicked for prompt:', prompt.id);
-    console.log('🔄 Calling onEdit function...');
+    console.log('🔐 Checking permissions - isOwner:', isOwner);
+    
+    if (!isOwner) {
+      console.log('❌ Permission denied: User is not owner');
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to edit prompts",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    console.log('✅ Permission granted, calling onEdit...');
     onEdit();
-    console.log('✅ onEdit function called');
   };
 
   const handleCopyClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    
     console.log('📋 Copy button clicked for prompt:', prompt.id);
+    
+    if (!navigator.clipboard) {
+      console.error('❌ Clipboard API not available');
+      toast({
+        title: "Copy failed",
+        description: "Clipboard not available in this browser",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       await navigator.clipboard.writeText(prompt.original_prompt);
+      console.log('✅ Prompt copied to clipboard successfully');
       toast({
         title: "Copied to clipboard",
         description: "Prompt copied successfully",
       });
-      console.log('✅ Prompt copied to clipboard');
     } catch (error) {
       console.error('❌ Failed to copy prompt:', error);
       toast({
@@ -70,16 +96,18 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
           >
             <Copy className="h-4 w-4" />
           </Button>
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            onClick={handleEditClick}
-            className="hover:bg-gray-100 border border-gray-200"
-            type="button"
-            title="Edit prompt"
-          >
-            <Edit2 className="h-4 w-4" />
-          </Button>
+          {isOwner && (
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={handleEditClick}
+              className="hover:bg-gray-100 border border-gray-200"
+              type="button"
+              title="Edit prompt"
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
       {prompt.description && (
