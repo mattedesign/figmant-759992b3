@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +24,7 @@ export const FigmantMiddlePanel: React.FC<FigmantMiddlePanelProps> = ({
 
   const renderAnalysisSection = () => {
     const filteredAnalyses = analyses.filter(analysis => 
-      analysis.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      analysis.analysis_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       analysis.id.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
