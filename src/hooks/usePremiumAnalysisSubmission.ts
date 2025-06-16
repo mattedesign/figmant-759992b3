@@ -40,6 +40,14 @@ export const usePremiumAnalysisSubmission = () => {
         throw new Error(`Premium analysis failed: ${claudeError.message}`);
       }
 
+      // Properly serialize the analysis results to ensure JSON compatibility
+      const analysisResults = {
+        response: claudeResponse.analysis || claudeResponse.response,
+        premium_analysis_data: JSON.parse(JSON.stringify(stepData)), // Ensure proper JSON serialization
+        selected_prompt_id: selectedPrompt.id,
+        selected_prompt_category: selectedPrompt.category
+      };
+
       // Save the premium analysis to chat history
       const { data: savedAnalysis, error: saveError } = await supabase
         .from('chat_analysis_history')
@@ -47,12 +55,7 @@ export const usePremiumAnalysisSubmission = () => {
           user_id: user.id,
           prompt_used: contextPrompt,
           prompt_template_used: selectedPrompt.original_prompt,
-          analysis_results: {
-            response: claudeResponse.analysis || claudeResponse.response,
-            premium_analysis_data: stepData,
-            selected_prompt_id: selectedPrompt.id,
-            selected_prompt_category: selectedPrompt.category
-          },
+          analysis_results: analysisResults,
           confidence_score: claudeResponse.confidence_score || 0.9,
           analysis_type: `premium_${selectedPrompt.category}`
         })
