@@ -1,11 +1,34 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { BarChart3, Users, Zap, TrendingUp, MoreHorizontal, Star, Clock, Calendar, FileText, Settings } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { format } from 'date-fns';
 
 export const DashboardPage: React.FC = () => {
+  const { profile } = useAuth();
+
+  // Get current date and time
+  const now = new Date();
+  const currentDate = format(now, 'EEEE, MMMM d');
+  const currentHour = now.getHours();
+
+  // Determine greeting based on time of day
+  const getGreeting = () => {
+    if (currentHour < 12) return 'Good morning';
+    if (currentHour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  // Get user's first name from profile
+  const getFirstName = () => {
+    if (profile?.full_name) {
+      return profile.full_name.split(' ')[0];
+    }
+    return 'there'; // fallback if no name available
+  };
+
   const analysisData = [
     {
       id: 1,
@@ -73,8 +96,8 @@ export const DashboardPage: React.FC = () => {
         {/* Header */}
         <div className="flex-none p-6 pb-4">
           <div className="mb-4">
-            <div className="text-sm text-gray-500 mb-1">Tuesday, June 4</div>
-            <h1 className="text-2xl font-semibold text-gray-900">Good afternoon Zakir Hossen</h1>
+            <div className="text-sm text-gray-500 mb-1">{currentDate}</div>
+            <h1 className="text-2xl font-semibold text-gray-900">{getGreeting()} {getFirstName()}</h1>
           </div>
         </div>
 
