@@ -10,13 +10,25 @@ import {
   FileText, 
   Settings,
   Search,
-  Shield
+  Shield,
+  User,
+  LogOut,
+  CreditCard,
+  LayoutDashboard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/common/Logo';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface FigmantSidebarProps {
   activeSection: string;
@@ -27,9 +39,10 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   activeSection,
   onSectionChange
 }) => {
-  const { isOwner, profile } = useAuth();
+  const { isOwner, profile, user, subscription, signOut } = useAuth();
   const { credits, creditsLoading } = useUserCredits();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const mainSections = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -62,6 +75,32 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   const handleBuyMoreCredits = () => {
     navigate('/subscription');
   };
+
+  const handleSignOut = async () => {
+    console.log('FigmantSidebar: Initiating sign out...');
+    try {
+      await signOut();
+      console.log('FigmantSidebar: Sign out successful, navigating to root');
+      navigate('/');
+    } catch (error) {
+      console.error('FigmantSidebar: Sign out error:', error);
+    }
+  };
+
+  const getSubscriptionBadge = () => {
+    if (profile?.role === 'owner') {
+      return <Badge variant="default" className="ml-2">Owner</Badge>;
+    }
+    
+    if (subscription?.status === 'active') {
+      return <Badge variant="default" className="ml-2">Pro</Badge>;
+    }
+    
+    return <Badge variant="secondary" className="ml-2">Free</Badge>;
+  };
+
+  const isOnOwnerDashboard = location.pathname === '/owner';
+  const isOnSubscriberDashboard = location.pathname === '/dashboard';
 
   return (
     <div className="w-64 bg-transparent border-r border-gray-200/30 flex flex-col h-full backdrop-blur-sm">
@@ -138,24 +177,74 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
         </div>
       )}
 
-      {/* User Profile */}
+      {/* User Profile - Always at bottom */}
       <div className="p-4 border-t border-gray-200/30">
-        <div className="flex items-center gap-3 p-2 hover:bg-gray-50/50 rounded-lg cursor-pointer">
-          <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-medium">{getInitials()}</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-gray-900">
-              {profile?.full_name || 'User'}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div className="flex items-center gap-3 p-2 hover:bg-gray-50/50 rounded-lg cursor-pointer transition-colors">
+              <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">{getInitials()}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-gray-900 flex items-center">
+                  {profile?.full_name || user?.email?.split('@')[0] || 'User'}
+                  {getSubscriptionBadge()}
+                </div>
+                <div className="text-xs text-gray-500 truncate">
+                  {profile?.email || user?.email || 'user@example.com'}
+                </div>
+              </div>
+              <div className="w-4 h-4 text-gray-400">↓</div>
             </div>
-            <div className="text-xs text-gray-500 truncate">
-              {profile?.email || 'user@example.com'}
-            </div>
-          </div>
-          <Button variant="ghost" size="sm" className="h-auto p-0">
-            <div className="w-4 h-4 text-gray-400">↓</div>
-          </Button>
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            
+            {/* Dashboard Navigation - Only show for owners */}
+            {isOwner && (
+              <>
+                <DropdownMenuItem 
+                  onClick={() => navigate('/dashboard')}
+                  className={isOnSubscriberDashboard ? 'bg-accent' : ''}
+                >
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Subscriber Dashboard
+                </DropdownMenuItem>
+                
+                <DropdownMenuItem 
+                  onClick={() => navigate('/owner')}
+                  className={isOnOwnerDashboard ? 'bg-accent' : ''}
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  Owner Dashboard
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator />
+              </>
+            )}
+
+            {/* Regular dashboard link for non-owners */}
+            {!isOwner && (
+              <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                <User className="mr-2 h-4 w-4" />
+                Dashboard
+              </DropdownMenuItem>
+            )}
+            
+            <DropdownMenuItem onClick={() => navigate('/subscription')}>
+              <CreditCard className="mr-2 h-4 w-4" />
+              Subscription
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
