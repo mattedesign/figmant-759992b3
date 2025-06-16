@@ -7,6 +7,9 @@ import { DesignChatInterface } from '@/components/design/DesignChatInterface';
 import { DashboardPage } from './pages/DashboardPage';
 import { CreditsPage } from './pages/CreditsPage';
 import { PremiumAnalysisPage } from './pages/PremiumAnalysisPage';
+import { TemplatesPage } from './pages/TemplatesPage';
+import { PreferencesPage } from './pages/PreferencesPage';
+import { SearchPage } from './pages/SearchPage';
 
 interface FigmantMainContentProps {
   activeSection: string;
@@ -123,61 +126,13 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
         return <CreditsPage />;
 
       case 'templates':
-        return (
-          <div className="p-6">
-            <div className="max-w-2xl">
-              <h1 className="text-2xl font-bold mb-6">Templates</h1>
-              <div className="space-y-6">
-                <div className="p-4 border border-gray-200 rounded-lg">
-                  <h3 className="font-semibold mb-2">Design Analysis Templates</h3>
-                  <p className="text-sm text-gray-600">
-                    Pre-configured templates for common design analysis scenarios.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+        return <TemplatesPage />;
 
       case 'preferences':
-        return (
-          <div className="p-6">
-            <div className="max-w-2xl">
-              <h1 className="text-2xl font-bold mb-6">Preferences</h1>
-              <div className="space-y-6">
-                <div className="p-4 border border-gray-200 rounded-lg">
-                  <h3 className="font-semibold mb-2">Analysis Settings</h3>
-                  <p className="text-sm text-gray-600">
-                    Configure your default analysis preferences and settings.
-                  </p>
-                </div>
-                <div className="p-4 border border-gray-200 rounded-lg">
-                  <h3 className="font-semibold mb-2">Account Settings</h3>
-                  <p className="text-sm text-gray-600">
-                    Manage your account details and subscription.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+        return <PreferencesPage />;
 
       case 'search':
-        return (
-          <div className="p-6">
-            <div className="max-w-2xl">
-              <h1 className="text-2xl font-bold mb-6">Search</h1>
-              <div className="space-y-6">
-                <div className="p-4 border border-gray-200 rounded-lg">
-                  <h3 className="font-semibold mb-2">Search Functionality</h3>
-                  <p className="text-sm text-gray-600">
-                    Search through your analyses, chats, and results. Coming soon with faceted search capabilities.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+        return <SearchPage />;
 
       default:
         return (
