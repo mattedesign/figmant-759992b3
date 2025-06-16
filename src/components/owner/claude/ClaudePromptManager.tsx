@@ -1,169 +1,50 @@
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Brain, Plus, Zap } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  useClaudePromptExamples, 
-  useCreatePromptExample,
-  ClaudePromptExample 
-} from '@/hooks/useClaudePromptExamples';
-import { CreatePromptForm } from './CreatePromptForm';
-import { PromptCategoryList } from './PromptCategoryList';
-import { PromptSeeder } from './PromptSeeder';
-import { PromptEnhancementManager } from './PromptEnhancementManager';
+import React, { Suspense } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
-export const ClaudePromptManager = () => {
-  const { toast } = useToast();
-  const { data: promptExamples, isLoading } = useClaudePromptExamples();
-  const createPromptMutation = useCreatePromptExample();
-  
-  const [isCreating, setIsCreating] = useState(false);
-  const [newPrompt, setNewPrompt] = useState<Partial<ClaudePromptExample>>({
-    title: '',
-    description: '',
-    category: 'general',
-    original_prompt: '',
-    claude_response: '',
-    effectiveness_rating: 5,
-    use_case_context: '',
-    business_domain: '',
-    is_template: true,
-    is_active: true
-  });
+// Lazy load the heavy components
+const ClaudeHeader = React.lazy(() => import('./ClaudeHeader').then(module => ({ default: module.ClaudeHeader })));
+const PromptCategoryList = React.lazy(() => import('./PromptCategoryList').then(module => ({ default: module.PromptCategoryList })));
 
-  const handleCreatePrompt = async () => {
-    if (!newPrompt.title || !newPrompt.original_prompt || !newPrompt.claude_response) {
-      toast({
-        title: "Missing Required Fields",
-        description: "Please fill in title, prompt, and expected response.",
-        variant: "destructive",
-      });
-      return;
-    }
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center py-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+);
 
-    try {
-      await createPromptMutation.mutateAsync(newPrompt as Omit<ClaudePromptExample, 'id' | 'created_at' | 'updated_at'>);
-      setNewPrompt({
-        title: '',
-        description: '',
-        category: 'general',
-        original_prompt: '',
-        claude_response: '',
-        effectiveness_rating: 5,
-        use_case_context: '',
-        business_domain: '',
-        is_template: true,
-        is_active: true
-      });
-      setIsCreating(false);
-    } catch (error) {
-      console.error('Error creating prompt:', error);
-    }
-  };
+export const ClaudePromptManager: React.FC = () => {
+  const { isOwner, loading } = useAuth();
 
-  const groupedPrompts = promptExamples?.reduce((acc, prompt) => {
-    if (!acc[prompt.category]) {
-      acc[prompt.category] = [];
-    }
-    acc[prompt.category].push(prompt);
-    return acc;
-  }, {} as Record<string, ClaudePromptExample[]>) || {};
+  console.log('🚀 ClaudePromptManager mounting with auth state:', { isOwner, loading });
 
-  const isEmpty = !promptExamples || promptExamples.length === 0;
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
-  if (isLoading) {
+  if (!isOwner) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Claude Prompt Manager</CardTitle>
-          <CardDescription>Loading prompt examples...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-20 bg-muted rounded animate-pulse" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="p-6">
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            You don't have permission to access the prompt manager. Owner access required.
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center space-x-2">
-                <Brain className="h-5 w-5" />
-                <span>Claude Prompt Manager</span>
-              </CardTitle>
-              <CardDescription>
-                Manage and optimize Claude AI prompts for better analysis results
-              </CardDescription>
-            </div>
-            <Button onClick={() => setIsCreating(true)} disabled={isCreating}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Prompt
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue={isEmpty ? "seed" : "enhance"} className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="enhance">
-                <Zap className="h-4 w-4 mr-2" />
-                Enhance Master Prompt
-              </TabsTrigger>
-              <TabsTrigger value="examples">Prompt Examples ({promptExamples?.length || 0})</TabsTrigger>
-              {isEmpty && <TabsTrigger value="seed">Seed Database</TabsTrigger>}
-              {isCreating && <TabsTrigger value="create">Create New</TabsTrigger>}
-            </TabsList>
-
-            <TabsContent value="enhance" className="space-y-4">
-              <PromptEnhancementManager />
-            </TabsContent>
-
-            <TabsContent value="examples" className="space-y-4">
-              {isEmpty ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground mb-4">
-                    No prompts found. Seed the database with initial templates to get started.
-                  </p>
-                  <Button onClick={() => setIsCreating(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Your First Prompt
-                  </Button>
-                </div>
-              ) : (
-                <PromptCategoryList groupedPrompts={groupedPrompts} />
-              )}
-            </TabsContent>
-
-            {isEmpty && (
-              <TabsContent value="seed" className="space-y-4">
-                <PromptSeeder />
-              </TabsContent>
-            )}
-
-            {isCreating && (
-              <TabsContent value="create" className="space-y-4">
-                <CreatePromptForm
-                  newPrompt={newPrompt}
-                  setNewPrompt={setNewPrompt}
-                  onSave={handleCreatePrompt}
-                  onCancel={() => setIsCreating(false)}
-                  isSaving={createPromptMutation.isPending}
-                />
-              </TabsContent>
-            )}
-          </Tabs>
-        </CardContent>
-      </Card>
+    <div className="p-6 space-y-6">
+      <Suspense fallback={<LoadingSpinner />}>
+        <ClaudeHeader />
+      </Suspense>
+      
+      <Suspense fallback={<LoadingSpinner />}>
+        <PromptCategoryList />
+      </Suspense>
     </div>
   );
 };

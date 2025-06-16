@@ -14,14 +14,26 @@ interface PromptExampleViewProps {
 
 export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, onEdit }) => {
   const { toast } = useToast();
-  const { isOwner } = useAuth();
+  const { isOwner, loading } = useAuth();
   
   console.log('👁️ PromptExampleView rendering for prompt:', prompt.id);
-  console.log('🔑 User permissions - isOwner:', isOwner);
+  console.log('🔑 User permissions - isOwner:', isOwner, 'loading:', loading);
   
-  const handleEditClick = () => {
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     console.log('🖱️ Edit button clicked for prompt:', prompt.id);
-    console.log('🔐 Checking permissions - isOwner:', isOwner);
+    console.log('🔐 Checking permissions - isOwner:', isOwner, 'loading:', loading);
+    
+    if (loading) {
+      console.log('⏳ Auth still loading, showing loading message');
+      toast({
+        title: "Loading",
+        description: "Please wait while we verify your permissions",
+      });
+      return;
+    }
     
     if (!isOwner) {
       console.log('❌ Permission denied: User is not owner');
@@ -35,9 +47,18 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
     
     console.log('✅ Permission granted, calling onEdit...');
     onEdit();
+    
+    // Additional feedback for debugging
+    toast({
+      title: "Edit Mode",
+      description: "Switching to edit mode...",
+    });
   };
 
-  const handleCopyClick = async () => {
+  const handleCopyClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     console.log('📋 Copy button clicked for prompt:', prompt.id);
     
     try {
@@ -86,19 +107,26 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
             onClick={handleCopyClick}
             className="h-8 w-8 p-0"
             title="Copy prompt"
+            type="button"
           >
             <Copy className="h-4 w-4" />
           </Button>
-          {isOwner && (
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={handleEditClick}
-              className="h-8 w-8 p-0"
-              title="Edit prompt"
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={handleEditClick}
+            className="h-8 w-8 p-0"
+            title="Edit prompt"
+            type="button"
+            disabled={loading}
+          >
+            <Edit2 className="h-4 w-4" />
+          </Button>
+          {/* Debug info for troubleshooting */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="text-xs text-gray-500 ml-2">
+              {loading ? 'Loading...' : isOwner ? 'Owner' : 'No Access'}
+            </div>
           )}
         </div>
       </div>
