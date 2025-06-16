@@ -14,6 +14,7 @@ interface ProcessedDashboardData {
     pendingAnalyses: number;
     totalPrompts: number;
     totalNotes: number;
+    activityScore: number;
   };
 }
 
@@ -74,13 +75,14 @@ export const useDashboardDataProcessor = (
       }
     ];
 
-    // Calculate statistics
+    // Calculate statistics with activity score
     const dataStats = {
       totalAnalyses: analysisData.length,
       completedAnalyses: analysisData.filter(a => a.status === 'Completed').length,
       pendingAnalyses: analysisData.filter(a => a.status === 'Pending').length,
       totalPrompts: promptsData.length,
-      totalNotes: notesData.length
+      totalNotes: notesData.length,
+      activityScore: Math.min(100, (promptsData.length + notesData.length) * 5)
     };
 
     const hasAnyData = analysisData.length > 0 || insightsData.length > 0 || 

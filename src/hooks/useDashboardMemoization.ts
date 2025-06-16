@@ -1,4 +1,3 @@
-
 import { useMemo, useCallback } from 'react';
 import { AnalysisData, InsightData, PromptData, NoteData } from '@/components/figmant/pages/dashboard/types/dashboard';
 
@@ -13,6 +12,9 @@ interface MemoizedDashboardData {
     pendingAnalyses: number;
     totalPrompts: number;
     totalNotes: number;
+    completionRate: number;
+    pendingRate: number;
+    activityScore: number;
   };
   memoizedChartData: any[];
   memoizedFilters: {
@@ -80,7 +82,7 @@ export const useDashboardMemoization = (
       pendingRate: dataStats.totalAnalyses > 0 
         ? Math.round((dataStats.pendingAnalyses / dataStats.totalAnalyses) * 100)
         : 0,
-      activityScore: Math.min(100, (dataStats.totalPrompts + dataStats.totalNotes) * 5)
+      activityScore: dataStats.activityScore || Math.min(100, (dataStats.totalPrompts + dataStats.totalNotes) * 5)
     };
   }, [dataStats]);
 
