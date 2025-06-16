@@ -70,15 +70,26 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
                   variant="ghost"
                   className={cn(
                     "w-full justify-start",
-                    activeSection === section.id && "bg-blue-50 text-blue-700 border-blue-200",
-                    section.id === 'admin' && "border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
+                    activeSection === section.id && "bg-[#F9FAFB] text-[#3D4A5C] rounded-[20px]",
+                    section.id === 'admin' && activeSection !== section.id && "border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100",
+                    section.id === 'admin' && activeSection === section.id && "bg-[#F9FAFB] text-[#3D4A5C] rounded-[20px] border-none"
                   )}
                   onClick={() => handleSectionChange(section.id)}
                 >
-                  <section.icon className="h-4 w-4 mr-3" />
-                  {section.label}
+                  <section.icon className={cn(
+                    "h-4 w-4 mr-3",
+                    activeSection === section.id && "text-[#3D4A5C]"
+                  )} />
+                  <span className={cn(
+                    activeSection === section.id && "text-[#3D4A5C]"
+                  )}>
+                    {section.label}
+                  </span>
                   {section.id === 'admin' && (
-                    <Badge variant="secondary" className="ml-auto bg-orange-100 text-orange-700">
+                    <Badge variant="secondary" className={cn(
+                      "ml-auto",
+                      activeSection === section.id ? "bg-[#3D4A5C]/10 text-[#3D4A5C]" : "bg-orange-100 text-orange-700"
+                    )}>
                       Owner
                     </Badge>
                   )}
