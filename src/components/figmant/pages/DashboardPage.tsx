@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { DashboardHeader } from './dashboard/DashboardHeader';
 import { RecentAnalysisSection } from './dashboard/RecentAnalysisSection';
@@ -5,7 +6,6 @@ import { InsightsSection } from './dashboard/InsightsSection';
 import { MyPromptsSection } from './dashboard/MyPromptsSection';
 import { PatternAnalysisSection } from './dashboard/PatternAnalysisSection';
 import { NotesSection } from './dashboard/NotesSection';
-import { RecentSection } from './dashboard/RecentSection';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { AnalysisData, InsightData, PromptData, NoteData } from './dashboard/types/dashboard';
 
@@ -94,47 +94,36 @@ export const DashboardPage: React.FC = () => {
               <MyPromptsSection promptsData={promptsData} />
               <PatternAnalysisSection />
               <NotesSection notesData={notesData} />
-              <RecentSection />
             </div>
           ) : isTablet ? (
             // Tablet: Optimized 2-column layout for medium screens
-            <>
-              <div className="grid grid-cols-12 gap-4 lg:gap-6">
-                {/* Main content takes more space on tablet */}
-                <div className="col-span-8 space-y-4">
-                  <RecentAnalysisSection analysisData={analysisData} />
-                  <InsightsSection insightsData={insightsData} />
-                </div>
-
-                {/* Sidebar content in a more compact layout */}
-                <div className="col-span-4 space-y-4">
-                  <MyPromptsSection promptsData={promptsData} />
-                  <PatternAnalysisSection />
-                  <NotesSection notesData={notesData} />
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <RecentSection />
-              </div>
-            </>
-          ) : (
-            // Desktop: Full grid layout
-            <>
-              <div className="grid grid-cols-12 gap-6">
+            <div className="grid grid-cols-12 gap-4 lg:gap-6">
+              {/* Main content takes more space on tablet */}
+              <div className="col-span-8 space-y-4">
                 <RecentAnalysisSection analysisData={analysisData} />
                 <InsightsSection insightsData={insightsData} />
-
-                {/* Right Column */}
-                <div className="col-span-4 space-y-6">
-                  <MyPromptsSection promptsData={promptsData} />
-                  <PatternAnalysisSection />
-                  <NotesSection notesData={notesData} />
-                </div>
               </div>
 
-              <RecentSection />
-            </>
+              {/* Sidebar content in a more compact layout */}
+              <div className="col-span-4 space-y-4">
+                <MyPromptsSection promptsData={promptsData} />
+                <PatternAnalysisSection />
+                <NotesSection notesData={notesData} />
+              </div>
+            </div>
+          ) : (
+            // Desktop: Full grid layout
+            <div className="grid grid-cols-12 gap-6">
+              <RecentAnalysisSection analysisData={analysisData} />
+              <InsightsSection insightsData={insightsData} />
+
+              {/* Right Column */}
+              <div className="col-span-4 space-y-6">
+                <MyPromptsSection promptsData={promptsData} />
+                <PatternAnalysisSection />
+                <NotesSection notesData={notesData} />
+              </div>
+            </div>
           )}
         </div>
       </div>

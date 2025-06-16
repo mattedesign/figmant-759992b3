@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { TrendingUp } from 'lucide-react';
@@ -14,7 +13,15 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ insightsData }
   const isTablet = useIsTablet();
 
   return (
-    <div className={`mb-6 ${isMobile ? 'w-full' : ''}`}>
+    <div 
+      className={`mb-6 ${isMobile ? 'w-full' : ''}`}
+      style={{
+        borderRadius: 'var(--corner-radius-2xl, 16px)',
+        border: '1px solid var(--border-neutral-xsubtle, rgba(10, 12, 17, 0.10))',
+        background: 'var(--background-base-white, #FFF)',
+        padding: '24px'
+      }}
+    >
       <div className="flex items-center justify-between mb-4">
         <h2 className={`font-semibold ${isTablet ? 'text-base' : 'text-lg'}`}>Insights</h2>
         <Button variant="ghost" size="sm" className="text-gray-500">
@@ -45,7 +52,6 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ insightsData }
             }`}
           >
             {isMobile ? (
-              // Mobile layout: stacked content
               <>
                 <div className="flex items-center gap-3 w-full">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
@@ -85,7 +91,6 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ insightsData }
                 </div>
               </>
             ) : isTablet ? (
-              // Tablet layout: horizontal compact
               <>
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium ${
@@ -112,7 +117,6 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ insightsData }
                 </div>
               </>
             ) : (
-              // Desktop layout: grid
               <>
                 <div className="col-span-3 flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${

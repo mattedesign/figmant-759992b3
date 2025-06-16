@@ -9,7 +9,14 @@ interface NotesSectionProps {
 
 export const NotesSection: React.FC<NotesSectionProps> = ({ notesData }) => {
   return (
-    <div>
+    <div
+      style={{
+        borderRadius: 'var(--corner-radius-2xl, 16px)',
+        border: '1px solid var(--border-neutral-xsubtle, rgba(10, 12, 17, 0.10))',
+        background: 'var(--background-base-white, #FFF)',
+        padding: '24px'
+      }}
+    >
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold">Notes</h3>
         <Button variant="ghost" size="sm" className="text-blue-600 text-sm">

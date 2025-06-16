@@ -40,7 +40,15 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({ an
       
       <div className={`grid gap-4 mb-8 ${getGridColumns()}`}>
         {analysisData.map((analysis) => (
-          <Card key={analysis.id} className="border border-gray-200">
+          <Card 
+            key={analysis.id} 
+            className="border-0"
+            style={{
+              borderRadius: 'var(--corner-radius-xl, 12px)',
+              border: '1px solid var(--border-neutral-xsubtle, rgba(10, 12, 17, 0.10))',
+              background: 'var(--background-base-white, #FFF)'
+            }}
+          >
             <CardHeader className={`pb-3 ${isTablet ? 'pb-2' : ''}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
