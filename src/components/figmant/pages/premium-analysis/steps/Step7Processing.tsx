@@ -6,6 +6,7 @@ import { StepProps } from '../types';
 import { StepHeader } from '../components/StepHeader';
 import { usePremiumAnalysisSubmission } from '@/hooks/usePremiumAnalysisSubmission';
 import { useClaudePromptExamplesByCategory } from '@/hooks/useClaudePromptExamplesByCategory';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const Step7Processing: React.FC<StepProps> = ({ 
   stepData, 
@@ -14,6 +15,7 @@ export const Step7Processing: React.FC<StepProps> = ({
 }) => {
   const [processingStatus, setProcessingStatus] = useState<'processing' | 'complete' | 'error'>('processing');
   const [analysisResult, setAnalysisResult] = useState<string>('');
+  const queryClient = useQueryClient();
   
   const { data: premiumPrompts } = useClaudePromptExamplesByCategory('premium');
   const premiumAnalysis = usePremiumAnalysisSubmission();
@@ -40,6 +42,10 @@ export const Step7Processing: React.FC<StepProps> = ({
       
       setAnalysisResult(result.analysis);
       setProcessingStatus('complete');
+      
+      // Invalidate credit queries to update the UI
+      queryClient.invalidateQueries({ queryKey: ['user-credits'] });
+      queryClient.invalidateQueries({ queryKey: ['credit-transactions'] });
     } catch (error) {
       console.error('Analysis submission failed:', error);
       setProcessingStatus('error');

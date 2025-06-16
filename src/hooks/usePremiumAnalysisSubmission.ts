@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { StepData } from '@/components/figmant/pages/premium-analysis/types';
+import { useUserCredits } from '@/hooks/useUserCredits';
 
 interface PremiumAnalysisRequest {
   stepData: StepData;
@@ -11,6 +12,7 @@ interface PremiumAnalysisRequest {
 
 export const usePremiumAnalysisSubmission = () => {
   const { toast } = useToast();
+  const { deductAnalysisCredits, checkUserAccess } = useUserCredits();
 
   return useMutation({
     mutationFn: async ({ stepData, selectedPrompt }: PremiumAnalysisRequest) => {
@@ -22,56 +24,74 @@ export const usePremiumAnalysisSubmission = () => {
         throw new Error('User not authenticated');
       }
 
-      // Build comprehensive prompt based on selected premium prompt and user data
-      const contextPrompt = buildContextPrompt(stepData, selectedPrompt);
+      // Check if user has access (subscription or credits)
+      const hasAccess = await checkUserAccess();
+      if (!hasAccess) {
+        throw new Error('You need an active subscription or credits to perform premium analysis. Please upgrade your plan or purchase credits.');
+      }
 
-      // Call Claude AI function with premium analysis context
-      const { data: claudeResponse, error: claudeError } = await supabase.functions.invoke('claude-ai', {
-        body: {
-          message: contextPrompt,
-          requestType: 'premium_analysis',
-          analysisType: selectedPrompt.category,
-          promptTemplate: selectedPrompt.original_prompt
+      // Deduct credits for premium analysis (5 credits)
+      const creditsDeducted = await deductAnalysisCredits(5, `Premium analysis: ${selectedPrompt.category}`);
+      if (!creditsDeducted) {
+        throw new Error('Unable to deduct credits for premium analysis. Please check your credit balance.');
+      }
+
+      try {
+        // Build comprehensive prompt based on selected premium prompt and user data
+        const contextPrompt = buildContextPrompt(stepData, selectedPrompt);
+
+        // Call Claude AI function with premium analysis context
+        const { data: claudeResponse, error: claudeError } = await supabase.functions.invoke('claude-ai', {
+          body: {
+            message: contextPrompt,
+            requestType: 'premium_analysis',
+            analysisType: selectedPrompt.category,
+            promptTemplate: selectedPrompt.original_prompt
+          }
+        });
+
+        if (claudeError) {
+          console.error('Claude AI error:', claudeError);
+          throw new Error(`Premium analysis failed: ${claudeError.message}`);
         }
-      });
 
-      if (claudeError) {
-        console.error('Claude AI error:', claudeError);
-        throw new Error(`Premium analysis failed: ${claudeError.message}`);
+        // Properly serialize the analysis results to ensure JSON compatibility
+        const analysisResults = {
+          response: claudeResponse.analysis || claudeResponse.response,
+          premium_analysis_data: JSON.parse(JSON.stringify(stepData)), // Ensure proper JSON serialization
+          selected_prompt_id: selectedPrompt.id,
+          selected_prompt_category: selectedPrompt.category
+        };
+
+        // Save the premium analysis to chat history
+        const { data: savedAnalysis, error: saveError } = await supabase
+          .from('chat_analysis_history')
+          .insert({
+            user_id: user.id,
+            prompt_used: contextPrompt,
+            prompt_template_used: selectedPrompt.original_prompt,
+            analysis_results: analysisResults,
+            confidence_score: claudeResponse.confidence_score || 0.9,
+            analysis_type: `premium_${selectedPrompt.category}`
+          })
+          .select()
+          .single();
+
+        if (saveError) {
+          console.error('Error saving premium analysis:', saveError);
+          throw saveError;
+        }
+
+        return {
+          analysis: claudeResponse.analysis || claudeResponse.response,
+          savedAnalysisId: savedAnalysis.id,
+          debugInfo: claudeResponse.debugInfo
+        };
+      } catch (error) {
+        // If analysis fails after credits are deducted, we let the failed analysis consume the credits
+        // This is consistent with how most SaaS products handle failed requests
+        throw error;
       }
-
-      // Properly serialize the analysis results to ensure JSON compatibility
-      const analysisResults = {
-        response: claudeResponse.analysis || claudeResponse.response,
-        premium_analysis_data: JSON.parse(JSON.stringify(stepData)), // Ensure proper JSON serialization
-        selected_prompt_id: selectedPrompt.id,
-        selected_prompt_category: selectedPrompt.category
-      };
-
-      // Save the premium analysis to chat history
-      const { data: savedAnalysis, error: saveError } = await supabase
-        .from('chat_analysis_history')
-        .insert({
-          user_id: user.id,
-          prompt_used: contextPrompt,
-          prompt_template_used: selectedPrompt.original_prompt,
-          analysis_results: analysisResults,
-          confidence_score: claudeResponse.confidence_score || 0.9,
-          analysis_type: `premium_${selectedPrompt.category}`
-        })
-        .select()
-        .single();
-
-      if (saveError) {
-        console.error('Error saving premium analysis:', saveError);
-        throw saveError;
-      }
-
-      return {
-        analysis: claudeResponse.analysis || claudeResponse.response,
-        savedAnalysisId: savedAnalysis.id,
-        debugInfo: claudeResponse.debugInfo
-      };
     },
     onError: (error) => {
       console.error('Premium analysis submission failed:', error);
