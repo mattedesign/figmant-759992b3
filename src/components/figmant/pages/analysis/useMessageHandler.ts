@@ -129,7 +129,7 @@ export const useMessageHandler = ({
     }
   };
 
-  const canSend = !analyzeWithFigmantChat.isPending && (message.trim() || attachments.length > 0);
+  const canSend = !analyzeWithFigmantChat.isPending && (Boolean(message.trim()) || attachments.length > 0);
 
   return {
     handleSendMessage,
