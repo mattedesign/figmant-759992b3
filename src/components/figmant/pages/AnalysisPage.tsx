@@ -1,15 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Sparkles, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useFigmantPromptTemplates, useBestFigmantPrompt } from '@/hooks/useFigmantChatAnalysis';
-import { AnalysisChatPanel } from './analysis/AnalysisChatPanel';
-import { PromptTemplateSelector } from './analysis/PromptTemplateSelector';
-import { CollapsibleHistorySidebar } from './analysis/CollapsibleHistorySidebar';
-import { TemplatesSidebar } from './analysis/TemplatesSidebar';
 import { useChatState } from './analysis/ChatStateManager';
+import { useCategoryColors } from './analysis/useCategoryColors';
+import { MobileAnalysisLayout } from './analysis/MobileAnalysisLayout';
+import { DesktopAnalysisLayout } from './analysis/DesktopAnalysisLayout';
 
 interface AnalysisPageProps {
   selectedTemplate?: any;
@@ -37,6 +33,7 @@ export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) 
   const { data: bestPrompt } = useBestFigmantPrompt(selectedPromptCategory);
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const [showTemplateDetails, setShowTemplateDetails] = useState(false);
+  const { getCategoryColor } = useCategoryColors();
   const isMobile = useIsMobile();
 
   // Handle template from navigation
@@ -46,19 +43,6 @@ export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) 
       setSelectedPromptTemplate(selectedTemplate.id);
     }
   }, [selectedTemplate, setSelectedPromptCategory, setSelectedPromptTemplate]);
-
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'master': return 'bg-purple-100 text-purple-800';
-      case 'competitor': return 'bg-blue-100 text-blue-800';
-      case 'visual_hierarchy': return 'bg-green-100 text-green-800';
-      case 'copy_messaging': return 'bg-orange-100 text-orange-800';
-      case 'ecommerce_revenue': return 'bg-emerald-100 text-emerald-800';
-      case 'ab_testing': return 'bg-pink-100 text-pink-800';
-      case 'premium': return 'bg-amber-100 text-amber-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   const handleAnalysisComplete = (analysisResult: any) => {
     setLastAnalysisResult(analysisResult);
@@ -82,183 +66,53 @@ export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) 
 
   const currentTemplate = promptTemplates?.find(t => t.id === selectedPromptTemplate);
 
+  // Common chat panel props
+  const chatPanelProps = {
+    message,
+    setMessage,
+    messages,
+    setMessages,
+    attachments,
+    setAttachments,
+    urlInput,
+    setUrlInput,
+    showUrlInput,
+    setShowUrlInput,
+    selectedPromptTemplate: currentTemplate,
+    selectedPromptCategory,
+    promptTemplates,
+    onAnalysisComplete: handleAnalysisComplete
+  };
+
   if (isMobile) {
     return (
-      <div className="h-full flex flex-col overflow-hidden">
-        {/* Mobile Header */}
-        <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 bg-white">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h1 className="text-xl font-bold">Analysis</h1>
-              <p className="text-sm text-muted-foreground">
-                AI-powered design insights
-              </p>
-            </div>
-          </div>
-
-          {/* Template Selection - Collapsible on Mobile */}
-          <div className="space-y-3">
-            <PromptTemplateSelector
-              promptTemplates={promptTemplates}
-              promptsLoading={promptsLoading}
-              selectedPromptCategory={selectedPromptCategory}
-              selectedPromptTemplate={selectedPromptTemplate}
-              onPromptCategoryChange={setSelectedPromptCategory}
-              onPromptTemplateChange={setSelectedPromptTemplate}
-              bestPrompt={bestPrompt}
-            />
-
-            {/* Selected Template Display - Compact Mobile */}
-            {currentTemplate && (
-              <Card className="border-primary/20 bg-primary/5">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
-                      <CardTitle className="text-sm truncate">
-                        {currentTemplate.title}
-                      </CardTitle>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => setShowTemplateDetails(!showTemplateDetails)}
-                        className="h-6 w-6 p-0"
-                      >
-                        {showTemplateDetails ? (
-                          <ChevronUp className="h-3 w-3" />
-                        ) : (
-                          <ChevronDown className="h-3 w-3" />
-                        )}
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={clearTemplateSelection}
-                        className="h-6 w-6 p-0"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                {showTemplateDetails && (
-                  <CardContent className="pt-0">
-                    {currentTemplate.description && (
-                      <CardDescription className="text-xs mb-2">
-                        {currentTemplate.description}
-                      </CardDescription>
-                    )}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge className={`${getCategoryColor(currentTemplate.category)} text-xs`}>
-                        {currentTemplate.category.replace('_', ' ')}
-                      </Badge>
-                      {currentTemplate.effectiveness_rating && (
-                        <Badge variant="secondary" className="text-xs">
-                          Rating: {currentTemplate.effectiveness_rating}/10
-                        </Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            )}
-          </div>
-        </div>
-
-        {/* Chat Interface */}
-        <div className="flex-1 overflow-hidden">
-          <AnalysisChatPanel
-            message={message}
-            setMessage={setMessage}
-            messages={messages}
-            setMessages={setMessages}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            urlInput={urlInput}
-            setUrlInput={setUrlInput}
-            showUrlInput={showUrlInput}
-            setShowUrlInput={setShowUrlInput}
-            selectedPromptTemplate={currentTemplate}
-            selectedPromptCategory={selectedPromptCategory}
-            promptTemplates={promptTemplates}
-            onAnalysisComplete={handleAnalysisComplete}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // Desktop layout with centered chat and right sidebar
-  return (
-    <div className="h-full flex overflow-hidden">
-      {/* Collapsible Analysis History Sidebar - Keep unchanged */}
-      <CollapsibleHistorySidebar onNewAnalysis={handleNewAnalysis} />
-
-      {/* Main Chat Content - Centered */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
-        {/* Header with Chat/Attachments tabs */}
-        <div className="flex-shrink-0 bg-white border-b border-gray-200">
-          <div className="flex items-center justify-center py-4">
-            <div className="flex items-center gap-6">
-              <Button variant="ghost" className="text-gray-900 border-b-2 border-blue-500 rounded-none">
-                Chat
-              </Button>
-              <Button variant="ghost" className="text-gray-500 rounded-none">
-                Attachments
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Centered Chat Area */}
-        <div className="flex-1 flex items-center justify-center overflow-hidden">
-          <div className="w-full max-w-2xl h-full flex flex-col">
-            {/* Design Analysis Header */}
-            <div className="text-center py-8">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                  <Sparkles className="h-4 w-4 text-white" />
-                </div>
-                <h1 className="text-2xl font-bold text-gray-900">Design Analysis</h1>
-              </div>
-              <p className="text-gray-600">
-                Start with a task, and let Figmant complete it for you. Not sure where to start? Try a template
-              </p>
-            </div>
-
-            {/* Chat Interface */}
-            <div className="flex-1 overflow-hidden">
-              <AnalysisChatPanel
-                message={message}
-                setMessage={setMessage}
-                messages={messages}
-                setMessages={setMessages}
-                attachments={attachments}
-                setAttachments={setAttachments}
-                urlInput={urlInput}
-                setUrlInput={setUrlInput}
-                showUrlInput={showUrlInput}
-                setShowUrlInput={setShowUrlInput}
-                selectedPromptTemplate={currentTemplate}
-                selectedPromptCategory={selectedPromptCategory}
-                promptTemplates={promptTemplates}
-                onAnalysisComplete={handleAnalysisComplete}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Templates Sidebar */}
-      <TemplatesSidebar
+      <MobileAnalysisLayout
         promptTemplates={promptTemplates}
+        promptsLoading={promptsLoading}
         selectedPromptCategory={selectedPromptCategory}
         selectedPromptTemplate={selectedPromptTemplate}
         onPromptCategoryChange={setSelectedPromptCategory}
         onPromptTemplateChange={setSelectedPromptTemplate}
+        bestPrompt={bestPrompt}
+        currentTemplate={currentTemplate}
+        showTemplateDetails={showTemplateDetails}
+        onToggleTemplateDetails={() => setShowTemplateDetails(!showTemplateDetails)}
+        onClearTemplateSelection={clearTemplateSelection}
+        getCategoryColor={getCategoryColor}
+        chatPanelProps={chatPanelProps}
       />
-    </div>
+    );
+  }
+
+  return (
+    <DesktopAnalysisLayout
+      onNewAnalysis={handleNewAnalysis}
+      chatPanelProps={chatPanelProps}
+      promptTemplates={promptTemplates}
+      selectedPromptCategory={selectedPromptCategory}
+      selectedPromptTemplate={selectedPromptTemplate}
+      onPromptCategoryChange={setSelectedPromptCategory}
+      onPromptTemplateChange={setSelectedPromptTemplate}
+    />
   );
 };
