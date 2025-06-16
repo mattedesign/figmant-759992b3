@@ -71,7 +71,11 @@ export const usePremiumAnalysisSubmission = () => {
           analysis_goals: stepData.analysisGoals,
           desired_outcome: stepData.desiredOutcome,
           files_uploaded: stepData.uploadedFiles?.length || 0,
-          reference_links: stepData.referenceLinks.filter(link => link.trim()).length
+          reference_links: stepData.referenceLinks.filter(link => link.trim()).length,
+          // Store premium analysis metadata within analysis_results instead of separate metadata column
+          is_premium: true,
+          premium_type: selectedPrompt.category,
+          credits_used: 5
         };
 
         // Save the premium analysis to chat history with proper labeling
@@ -83,14 +87,7 @@ export const usePremiumAnalysisSubmission = () => {
             prompt_template_used: selectedPrompt.original_prompt,
             analysis_results: analysisResults,
             confidence_score: claudeResponse.confidence_score || 0.9,
-            analysis_type: 'premium_analysis', // Clear labeling for premium analysis
-            // Additional metadata for premium analysis identification
-            metadata: {
-              is_premium: true,
-              premium_type: selectedPrompt.category,
-              project_name: stepData.projectName,
-              credits_used: 5
-            }
+            analysis_type: 'premium_analysis' // Clear labeling for premium analysis
           })
           .select()
           .single();
