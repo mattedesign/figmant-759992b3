@@ -1,44 +1,135 @@
 
-import React from 'react';
-import { Card } from '@/components/ui/card';
-import { Check } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { StepProps } from '../types';
+import { StepHeader } from '../components/StepHeader';
+import { usePremiumAnalysisSubmission } from '@/hooks/usePremiumAnalysisSubmission';
+import { useClaudePromptExamplesByCategory } from '@/hooks/useClaudePromptExamplesByCategory';
 
-export const Step7Processing: React.FC<StepProps> = () => {
+export const Step7Processing: React.FC<StepProps> = ({ 
+  stepData, 
+  currentStep, 
+  totalSteps 
+}) => {
+  const [processingStatus, setProcessingStatus] = useState<'processing' | 'complete' | 'error'>('processing');
+  const [analysisResult, setAnalysisResult] = useState<string>('');
+  
+  const { data: premiumPrompts } = useClaudePromptExamplesByCategory('premium');
+  const premiumAnalysis = usePremiumAnalysisSubmission();
+
+  const selectedPrompt = premiumPrompts?.find(prompt => prompt.id === stepData.selectedType);
+
+  useEffect(() => {
+    if (selectedPrompt && processingStatus === 'processing') {
+      handleAnalysisSubmission();
+    }
+  }, [selectedPrompt]);
+
+  const handleAnalysisSubmission = async () => {
+    if (!selectedPrompt) {
+      setProcessingStatus('error');
+      return;
+    }
+
+    try {
+      const result = await premiumAnalysis.mutateAsync({
+        stepData,
+        selectedPrompt
+      });
+      
+      setAnalysisResult(result.analysis);
+      setProcessingStatus('complete');
+    } catch (error) {
+      console.error('Analysis submission failed:', error);
+      setProcessingStatus('error');
+    }
+  };
+
+  const handleRetry = () => {
+    setProcessingStatus('processing');
+    setAnalysisResult('');
+    handleAnalysisSubmission();
+  };
+
+  const handleViewResults = () => {
+    // Navigate to analysis results or trigger parent callback
+    window.location.href = '/figmant/analysis';
+  };
+
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-4xl font-bold mb-6 text-gray-900">Your analysis is processing</h2>
-        
-        <div className="flex justify-center mb-8">
-          <div className="bg-white rounded-full px-6 py-3 shadow-lg flex items-center gap-3">
-            <Check className="h-5 w-5 text-green-500" />
-            <span className="text-gray-700 font-medium">Generating</span>
+      <StepHeader 
+        title={processingStatus === 'processing' ? "Processing Your Premium Analysis..." : 
+               processingStatus === 'complete' ? "Analysis Complete!" : "Analysis Error"}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+      />
+
+      <div className="max-w-2xl mx-auto text-center">
+        {processingStatus === 'processing' && (
+          <div className="space-y-4">
+            <Loader2 className="h-16 w-16 animate-spin text-blue-500 mx-auto" />
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium">Analyzing your project...</h3>
+              <p className="text-gray-600">
+                Using premium {selectedPrompt?.title} analysis framework
+              </p>
+              <div className="text-sm text-gray-500">
+                This may take up to 2 minutes for comprehensive results
+              </div>
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="max-w-md mx-auto space-y-4">
-          <Card className="p-4 border border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <div className="flex-1 text-left">
-                <div className="font-medium text-gray-900">My analysis</div>
-                <div className="text-sm text-gray-600">Dashboard Design</div>
-                <div className="text-xs text-gray-500">Comprehensive UX Analysis</div>
+        {processingStatus === 'complete' && (
+          <div className="space-y-6">
+            <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium text-green-600">Premium Analysis Complete!</h3>
+              <p className="text-gray-600">
+                Your comprehensive {selectedPrompt?.title} analysis is ready
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 p-4 rounded-lg text-left">
+              <h4 className="font-medium mb-2">Analysis Preview:</h4>
+              <div className="text-sm text-gray-700 whitespace-pre-wrap">
+                {analysisResult.substring(0, 300)}...
               </div>
             </div>
-          </Card>
 
-          <Card className="p-4 border border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <div className="flex-1 text-left">
-                <div className="font-medium text-gray-900">Premium</div>
-                <div className="text-sm text-gray-600">Web app</div>
-              </div>
+            <div className="flex gap-4 justify-center">
+              <Button onClick={handleViewResults} className="bg-blue-600 hover:bg-blue-700">
+                View Full Analysis
+              </Button>
+              <Button variant="outline" onClick={() => window.location.href = '/figmant/analysis'}>
+                Go to Analysis Page
+              </Button>
             </div>
-          </Card>
-        </div>
+          </div>
+        )}
+
+        {processingStatus === 'error' && (
+          <div className="space-y-6">
+            <AlertCircle className="h-16 w-16 text-red-500 mx-auto" />
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium text-red-600">Analysis Failed</h3>
+              <p className="text-gray-600">
+                There was an error processing your premium analysis
+              </p>
+            </div>
+            
+            <div className="flex gap-4 justify-center">
+              <Button onClick={handleRetry} className="bg-blue-600 hover:bg-blue-700">
+                Retry Analysis
+              </Button>
+              <Button variant="outline" onClick={() => window.history.back()}>
+                Go Back
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
