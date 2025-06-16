@@ -23,7 +23,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   const totalPurchased = credits?.total_purchased || 0;
 
   return (
-    <div className="w-64 border-r border-gray-200/30 flex flex-col min-h-screen">
+    <div className="w-64 border-r border-gray-200/30 flex flex-col min-h-screen" style={{ background: 'transparent' }}>
       <SidebarHeader />
       
       <SidebarNavigation 

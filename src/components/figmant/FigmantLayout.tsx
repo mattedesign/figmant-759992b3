@@ -17,7 +17,7 @@ export const FigmantLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex w-full">
+    <div className="min-h-screen flex w-full" style={{ background: 'transparent' }}>
       <FigmantSidebar 
         activeSection={activeSection}
         onSectionChange={setActiveSection}

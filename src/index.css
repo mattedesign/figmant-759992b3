@@ -112,6 +112,12 @@
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
   }
+
+  /* Force background color on all containers that might override */
+  body > div:first-child,
+  #root > div:first-child {
+    background-color: transparent !important;
+  }
 }
 
 /* Modern typography styles */
