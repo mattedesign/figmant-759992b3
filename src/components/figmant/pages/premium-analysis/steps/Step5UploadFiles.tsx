@@ -16,11 +16,11 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
   totalSteps 
 }) => {
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    setStepData(prev => ({
-      ...prev,
-      uploadedFiles: [...(prev.uploadedFiles || []), ...acceptedFiles]
-    }));
-  }, [setStepData]);
+    setStepData({
+      ...stepData,
+      uploadedFiles: [...(stepData.uploadedFiles || []), ...acceptedFiles]
+    });
+  }, [setStepData, stepData]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
