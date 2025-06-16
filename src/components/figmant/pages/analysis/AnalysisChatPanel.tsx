@@ -279,8 +279,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
         onKeyPress={handleKeyPress}
         onFileUpload={handleFileUpload}
-        isAnalyzing={analyzeWithFigmantChat.isPending}
-        canSend={canSend}
+        isAnalyzing={Boolean(analyzeWithFigmantChat.isPending)}
+        canSend={Boolean(canSend)}
       />
     </div>
   );
