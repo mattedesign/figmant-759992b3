@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { useNavigate } from 'react-router-dom';
+import { Logo } from '@/components/common/Logo';
 
 interface FigmantSidebarProps {
   activeSection: string;
@@ -66,7 +67,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
     <div className="w-64 bg-transparent border-r border-gray-200/30 flex flex-col h-full backdrop-blur-sm">
       {/* Header */}
       <div className="p-4 border-b border-gray-200/30">
-        <h1 className="text-xl font-bold text-gray-900">figmant</h1>
+        <Logo size="md" className="w-auto" />
       </div>
 
       {/* Navigation */}
