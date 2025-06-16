@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,7 +56,7 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
       style={containerStyle}
     >
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Recent Analysis</h2>
+        <h2 className="text-base font-medium">Recent Analysis</h2>
         <Button 
           variant="ghost" 
           size="sm" 

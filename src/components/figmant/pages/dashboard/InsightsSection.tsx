@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -54,7 +55,7 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h2 className={`font-semibold ${isTablet ? 'text-base' : 'text-lg'}`}>Insights</h2>
+          <h2 className={`font-medium text-base ${isTablet ? 'text-base' : 'text-base'}`}>Insights</h2>
           <Badge variant="outline" className="text-xs">
             {insightsData.length} active
           </Badge>
