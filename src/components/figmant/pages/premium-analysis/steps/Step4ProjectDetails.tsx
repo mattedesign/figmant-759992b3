@@ -1,5 +1,8 @@
+
 import React from 'react';
 import { Plus, X } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { StepProps } from '../types';
 import { StepHeader } from '../components/StepHeader';
 import { FormField } from '../components/FormField';

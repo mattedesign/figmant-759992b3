@@ -16,6 +16,16 @@ export const Step6CustomPrompt: React.FC<StepProps> = ({
     setStepData({ ...stepData, customPrompt: value });
   };
 
+  const handleAddAnother = () => {
+    // TODO: Implement add another prompt functionality
+    console.log('Add another prompt clicked');
+  };
+
+  const handleUseTemplate = () => {
+    // TODO: Implement use template functionality
+    console.log('Use template clicked');
+  };
+
   return (
     <div className="space-y-6">
       <StepHeader 
@@ -35,10 +45,16 @@ export const Step6CustomPrompt: React.FC<StepProps> = ({
         />
 
         <div className="flex gap-4">
-          <ActionButton icon={Plus}>
+          <ActionButton 
+            icon={Plus}
+            onClick={handleAddAnother}
+          >
             Add Another
           </ActionButton>
-          <ActionButton icon={FileText}>
+          <ActionButton 
+            icon={FileText}
+            onClick={handleUseTemplate}
+          >
             Use Template
           </ActionButton>
         </div>
