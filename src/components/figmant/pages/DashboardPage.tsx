@@ -4,8 +4,6 @@ import { DashboardHeader } from './dashboard/DashboardHeader';
 import { RecentAnalysisSection } from './dashboard/RecentAnalysisSection';
 import { InsightsSection } from './dashboard/InsightsSection';
 import { PatternAnalysisSection } from './dashboard/PatternAnalysisSection';
-import { MyPromptsSection } from './dashboard/MyPromptsSection';
-import { NotesSection } from './dashboard/NotesSection';
 import { DashboardAnalyticsSection } from './dashboard/DashboardAnalyticsSection';
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
@@ -16,8 +14,6 @@ export const DashboardPage: React.FC = () => {
     // Optimized data
     memoizedAnalysisData,
     memoizedInsightsData,
-    memoizedPromptsData,
-    memoizedNotesData,
     memoizedDataStats,
     
     // State management
@@ -30,8 +26,6 @@ export const DashboardPage: React.FC = () => {
     refreshAllData,
     refreshAnalyses,
     refreshInsights,
-    refreshPrompts,
-    refreshNotes,
     
     // Loading states
     loadingStates,
@@ -87,9 +81,9 @@ export const DashboardPage: React.FC = () => {
           analysisData={memoizedAnalysisData}
         />
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-3 space-y-8">
             <RecentAnalysisSection 
               analysisData={memoizedAnalysisData}
               isLoading={loadingStates.analyses}
@@ -102,35 +96,13 @@ export const DashboardPage: React.FC = () => {
               error={errorStates.insights}
               onRetry={refreshInsights}
             />
-            <PatternAnalysisSection />
           </div>
           
           {/* Sidebar */}
           <div className="space-y-8">
-            <MyPromptsSection 
-              promptsData={memoizedPromptsData}
-              isLoading={loadingStates.prompts}
-              error={errorStates.prompts}
-              onRetry={refreshPrompts}
-            />
-            <NotesSection 
-              notesData={memoizedNotesData}
-              isLoading={loadingStates.notes}
-              error={errorStates.notes}
-              onRetry={refreshNotes}
-            />
+            <PatternAnalysisSection />
           </div>
         </div>
-        
-        {/* Performance Debug Info (only in development) */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-8 p-4 bg-gray-100 rounded-lg text-xs text-gray-600">
-            <div>Render Time: {performance.metrics.renderTime.toFixed(2)}ms</div>
-            <div>Processing Time: {performance.metrics.dataProcessingTime.toFixed(2)}ms</div>
-            <div>Cache Hit Rate: {performance.metrics.cacheHitRate.toFixed(1)}%</div>
-            <div>Activity Score: {memoizedDataStats.activityScore}</div>
-          </div>
-        )}
       </div>
     </div>
   );
