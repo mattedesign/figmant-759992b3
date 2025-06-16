@@ -18,7 +18,7 @@ import { AnalysisTab } from './AnalysisTab';
 import { DataSettingsTab } from './DataSettingsTab';
 
 export const SettingsContainer = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [preferences, setPreferences] = useState({
     theme: 'system',
@@ -224,7 +224,7 @@ export const SettingsContainer = () => {
         </TabsContent>
 
         <TabsContent value="address">
-          <AddressTab user={user} onUpdateAddress={handleUpdateAddress} />
+          <AddressTab onUpdateAddress={handleUpdateAddress} address={profile} />
         </TabsContent>
 
         <TabsContent value="security">

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   BrowserRouter as Router,
@@ -7,9 +8,9 @@ import {
 } from 'react-router-dom';
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
-import SubscriptionPage from '@/pages/SubscriptionPage';
+import Subscription from '@/pages/Subscription';
 import OwnerDashboard from '@/pages/OwnerDashboard';
-import FigmantLayout from '@/components/figmant/FigmantLayout';
+import { FigmantLayout } from '@/components/figmant/FigmantLayout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import ProfilePage from './pages/ProfilePage';
 
@@ -47,14 +48,14 @@ const App: React.FC = () => {
           path="/subscription"
           element={
             <AuthGuard>
-              <SubscriptionPage />
+              <Subscription />
             </AuthGuard>
           }
         />
         <Route
           path="/owner"
           element={
-            <AuthGuard requiredRole="owner">
+            <AuthGuard requireOwner>
               <OwnerDashboard />
             </AuthGuard>
           }

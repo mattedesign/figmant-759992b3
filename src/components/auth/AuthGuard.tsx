@@ -15,7 +15,7 @@ interface AuthGuardProps {
 
 export const AuthGuard = ({ 
   children, 
-  requireAuth = false,
+  requireAuth = true,
   requireOwner = false,
   requireActiveSubscription = false
 }: AuthGuardProps) => {
