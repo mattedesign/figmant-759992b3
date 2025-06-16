@@ -289,7 +289,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         onKeyPress={handleKeyPress}
         isAnalyzing={analyzeWithFigmantChat.isPending}
         canSend={canSend}
-        isDragActive={Boolean(isDragActive)}
+        isDragActive={!!isDragActive}
         getRootProps={getRootProps}
         getInputProps={getInputProps}
       />
