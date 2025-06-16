@@ -50,7 +50,7 @@ export const useMessageHandler = ({
         timestamp: new Date()
       };
 
-      setMessages(prev => [...prev, userMessage]);
+      setMessages([...messages, userMessage]);
 
       // Determine prompt to use
       let promptToUse = '';
@@ -82,7 +82,7 @@ export const useMessageHandler = ({
         uploadIds: result.uploadIds
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages([...messages, userMessage, assistantMessage]);
 
       // Call analysis complete callback
       if (onAnalysisComplete) {

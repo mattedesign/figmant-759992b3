@@ -118,8 +118,9 @@ const analyzeWithFigmantChat = async (request: FigmantChatRequest): Promise<Figm
           .insert({
             user_id: user.id,
             file_name: attachment.name,
-            url: attachment.url,
-            use_case: 'figmant_chat_analysis'
+            source_url: attachment.url,
+            use_case: 'figmant_chat_analysis',
+            source_type: 'url'
           })
           .select('id')
           .single();

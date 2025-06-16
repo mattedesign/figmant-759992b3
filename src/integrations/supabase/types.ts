@@ -39,6 +39,39 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_analysis_history: {
+        Row: {
+          analysis_results: Json
+          analysis_type: string
+          confidence_score: number | null
+          created_at: string
+          id: string
+          prompt_template_used: string | null
+          prompt_used: string
+          user_id: string
+        }
+        Insert: {
+          analysis_results?: Json
+          analysis_type?: string
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          prompt_template_used?: string | null
+          prompt_used: string
+          user_id: string
+        }
+        Update: {
+          analysis_results?: Json
+          analysis_type?: string
+          confidence_score?: number | null
+          created_at?: string
+          id?: string
+          prompt_template_used?: string | null
+          prompt_used?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       claude_insights: {
         Row: {
           confidence_score: number | null

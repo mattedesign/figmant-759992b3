@@ -15,13 +15,21 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
   selectedAnalysis,
   onAnalysisSelect
 }) => {
-  const { data: analyses = [], isLoading } = useDesignAnalyses();
+  const { data: designAnalyses = [], isLoading } = useDesignAnalyses();
   const { data: chatAnalyses = [] } = useChatAnalysisHistory();
 
   // Combine both types of analyses and sort by date
   const allAnalyses = [
-    ...analyses.map(a => ({ ...a, type: 'design', title: a.file_name || 'Design Analysis' })),
-    ...chatAnalyses.map(a => ({ ...a, type: 'chat', title: 'Chat Analysis' }))
+    ...designAnalyses.map(a => ({ 
+      ...a, 
+      type: 'design', 
+      title: a.analysis_results?.title || 'Design Analysis' 
+    })),
+    ...chatAnalyses.map(a => ({ 
+      ...a, 
+      type: 'chat', 
+      title: 'Chat Analysis' 
+    }))
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const recentAnalyses = allAnalyses.slice(0, 5);
