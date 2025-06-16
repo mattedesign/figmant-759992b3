@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,13 +14,19 @@ import {
   Users,
   Calendar,
   Download,
-  Filter
+  Filter,
+  Settings,
+  RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AnalyticsOverviewCards } from './AnalyticsOverviewCards';
 import { PerformanceChart } from './PerformanceChart';
 import { InsightsPanel } from './InsightsPanel';
 import { UsageMetrics } from './UsageMetrics';
+import { MetricsHeatmap } from './MetricsHeatmap';
+import { InteractiveMetricsChart } from './InteractiveMetricsChart';
+import { RealTimeMetrics } from './RealTimeMetrics';
+import { AdvancedFiltersPanel } from './AdvancedFiltersPanel';
 
 interface PerformanceMetric {
   id: string;
@@ -61,6 +66,9 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [dateRange, setDateRange] = useState('7d');
+  const [showFilters, setShowFilters] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
     metrics: [
       {
@@ -164,6 +172,21 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
     }, 1000);
   };
 
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 2000);
+  };
+
+  const handleApplyFilters = (filters: any) => {
+    console.log('Applying filters:', filters);
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  };
+
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'up':
@@ -191,6 +214,13 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
     const sign = change >= 0 ? '+' : '';
     return `${sign}${change.toFixed(1)}%`;
   };
+
+  // Generate heatmap data
+  const heatmapData = analyticsData.chartData.map(point => ({
+    date: point.date,
+    value: point.analyses,
+    analyses: point.analyses
+  }));
 
   return (
     <div className={cn("space-y-6", className)}>
@@ -226,9 +256,23 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
             </Button>
           </div>
           
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowFilters(true)}
+          >
             <Filter className="h-4 w-4 mr-2" />
             Filters
+          </Button>
+
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")} />
+            Refresh
           </Button>
           
           <Button variant="outline" size="sm">
@@ -238,12 +282,16 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
         </div>
       </div>
 
+      {/* Real-time Status */}
+      <RealTimeMetrics />
+
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="usage">Usage</TabsTrigger>
+          <TabsTrigger value="trends">Trends</TabsTrigger>
           <TabsTrigger value="insights">Insights</TabsTrigger>
         </TabsList>
 
@@ -285,6 +333,12 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
               </Card>
             ))}
           </div>
+
+          {/* Interactive Chart */}
+          <InteractiveMetricsChart 
+            data={analyticsData.chartData}
+            isLoading={isLoading}
+          />
 
           {/* Detailed Performance Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -330,6 +384,32 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
           />
         </TabsContent>
 
+        <TabsContent value="trends" className="space-y-6">
+          {/* Activity Heatmap */}
+          <MetricsHeatmap 
+            data={heatmapData}
+            metric="analyses"
+            isLoading={isLoading}
+          />
+
+          {/* Trend Analysis Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <MetricsHeatmap 
+              data={heatmapData.map(d => ({ ...d, value: d.value * 0.94 }))}
+              metric="successRate"
+              isLoading={isLoading}
+              title="Success Rate Heatmap"
+            />
+            
+            <MetricsHeatmap 
+              data={heatmapData.map(d => ({ ...d, value: d.value * 0.87 }))}
+              metric="avgConfidence"
+              isLoading={isLoading}
+              title="Confidence Score Heatmap"
+            />
+          </div>
+        </TabsContent>
+
         <TabsContent value="insights" className="space-y-6">
           <InsightsPanel 
             insights={analyticsData.insights}
@@ -338,6 +418,13 @@ export const PerformanceAnalyticsDashboard: React.FC<PerformanceAnalyticsDashboa
           />
         </TabsContent>
       </Tabs>
+
+      {/* Advanced Filters Modal */}
+      <AdvancedFiltersPanel
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        onApplyFilters={handleApplyFilters}
+      />
     </div>
   );
 };
