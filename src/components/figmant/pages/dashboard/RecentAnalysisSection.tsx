@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Star, MoreHorizontal } from 'lucide-react';
+import { Star, MoreHorizontal, ExternalLink } from 'lucide-react';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { AnalysisData } from './types/dashboard';
 import { RecentAnalysisLoading } from './components/LoadingStates';
@@ -25,6 +26,15 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
 
+  const handleViewAnalysis = (analysis: AnalysisData) => {
+    // Navigate to analysis detail page
+    window.location.href = `/figmant/analysis?id=${analysis.id}`;
+  };
+
+  const handleViewAllAnalyses = () => {
+    window.location.href = '/figmant/analysis';
+  };
+
   const getGridColumns = () => {
     if (isMobile) return 'grid-cols-1';
     if (isTablet) return 'grid-cols-1 xl:grid-cols-2';
@@ -45,7 +55,12 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
     >
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">Recent Analysis</h2>
-        <Button variant="ghost" size="sm" className="text-gray-500">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-gray-500"
+          onClick={handleViewAllAnalyses}
+        >
           See all
         </Button>
       </div>
@@ -59,7 +74,6 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
       {/* Empty State */}
       {!isLoading && !error && analysisData.length === 0 && (
         <RecentAnalysisEmpty onAction={() => {
-          // Navigate to analysis page
           window.location.href = '/figmant/analysis';
         }} />
       )}
@@ -70,12 +84,13 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
           {analysisData.map((analysis) => (
             <Card 
               key={analysis.id} 
-              className="border-0"
+              className="border-0 cursor-pointer hover:shadow-md transition-shadow"
               style={{
                 borderRadius: 'var(--corner-radius-xl, 12px)',
                 border: '1px solid var(--border-neutral-xsubtle, rgba(10, 12, 17, 0.10))',
                 background: 'var(--background-base-white, #FFF)'
               }}
+              onClick={() => handleViewAnalysis(analysis)}
             >
               <CardHeader className={`pb-3 ${isTablet ? 'pb-2' : ''}`}>
                 <div className="flex items-center justify-between">
@@ -83,9 +98,21 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
                     <Star className={`h-4 w-4 text-gray-400 ${isTablet ? 'h-3 w-3' : ''}`} />
                     <span className={`font-medium ${isTablet ? 'text-sm' : ''}`}>{analysis.title}</span>
                   </div>
-                  <Button variant="ghost" size="sm">
-                    <MoreHorizontal className={`h-4 w-4 ${isTablet ? 'h-3 w-3' : ''}`} />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewAnalysis(analysis);
+                      }}
+                    >
+                      <ExternalLink className={`h-4 w-4 ${isTablet ? 'h-3 w-3' : ''}`} />
+                    </Button>
+                    <Button variant="ghost" size="sm">
+                      <MoreHorizontal className={`h-4 w-4 ${isTablet ? 'h-3 w-3' : ''}`} />
+                    </Button>
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <div className={`text-sm text-gray-500 ${isTablet ? 'text-xs' : ''}`}>Status: {analysis.status}</div>

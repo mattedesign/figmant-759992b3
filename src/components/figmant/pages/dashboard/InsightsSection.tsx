@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { TrendingUp } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { TrendingUp, ExternalLink, BarChart3 } from 'lucide-react';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { InsightData } from './types/dashboard';
 import { InsightsSectionLoading } from './components/LoadingStates';
@@ -23,6 +25,20 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
 
+  const handleViewInsight = (insight: InsightData) => {
+    // Navigate to detailed insight view
+    window.location.href = `/figmant/analytics?insight=${insight.id}`;
+  };
+
+  const handleViewAnalytics = () => {
+    window.location.href = '/figmant/analytics';
+  };
+
+  const handleMetricClick = (insight: InsightData, metricType: 'total' | 'running' | 'complete') => {
+    // Navigate to filtered analytics view
+    window.location.href = `/figmant/analytics?filter=${metricType}&user=${insight.id}`;
+  };
+
   const containerStyle = {
     borderRadius: 'var(--corner-radius-2xl, 16px)',
     border: '1px solid var(--border-neutral-xsubtle, rgba(10, 12, 17, 0.10))',
@@ -36,8 +52,18 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({
       style={containerStyle}
     >
       <div className="flex items-center justify-between mb-4">
-        <h2 className={`font-semibold ${isTablet ? 'text-base' : 'text-lg'}`}>Insights</h2>
-        <Button variant="ghost" size="sm" className="text-gray-500">
+        <div className="flex items-center gap-2">
+          <h2 className={`font-semibold ${isTablet ? 'text-base' : 'text-lg'}`}>Insights</h2>
+          <Badge variant="outline" className="text-xs">
+            {insightsData.length} active
+          </Badge>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-gray-500"
+          onClick={handleViewAnalytics}
+        >
           This month
         </Button>
       </div>
@@ -67,7 +93,7 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({
           {insightsData.map((insight, index) => (
             <div 
               key={insight.id} 
-              className={`items-center py-3 px-4 hover:bg-gray-50 rounded-lg ${
+              className={`items-center py-3 px-4 hover:bg-gray-50 rounded-lg transition-colors ${
                 isMobile 
                   ? 'flex flex-col space-y-2 border border-gray-200 rounded-lg' 
                   : isTablet
@@ -90,24 +116,42 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({
                       <div className="font-medium text-sm">{insight.name}</div>
                       <div className="text-xs text-gray-500">{insight.role}</div>
                     </div>
-                    <div className="flex items-center text-green-600 text-sm font-medium">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      {insight.change}
+                    <div className="flex items-center gap-1">
+                      <div className="flex items-center text-green-600 text-sm font-medium">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        {insight.change}
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleViewInsight(insight)}
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
                   <div className="flex justify-between w-full text-sm">
-                    <div className="text-center">
+                    <button 
+                      className="text-center hover:bg-blue-50 p-2 rounded transition-colors"
+                      onClick={() => handleMetricClick(insight, 'total')}
+                    >
                       <div className="text-gray-500 text-xs">Total</div>
                       <div className="font-medium">{insight.total}</div>
-                    </div>
-                    <div className="text-center">
+                    </button>
+                    <button 
+                      className="text-center hover:bg-blue-50 p-2 rounded transition-colors"
+                      onClick={() => handleMetricClick(insight, 'running')}
+                    >
                       <div className="text-gray-500 text-xs">Running</div>
                       <div className="font-medium">{insight.running}</div>
-                    </div>
-                    <div className="text-center">
+                    </button>
+                    <button 
+                      className="text-center hover:bg-blue-50 p-2 rounded transition-colors"
+                      onClick={() => handleMetricClick(insight, 'complete')}
+                    >
                       <div className="text-gray-500 text-xs">Complete</div>
                       <div className="font-medium">{insight.complete}</div>
-                    </div>
+                    </button>
                     <div className="text-center">
                       <div className="text-gray-500 text-xs">Period</div>
                       <div className="text-xs">{insight.period}</div>
@@ -131,12 +175,36 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-xs">
-                    <span className="text-gray-600">{insight.total}</span>
-                    <span className="text-gray-600">{insight.running}</span>
-                    <span className="text-gray-600">{insight.complete}</span>
-                    <div className="flex items-center text-green-600 font-medium">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      {insight.change}
+                    <button 
+                      className="text-gray-600 hover:text-blue-600 transition-colors"
+                      onClick={() => handleMetricClick(insight, 'total')}
+                    >
+                      {insight.total}
+                    </button>
+                    <button 
+                      className="text-gray-600 hover:text-blue-600 transition-colors"
+                      onClick={() => handleMetricClick(insight, 'running')}
+                    >
+                      {insight.running}
+                    </button>
+                    <button 
+                      className="text-gray-600 hover:text-blue-600 transition-colors"
+                      onClick={() => handleMetricClick(insight, 'complete')}
+                    >
+                      {insight.complete}
+                    </button>
+                    <div className="flex items-center gap-1">
+                      <div className="flex items-center text-green-600 font-medium">
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                        {insight.change}
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleViewInsight(insight)}
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
                 </>
@@ -156,15 +224,37 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({
                       <div className="text-xs text-gray-500">{insight.role}</div>
                     </div>
                   </div>
-                  <div className="col-span-2 text-center font-medium">{insight.total}</div>
-                  <div className="col-span-2 text-center font-medium">{insight.running}</div>
-                  <div className="col-span-2 text-center font-medium">{insight.complete}</div>
+                  <button 
+                    className="col-span-2 text-center font-medium hover:text-blue-600 transition-colors"
+                    onClick={() => handleMetricClick(insight, 'total')}
+                  >
+                    {insight.total}
+                  </button>
+                  <button 
+                    className="col-span-2 text-center font-medium hover:text-blue-600 transition-colors"
+                    onClick={() => handleMetricClick(insight, 'running')}
+                  >
+                    {insight.running}
+                  </button>
+                  <button 
+                    className="col-span-2 text-center font-medium hover:text-blue-600 transition-colors"
+                    onClick={() => handleMetricClick(insight, 'complete')}
+                  >
+                    {insight.complete}
+                  </button>
                   <div className="col-span-3 flex items-center gap-2">
                     <div className="flex items-center text-green-600 text-sm font-medium">
                       <TrendingUp className="h-3 w-3 mr-1" />
                       {insight.change}
                     </div>
                     <span className="text-xs text-gray-500">{insight.period}</span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleViewInsight(insight)}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
                   </div>
                 </>
               )}
