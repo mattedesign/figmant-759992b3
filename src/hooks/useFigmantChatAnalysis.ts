@@ -1,5 +1,5 @@
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
@@ -106,5 +106,51 @@ export const useFigmantChatAnalysis = () => {
         description: error.message || "An error occurred during analysis",
       });
     }
+  });
+};
+
+export const useFigmantPromptTemplates = () => {
+  return useQuery({
+    queryKey: ['figmant-prompt-templates'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('claude_prompt_examples')
+        .select('*')
+        .eq('is_active', true)
+        .order('effectiveness_rating', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching prompt templates:', error);
+        throw error;
+      }
+      
+      return data || [];
+    }
+  });
+};
+
+export const useBestFigmantPrompt = (category?: string) => {
+  return useQuery({
+    queryKey: ['best-figmant-prompt', category],
+    queryFn: async () => {
+      if (!category) return null;
+      
+      const { data, error } = await supabase
+        .from('claude_prompt_examples')
+        .select('*')
+        .eq('category', category)
+        .eq('is_active', true)
+        .order('effectiveness_rating', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching best prompt:', error);
+        return null;
+      }
+      
+      return data;
+    },
+    enabled: !!category
   });
 };
