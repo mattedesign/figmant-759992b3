@@ -8,8 +8,7 @@ import {
   Star, 
   FileText, 
   Settings,
-  Search,
-  Shield
+  Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -33,11 +32,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     { id: 'search', label: 'Search', icon: Search },
   ];
 
-  // Add admin section for owners
-  if (isOwner) {
-    mainSections.push({ id: 'admin', label: 'Admin', icon: Shield });
-  }
-
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-6">
       {/* Pages Section */}
@@ -50,9 +44,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               variant="ghost"
               className={cn(
                 "w-full justify-start",
-                activeSection === section.id && "bg-[#F9FAFB] text-[#3D4A5C] rounded-[20px]",
-                section.id === 'admin' && activeSection !== section.id && "border border-orange-200 bg-orange-50/80 text-orange-700 hover:bg-orange-100/80",
-                section.id === 'admin' && activeSection === section.id && "bg-[#F9FAFB] text-[#3D4A5C] rounded-[20px] border-none"
+                activeSection === section.id && "bg-[#F9FAFB] text-[#3D4A5C] rounded-[20px]"
               )}
               onClick={() => onSectionChange(section.id)}
             >
@@ -65,14 +57,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               )}>
                 {section.label}
               </span>
-              {section.id === 'admin' && (
-                <Badge variant="secondary" className={cn(
-                  "ml-auto",
-                  activeSection === section.id ? "bg-[#3D4A5C]/10 text-[#3D4A5C]" : "bg-orange-100 text-orange-700"
-                )}>
-                  Owner
-                </Badge>
-              )}
             </Button>
           ))}
         </div>
