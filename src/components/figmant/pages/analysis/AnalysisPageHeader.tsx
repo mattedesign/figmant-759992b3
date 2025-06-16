@@ -12,7 +12,7 @@ export const AnalysisPageHeader: React.FC<AnalysisPageHeaderProps> = ({
 }) => {
   return (
     <div>
-      <h1 className="text-xl font-bold">{title}</h1>
+      <h1 className="text-2xl font-bold">{title}</h1>
       <p className="text-sm text-muted-foreground">
         {description}
       </p>
