@@ -27,7 +27,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
 }) => {
   const location = useLocation();
 
-  // Handle navigation state from premium analysis or template selection
+  // Handle navigation state from premium analysis, template selection, or admin access
   useEffect(() => {
     if (location.state?.activeSection) {
       setActiveSection(location.state.activeSection);

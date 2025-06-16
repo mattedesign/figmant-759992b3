@@ -1,5 +1,5 @@
 
-import { User, Settings, LogOut, CreditCard, Shield, LayoutDashboard } from 'lucide-react';
+import { User, Settings, LogOut, CreditCard, Shield, LayoutDashboard, UserCog } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -54,6 +54,7 @@ export const UserMenu = () => {
   const isOwner = profile?.role === 'owner';
   const isOnOwnerDashboard = location.pathname === '/owner';
   const isOnSubscriberDashboard = location.pathname === '/dashboard';
+  const isOnFigmant = location.pathname === '/figmant';
 
   return (
     <DropdownMenu>
@@ -96,6 +97,14 @@ export const UserMenu = () => {
             >
               <Shield className="mr-2 h-4 w-4" />
               Owner Dashboard
+            </DropdownMenuItem>
+
+            <DropdownMenuItem 
+              onClick={() => navigate('/figmant', { state: { activeSection: 'admin' } })}
+              className={isOnFigmant && location.state?.activeSection === 'admin' ? 'bg-accent' : ''}
+            >
+              <UserCog className="mr-2 h-4 w-4" />
+              Admin
             </DropdownMenuItem>
             
             <DropdownMenuSeparator />

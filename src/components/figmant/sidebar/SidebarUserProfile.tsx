@@ -6,7 +6,8 @@ import {
   LogOut,
   CreditCard,
   LayoutDashboard,
-  Shield
+  Shield,
+  UserCog
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -71,6 +72,7 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
 
   const isOnOwnerDashboard = location.pathname === '/owner';
   const isOnSubscriberDashboard = location.pathname === '/dashboard';
+  const isOnFigmant = location.pathname === '/figmant';
 
   return (
     <div className="p-4 border-t border-gray-200/30 mt-auto">
@@ -120,6 +122,14 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
               >
                 <Shield className="mr-2 h-4 w-4" />
                 Owner Dashboard
+              </DropdownMenuItem>
+
+              <DropdownMenuItem 
+                onClick={() => navigate('/figmant', { state: { activeSection: 'admin' } })}
+                className={isOnFigmant && location.state?.activeSection === 'admin' ? 'bg-accent' : ''}
+              >
+                <UserCog className="mr-2 h-4 w-4" />
+                Admin
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />
