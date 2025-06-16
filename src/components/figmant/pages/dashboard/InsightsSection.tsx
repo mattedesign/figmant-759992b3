@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, ExternalLink, BarChart3 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { InsightData } from './types/dashboard';
 import { InsightsSectionLoading } from './components/LoadingStates';
@@ -22,21 +22,22 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({
   error, 
   onRetry 
 }) => {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
 
   const handleViewInsight = (insight: InsightData) => {
-    // Navigate to detailed insight view
-    window.location.href = `/figmant/analytics?insight=${insight.id}`;
+    // Navigate to analytics page with insight parameter
+    navigate(`/figmant/analytics?insight=${insight.id}`);
   };
 
   const handleViewAnalytics = () => {
-    window.location.href = '/figmant/analytics';
+    navigate('/figmant/analytics');
   };
 
   const handleMetricClick = (insight: InsightData, metricType: 'total' | 'running' | 'complete') => {
     // Navigate to filtered analytics view
-    window.location.href = `/figmant/analytics?filter=${metricType}&user=${insight.id}`;
+    navigate(`/figmant/analytics?filter=${metricType}&user=${insight.id}`);
   };
 
   const containerStyle = {

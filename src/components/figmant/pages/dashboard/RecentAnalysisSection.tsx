@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Star, MoreHorizontal, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { AnalysisData } from './types/dashboard';
 import { RecentAnalysisLoading } from './components/LoadingStates';
@@ -23,16 +23,17 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
   error, 
   onRetry 
 }) => {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
 
   const handleViewAnalysis = (analysis: AnalysisData) => {
-    // Navigate to analysis detail page
-    window.location.href = `/figmant/analysis?id=${analysis.id}`;
+    // Navigate to analysis page using React Router
+    navigate(`/figmant/analysis/${analysis.id}`);
   };
 
   const handleViewAllAnalyses = () => {
-    window.location.href = '/figmant/analysis';
+    navigate('/figmant/analysis');
   };
 
   const getGridColumns = () => {
@@ -73,9 +74,7 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
       
       {/* Empty State */}
       {!isLoading && !error && analysisData.length === 0 && (
-        <RecentAnalysisEmpty onAction={() => {
-          window.location.href = '/figmant/analysis';
-        }} />
+        <RecentAnalysisEmpty onAction={() => navigate('/figmant/analysis')} />
       )}
       
       {/* Data State */}
