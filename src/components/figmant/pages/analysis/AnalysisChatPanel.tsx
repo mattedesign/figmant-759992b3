@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFigmantChatAnalysis, useFigmantPromptTemplates, useBestFigmantPrompt } from '@/hooks/useFigmantChatAnalysis';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
-import { useDropzone } from 'react-dropzone';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { PromptTemplateSelector } from './PromptTemplateSelector';
@@ -50,9 +49,10 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     }
   }, [attachments, onAttachmentsChange]);
 
-  // File upload with dropzone
-  const onDrop = React.useCallback(async (acceptedFiles: File[]) => {
-    for (const file of acceptedFiles) {
+  // File upload handler (without drag functionality)
+  const handleFileUpload = async (files: FileList) => {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
       const attachmentId = crypto.randomUUID();
       
       // Add file to attachments with uploading status
@@ -105,16 +105,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         });
       }
     }
-  }, [toast]);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp'],
-      'application/pdf': ['.pdf']
-    },
-    multiple: true
-  });
+  };
 
   const handleAddUrl = () => {
     if (urlInput.trim()) {
@@ -288,11 +279,9 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         onSendMessage={handleSendMessage}
         onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
         onKeyPress={handleKeyPress}
+        onFileUpload={handleFileUpload}
         isAnalyzing={analyzeWithFigmantChat.isPending}
         canSend={canSend}
-        isDragActive={!!isDragActive}
-        getRootProps={getRootProps}
-        getInputProps={getInputProps}
       />
     </div>
   );

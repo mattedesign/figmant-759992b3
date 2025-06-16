@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mic, Send, Upload, Link, Loader2 } from 'lucide-react';
@@ -10,11 +10,9 @@ interface MessageInputSectionProps {
   onSendMessage: () => void;
   onToggleUrlInput: () => void;
   onKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onFileUpload: (files: FileList) => void;
   isAnalyzing: boolean;
   canSend: boolean;
-  isDragActive: boolean;
-  getRootProps: () => any;
-  getInputProps: () => any;
 }
 
 export const MessageInputSection: React.FC<MessageInputSectionProps> = ({
@@ -23,15 +21,35 @@ export const MessageInputSection: React.FC<MessageInputSectionProps> = ({
   onSendMessage,
   onToggleUrlInput,
   onKeyPress,
+  onFileUpload,
   isAnalyzing,
-  canSend,
-  isDragActive,
-  getRootProps,
-  getInputProps
+  canSend
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      onFileUpload(files);
+    }
+    // Reset the input so the same file can be selected again
+    e.target.value = '';
+  };
+
   return (
-    <div {...getRootProps()} className={`p-4 border-t border-gray-200 ${isDragActive ? 'bg-blue-50 border-blue-300' : ''}`}>
-      <input {...getInputProps()} />
+    <div className="p-4 border-t border-gray-200">
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*,.pdf"
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+      />
       <div className="flex items-center gap-2">
         <div className="flex-1 relative">
           <Input
@@ -55,6 +73,7 @@ export const MessageInputSection: React.FC<MessageInputSectionProps> = ({
               variant="ghost" 
               size="sm" 
               className="h-6 w-6 p-0"
+              onClick={handleUploadClick}
               title="Upload files"
             >
               <Upload className="h-3 w-3" />
@@ -78,12 +97,6 @@ export const MessageInputSection: React.FC<MessageInputSectionProps> = ({
           <Mic className="h-4 w-4" />
         </Button>
       </div>
-      
-      {isDragActive && (
-        <div className="mt-2 text-center text-sm text-blue-600">
-          Drop files here to analyze...
-        </div>
-      )}
     </div>
   );
 };
