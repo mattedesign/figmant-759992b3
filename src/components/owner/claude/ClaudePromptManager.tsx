@@ -1,11 +1,13 @@
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, CheckCircle, XCircle, Clock, Plus } from 'lucide-react';
+import { useClaudePromptExamples, useCreatePromptExample } from '@/hooks/useClaudePromptExamples';
 import { useClaudeSettings } from '@/hooks/useClaudeSettings';
 import { ConnectionStatus } from '@/types/claude';
+import { CreatePromptForm } from './CreatePromptForm';
 
 // Lazy load the heavy components
 const ClaudeHeader = React.lazy(() => import('./ClaudeHeader').then(module => ({ default: module.ClaudeHeader })));
@@ -21,6 +23,20 @@ export const ClaudePromptManager: React.FC = () => {
   const { isOwner, loading } = useAuth();
   const { data: claudeSettings, isLoading: settingsLoading } = useClaudeSettings();
   const { data: promptTemplates = [], isLoading: templatesLoading } = useClaudePromptExamples();
+  const createPromptMutation = useCreatePromptExample();
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newPrompt, setNewPrompt] = useState({
+    title: '',
+    description: '',
+    category: 'general' as const,
+    original_prompt: '',
+    claude_response: '',
+    use_case_context: '',
+    business_domain: '',
+    is_template: true,
+    is_active: true,
+    effectiveness_rating: 5
+  });
 
   console.log('🚀 ClaudePromptManager mounting with auth state:', { isOwner, loading });
 
@@ -69,6 +85,47 @@ export const ClaudePromptManager: React.FC = () => {
     };
   };
 
+  const handleSavePrompt = async () => {
+    if (!newPrompt.title || !newPrompt.original_prompt || !newPrompt.claude_response) {
+      return;
+    }
+
+    try {
+      await createPromptMutation.mutateAsync(newPrompt);
+      setShowCreateForm(false);
+      setNewPrompt({
+        title: '',
+        description: '',
+        category: 'general' as const,
+        original_prompt: '',
+        claude_response: '',
+        use_case_context: '',
+        business_domain: '',
+        is_template: true,
+        is_active: true,
+        effectiveness_rating: 5
+      });
+    } catch (error) {
+      console.error('Failed to create prompt:', error);
+    }
+  };
+
+  const handleCancelCreate = () => {
+    setShowCreateForm(false);
+    setNewPrompt({
+      title: '',
+      description: '',
+      category: 'general' as const,
+      original_prompt: '',
+      claude_response: '',
+      use_case_context: '',
+      business_domain: '',
+      is_template: true,
+      is_active: true,
+      effectiveness_rating: 5
+    });
+  };
+
   // Group prompt templates by category
   const groupedTemplates = promptTemplates.reduce((acc, template) => {
     const category = template.category;
@@ -90,6 +147,29 @@ export const ClaudePromptManager: React.FC = () => {
       <Suspense fallback={<LoadingSpinner />}>
         <ClaudeHeader connectionStatus={connectionStatus} />
       </Suspense>
+      
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold">Prompt Templates</h2>
+          <p className="text-sm text-muted-foreground">
+            Manage AI prompt templates for enhanced analysis quality
+          </p>
+        </div>
+        <Button onClick={() => setShowCreateForm(true)} disabled={showCreateForm}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Template
+        </Button>
+      </div>
+
+      {showCreateForm && (
+        <CreatePromptForm
+          newPrompt={newPrompt}
+          setNewPrompt={setNewPrompt}
+          onSave={handleSavePrompt}
+          onCancel={handleCancelCreate}
+          isSaving={createPromptMutation.isPending}
+        />
+      )}
       
       <Suspense fallback={<LoadingSpinner />}>
         <PromptTemplateList groupedTemplates={groupedTemplates} />

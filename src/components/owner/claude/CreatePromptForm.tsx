@@ -34,10 +34,12 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
   onCancel,
   isSaving
 }) => {
+  const isFormValid = newPrompt.title && newPrompt.original_prompt && newPrompt.claude_response && newPrompt.category;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Create New Prompt Example</CardTitle>
+        <CardTitle>Create New Prompt Template</CardTitle>
         <CardDescription>
           Add a new prompt template for improved Claude responses
         </CardDescription>
@@ -48,7 +50,7 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
             <Label htmlFor="title">Title *</Label>
             <Input
               id="title"
-              value={newPrompt.title}
+              value={newPrompt.title || ''}
               onChange={(e) => setNewPrompt({ ...newPrompt, title: e.target.value })}
               placeholder="e.g., Master UX Analysis Template"
             />
@@ -61,7 +63,7 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
               onValueChange={(value) => setNewPrompt({ ...newPrompt, category: value as any })}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
                 {CATEGORIES.map(cat => (
@@ -77,7 +79,7 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
             <Label htmlFor="use_case_context">Use Case Context</Label>
             <Input
               id="use_case_context"
-              value={newPrompt.use_case_context}
+              value={newPrompt.use_case_context || ''}
               onChange={(e) => setNewPrompt({ ...newPrompt, use_case_context: e.target.value })}
               placeholder="e.g., E-commerce landing page analysis"
             />
@@ -87,7 +89,7 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
             <Label htmlFor="business_domain">Business Domain</Label>
             <Input
               id="business_domain"
-              value={newPrompt.business_domain}
+              value={newPrompt.business_domain || ''}
               onChange={(e) => setNewPrompt({ ...newPrompt, business_domain: e.target.value })}
               placeholder="e.g., E-commerce, SaaS, Healthcare"
             />
@@ -98,7 +100,7 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
           <Label htmlFor="description">Description</Label>
           <Textarea
             id="description"
-            value={newPrompt.description}
+            value={newPrompt.description || ''}
             onChange={(e) => setNewPrompt({ ...newPrompt, description: e.target.value })}
             placeholder="Brief description of what this prompt is used for..."
             rows={2}
@@ -109,7 +111,7 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
           <Label htmlFor="original_prompt">Prompt Template *</Label>
           <Textarea
             id="original_prompt"
-            value={newPrompt.original_prompt}
+            value={newPrompt.original_prompt || ''}
             onChange={(e) => setNewPrompt({ ...newPrompt, original_prompt: e.target.value })}
             placeholder="Enter the optimized prompt template here..."
             rows={6}
@@ -120,7 +122,7 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
           <Label htmlFor="claude_response">Expected Response Pattern *</Label>
           <Textarea
             id="claude_response"
-            value={newPrompt.claude_response}
+            value={newPrompt.claude_response || ''}
             onChange={(e) => setNewPrompt({ ...newPrompt, claude_response: e.target.value })}
             placeholder="Example of the type of response this prompt should generate..."
             rows={4}
@@ -131,7 +133,7 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
           <Button variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button onClick={onSave} disabled={isSaving}>
+          <Button onClick={onSave} disabled={isSaving || !isFormValid}>
             {isSaving ? 'Creating...' : 'Create Prompt'}
           </Button>
         </div>
