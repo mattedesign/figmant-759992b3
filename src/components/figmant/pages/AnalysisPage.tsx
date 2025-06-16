@@ -8,7 +8,7 @@ export const AnalysisPage: React.FC = () => {
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
 
   return (
-    <div className="h-full flex">
+    <div className="h-full flex bg-[#E9EFF6]">
       {/* Left Sidebar - Analysis List */}
       <AnalysisListSidebar 
         selectedAnalysis={selectedAnalysis}

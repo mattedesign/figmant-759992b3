@@ -3,44 +3,8 @@ import React, { useState } from 'react';
 import { FigmantSidebar } from './FigmantSidebar';
 import { FigmantMainContent } from './FigmantMainContent';
 import { MobileNavigation } from './navigation/MobileNavigation';
-import { FigmantBreadcrumbs } from './navigation/FigmantBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-const getSectionBreadcrumbs = (activeSection: string, selectedAnalysis: any) => {
-  const breadcrumbs = [];
-  
-  switch (activeSection) {
-    case 'dashboard':
-      breadcrumbs.push({ label: 'Dashboard', isActive: true });
-      break;
-    case 'analysis':
-      breadcrumbs.push({ label: 'Analysis', href: '#', isActive: !selectedAnalysis });
-      if (selectedAnalysis) {
-        breadcrumbs.push({ label: 'Analysis Details', isActive: true });
-      }
-      break;
-    case 'premium-analysis':
-      breadcrumbs.push({ label: 'Premium Analysis', isActive: true });
-      break;
-    case 'templates':
-      breadcrumbs.push({ label: 'Templates', isActive: true });
-      break;
-    case 'search':
-      breadcrumbs.push({ label: 'Search', isActive: true });
-      break;
-    case 'credits':
-      breadcrumbs.push({ label: 'Credits', isActive: true });
-      break;
-    case 'preferences':
-      breadcrumbs.push({ label: 'Preferences', isActive: true });
-      break;
-    default:
-      break;
-  }
-  
-  return breadcrumbs;
-};
 
 export const FigmantLayout = () => {
   const { user } = useAuth();
@@ -55,11 +19,9 @@ export const FigmantLayout = () => {
     setSelectedAnalysis(null);
   };
 
-  const breadcrumbs = getSectionBreadcrumbs(activeSection, selectedAnalysis);
-
   if (isMobile) {
     return (
-      <div className="h-screen flex flex-col bg-gray-50">
+      <div className="h-screen flex flex-col bg-[#E9EFF6]">
         {/* Mobile Header */}
         <div className="flex-none bg-white border-b border-gray-200 p-4">
           <div className="flex items-center justify-between">
@@ -75,12 +37,6 @@ export const FigmantLayout = () => {
             </div>
             <div className="w-8" /> {/* Spacer for alignment */}
           </div>
-          
-          {breadcrumbs.length > 0 && (
-            <div className="mt-3">
-              <FigmantBreadcrumbs items={breadcrumbs} />
-            </div>
-          )}
         </div>
 
         {/* Mobile Content */}
@@ -97,7 +53,7 @@ export const FigmantLayout = () => {
   }
 
   return (
-    <div className="h-screen flex bg-gray-50">
+    <div className="h-screen flex bg-[#E9EFF6]">
       {/* Desktop Sidebar */}
       <div className="flex-shrink-0">
         <FigmantSidebar 
@@ -107,14 +63,7 @@ export const FigmantLayout = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-white">
-        {/* Breadcrumbs - Only show for non-analysis sections */}
-        {breadcrumbs.length > 0 && activeSection !== 'analysis' && (
-          <div className="flex-none p-4 border-b border-gray-200">
-            <FigmantBreadcrumbs items={breadcrumbs} />
-          </div>
-        )}
-        
+      <div className="flex-1 flex flex-col min-w-0">
         <div className="flex-1 overflow-hidden">
           <FigmantMainContent 
             activeSection={activeSection}
