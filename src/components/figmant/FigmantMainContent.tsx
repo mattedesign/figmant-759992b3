@@ -57,10 +57,13 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
     }
   };
 
+  // Determine if we need scrolling based on the active section
+  const needsScrolling = activeSection === 'premium-analysis';
+
   return (
     <div className="flex-1 h-screen overflow-hidden p-4" style={{ background: 'transparent' }}>
       <div 
-        className="h-full overflow-hidden bg-[#F9FAFB]"
+        className={`h-full bg-[#F9FAFB] ${needsScrolling ? 'overflow-y-auto' : 'overflow-hidden'}`}
         style={{
           borderRadius: '32px',
           border: '1px solid rgba(10, 12, 17, 0.10)',
