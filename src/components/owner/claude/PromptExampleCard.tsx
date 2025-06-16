@@ -2,51 +2,50 @@
 import React, { useState } from 'react';
 import { ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
 import { PromptExampleView } from './PromptExampleView';
-import { PromptEditDrawer } from './PromptEditDrawer';
+import { PromptExampleEditForm } from './PromptExampleEditForm';
 
 interface PromptExampleCardProps {
   prompt: ClaudePromptExample;
 }
 
 export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) => {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   
-  console.log('🔄 PromptExampleCard render - ID:', prompt.id, 'drawerOpen:', isDrawerOpen);
+  console.log('🔄 PromptExampleCard render - ID:', prompt.id, 'isEditing:', isEditing);
   
   const handleEdit = () => {
     console.log('🖱️ PromptExampleCard handleEdit called for prompt:', prompt.id);
-    console.log('🔄 Current drawer state before opening:', isDrawerOpen);
-    console.log('🔄 Opening edit drawer...');
-    setIsDrawerOpen(true);
-    console.log('✅ setIsDrawerOpen(true) called');
-    
-    // Add a small delay to check if state actually changes
-    setTimeout(() => {
-      console.log('🔄 Drawer state after 100ms:', isDrawerOpen);
-    }, 100);
+    console.log('🔄 Switching to edit mode...');
+    setIsEditing(true);
+    console.log('✅ setIsEditing(true) called');
   };
 
-  const handleCloseDrawer = () => {
-    console.log('❌ Closing edit drawer for prompt:', prompt.id);
-    console.log('🔄 Current drawer state before closing:', isDrawerOpen);
-    setIsDrawerOpen(false);
-    console.log('✅ setIsDrawerOpen(false) called');
+  const handleCancelEdit = () => {
+    console.log('❌ Canceling edit for prompt:', prompt.id);
+    setIsEditing(false);
+    console.log('✅ setIsEditing(false) called');
   };
 
-  console.log('🎨 About to render PromptEditDrawer with isOpen:', isDrawerOpen);
+  const handleSaveSuccess = () => {
+    console.log('✅ Save successful for prompt:', prompt.id);
+    setIsEditing(false);
+    console.log('✅ Switching back to view mode');
+  };
+
+  if (isEditing) {
+    return (
+      <PromptExampleEditForm
+        prompt={prompt}
+        onCancel={handleCancelEdit}
+        onSaveSuccess={handleSaveSuccess}
+      />
+    );
+  }
 
   return (
-    <div className="relative">
-      <PromptExampleView
-        prompt={prompt}
-        onEdit={handleEdit}
-      />
-      
-      <PromptEditDrawer
-        prompt={prompt}
-        isOpen={isDrawerOpen}
-        onClose={handleCloseDrawer}
-      />
-    </div>
+    <PromptExampleView
+      prompt={prompt}
+      onEdit={handleEdit}
+    />
   );
 };
