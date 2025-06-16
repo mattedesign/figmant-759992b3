@@ -1,16 +1,17 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans';
+import { useCreditPurchase } from '@/hooks/useCreditPurchase';
 import { Check, CreditCard, Star, Zap, Coins } from 'lucide-react';
 
 export default function Subscription() {
   const { profile } = useAuth();
   const { credits } = useUserCredits();
   const { plans } = useSubscriptionPlans();
+  const { handlePurchaseCredits, isProcessing } = useCreditPurchase();
 
   const isOwner = profile?.role === 'owner';
   const currentBalance = credits?.current_balance || 0;
@@ -18,9 +19,13 @@ export default function Subscription() {
   // Only show credit-based plans
   const creditPlans = plans?.filter(plan => plan.plan_type === 'credits' && plan.is_active) || [];
 
-  const handlePurchaseCredits = async (planId: string) => {
-    // TODO: Implement credit purchase flow with Stripe
-    console.log('Purchase credits for plan:', planId);
+  const onPurchaseCredits = async (plan: any) => {
+    await handlePurchaseCredits(
+      plan.id,
+      plan.name,
+      plan.credits,
+      plan.credit_price || 0
+    );
   };
 
   const getFeatures = (credits: number) => {
@@ -156,11 +161,12 @@ export default function Subscription() {
                 </ul>
                 <Button
                   className="w-full"
-                  onClick={() => handlePurchaseCredits(plan.id)}
+                  onClick={() => onPurchaseCredits(plan)}
                   variant={plan.credits >= 100 ? 'default' : 'outline'}
+                  disabled={isProcessing}
                 >
                   <CreditCard className="h-4 w-4 mr-2" />
-                  Purchase Credits
+                  {isProcessing ? 'Processing...' : 'Purchase Credits'}
                 </Button>
               </CardContent>
             </Card>
@@ -182,6 +188,7 @@ export default function Subscription() {
         {/* Additional Info */}
         <div className="text-center mt-8 text-sm text-muted-foreground">
           <p>All purchases include secure payment processing. Credits never expire.</p>
+          <p className="mt-2 text-xs">Payment processing requires Stripe configuration by administrator.</p>
         </div>
       </div>
     </div>

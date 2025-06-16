@@ -9,6 +9,7 @@ interface LogoProps {
 
 export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   const [imageStatus, setImageStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
+  const [currentLogoUrl, setCurrentLogoUrl] = useState<string>('');
   const { logoConfig, isLoading } = usePublicLogoConfig();
 
   // Optimized size classes for the logo - updated to make default size 32px
@@ -33,8 +34,9 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
       console.log('Logo component: Testing logo URL from config:', logoToTest);
       
       if (!logoToTest || logoToTest === '') {
-        console.log('Logo component: No logo URL found in config, showing fallback');
-        setImageStatus('error');
+        console.log('Logo component: No logo URL found in config, using default');
+        setCurrentLogoUrl('/lovable-uploads/235bdb67-21d3-44ed-968a-518226eef780.png');
+        setImageStatus('loaded');
         return;
       }
       
@@ -42,15 +44,18 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
         const isAccessible = await testImageLoad(logoToTest);
         
         if (isAccessible) {
+          setCurrentLogoUrl(logoToTest);
           setImageStatus('loaded');
           console.log('✓ Logo component: Successfully loaded logo from config:', logoToTest);
         } else {
-          console.warn('✗ Logo component: Failed to load logo from config, showing fallback');
-          setImageStatus('error');
+          console.warn('✗ Logo component: Failed to load logo from config, using default');
+          setCurrentLogoUrl('/lovable-uploads/235bdb67-21d3-44ed-968a-518226eef780.png');
+          setImageStatus('loaded');
         }
       } catch (error) {
         console.error('Logo component: Error during image loading:', error);
-        setImageStatus('error');
+        setCurrentLogoUrl('/lovable-uploads/235bdb67-21d3-44ed-968a-518226eef780.png');
+        setImageStatus('loaded');
       }
     };
 
@@ -74,7 +79,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
       const timeout = setTimeout(() => {
         console.error('Logo component: Image load timeout for:', url);
         resolve(false);
-      }, 5000);
+      }, 3000); // Reduced timeout for mobile
 
       img.onload = () => {
         clearTimeout(timeout);
@@ -108,9 +113,6 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     </div>
   );
 
-  // Always show the default logo image first, fallback to text only if it fails
-  const defaultLogoUrl = '/lovable-uploads/235bdb67-21d3-44ed-968a-518226eef780.png';
-
   // Loading placeholder
   if (isLoading || imageStatus === 'loading') {
     return (
@@ -120,54 +122,45 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     );
   }
 
-  // If we have a configured logo URL and it loaded successfully, show it
-  if (imageStatus === 'loaded' && logoConfig.activeLogoUrl) {
-    console.log('Logo component: Displaying configured logo:', logoConfig.activeLogoUrl);
+  // If we have a logo URL and it's loaded, show it
+  if (imageStatus === 'loaded' && currentLogoUrl) {
+    console.log('Logo component: Displaying logo:', currentLogoUrl);
     return (
       <img
-        src={logoConfig.activeLogoUrl}
+        src={currentLogoUrl}
         alt="Figmant Logo"
         className={`${sizeClasses[size]} ${className} object-contain`}
         onError={(e) => {
-          console.error('Logo component: Image onError triggered for:', logoConfig.activeLogoUrl);
-          setImageStatus('error');
+          console.error('Logo component: Image onError triggered for:', currentLogoUrl);
+          // Replace with fallback on error
+          const target = e.target as HTMLImageElement;
+          target.style.display = 'none';
+          const parent = target.parentNode;
+          if (parent) {
+            const fallback = document.createElement('div');
+            fallback.innerHTML = `
+              <div class="${sizeClasses[size]} ${className} flex items-center justify-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg px-3 py-1">
+                <div class="flex items-center space-x-1">
+                  <span class="text-white font-bold text-sm tracking-wide">FIGMANT</span>
+                  <div class="flex space-x-1 ml-2">
+                    <div class="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                    <div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                    <div class="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+            `;
+            parent.appendChild(fallback.firstElementChild!);
+          }
         }}
         onLoad={() => {
-          console.log('✓ Logo component: Image onLoad triggered successfully for:', logoConfig.activeLogoUrl);
+          console.log('✓ Logo component: Image onLoad triggered successfully for:', currentLogoUrl);
         }}
       />
     );
   }
 
-  // Try to show the default logo image before falling back to text
-  console.log('Logo component: Trying to show default logo image:', defaultLogoUrl);
-  return (
-    <img
-      src={defaultLogoUrl}
-      alt="Figmant Logo"
-      className={`${sizeClasses[size]} ${className} object-contain`}
-      onError={(e) => {
-        console.error('Logo component: Default logo also failed, showing text fallback');
-        // If even the default logo fails, replace with fallback component
-        e.currentTarget.style.display = 'none';
-        const fallbackEl = document.createElement('div');
-        fallbackEl.innerHTML = `
-          <div class="${sizeClasses[size]} ${className} flex items-center justify-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg px-3 py-1">
-            <div class="flex items-center space-x-1">
-              <span class="text-white font-bold text-sm tracking-wide">FIGMANT</span>
-              <div class="flex space-x-1 ml-2">
-                <div class="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                <div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                <div class="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
-              </div>
-            </div>
-          </div>
-        `;
-        e.currentTarget.parentNode?.appendChild(fallbackEl);
-      }}
-      onLoad={() => {
-        console.log('✓ Logo component: Default logo loaded successfully');
-      }}
-    />
-  );
+  // Final fallback
+  console.log('Logo component: Showing fallback component');
+  return <FallbackLogo />;
 };

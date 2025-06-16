@@ -51,8 +51,8 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
     console.log('SidebarUserProfile: Initiating sign out...');
     try {
       await signOut();
-      console.log('SidebarUserProfile: Sign out successful, navigating to root');
-      navigate('/');
+      console.log('SidebarUserProfile: Sign out successful, navigating to auth');
+      navigate('/auth');
     } catch (error) {
       console.error('SidebarUserProfile: Sign out error:', error);
     }
