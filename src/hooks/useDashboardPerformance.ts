@@ -66,7 +66,7 @@ export const useDashboardPerformance = () => {
   const calculateCacheHitRate = useCallback(() => {
     const queries = queryClient.getQueryCache().getAll();
     const hitQueries = queries.filter(query => 
-      query.state.status === 'success' && !query.state.isFetching
+      query.state.status === 'success' && query.state.fetchStatus !== 'fetching'
     );
     
     metrics.current.cacheHitRate = queries.length > 0 

@@ -10,6 +10,7 @@ import { AnalysisData } from '../types/dashboard';
 interface VirtualizedAnalysisListProps {
   analysisData: AnalysisData[];
   height?: number;
+  width?: number;
   itemHeight?: number;
   onItemClick?: (analysis: AnalysisData) => void;
 }
@@ -75,6 +76,7 @@ const AnalysisRow: React.FC<AnalysisRowProps> = ({ index, style, data }) => {
 export const VirtualizedAnalysisList: React.FC<VirtualizedAnalysisListProps> = ({
   analysisData,
   height = 400,
+  width = '100%',
   itemHeight = 180,
   onItemClick
 }) => {
@@ -92,9 +94,10 @@ export const VirtualizedAnalysisList: React.FC<VirtualizedAnalysisListProps> = (
   }
 
   return (
-    <div className="border rounded-lg" style={{ height }}>
+    <div className="border rounded-lg" style={{ height, width }}>
       <List
         height={height}
+        width={width}
         itemCount={analysisData.length}
         itemSize={itemHeight}
         itemData={listData}
