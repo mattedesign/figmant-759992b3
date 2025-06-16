@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,8 +63,7 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
   };
 
   const handleViewAllAnalyses = () => {
-    // Navigate to the analysis section in the Figmant layout
-    window.dispatchEvent(new CustomEvent('navigate-to-analysis'));
+    navigate('/figmant/analysis');
   };
 
   const getGridColumns = () => {
@@ -105,7 +105,7 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
         
         {/* Empty State */}
         {!isLoading && !error && analysisData.length === 0 && (
-          <RecentAnalysisEmpty onAction={() => window.dispatchEvent(new CustomEvent('navigate-to-analysis'))} />
+          <RecentAnalysisEmpty onAction={() => navigate('/figmant/analysis')} />
         )}
         
         {/* Data State */}

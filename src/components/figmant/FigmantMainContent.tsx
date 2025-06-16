@@ -13,13 +13,28 @@ import { AdminPage } from './pages/AdminPage';
 
 interface FigmantMainContentProps {
   activeSection: string;
+  setActiveSection: (section: string) => void;
+  selectedAnalysis: any;
+  onBackToList: () => void;
+  onRightSidebarModeChange: (mode: string) => void;
 }
 
 export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
-  activeSection
+  activeSection,
+  setActiveSection,
+  selectedAnalysis,
+  onBackToList,
+  onRightSidebarModeChange
 }) => {
   const location = useLocation();
   const isMobile = useIsMobile();
+
+  // Handle navigation state from premium analysis, template selection, or admin access
+  useEffect(() => {
+    if (location.state?.activeSection) {
+      setActiveSection(location.state.activeSection);
+    }
+  }, [location.state, setActiveSection]);
 
   const renderContent = () => {
     switch (activeSection) {
