@@ -9,7 +9,6 @@ interface LogoProps {
 
 export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   const [imageStatus, setImageStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
-  const [currentImageUrl, setCurrentImageUrl] = useState<string>('/lovable-uploads/dbcf2493-ebb3-44e5-a137-ca8d4ae7511f.png');
   const { logoConfig, isLoading } = usePublicLogoConfig();
 
   // Optimized size classes for the logo
@@ -21,24 +20,29 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
 
   useEffect(() => {
     const loadImage = async () => {
-      console.log('=== LOGO COMPONENT: LOADING NEW LOGO ===');
+      console.log('=== LOGO COMPONENT: LOADING LOGO FROM CONFIG ===');
       
       setImageStatus('loading');
       
-      // Use the new uploaded logo
-      const logoToTest = '/lovable-uploads/dbcf2493-ebb3-44e5-a137-ca8d4ae7511f.png';
+      // Use the logo from the configuration system
+      const logoToTest = logoConfig.activeLogoUrl;
       
-      console.log('Logo component: Testing new logo URL:', logoToTest);
+      console.log('Logo component: Testing logo URL from config:', logoToTest);
+      
+      if (!logoToTest) {
+        console.log('Logo component: No logo URL found in config, showing fallback');
+        setImageStatus('error');
+        return;
+      }
       
       try {
         const isAccessible = await testImageLoad(logoToTest);
         
         if (isAccessible) {
-          setCurrentImageUrl(logoToTest);
           setImageStatus('loaded');
-          console.log('✓ Logo component: Successfully loaded new logo:', logoToTest);
+          console.log('✓ Logo component: Successfully loaded logo from config:', logoToTest);
         } else {
-          console.warn('✗ Logo component: Failed to load new logo, trying fallback');
+          console.warn('✗ Logo component: Failed to load logo from config, showing fallback');
           setImageStatus('error');
         }
       } catch (error) {
@@ -47,8 +51,10 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
       }
     };
 
-    loadImage();
-  }, []);
+    if (!isLoading) {
+      loadImage();
+    }
+  }, [logoConfig.activeLogoUrl, isLoading]);
 
   const testImageLoad = (url: string): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -100,7 +106,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   );
 
   // Loading placeholder
-  if (imageStatus === 'loading') {
+  if (isLoading || imageStatus === 'loading') {
     return (
       <div className={`${sizeClasses[size]} ${className} bg-muted animate-pulse rounded-lg flex items-center justify-center`}>
         <span className="text-xs text-muted-foreground">Loading...</span>
@@ -108,24 +114,24 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     );
   }
 
-  // Show fallback if image failed to load
-  if (imageStatus === 'error') {
-    console.log('Logo component: Showing Figmant fallback due to load errors');
+  // Show fallback if image failed to load or no logo configured
+  if (imageStatus === 'error' || !logoConfig.activeLogoUrl) {
+    console.log('Logo component: Showing Figmant fallback due to load errors or no configured logo');
     return <FallbackLogo />;
   }
 
-  // Display the actual logo
+  // Display the actual logo from admin configuration
   return (
     <img
-      src={currentImageUrl}
+      src={logoConfig.activeLogoUrl}
       alt="Figmant Logo"
       className={`${sizeClasses[size]} ${className} object-contain`}
       onError={(e) => {
-        console.error('Logo component: Image onError triggered for:', currentImageUrl);
+        console.error('Logo component: Image onError triggered for:', logoConfig.activeLogoUrl);
         setImageStatus('error');
       }}
       onLoad={() => {
-        console.log('✓ Logo component: Image onLoad triggered successfully for:', currentImageUrl);
+        console.log('✓ Logo component: Image onLoad triggered successfully for:', logoConfig.activeLogoUrl);
       }}
     />
   );
