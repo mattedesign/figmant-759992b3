@@ -92,10 +92,23 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-white rounded-lg border border-gray-200 shadow-sm">
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-6">
-        <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
+        {messages.length === 0 ? (
+          // Empty state with image upload area
+          <div className="h-full flex flex-col items-center justify-center">
+            <div className="w-full max-w-md border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
+              <div className="w-12 h-12 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center">
+                📄
+              </div>
+              <p className="text-gray-600 mb-2">Drop files here or upload from device</p>
+              <p className="text-sm text-gray-500">PNG, JPG, PDF up to 10MB</p>
+            </div>
+          </div>
+        ) : (
+          <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
+        )}
       </div>
 
       {/* Input Area */}

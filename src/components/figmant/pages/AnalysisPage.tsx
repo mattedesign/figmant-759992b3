@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +8,7 @@ import { useFigmantPromptTemplates, useBestFigmantPrompt } from '@/hooks/useFigm
 import { AnalysisChatPanel } from './analysis/AnalysisChatPanel';
 import { PromptTemplateSelector } from './analysis/PromptTemplateSelector';
 import { CollapsibleHistorySidebar } from './analysis/CollapsibleHistorySidebar';
+import { TemplatesSidebar } from './analysis/TemplatesSidebar';
 import { useChatState } from './analysis/ChatStateManager';
 
 interface AnalysisPageProps {
@@ -190,88 +190,75 @@ export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) 
     );
   }
 
-  // Desktop layout with collapsible history sidebar
+  // Desktop layout with centered chat and right sidebar
   return (
     <div className="h-full flex overflow-hidden">
-      {/* Collapsible Analysis History Sidebar */}
+      {/* Collapsible Analysis History Sidebar - Keep unchanged */}
       <CollapsibleHistorySidebar onNewAnalysis={handleNewAnalysis} />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-shrink-0 p-6 border-b border-gray-200">
-          {/* Template Selection Section */}
-          <div className="space-y-4">
-            <PromptTemplateSelector
-              promptTemplates={promptTemplates}
-              promptsLoading={promptsLoading}
-              selectedPromptCategory={selectedPromptCategory}
-              selectedPromptTemplate={selectedPromptTemplate}
-              onPromptCategoryChange={setSelectedPromptCategory}
-              onPromptTemplateChange={setSelectedPromptTemplate}
-              bestPrompt={bestPrompt}
-            />
-
-            {/* Selected Template Display */}
-            {currentTemplate && (
-              <Card className="border-primary/20 bg-primary/5">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Sparkles className="h-5 w-5 text-primary" />
-                      Active Template: {currentTemplate.title}
-                    </CardTitle>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={clearTemplateSelection}
-                      className="h-8 w-8 p-0"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  {currentTemplate.description && (
-                    <CardDescription>
-                      {currentTemplate.description}
-                    </CardDescription>
-                  )}
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex items-center gap-2">
-                    <Badge className={getCategoryColor(currentTemplate.category)}>
-                      {currentTemplate.category.replace('_', ' ')}
-                    </Badge>
-                    {currentTemplate.effectiveness_rating && (
-                      <Badge variant="secondary">
-                        Rating: {currentTemplate.effectiveness_rating}/10
-                      </Badge>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+      {/* Main Chat Content - Centered */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+        {/* Header with Chat/Attachments tabs */}
+        <div className="flex-shrink-0 bg-white border-b border-gray-200">
+          <div className="flex items-center justify-center py-4">
+            <div className="flex items-center gap-6">
+              <Button variant="ghost" className="text-gray-900 border-b-2 border-blue-500 rounded-none">
+                Chat
+              </Button>
+              <Button variant="ghost" className="text-gray-500 rounded-none">
+                Attachments
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Chat Interface */}
-        <div className="flex-1 overflow-hidden">
-          <AnalysisChatPanel
-            message={message}
-            setMessage={setMessage}
-            messages={messages}
-            setMessages={setMessages}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            urlInput={urlInput}
-            setUrlInput={setUrlInput}
-            showUrlInput={showUrlInput}
-            setShowUrlInput={setShowUrlInput}
-            selectedPromptTemplate={currentTemplate}
-            selectedPromptCategory={selectedPromptCategory}
-            promptTemplates={promptTemplates}
-            onAnalysisComplete={handleAnalysisComplete}
-          />
+        {/* Centered Chat Area */}
+        <div className="flex-1 flex items-center justify-center overflow-hidden">
+          <div className="w-full max-w-2xl h-full flex flex-col">
+            {/* Design Analysis Header */}
+            <div className="text-center py-8">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <Sparkles className="h-4 w-4 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900">Design Analysis</h1>
+              </div>
+              <p className="text-gray-600">
+                Start with a task, and let Figmant complete it for you. Not sure where to start? Try a template
+              </p>
+            </div>
+
+            {/* Chat Interface */}
+            <div className="flex-1 overflow-hidden">
+              <AnalysisChatPanel
+                message={message}
+                setMessage={setMessage}
+                messages={messages}
+                setMessages={setMessages}
+                attachments={attachments}
+                setAttachments={setAttachments}
+                urlInput={urlInput}
+                setUrlInput={setUrlInput}
+                showUrlInput={showUrlInput}
+                setShowUrlInput={setShowUrlInput}
+                selectedPromptTemplate={currentTemplate}
+                selectedPromptCategory={selectedPromptCategory}
+                promptTemplates={promptTemplates}
+                onAnalysisComplete={handleAnalysisComplete}
+              />
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Right Templates Sidebar */}
+      <TemplatesSidebar
+        promptTemplates={promptTemplates}
+        selectedPromptCategory={selectedPromptCategory}
+        selectedPromptTemplate={selectedPromptTemplate}
+        onPromptCategoryChange={setSelectedPromptCategory}
+        onPromptTemplateChange={setSelectedPromptTemplate}
+      />
     </div>
   );
 };
