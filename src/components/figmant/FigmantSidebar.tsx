@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { CollapsibleSidebar } from './navigation/CollapsibleSidebar';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface FigmantSidebarProps {
   activeSection: string;
@@ -13,7 +13,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   onSectionChange
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
 
   // Auto-collapse on mobile
   React.useEffect(() => {

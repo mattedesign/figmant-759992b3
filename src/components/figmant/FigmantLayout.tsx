@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FigmantSidebar } from './FigmantSidebar';
 import { FigmantMiddlePanel } from './FigmantMiddlePanel';
@@ -7,7 +6,7 @@ import { FigmantRightSidebar } from './FigmantRightSidebar';
 import { MobileNavigation } from './navigation/MobileNavigation';
 import { FigmantBreadcrumbs } from './navigation/FigmantBreadcrumbs';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const getSectionBreadcrumbs = (activeSection: string, selectedAnalysis: any) => {
   const breadcrumbs = [];
@@ -46,7 +45,7 @@ const getSectionBreadcrumbs = (activeSection: string, selectedAnalysis: any) => 
 
 export const FigmantLayout = () => {
   const { user } = useAuth();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [activeSection, setActiveSection] = useState('analysis');
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const [rightSidebarMode, setRightSidebarMode] = useState('attachments');
