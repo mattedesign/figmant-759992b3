@@ -31,9 +31,10 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
 
   const handleEdit = useCallback(() => {
     console.log('🖱️ handleEdit called for prompt:', prompt.id);
+    console.log('🔄 Current isEditing state:', isEditing);
     setIsEditing(true);
-    console.log('✅ Edit mode activated for prompt:', prompt.id);
-  }, [prompt.id]);
+    console.log('✅ Edit mode should be activated for prompt:', prompt.id);
+  }, [prompt.id, isEditing]);
 
   const handleSave = useCallback(async () => {
     console.log('💾 Saving prompt changes for:', prompt.id);
@@ -47,8 +48,9 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
         title: "Success",
         description: "Prompt updated successfully",
       });
+      console.log('✅ Prompt saved successfully');
     } catch (error) {
-      console.error('Failed to update prompt:', error);
+      console.error('❌ Failed to update prompt:', error);
       toast({
         title: "Error",
         description: "Failed to update prompt",
@@ -72,10 +74,12 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
       is_active: prompt.is_active
     });
     setIsEditing(false);
+    console.log('✅ Edit cancelled for prompt:', prompt.id);
   }, [prompt]);
 
   // Update editedPrompt when prompt prop changes
   React.useEffect(() => {
+    console.log('🔄 useEffect updating editedPrompt for prompt:', prompt.id);
     setEditedPrompt({
       title: prompt.title,
       description: prompt.description || '',
@@ -93,6 +97,7 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
   console.log('🎨 Rendering mode for prompt:', prompt.id, '- isEditing:', isEditing);
 
   if (isEditing) {
+    console.log('✏️ Rendering edit form for prompt:', prompt.id);
     return (
       <PromptExampleEditForm
         editedPrompt={editedPrompt}
@@ -104,6 +109,7 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
     );
   }
 
+  console.log('👁️ Rendering view mode for prompt:', prompt.id);
   return (
     <PromptExampleView
       prompt={prompt}
