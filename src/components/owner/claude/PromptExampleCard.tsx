@@ -10,9 +10,13 @@ interface PromptExampleCardProps {
 }
 
 export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) => {
+  console.log('🔄 PromptExampleCard rendering - prompt ID:', prompt.id, 'title:', prompt.title);
+  
   const { toast } = useToast();
   const updatePromptMutation = useUpdatePromptExample();
   const [isEditing, setIsEditing] = useState(false);
+  
+  console.log('📝 Current editing state for prompt', prompt.id, ':', isEditing);
   
   const [editedPrompt, setEditedPrompt] = useState({
     title: prompt.title,
@@ -28,12 +32,14 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
   });
 
   const handleEdit = () => {
-    console.log('🖱️ Edit button clicked - entering edit mode');
+    console.log('🖱️ handleEdit called for prompt:', prompt.id);
+    console.log('🔄 Setting isEditing from', isEditing, 'to true');
     setIsEditing(true);
+    console.log('✅ handleEdit completed - state should update');
   };
 
   const handleSave = async () => {
-    console.log('💾 Saving prompt changes');
+    console.log('💾 Saving prompt changes for:', prompt.id);
     try {
       await updatePromptMutation.mutateAsync({
         id: prompt.id,
@@ -55,7 +61,7 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
   };
 
   const handleCancel = () => {
-    console.log('❌ Canceling edit mode');
+    console.log('❌ Canceling edit mode for prompt:', prompt.id);
     // Reset to original values
     setEditedPrompt({
       title: prompt.title,
@@ -74,6 +80,7 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
 
   // Update editedPrompt when prompt prop changes
   React.useEffect(() => {
+    console.log('📋 Updating editedPrompt for prompt:', prompt.id);
     setEditedPrompt({
       title: prompt.title,
       description: prompt.description || '',
@@ -88,7 +95,10 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
     });
   }, [prompt]);
 
+  console.log('🎨 About to render - isEditing:', isEditing, 'for prompt:', prompt.id);
+
   if (isEditing) {
+    console.log('✏️ Rendering edit form for prompt:', prompt.id);
     return (
       <PromptExampleEditForm
         editedPrompt={editedPrompt}
@@ -100,6 +110,7 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
     );
   }
 
+  console.log('👁️ Rendering view mode for prompt:', prompt.id);
   return (
     <PromptExampleView
       prompt={prompt}

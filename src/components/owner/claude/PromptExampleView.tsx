@@ -11,11 +11,20 @@ interface PromptExampleViewProps {
 }
 
 export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, onEdit }) => {
+  console.log('👁️ PromptExampleView rendering for prompt:', prompt.id);
+  
   const handleEditClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('🖱️ Edit button clicked for prompt:', prompt.id, prompt.title);
-    onEdit();
+    console.log('🖱️ Edit button clicked in view for prompt:', prompt.id);
+    console.log('🔄 About to call onEdit function');
+    
+    if (typeof onEdit === 'function') {
+      onEdit();
+      console.log('✅ onEdit function called successfully');
+    } else {
+      console.error('❌ onEdit is not a function:', typeof onEdit);
+    }
   };
 
   return (
@@ -35,7 +44,8 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
             size="sm" 
             variant="ghost" 
             onClick={handleEditClick}
-            className="hover:bg-gray-100"
+            className="hover:bg-gray-100 border border-gray-200"
+            type="button"
           >
             <Edit2 className="h-4 w-4" />
           </Button>
