@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFigmantChatAnalysis, useFigmantPromptTemplates, useBestFigmantPrompt } from '@/hooks/useFigmantChatAnalysis';
@@ -225,6 +224,13 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   const canSend = !analyzeWithFigmantChat.isPending && (message.trim() || attachments.length > 0);
 
   return (
@@ -280,7 +286,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         onMessageChange={setMessage}
         onSendMessage={handleSendMessage}
         onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
-        onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+        onKeyPress={handleKeyPress}
         isAnalyzing={analyzeWithFigmantChat.isPending}
         canSend={canSend}
         isDragActive={isDragActive}

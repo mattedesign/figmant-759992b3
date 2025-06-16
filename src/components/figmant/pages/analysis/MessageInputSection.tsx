@@ -9,7 +9,7 @@ interface MessageInputSectionProps {
   onMessageChange: (value: string) => void;
   onSendMessage: () => void;
   onToggleUrlInput: () => void;
-  onKeyPress: (e: React.KeyboardEvent) => void;
+  onKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   isAnalyzing: boolean;
   canSend: boolean;
   isDragActive: boolean;
@@ -39,7 +39,7 @@ export const MessageInputSection: React.FC<MessageInputSectionProps> = ({
             onChange={(e) => onMessageChange(e.target.value)}
             placeholder="Describe what you'd like me to analyze..."
             className="pr-32"
-            onKeyPress={onKeyPress}
+            onKeyDown={onKeyPress}
           />
           <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
             <Button 
