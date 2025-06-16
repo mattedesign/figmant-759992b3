@@ -43,8 +43,9 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
         key={section.id}
         variant="ghost"
         className={cn(
-          "w-full justify-start h-11",
-          isActive && "bg-blue-50 text-blue-700 border border-blue-200 rounded-xl",
+          "w-full justify-start h-11 rounded-xl transition-all duration-200",
+          isActive && "bg-blue-50 text-blue-700 border border-blue-200 shadow-sm",
+          !isActive && "hover:bg-gray-50",
           isCollapsed && "px-2 justify-center"
         )}
         onClick={() => onSectionChange(section.id)}

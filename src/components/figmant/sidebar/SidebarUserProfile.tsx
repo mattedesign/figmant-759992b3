@@ -30,9 +30,9 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
           <div className="flex flex-col items-center space-y-3">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Avatar className="h-10 w-10">
+                <Avatar className="h-10 w-10 border-2 border-gray-100">
                   <AvatarImage src={profile?.avatar_url} />
-                  <AvatarFallback className="bg-blue-100 text-blue-600">
+                  <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
                     {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : 'U'}
                   </AvatarFallback>
                 </Avatar>
@@ -51,7 +51,7 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={signOut}
-                  className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                  className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 rounded-lg"
                 >
                   <LogOut className="h-4 w-4" />
                 </Button>
@@ -67,11 +67,11 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
   }
 
   return (
-    <div className="p-4 border-t border-gray-200/30">
+    <div className="p-4 border-t border-gray-200/30 bg-gray-50/50">
       <div className="flex items-center gap-3 mb-4">
-        <Avatar className="h-10 w-10">
+        <Avatar className="h-10 w-10 border-2 border-gray-100">
           <AvatarImage src={profile?.avatar_url} />
-          <AvatarFallback className="bg-blue-100 text-blue-600">
+          <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
             {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : 'U'}
           </AvatarFallback>
         </Avatar>
@@ -94,15 +94,15 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
       {/* Subscription Status */}
       <div className="mb-4">
         {isOwner ? (
-          <Badge className="w-full justify-center bg-gradient-to-r from-purple-500 to-blue-500 text-white">
+          <Badge className="w-full justify-center bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-lg">
             Owner
           </Badge>
         ) : subscription?.status === 'active' ? (
-          <Badge className="w-full justify-center bg-green-100 text-green-800">
+          <Badge className="w-full justify-center bg-green-100 text-green-800 rounded-lg">
             Pro Member
           </Badge>
         ) : (
-          <Badge variant="outline" className="w-full justify-center">
+          <Badge variant="outline" className="w-full justify-center rounded-lg">
             Free Plan
           </Badge>
         )}
@@ -113,7 +113,7 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
         variant="ghost"
         size="sm"
         onClick={signOut}
-        className="w-full justify-start text-gray-600 hover:text-red-600 hover:bg-red-50"
+        className="w-full justify-start text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg"
       >
         <LogOut className="h-4 w-4 mr-2" />
         Sign out

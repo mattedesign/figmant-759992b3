@@ -39,7 +39,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 px-6 py-8 border-b border-gray-100">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 px-8 py-8 border-b border-gray-100 bg-white">
       <div>
         <div className="text-sm font-medium text-gray-500 mb-2">{formattedDate}</div>
         <h1 className="text-4xl font-bold text-gray-900 mb-3">
@@ -56,14 +56,14 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       <div className="flex items-center gap-6">
         {/* Enhanced quick stats */}
         <div className="hidden lg:flex items-center gap-8 text-sm">
-          <div className="flex items-center gap-3 bg-blue-50 px-4 py-2 rounded-lg">
+          <div className="flex items-center gap-3 bg-blue-50 px-4 py-3 rounded-xl border border-blue-100">
             <BarChart3 className="h-5 w-5 text-blue-600" />
             <div>
               <div className="font-semibold text-blue-900">{dataStats.totalAnalyses}</div>
               <div className="text-blue-600">Total analyses</div>
             </div>
           </div>
-          <div className="flex items-center gap-3 bg-emerald-50 px-4 py-2 rounded-lg">
+          <div className="flex items-center gap-3 bg-emerald-50 px-4 py-3 rounded-xl border border-emerald-100">
             <TrendingUp className="h-5 w-5 text-emerald-600" />
             <div>
               <div className="font-semibold text-emerald-900">{dataStats.completionRate}%</div>
