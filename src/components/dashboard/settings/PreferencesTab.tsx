@@ -4,8 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Settings, Palette, Globe, Bell } from 'lucide-react';
+import { Palette, Globe, Bell, Sun, Moon, Monitor } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface PreferencesTabProps {
   preferences: any;
@@ -13,6 +13,8 @@ interface PreferencesTabProps {
 }
 
 export const PreferencesTab = ({ preferences, onUpdatePreferences }: PreferencesTabProps) => {
+  const { theme, setTheme } = useTheme();
+
   const handlePreferenceChange = (key: string, value: any) => {
     onUpdatePreferences({
       ...preferences,
@@ -40,17 +42,29 @@ export const PreferencesTab = ({ preferences, onUpdatePreferences }: Preferences
                 Choose your preferred color scheme
               </div>
             </div>
-            <Select
-              value={preferences?.theme || 'system'}
-              onValueChange={(value) => handlePreferenceChange('theme', value)}
-            >
+            <Select value={theme} onValueChange={setTheme}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
-                <SelectItem value="system">System</SelectItem>
+                <SelectItem value="light">
+                  <div className="flex items-center gap-2">
+                    <Sun className="h-4 w-4" />
+                    Light
+                  </div>
+                </SelectItem>
+                <SelectItem value="dark">
+                  <div className="flex items-center gap-2">
+                    <Moon className="h-4 w-4" />
+                    Dark
+                  </div>
+                </SelectItem>
+                <SelectItem value="system">
+                  <div className="flex items-center gap-2">
+                    <Monitor className="h-4 w-4" />
+                    System
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
