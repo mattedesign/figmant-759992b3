@@ -10,13 +10,9 @@ interface PromptExampleCardProps {
 }
 
 export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) => {
-  console.log('🔄 PromptExampleCard rendering for prompt:', prompt.id, prompt.title);
-  
   const { toast } = useToast();
   const updatePromptMutation = useUpdatePromptExample();
   const [isEditing, setIsEditing] = useState(false);
-  
-  console.log('📝 Current isEditing state:', isEditing);
   
   const [editedPrompt, setEditedPrompt] = useState({
     title: prompt.title,
@@ -32,13 +28,12 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
   });
 
   const handleEdit = () => {
-    console.log('✏️ handleEdit called - setting isEditing to true');
+    console.log('🖱️ Edit button clicked - entering edit mode');
     setIsEditing(true);
-    console.log('✏️ handleEdit completed - isEditing should now be true');
   };
 
   const handleSave = async () => {
-    console.log('💾 handleSave called');
+    console.log('💾 Saving prompt changes');
     try {
       await updatePromptMutation.mutateAsync({
         id: prompt.id,
@@ -50,6 +45,7 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
         description: "Prompt updated successfully",
       });
     } catch (error) {
+      console.error('Failed to update prompt:', error);
       toast({
         title: "Error",
         description: "Failed to update prompt",
@@ -59,7 +55,8 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
   };
 
   const handleCancel = () => {
-    console.log('❌ handleCancel called');
+    console.log('❌ Canceling edit mode');
+    // Reset to original values
     setEditedPrompt({
       title: prompt.title,
       description: prompt.description || '',
@@ -75,10 +72,23 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
     setIsEditing(false);
   };
 
-  console.log('🎨 About to render - isEditing:', isEditing);
-  
+  // Update editedPrompt when prompt prop changes
+  React.useEffect(() => {
+    setEditedPrompt({
+      title: prompt.title,
+      description: prompt.description || '',
+      category: prompt.category,
+      original_prompt: prompt.original_prompt,
+      claude_response: prompt.claude_response,
+      effectiveness_rating: prompt.effectiveness_rating || 5,
+      use_case_context: prompt.use_case_context || '',
+      business_domain: prompt.business_domain || '',
+      is_template: prompt.is_template,
+      is_active: prompt.is_active
+    });
+  }, [prompt]);
+
   if (isEditing) {
-    console.log('🎨 Rendering PromptExampleEditForm');
     return (
       <PromptExampleEditForm
         editedPrompt={editedPrompt}
@@ -90,7 +100,6 @@ export const PromptExampleCard: React.FC<PromptExampleCardProps> = ({ prompt }) 
     );
   }
 
-  console.log('🎨 Rendering PromptExampleView');
   return (
     <PromptExampleView
       prompt={prompt}

@@ -11,10 +11,11 @@ interface PromptExampleViewProps {
 }
 
 export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, onEdit }) => {
-  const handleEditClick = () => {
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log('🖱️ Edit button clicked for prompt:', prompt.id, prompt.title);
     onEdit();
-    console.log('🖱️ onEdit function called');
   };
 
   return (
@@ -30,7 +31,12 @@ export const PromptExampleView: React.FC<PromptExampleViewProps> = ({ prompt, on
           {prompt.is_template && (
             <Badge variant="secondary">Template</Badge>
           )}
-          <Button size="sm" variant="ghost" onClick={handleEditClick}>
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={handleEditClick}
+            className="hover:bg-gray-100"
+          >
             <Edit2 className="h-4 w-4" />
           </Button>
         </div>
