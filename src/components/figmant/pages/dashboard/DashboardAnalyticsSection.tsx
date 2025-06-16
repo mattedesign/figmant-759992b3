@@ -1,14 +1,12 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { AnalyticsMetricsGrid } from '../../analytics/components/AnalyticsMetricsGrid';
 import { TrendAnalysisChart } from '../../analytics/components/TrendAnalysisChart';
 import { ActivityHeatMap } from '../../analytics/components/ActivityHeatMap';
 import { PerformanceInsights } from '../../analytics/components/PerformanceInsights';
-import { TrendingUp, Calendar, Lightbulb, ChevronDown, ChevronUp } from 'lucide-react';
+import { TrendingUp, Calendar, Lightbulb } from 'lucide-react';
 
 interface DashboardAnalyticsSectionProps {
   dataStats: any;
@@ -21,89 +19,67 @@ export const DashboardAnalyticsSection: React.FC<DashboardAnalyticsSectionProps>
   analysisData,
   className
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 
   return (
     <div className={className}>
-      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <Card className="w-full">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold">Dashboard Analytics</CardTitle>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  {isExpanded ? (
-                    <>
-                      <span>Collapse</span>
-                      <ChevronUp className="h-4 w-4" />
-                    </>
-                  ) : (
-                    <>
-                      <span>Expand Analytics</span>
-                      <ChevronDown className="h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </CollapsibleTrigger>
-            </div>
-          </CardHeader>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Dashboard Analytics</CardTitle>
+        </CardHeader>
+        
+        <CardContent className="w-full">
+          {/* Always show metrics grid - now full width */}
+          <div className="w-full">
+            <AnalyticsMetricsGrid dataStats={dataStats} className="w-full" />
+          </div>
           
-          <CardContent className="w-full">
-            {/* Always show metrics grid - now full width */}
-            <div className="w-full">
-              <AnalyticsMetricsGrid dataStats={dataStats} className="w-full" />
-            </div>
-            
-            {/* Expandable analytics sections */}
-            <CollapsibleContent className="data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up">
-              <div className="mt-8 w-full">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="overview" className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4" />
-                      Trends
-                    </TabsTrigger>
-                    <TabsTrigger value="activity" className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      Activity
-                    </TabsTrigger>
-                    <TabsTrigger value="insights" className="flex items-center gap-2">
-                      <Lightbulb className="h-4 w-4" />
-                      Insights
-                    </TabsTrigger>
-                    <TabsTrigger value="performance" className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4" />
-                      Performance
-                    </TabsTrigger>
-                  </TabsList>
+          {/* Analytics sections - now always visible */}
+          <div className="mt-8 w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="overview" className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Trends
+                </TabsTrigger>
+                <TabsTrigger value="activity" className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Activity
+                </TabsTrigger>
+                <TabsTrigger value="insights" className="flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4" />
+                  Insights
+                </TabsTrigger>
+                <TabsTrigger value="performance" className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Performance
+                </TabsTrigger>
+              </TabsList>
 
-                  <div className="mt-6 w-full">
-                    <TabsContent value="overview" className="space-y-6 w-full">
-                      <TrendAnalysisChart data={analysisData} title="Activity Trends Overview" />
-                    </TabsContent>
+              <div className="mt-6 w-full">
+                <TabsContent value="overview" className="space-y-6 w-full">
+                  <TrendAnalysisChart data={analysisData} title="Activity Trends Overview" />
+                </TabsContent>
 
-                    <TabsContent value="activity" className="space-y-6 w-full">
-                      <ActivityHeatMap />
-                    </TabsContent>
+                <TabsContent value="activity" className="space-y-6 w-full">
+                  <ActivityHeatMap />
+                </TabsContent>
 
-                    <TabsContent value="insights" className="space-y-6 w-full">
-                      <PerformanceInsights dataStats={dataStats} />
-                    </TabsContent>
+                <TabsContent value="insights" className="space-y-6 w-full">
+                  <PerformanceInsights dataStats={dataStats} />
+                </TabsContent>
 
-                    <TabsContent value="performance" className="space-y-6 w-full">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-                        <TrendAnalysisChart data={analysisData} title="Performance Metrics" />
-                        <PerformanceInsights dataStats={dataStats} />
-                      </div>
-                    </TabsContent>
+                <TabsContent value="performance" className="space-y-6 w-full">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+                    <TrendAnalysisChart data={analysisData} title="Performance Metrics" />
+                    <PerformanceInsights dataStats={dataStats} />
                   </div>
-                </Tabs>
+                </TabsContent>
               </div>
-            </CollapsibleContent>
-          </CardContent>
-        </Card>
-      </Collapsible>
+            </Tabs>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
