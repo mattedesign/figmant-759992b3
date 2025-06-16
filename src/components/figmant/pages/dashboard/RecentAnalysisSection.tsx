@@ -22,7 +22,15 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({ an
   };
 
   return (
-    <div className={isMobile ? "w-full" : isTablet ? "w-full" : "col-span-8"}>
+    <div 
+      className={isMobile ? "w-full" : isTablet ? "w-full" : "col-span-8"}
+      style={{
+        borderRadius: 'var(--corner-radius-2xl, 16px)',
+        border: '1px solid var(--border-neutral-xsubtle, rgba(10, 12, 17, 0.10))',
+        background: 'var(--background-base-white, #FFF)',
+        padding: '24px'
+      }}
+    >
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">Recent Analysis</h2>
         <Button variant="ghost" size="sm" className="text-gray-500">

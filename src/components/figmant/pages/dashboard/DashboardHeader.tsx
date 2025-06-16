@@ -30,7 +30,10 @@ export const DashboardHeader: React.FC = () => {
     <div className="flex-none p-6 pb-4" style={{ backgroundColor: 'transparent' }}>
       <div className="mb-4">
         <div className="text-sm text-gray-500 mb-1">{currentDate}</div>
-        <h1 className="text-2xl font-semibold text-gray-900">{getGreeting()} {getFirstName()}</h1>
+        <h1 className="text-2xl text-gray-900">
+          <span style={{ fontWeight: 'normal', color: '#455468' }}>{getGreeting()} </span>
+          <span className="font-semibold">{getFirstName()}</span>
+        </h1>
       </div>
     </div>
   );
