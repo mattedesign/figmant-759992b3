@@ -15,10 +15,10 @@ export const AnalysisPage: React.FC = () => {
         onAnalysisSelect={setSelectedAnalysis}
       />
 
-      {/* Main Content - Chat Panel */}
+      {/* Main Content - Chat Panel with full Claude integration */}
       <AnalysisChatPanel analysis={selectedAnalysis} />
 
-      {/* Right Panel - Attachments */}
+      {/* Right Panel - Attachments and Analysis Details */}
       <AnalysisRightPanel analysis={selectedAnalysis} />
     </div>
   );
