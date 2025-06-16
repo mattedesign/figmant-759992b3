@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Star, ExternalLink } from 'lucide-react';
+import { Sparkles, Target, BarChart3, Users, ShoppingCart, FlaskConical, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { AnalysisData } from './types/dashboard';
@@ -18,6 +18,26 @@ interface RecentAnalysisSectionProps {
   error?: Error | null;
   onRetry?: () => void;
 }
+
+const getTemplateIcon = (analysisType: string) => {
+  const type = analysisType?.toLowerCase() || '';
+  
+  if (type.includes('master') || type.includes('comprehensive')) {
+    return Sparkles;
+  } else if (type.includes('competitor') || type.includes('competitive')) {
+    return Target;
+  } else if (type.includes('visual') || type.includes('hierarchy')) {
+    return BarChart3;
+  } else if (type.includes('copy') || type.includes('messaging') || type.includes('content')) {
+    return Users;
+  } else if (type.includes('ecommerce') || type.includes('revenue') || type.includes('conversion')) {
+    return ShoppingCart;
+  } else if (type.includes('ab') || type.includes('test') || type.includes('experiment')) {
+    return FlaskConical;
+  } else {
+    return Sparkles; // Default fallback
+  }
+};
 
 export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({ 
   analysisData, 
@@ -91,58 +111,62 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
         {/* Data State */}
         {!isLoading && !error && limitedAnalysisData.length > 0 && (
           <div className={`grid gap-4 mb-8 ${getGridColumns()}`}>
-            {limitedAnalysisData.map((analysis) => (
-              <Card 
-                key={analysis.id} 
-                className="border-0 cursor-pointer hover:shadow-md transition-shadow"
-                style={{
-                  borderRadius: 'var(--corner-radius-xl, 12px)',
-                  border: '1px solid var(--border-neutral-xsubtle, rgba(10, 12, 17, 0.10))',
-                  background: 'var(--background-base-white, #FFF)'
-                }}
-                onClick={() => handleViewAnalysis(analysis)}
-              >
-                <CardHeader className={`pb-3 ${isTablet ? 'pb-2' : ''}`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Star className={`h-4 w-4 text-gray-400 ${isTablet ? 'h-3 w-3' : ''}`} />
-                      <span className={`font-medium ${isTablet ? 'text-sm' : ''}`}>{analysis.title}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewAnalysis(analysis);
-                        }}
-                      >
-                        <ExternalLink className={`h-4 w-4 ${isTablet ? 'h-3 w-3' : ''}`} />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className={`text-sm text-gray-500 ${isTablet ? 'text-xs' : ''}`}>Status: {analysis.status}</div>
-                    <div className={`text-sm text-gray-500 ${isTablet ? 'text-xs' : ''}`}>Analysis Type: {analysis.type}</div>
-                  </div>
-                </CardHeader>
-                <CardContent className={`pt-0 ${isTablet ? 'px-4 pb-4' : ''}`}>
-                  <div className={`space-y-3 ${isTablet ? 'space-y-2' : ''}`}>
-                    <div>
-                      <div className={`flex justify-between text-sm mb-1 ${isTablet ? 'text-xs' : ''}`}>
-                        <span className="text-gray-600">Progress</span>
-                        <span className="font-medium">{analysis.progress}%</span>
+            {limitedAnalysisData.map((analysis) => {
+              const TemplateIcon = getTemplateIcon(analysis.type);
+              
+              return (
+                <Card 
+                  key={analysis.id} 
+                  className="border-0 cursor-pointer hover:shadow-md transition-shadow"
+                  style={{
+                    borderRadius: 'var(--corner-radius-xl, 12px)',
+                    border: '1px solid var(--border-neutral-xsubtle, rgba(10, 12, 17, 0.10))',
+                    background: 'var(--background-base-white, #FFF)'
+                  }}
+                  onClick={() => handleViewAnalysis(analysis)}
+                >
+                  <CardHeader className={`pb-3 ${isTablet ? 'pb-2' : ''}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <TemplateIcon className={`h-4 w-4 text-gray-400 ${isTablet ? 'h-3 w-3' : ''}`} />
+                        <span className={`font-medium ${isTablet ? 'text-sm' : ''}`}>{analysis.title}</span>
                       </div>
-                      <Progress value={analysis.progress} className={`h-2 ${isTablet ? 'h-1.5' : ''}`} />
+                      <div className="flex items-center gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewAnalysis(analysis);
+                          }}
+                        >
+                          <ExternalLink className={`h-4 w-4 ${isTablet ? 'h-3 w-3' : ''}`} />
+                        </Button>
+                      </div>
                     </div>
-                    <div className={`flex justify-between text-sm text-gray-600 ${isTablet ? 'text-xs' : ''}`}>
-                      <span>Suggestions: {analysis.suggestions}</span>
-                      <span>Documents: {analysis.documents}</span>
+                    <div className="space-y-1">
+                      <div className={`text-sm text-gray-500 ${isTablet ? 'text-xs' : ''}`}>Status: {analysis.status}</div>
+                      <div className={`text-sm text-gray-500 ${isTablet ? 'text-xs' : ''}`}>Analysis Type: {analysis.type}</div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardHeader>
+                  <CardContent className={`pt-0 ${isTablet ? 'px-4 pb-4' : ''}`}>
+                    <div className={`space-y-3 ${isTablet ? 'space-y-2' : ''}`}>
+                      <div>
+                        <div className={`flex justify-between text-sm mb-1 ${isTablet ? 'text-xs' : ''}`}>
+                          <span className="text-gray-600">Progress</span>
+                          <span className="font-medium">{analysis.progress}%</span>
+                        </div>
+                        <Progress value={analysis.progress} className={`h-2 ${isTablet ? 'h-1.5' : ''}`} />
+                      </div>
+                      <div className={`flex justify-between text-sm text-gray-600 ${isTablet ? 'text-xs' : ''}`}>
+                        <span>Suggestions: {analysis.suggestions}</span>
+                        <span>Documents: {analysis.documents}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
