@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { FigmantMainContent } from './FigmantMainContent';
 import { FigmantSidebar } from './FigmantSidebar';
 import { MobileNavigation } from './navigation/MobileNavigation';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 
 export const FigmantLayout: React.FC = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
 
   const handleBackToList = () => {
     setSelectedAnalysis(null);
@@ -44,6 +45,31 @@ export const FigmantLayout: React.FC = () => {
     );
   }
 
+  if (isTablet) {
+    return (
+      <div className="min-h-screen flex w-full" style={{ background: 'transparent' }}>
+        {/* Tablet sidebar - more compact */}
+        <div className="w-64 flex-shrink-0">
+          <FigmantSidebar 
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+          />
+        </div>
+        {/* Tablet main content */}
+        <div className="flex-1 min-w-0">
+          <FigmantMainContent
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+            selectedAnalysis={selectedAnalysis}
+            onBackToList={handleBackToList}
+            onRightSidebarModeChange={handleRightSidebarModeChange}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop layout
   return (
     <div className="min-h-screen flex w-full" style={{ background: 'transparent' }}>
       <FigmantSidebar 

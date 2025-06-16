@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { DashboardHeader } from './dashboard/DashboardHeader';
 import { RecentAnalysisSection } from './dashboard/RecentAnalysisSection';
@@ -7,11 +6,12 @@ import { MyPromptsSection } from './dashboard/MyPromptsSection';
 import { PatternAnalysisSection } from './dashboard/PatternAnalysisSection';
 import { NotesSection } from './dashboard/NotesSection';
 import { RecentSection } from './dashboard/RecentSection';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 import { AnalysisData, InsightData, PromptData, NoteData } from './dashboard/types/dashboard';
 
 export const DashboardPage: React.FC = () => {
   const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
 
   const analysisData: AnalysisData[] = [
     {
@@ -79,7 +79,7 @@ export const DashboardPage: React.FC = () => {
       <div className="h-full flex flex-col">
         <DashboardHeader />
 
-        {/* Main Content with mobile-responsive layout */}
+        {/* Main Content with responsive layout optimization */}
         <div 
           className="flex-1 overflow-y-auto px-6"
           style={{
@@ -96,8 +96,30 @@ export const DashboardPage: React.FC = () => {
               <NotesSection notesData={notesData} />
               <RecentSection />
             </div>
+          ) : isTablet ? (
+            // Tablet: Optimized 2-column layout for medium screens
+            <>
+              <div className="grid grid-cols-12 gap-4 lg:gap-6">
+                {/* Main content takes more space on tablet */}
+                <div className="col-span-8 space-y-4">
+                  <RecentAnalysisSection analysisData={analysisData} />
+                  <InsightsSection insightsData={insightsData} />
+                </div>
+
+                {/* Sidebar content in a more compact layout */}
+                <div className="col-span-4 space-y-4">
+                  <MyPromptsSection promptsData={promptsData} />
+                  <PatternAnalysisSection />
+                  <NotesSection notesData={notesData} />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <RecentSection />
+              </div>
+            </>
           ) : (
-            // Desktop: Grid layout
+            // Desktop: Full grid layout
             <>
               <div className="grid grid-cols-12 gap-6">
                 <RecentAnalysisSection analysisData={analysisData} />
