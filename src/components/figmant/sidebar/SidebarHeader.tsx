@@ -1,25 +1,25 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Logo } from '@/components/common/Logo';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 
 interface SidebarHeaderProps {
+  isCollapsed?: boolean;
   onToggleCollapse?: (collapsed: boolean) => void;
 }
 
-export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ onToggleCollapse }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
+export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ 
+  isCollapsed = false, 
+  onToggleCollapse 
+}) => {
   const handleToggle = () => {
-    const newCollapsed = !isCollapsed;
-    setIsCollapsed(newCollapsed);
-    onToggleCollapse?.(newCollapsed);
+    onToggleCollapse?.(!isCollapsed);
   };
 
   return (
     <div className="p-4 border-b border-gray-200/30 flex items-center justify-between">
-      <Logo size="md" className="w-auto" />
+      {!isCollapsed && <Logo size="md" className="w-auto" />}
       <Button 
         variant="ghost" 
         size="icon"

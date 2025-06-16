@@ -34,7 +34,10 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
       }`}
       style={{ background: 'transparent' }}
     >
-      <SidebarHeader onToggleCollapse={handleToggleCollapse} />
+      <SidebarHeader 
+        isCollapsed={isCollapsed}
+        onToggleCollapse={handleToggleCollapse} 
+      />
       
       {!isCollapsed && (
         <>
