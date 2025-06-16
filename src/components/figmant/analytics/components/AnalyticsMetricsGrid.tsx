@@ -105,7 +105,7 @@ export const AnalyticsMetricsGrid: React.FC<AnalyticsMetricsGridProps> = ({
   dataStats,
   className
 }) => {
-  const metrics = [
+  const metrics: MetricCardProps[] = [
     {
       title: 'Total Analyses',
       value: dataStats.totalAnalyses,
@@ -122,7 +122,7 @@ export const AnalyticsMetricsGrid: React.FC<AnalyticsMetricsGridProps> = ({
       trend: 'up' as const,
       icon: CheckCircle,
       progress: dataStats.completionRate,
-      status: (dataStats.completionRate > 80 ? 'success' : 'warning') as const
+      status: dataStats.completionRate > 80 ? 'success' : 'warning'
     },
     {
       title: 'Active Prompts',
@@ -137,20 +137,20 @@ export const AnalyticsMetricsGrid: React.FC<AnalyticsMetricsGridProps> = ({
       title: 'Activity Score',
       value: dataStats.activityScore,
       change: dataStats.activityScore > 50 ? '+15.3%' : '-3.2%',
-      trend: (dataStats.activityScore > 50 ? 'up' : 'down') as const,
+      trend: dataStats.activityScore > 50 ? 'up' : 'down',
       icon: Target,
       progress: dataStats.activityScore,
-      status: (dataStats.activityScore > 70 ? 'success' : 
-             dataStats.activityScore > 40 ? 'warning' : 'error') as const
+      status: dataStats.activityScore > 70 ? 'success' : 
+             dataStats.activityScore > 40 ? 'warning' : 'error'
     },
     {
       title: 'Pending Items',
       value: dataStats.pendingAnalyses,
       change: dataStats.pendingAnalyses > 5 ? '+2' : '-1',
-      trend: (dataStats.pendingAnalyses > 5 ? 'down' : 'up') as const,
+      trend: dataStats.pendingAnalyses > 5 ? 'down' : 'up',
       icon: AlertCircle,
       description: 'Requiring attention',
-      status: (dataStats.pendingAnalyses > 5 ? 'warning' : 'success') as const
+      status: dataStats.pendingAnalyses > 5 ? 'warning' : 'success'
     },
     {
       title: 'Avg Processing',
