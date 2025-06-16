@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePublicLogoConfig } from '@/hooks/usePublicLogoConfig';
-import { DEFAULT_FALLBACK_LOGO } from '@/hooks/logo/types';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -10,7 +9,7 @@ interface LogoProps {
 
 export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   const [imageStatus, setImageStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
-  const [currentImageUrl, setCurrentImageUrl] = useState<string>(DEFAULT_FALLBACK_LOGO);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string>('/lovable-uploads/dbcf2493-ebb3-44e5-a137-ca8d4ae7511f.png');
   const { logoConfig, isLoading } = usePublicLogoConfig();
 
   // Optimized size classes for the logo
@@ -21,18 +20,15 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   };
 
   useEffect(() => {
-    if (isLoading) return;
-    
     const loadImage = async () => {
-      console.log('=== LOGO COMPONENT: LOADING IMAGE ===');
-      console.log('Logo config received:', logoConfig);
+      console.log('=== LOGO COMPONENT: LOADING NEW LOGO ===');
       
       setImageStatus('loading');
       
-      // Determine which logo URL to test
-      const logoToTest = logoConfig.activeLogoUrl || DEFAULT_FALLBACK_LOGO;
+      // Use the new uploaded logo
+      const logoToTest = '/lovable-uploads/dbcf2493-ebb3-44e5-a137-ca8d4ae7511f.png';
       
-      console.log('Logo component: Testing logo URL:', logoToTest);
+      console.log('Logo component: Testing new logo URL:', logoToTest);
       
       try {
         const isAccessible = await testImageLoad(logoToTest);
@@ -40,26 +36,10 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
         if (isAccessible) {
           setCurrentImageUrl(logoToTest);
           setImageStatus('loaded');
-          console.log('✓ Logo component: Successfully loaded logo:', logoToTest);
+          console.log('✓ Logo component: Successfully loaded new logo:', logoToTest);
         } else {
-          console.warn('✗ Logo component: Failed to load configured logo, trying fallback');
-          
-          // If the configured logo fails and it's not already the default, try the default
-          if (logoToTest !== DEFAULT_FALLBACK_LOGO) {
-            const fallbackAccessible = await testImageLoad(DEFAULT_FALLBACK_LOGO);
-            
-            if (fallbackAccessible) {
-              setCurrentImageUrl(DEFAULT_FALLBACK_LOGO);
-              setImageStatus('loaded');
-              console.log('✓ Logo component: Successfully loaded fallback logo');
-            } else {
-              console.error('✗ Logo component: Even fallback logo failed');
-              setImageStatus('error');
-            }
-          } else {
-            console.error('✗ Logo component: Default logo failed to load');
-            setImageStatus('error');
-          }
+          console.warn('✗ Logo component: Failed to load new logo, trying fallback');
+          setImageStatus('error');
         }
       } catch (error) {
         console.error('Logo component: Error during image loading:', error);
@@ -68,7 +48,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     };
 
     loadImage();
-  }, [logoConfig, isLoading]);
+  }, []);
 
   const testImageLoad = (url: string): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -99,11 +79,6 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
         resolve(false);
       };
       
-      // Set crossOrigin for Supabase storage URLs
-      if (url.includes('supabase')) {
-        img.crossOrigin = 'anonymous';
-      }
-      
       img.src = url;
     });
   };
@@ -125,7 +100,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   );
 
   // Loading placeholder
-  if (isLoading || imageStatus === 'loading') {
+  if (imageStatus === 'loading') {
     return (
       <div className={`${sizeClasses[size]} ${className} bg-muted animate-pulse rounded-lg flex items-center justify-center`}>
         <span className="text-xs text-muted-foreground">Loading...</span>
@@ -143,7 +118,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
   return (
     <img
       src={currentImageUrl}
-      alt="Logo"
+      alt="Figmant Logo"
       className={`${sizeClasses[size]} ${className} object-contain`}
       onError={(e) => {
         console.error('Logo component: Image onError triggered for:', currentImageUrl);
