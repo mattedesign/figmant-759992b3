@@ -2,42 +2,50 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { X, FileText, Image } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
 interface AttachmentPreviewProps {
-  attachments: ChatAttachment[];
+  attachment: ChatAttachment;
   onRemove: (id: string) => void;
 }
 
 export const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({
-  attachments,
+  attachment,
   onRemove
 }) => {
-  if (attachments.length === 0) return null;
+  const getAttachmentIcon = () => {
+    if (attachment.type === 'file' && attachment.file?.type.startsWith('image/')) {
+      return Image;
+    }
+    return FileText;
+  };
+
+  const AttachmentIcon = getAttachmentIcon();
 
   return (
-    <div className="p-4 border-t border-gray-100 bg-gray-50">
-      <div className="flex flex-wrap gap-2">
-        {attachments.map(attachment => (
-          <div key={attachment.id} className="flex items-center gap-2 bg-white rounded-lg p-2 border">
-            <span className="text-sm truncate max-w-32">{attachment.name}</span>
-            <Badge variant={
-              attachment.status === 'uploaded' ? 'default' :
-              attachment.status === 'uploading' ? 'secondary' : 'destructive'
-            }>
-              {attachment.status}
-            </Badge>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onRemove(attachment.id)}
-              className="h-5 w-5 p-0"
-            >
-              ×
-            </Button>
-          </div>
-        ))}
+    <div className="flex items-center gap-2 p-3 border rounded-lg bg-white">
+      <AttachmentIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium truncate">{attachment.name}</div>
+        <Badge 
+          variant={
+            attachment.status === 'uploaded' ? 'default' :
+            attachment.status === 'uploading' ? 'secondary' : 'destructive'
+          }
+          className="text-xs mt-1"
+        >
+          {attachment.status}
+        </Badge>
       </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => onRemove(attachment.id)}
+        className="h-6 w-6 p-0 flex-shrink-0"
+      >
+        <X className="h-3 w-3" />
+      </Button>
     </div>
   );
 };

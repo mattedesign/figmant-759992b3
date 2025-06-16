@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -52,6 +52,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   selectedPromptTemplate,
   onAnalysisComplete
 }) => {
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  
   const { addUrlAttachment, removeAttachment } = useAttachmentHandlers(
     attachments,
     setAttachments,
@@ -72,8 +74,10 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
       timestamp: new Date()
     };
 
-    setMessages([...messages, newMessage]);
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
     setMessage('');
+    setIsAnalyzing(true);
 
     // Simulate AI response
     setTimeout(() => {
@@ -83,10 +87,11 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         content: 'Thank you for your submission. I\'m analyzing your design...',
         timestamp: new Date()
       };
-      setMessages(prev => [...prev, aiResponse]);
+      setMessages([...updatedMessages, aiResponse]);
       
       // Simulate analysis completion
       setTimeout(() => {
+        setIsAnalyzing(false);
         onAnalysisComplete?.({
           score: Math.floor(Math.random() * 3) + 8,
           status: 'Completed',
@@ -134,7 +139,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
             <p className="text-gray-600">Start your analysis by uploading files or asking a question</p>
           </div>
         ) : (
-          <ChatMessages messages={messages} />
+          <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
         )}
       </div>
 
@@ -150,7 +155,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
               <AttachmentPreview
                 key={attachment.id}
                 attachment={attachment}
-                onRemove={() => removeAttachment(attachment.id)}
+                onRemove={removeAttachment}
               />
             ))}
           </div>

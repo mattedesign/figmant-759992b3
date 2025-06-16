@@ -52,8 +52,9 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
   onBackClick
 }) => {
   if (mode === 'templates') {
-    // Group templates by category
-    const groupedTemplates = promptTemplates.reduce((acc, template) => {
+    // Group templates by category - ensure promptTemplates is an array
+    const templatesArray = Array.isArray(promptTemplates) ? promptTemplates : [];
+    const groupedTemplates = templatesArray.reduce((acc, template) => {
       const category = template.category || 'General';
       if (!acc[category]) acc[category] = [];
       acc[category].push(template);
