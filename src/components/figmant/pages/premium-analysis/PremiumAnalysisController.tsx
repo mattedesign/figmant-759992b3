@@ -57,11 +57,11 @@ export const PremiumAnalysisController: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col max-h-full overflow-hidden">
       {/* Scrollable Content Area */}
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 overflow-hidden">
         <ScrollArea className="h-full">
-          <div className="p-6">
+          <div className="p-6 pb-24">
             <StepRenderer 
               stepData={stepData} 
               setStepData={setStepData} 
