@@ -13,25 +13,34 @@ export const useCreditPurchase = () => {
     try {
       console.log('Starting credit purchase:', { planId, planName, creditAmount, price });
       
+      // Validate inputs
+      if (!planId || !creditAmount || !price) {
+        throw new Error('Missing required purchase information');
+      }
+
       // Call the create-checkout edge function to create a Stripe session
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { 
           planId,
           planType: 'credits',
-          amount: price * 100, // Convert to cents
+          amount: Math.round(price * 100), // Convert to cents and ensure integer
           creditAmount
         }
       });
 
       if (error) {
+        console.error('Supabase function error:', error);
         throw new Error(error.message || 'Failed to create checkout session');
       }
 
+      console.log('Checkout response:', data);
+
       if (data?.url) {
         // Redirect to Stripe Checkout
+        console.log('Redirecting to Stripe:', data.url);
         window.location.href = data.url;
       } else {
-        throw new Error('No checkout URL received');
+        throw new Error('No checkout URL received from server');
       }
       
     } catch (error) {

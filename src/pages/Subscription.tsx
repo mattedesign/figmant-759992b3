@@ -27,7 +27,6 @@ export default function Subscription() {
   useEffect(() => {
     const success = searchParams.get('success');
     const canceled = searchParams.get('canceled');
-    const sessionId = searchParams.get('session_id');
 
     if (success === 'true') {
       toast({
@@ -51,12 +50,35 @@ export default function Subscription() {
   const creditPlans = plans?.filter(plan => plan.plan_type === 'credits' && plan.is_active) || [];
 
   const onPurchaseCredits = async (plan: any) => {
-    await handlePurchaseCredits(
-      plan.id,
-      plan.name,
-      plan.credits,
-      plan.credit_price || 0
-    );
+    try {
+      console.log('Purchase button clicked for plan:', plan);
+      
+      // Calculate price based on credit_price or fallback
+      const price = plan.credit_price || plan.price_monthly || 0;
+      
+      if (price <= 0) {
+        toast({
+          variant: "destructive",
+          title: "Configuration Error",
+          description: "This credit pack is not properly configured. Please contact support.",
+        });
+        return;
+      }
+
+      await handlePurchaseCredits(
+        plan.id,
+        plan.name,
+        plan.credits,
+        price
+      );
+    } catch (error) {
+      console.error('Error in onPurchaseCredits:', error);
+      toast({
+        variant: "destructive",
+        title: "Purchase Error",
+        description: "Failed to start purchase process. Please try again.",
+      });
+    }
   };
 
   const getFeatures = (credits: number) => {
@@ -180,47 +202,63 @@ export default function Subscription() {
 
         {/* Credit Packs */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {creditPlans.map((plan) => (
-            <Card key={plan.id} className="relative">
-              {plan.credits >= 100 && (
-                <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2">
-                  Best Value
-                </Badge>
-              )}
-              <CardHeader>
-                <CardTitle className="text-xl flex items-center">
-                  <Coins className="h-5 w-5 mr-2" />
-                  {plan.name}
-                </CardTitle>
-                <CardDescription>{plan.description}</CardDescription>
-                <div className="text-3xl font-bold">
-                  {plan.credit_price ? `$${plan.credit_price}` : 'Free'}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {plan.credits} credits • ${((plan.credit_price || 0) / plan.credits).toFixed(3)} per credit
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 mb-6">
-                  {getFeatures(plan.credits).map((feature, index) => (
-                    <li key={index} className="flex items-center text-sm">
-                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  className="w-full"
-                  onClick={() => onPurchaseCredits(plan)}
-                  variant={plan.credits >= 100 ? 'default' : 'outline'}
-                  disabled={isProcessing}
-                >
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  {isProcessing ? 'Processing...' : 'Purchase Credits'}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {creditPlans.map((plan) => {
+            const price = plan.credit_price || plan.price_monthly || 0;
+            const isValidPlan = price > 0 && plan.credits > 0;
+            
+            return (
+              <Card key={plan.id} className="relative">
+                {plan.credits >= 100 && (
+                  <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                    Best Value
+                  </Badge>
+                )}
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center">
+                    <Coins className="h-5 w-5 mr-2" />
+                    {plan.name}
+                  </CardTitle>
+                  <CardDescription>{plan.description}</CardDescription>
+                  <div className="text-3xl font-bold">
+                    {price > 0 ? `$${price.toFixed(2)}` : 'Free'}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {plan.credits} credits
+                    {price > 0 && ` • $${(price / plan.credits).toFixed(3)} per credit`}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 mb-6">
+                    {getFeatures(plan.credits).map((feature, index) => (
+                      <li key={index} className="flex items-center text-sm">
+                        <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className="w-full"
+                    onClick={() => onPurchaseCredits(plan)}
+                    variant={plan.credits >= 100 ? 'default' : 'outline'}
+                    disabled={isProcessing || !isValidPlan}
+                  >
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    {!isValidPlan 
+                      ? 'Not Available' 
+                      : isProcessing 
+                        ? 'Processing...' 
+                        : 'Purchase Credits'
+                    }
+                  </Button>
+                  {!isValidPlan && (
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                      This plan is not properly configured.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {creditPlans.length === 0 && (
