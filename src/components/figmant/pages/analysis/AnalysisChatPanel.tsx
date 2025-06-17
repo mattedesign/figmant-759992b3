@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AnalysisChatHeader } from './AnalysisChatHeader';
 import { AnalysisChatContainer } from './components/AnalysisChatContainer';
@@ -9,8 +8,8 @@ import { useFileUploadHandler } from './useFileUploadHandler';
 import { useMessageHandler } from './useMessageHandler';
 import { useAnalysisChatState } from './hooks/useAnalysisChatState';
 import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, Sparkles } from 'lucide-react';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Sparkles } from 'lucide-react';
 
 interface AnalysisChatPanelProps {
   message: string;
@@ -46,6 +45,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   onAnalysisComplete
 }) => {
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("chat");
   
   const {
     figmantTemplates,
@@ -146,27 +146,17 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
 
   return (
     <div className="h-full flex flex-col bg-[#F9FAFB]">
-      {/* Header */}
+      {/* Header with Tabs */}
       <div className="p-6 bg-transparent">
-        <AnalysisChatHeader />
+        <AnalysisChatHeader 
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
       </div>
 
       {/* Tabbed Content */}
       <div className="flex-1 overflow-hidden">
-        <Tabs defaultValue="chat" className="h-full flex flex-col">
-          <div className="px-6 pb-4">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="chat" className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
-                Chat
-              </TabsTrigger>
-              <TabsTrigger value="wizard" className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                Wizard
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
           <TabsContent value="chat" className="flex-1 overflow-hidden mt-0">
             <AnalysisChatContainer
               messages={messages}
