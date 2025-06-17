@@ -21,7 +21,7 @@ export const SimpleTemplateSelector: React.FC<SimpleTemplateSelectorProps> = ({
 
   return (
     <div className="flex items-center gap-2 flex-1">
-      <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 flex-1">
+      <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 flex-1 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100">
         <Sparkles className="h-4 w-4 text-blue-600 flex-shrink-0" />
         <Select 
           value={currentTemplate?.id || ''} 
