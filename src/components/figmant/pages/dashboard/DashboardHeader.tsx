@@ -105,13 +105,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-[12px] pt-2">
-      <div className="flex items-center gap-4">
-        {/* Time-based Image - moved to the left */}
-        <div className="flex-shrink-0">
+      <div className="flex items-center gap-4 h-full">
+        {/* Time-based Image - fills height of container */}
+        <div className="flex-shrink-0 h-full flex items-center">
           <img 
             src={timeBasedImage.src}
             alt={timeBasedImage.alt}
-            className="h-8 w-8 object-contain"
+            className="h-full max-h-16 w-auto object-contain"
           />
         </div>
         
