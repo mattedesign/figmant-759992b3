@@ -126,25 +126,6 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         </div>
       )}
 
-      {/* Attachments */}
-      {attachments.length > 0 && (
-        <div className="px-6 py-4 border-t border-gray-100 bg-white">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-sm font-medium">Attachments</span>
-            <Badge variant="secondary">{attachments.length}</Badge>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {attachments.map(attachment => (
-              <AttachmentPreview 
-                key={attachment.id} 
-                attachment={attachment} 
-                onRemove={removeAttachment} 
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* URL Input */}
       {showUrlInput && (
         <URLInputSection 
