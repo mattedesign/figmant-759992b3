@@ -77,7 +77,7 @@ serve(async (req) => {
         },
       ],
       mode: "payment", // One-time payment for credits
-      success_url: `${origin}/subscription?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/payment-success?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/subscription?canceled=true`,
       metadata: {
         user_id: user.id,

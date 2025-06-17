@@ -9,6 +9,7 @@ import {
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
 import Subscription from '@/pages/Subscription';
+import PaymentSuccess from '@/pages/PaymentSuccess';
 import OwnerDashboard from '@/pages/OwnerDashboard';
 import { FigmantLayout } from '@/components/figmant/FigmantLayout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
@@ -49,6 +50,14 @@ const App: React.FC = () => {
           element={
             <AuthGuard>
               <Subscription />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/payment-success"
+          element={
+            <AuthGuard>
+              <PaymentSuccess />
             </AuthGuard>
           }
         />

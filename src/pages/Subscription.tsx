@@ -9,7 +9,7 @@ import { useUserCredits } from '@/hooks/useUserCredits';
 import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans';
 import { useCreditPurchase } from '@/hooks/useCreditPurchase';
 import { useToast } from '@/hooks/use-toast';
-import { Check, CreditCard, Star, Zap, Coins, CheckCircle, XCircle } from 'lucide-react';
+import { Check, CreditCard, Star, Zap, Coins, XCircle } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
 export default function Subscription() {
@@ -23,20 +23,11 @@ export default function Subscription() {
   const isOwner = profile?.role === 'owner';
   const currentBalance = credits?.current_balance || 0;
 
-  // Handle success/cancel redirects from Stripe
+  // Handle cancel redirect from Stripe
   useEffect(() => {
-    const success = searchParams.get('success');
     const canceled = searchParams.get('canceled');
 
-    if (success === 'true') {
-      toast({
-        title: "Payment Successful!",
-        description: "Your credits have been added to your account.",
-        duration: 5000,
-      });
-      // Refresh credits after successful payment
-      refetchCredits();
-    } else if (canceled === 'true') {
+    if (canceled === 'true') {
       toast({
         variant: "destructive",
         title: "Payment Canceled",
@@ -44,7 +35,7 @@ export default function Subscription() {
         duration: 5000,
       });
     }
-  }, [searchParams, toast, refetchCredits]);
+  }, [searchParams, toast]);
 
   // Only show credit-based plans
   const creditPlans = plans?.filter(plan => plan.plan_type === 'credits' && plan.is_active) || [];
@@ -153,16 +144,7 @@ export default function Subscription() {
           </p>
         </div>
 
-        {/* Success/Error Messages */}
-        {searchParams.get('success') === 'true' && (
-          <Alert className="mb-6 border-green-200 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
-              Payment successful! Your credits have been added to your account.
-            </AlertDescription>
-          </Alert>
-        )}
-
+        {/* Error Messages */}
         {searchParams.get('canceled') === 'true' && (
           <Alert className="mb-6 border-red-200 bg-red-50">
             <XCircle className="h-4 w-4 text-red-600" />
