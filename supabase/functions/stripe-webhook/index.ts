@@ -154,7 +154,9 @@ serve(async (req) => {
 
         logStep("Credits updated successfully", { newBalance, newTotalPurchased });
 
-        // Create transaction record
+        // Create transaction record with proper UUID for reference_id
+        // Generate a UUID for the reference_id field and include Stripe session ID in description
+        const transactionReferenceId = crypto.randomUUID();
         const { error: transactionError } = await supabase
           .from('credit_transactions')
           .insert({
@@ -162,7 +164,7 @@ serve(async (req) => {
             transaction_type: 'purchase',
             amount: creditAmount,
             description: `Purchased ${creditAmount} credits via Stripe (Session: ${session.id})`,
-            reference_id: session.id,
+            reference_id: transactionReferenceId,
             created_by: targetUserId
           });
 
@@ -170,12 +172,16 @@ serve(async (req) => {
           logStep("ERROR: Failed to create transaction record", { error: transactionError });
           // Don't throw here - credits were already added
         } else {
-          logStep("Transaction record created successfully");
+          logStep("Transaction record created successfully", { 
+            referenceId: transactionReferenceId,
+            stripeSessionId: session.id
+          });
         }
 
         logStep(`SUCCESS: Added ${creditAmount} credits to user ${targetUserId}`, {
           sessionId: session.id,
-          finalBalance: newBalance
+          finalBalance: newBalance,
+          transactionReferenceId
         });
         
       } catch (error) {
