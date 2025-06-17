@@ -1,17 +1,18 @@
 
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Paperclip, Link, Send, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Paperclip, Link, Send, Sparkles } from 'lucide-react';
 
 interface AnalysisChatInputProps {
   message: string;
   setMessage: (message: string) => void;
   onSendMessage: () => void;
-  onKeyPress?: (e: React.KeyboardEvent) => void;
+  onKeyPress: (e: React.KeyboardEvent) => void;
   selectedPromptTemplate?: any;
   canSend: boolean;
-  isAnalyzing?: boolean;
+  isAnalyzing: boolean;
   onFileUpload: (files: FileList) => void;
   onToggleUrlInput: () => void;
 }
@@ -23,132 +24,94 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   onKeyPress,
   selectedPromptTemplate,
   canSend,
-  isAnalyzing = false,
+  isAnalyzing,
   onFileUpload,
   onToggleUrlInput
 }) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (onKeyPress) {
-      onKeyPress(e);
-    }
-  };
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      onFileUpload(e.target.files);
-      e.target.value = ''; // Reset input
-    }
-  };
-
-  const handleAttachClick = () => {
+  const handleFileClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
-    
-    // Auto-resize textarea
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      const scrollHeight = textareaRef.current.scrollHeight;
-      const lineHeight = 24; // Approximate line height
-      const maxHeight = lineHeight * 4; // 4 lines max
-      const minHeight = 48; // Increased minimum height for better button fit
-      
-      const newHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight);
-      textareaRef.current.style.height = `${newHeight}px`;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      onFileUpload(files);
     }
+    // Reset the input value so the same file can be selected again
+    e.target.value = '';
   };
 
-  // Reset height when message is cleared
-  useEffect(() => {
-    if (!message && textareaRef.current) {
-      textareaRef.current.style.height = '48px'; // Reset to proper single line height
-    }
-  }, [message]);
-
   return (
-    <div className="p-6">
-      <div className="flex flex-col space-y-3">
-        {/* Selected template indicator */}
-        {selectedPromptTemplate && (
-          <div className="text-sm text-gray-600 bg-blue-50 px-3 py-2 rounded-md">
-            Using template: <span className="font-medium">{selectedPromptTemplate.display_name || selectedPromptTemplate.title}</span>
-          </div>
-        )}
-        
-        {/* Hidden file input for multiple file selection */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept="image/*,.pdf"
-          onChange={handleFileInputChange}
-          className="hidden"
-          disabled={isAnalyzing}
-        />
-        
-        {/* Input area */}
-        <div className="relative flex items-center">
+    <div className="p-6 bg-white border-t border-gray-100">
+      {/* Selected Template Badge */}
+      {selectedPromptTemplate && (
+        <div className="mb-3">
+          <Badge variant="secondary" className="flex items-center gap-1 w-fit">
+            <Sparkles className="h-3 w-3" />
+            {selectedPromptTemplate.display_name}
+          </Badge>
+        </div>
+      )}
+      
+      {/* Input Area */}
+      <div className="flex gap-3">
+        <div className="flex-1">
           <Textarea
-            ref={textareaRef}
             value={message}
-            onChange={handleMessageChange}
-            onKeyPress={handleKeyPress}
-            placeholder="How can I help..."
-            className="min-h-[48px] max-h-[96px] resize-none pr-32 overflow-y-auto flex-1 leading-6 py-3"
-            style={{ height: '48px', lineHeight: '1.5' }}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={onKeyPress}
+            placeholder="Describe what you'd like me to analyze..."
+            className="min-h-[100px] resize-none text-left"
+            style={{ textAlign: 'left' }}
             disabled={isAnalyzing}
           />
+        </div>
+        
+        <div className="flex flex-col gap-2">
+          {/* File Upload Button */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleFileClick}
+            title="Upload files"
+            disabled={isAnalyzing}
+          >
+            <Paperclip className="h-4 w-4" />
+          </Button>
           
-          {/* Input controls - positioned inside the textarea with proper vertical centering */}
-          <div className="absolute right-2 flex items-center space-x-1">
-            {/* File upload - now properly wired */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleAttachClick}
-              className="h-8 w-8 p-0 hover:bg-gray-100 flex items-center justify-center"
-              disabled={isAnalyzing}
-              title="Attach files"
-            >
-              <Paperclip className="h-4 w-4" />
-            </Button>
-            
-            {/* URL input toggle */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={onToggleUrlInput}
-              className="h-8 w-8 p-0 hover:bg-gray-100 flex items-center justify-center"
-              disabled={isAnalyzing}
-              title="Add URL"
-            >
-              <Link className="h-4 w-4" />
-            </Button>
-
-            {/* Send button */}
-            <Button
-              onClick={onSendMessage}
-              disabled={!canSend || isAnalyzing}
-              size="sm"
-              className="h-8 w-8 p-0 flex items-center justify-center"
-              title="Send message"
-            >
-              {isAnalyzing ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
+          {/* URL Input Button */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onToggleUrlInput}
+            title="Add website URL"
+            disabled={isAnalyzing}
+          >
+            <Link className="h-4 w-4" />
+          </Button>
+          
+          {/* Send Button */}
+          <Button
+            onClick={onSendMessage}
+            disabled={!canSend || isAnalyzing}
+            size="icon"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
       </div>
+      
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*,.pdf,.doc,.docx,.txt"
+        onChange={handleFileChange}
+        className="hidden"
+      />
     </div>
   );
 };

@@ -11,7 +11,6 @@ import { URLInputSection } from './URLInputSection';
 import { AnalysisChatHeader } from './AnalysisChatHeader';
 import { AnalysisChatInput } from './AnalysisChatInput';
 import { AnalysisChatPlaceholder } from './AnalysisChatPlaceholder';
-import { TemplatesPage } from '../TemplatesPage';
 import { PromptTemplateModal } from './PromptTemplateModal';
 import { useAttachmentHandlers } from '@/components/design/chat/hooks/useAttachmentHandlers';
 import { useFileUploadHandler } from './useFileUploadHandler';
@@ -51,11 +50,13 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   promptTemplates,
   onAnalysisComplete
 }) => {
-  const [selectedTemplate, setSelectedTemplate] = useState(selectedPromptTemplate?.id || 'master');
+  const { data: figmantTemplates = [] } = useFigmantPromptTemplates();
+  
+  // Default to Master UX Analysis template
+  const masterTemplate = figmantTemplates.find(t => t.category === 'master') || figmantTemplates[0];
+  const [selectedTemplate, setSelectedTemplate] = useState(selectedPromptTemplate?.id || masterTemplate?.id || 'master');
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [modalTemplate, setModalTemplate] = useState<any>(null);
-  
-  const { data: figmantTemplates = [] } = useFigmantPromptTemplates();
   
   const {
     addUrlAttachment,
@@ -68,7 +69,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   // Get the current template object
   const getCurrentTemplate = () => {
     return figmantTemplates.find(t => t.id === selectedTemplate) || 
-           figmantTemplates.find(t => t.category === 'master') ||
+           masterTemplate ||
            figmantTemplates[0];
   };
 
@@ -164,14 +165,6 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         ) : (
           <div className="h-full flex flex-col">
             <AnalysisChatPlaceholder />
-            
-            {/* Templates Section */}
-            <div className="p-6 pt-0">
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <h3 className="text-lg font-semibold mb-4">Quick Start Templates</h3>
-                <TemplatesPage />
-              </div>
-            </div>
           </div>
         )}
       </div>
