@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Home,
-  BarChart3, 
+  Palette, 
   Crown, 
   FileText, 
   Settings,
@@ -31,7 +31,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 }) => {
   const mainSections = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'analysis', label: 'Analysis', icon: BarChart3 },
+    { id: 'analysis', label: 'Analysis', icon: Palette },
     { id: 'premium-analysis', label: 'Premium Analysis', icon: Crown },
     { id: 'templates', label: 'Templates', icon: FileText },
     { id: 'preferences', label: 'Preferences', icon: Settings },
