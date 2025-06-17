@@ -33,7 +33,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
     }
   });
 
-  const { data: promptTemplates, isLoading: promptsLoading } = useClaudePromptExamples();
+  const { data: claudePromptTemplates, isLoading: promptsLoading } = useClaudePromptExamples();
   const [lastAnalysisResult, setLastAnalysisResult] = React.useState<any>(null);
   const [selectedAnalysis, setSelectedAnalysis] = React.useState<any>(null);
   const [isHistorySidebarCollapsed, setIsHistorySidebarCollapsed] = React.useState(false);
@@ -80,7 +80,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
         {/* Prompt Template Selector */}
         <div className="bg-white border-b border-gray-200 p-6">
           <PromptTemplateSelector
-            promptTemplates={promptTemplates}
+            promptTemplates={claudePromptTemplates}
             promptsLoading={promptsLoading}
             selectedPromptCategory={selectedPromptCategory}
             selectedPromptTemplate={selectedPromptTemplate}
@@ -102,9 +102,9 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
             setUrlInput={setUrlInput}
             showUrlInput={showUrlInput}
             setShowUrlInput={setShowUrlInput}
-            selectedPromptTemplate={promptTemplates?.find(t => t.id === selectedPromptTemplate)}
+            selectedPromptTemplate={claudePromptTemplates?.find(t => t.id === selectedPromptTemplate)}
             selectedPromptCategory={selectedPromptCategory}
-            promptTemplates={promptTemplates}
+            promptTemplates={claudePromptTemplates}
             onAnalysisComplete={handleAnalysisComplete}
           />
         </div>
@@ -116,7 +116,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
       }`}>
         <AnalysisDynamicRightPanel
           mode={getRightPanelMode()}
-          promptTemplates={promptTemplates}
+          promptTemplates={claudePromptTemplates}
           selectedPromptTemplate={selectedPromptTemplate}
           onPromptTemplateSelect={setSelectedPromptTemplate}
           currentAnalysis={selectedAnalysis}

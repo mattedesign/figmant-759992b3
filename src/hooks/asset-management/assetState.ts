@@ -106,7 +106,7 @@ export const useAssetState = () => {
           assetType = 'document';
         }
 
-        // Determine category based on path structure
+        // Determine category based on path structure - using proper ASSET_CATEGORIES constants
         let category = ASSET_CATEGORIES.CONTENT;
         if (file.fullPath.includes('branding/') || file.fullPath.includes('/logo/')) {
           category = ASSET_CATEGORIES.BRANDING;
