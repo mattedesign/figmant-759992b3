@@ -1,6 +1,6 @@
 
 import { useAssetOperations } from './asset-management/assetOperations';
-import { useAssetState } from './asset-management/assetState';
+import { useAssetState } from './asset-management/useAssetState';
 import { Asset, ASSET_CATEGORIES } from '@/types/assets';
 
 export const useAssetManagement = () => {
