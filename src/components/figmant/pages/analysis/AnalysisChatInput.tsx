@@ -66,7 +66,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   }, [message]);
 
   return (
-    <div className="border-t border-gray-200 p-6">
+    <div className="p-6">
       <div className="flex flex-col space-y-3">
         {/* Selected template indicator */}
         {selectedPromptTemplate && (
