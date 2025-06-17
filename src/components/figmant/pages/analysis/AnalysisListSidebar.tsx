@@ -6,6 +6,7 @@ import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
 import { formatDistanceToNow } from 'date-fns';
 import { getTemplateIcon } from './components/TemplateIcon';
+import { getAnalysisDisplayName } from '@/utils/analysisDisplayNames';
 
 interface AnalysisListSidebarProps {
   selectedAnalysis: any;
@@ -33,8 +34,8 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
     ...chatAnalyses.map(a => ({ 
       ...a, 
       type: 'chat', 
-      title: a.analysis_type || 'Master Analysis',
-      analysisType: a.analysis_type || 'Master Analysis',
+      title: getAnalysisDisplayName(a.analysis_type),
+      analysisType: getAnalysisDisplayName(a.analysis_type),
       score: Math.floor((a.confidence_score || 0.8) * 10),
       fileCount: a.analysis_results?.attachments_processed || 1
     }))

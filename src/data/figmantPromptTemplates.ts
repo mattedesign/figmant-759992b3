@@ -5,6 +5,7 @@ export const figmantPromptTemplates: FigmantPromptTemplate[] = [
   {
     id: 'master_analysis',
     name: 'Master UX Analysis',
+    displayName: 'Master UX Analysis',
     description: 'Comprehensive analysis covering all aspects of UX design',
     category: 'master',
     requires_context: false,
@@ -68,6 +69,7 @@ Focus on actionable insights that can directly impact business KPIs.`
   {
     id: 'competitor_analysis',
     name: 'Competitive Design Analysis',
+    displayName: 'Competitive Analysis',
     description: 'Compare design against industry competitors and best practices',
     category: 'competitor',
     requires_context: true,
@@ -129,6 +131,7 @@ Focus on actionable insights for competitive advantage.`
   {
     id: 'visual_hierarchy',
     name: 'Visual Hierarchy Analysis',
+    displayName: 'Visual Hierarchy',
     description: 'Deep dive into visual design principles and information architecture',
     category: 'visual_hierarchy',
     requires_context: false,
@@ -193,6 +196,7 @@ Focus on improving user comprehension and task completion efficiency.`
   {
     id: 'copy_messaging',
     name: 'Copy & Messaging Analysis',
+    displayName: 'Copy & Messaging',
     description: 'Analyze copy effectiveness, tone, and messaging strategy',
     category: 'copy_messaging',
     requires_context: true,
@@ -267,6 +271,7 @@ Focus on improving message clarity and conversion rates.`
   {
     id: 'ecommerce_revenue',
     name: 'E-commerce Revenue Optimization',
+    displayName: 'E-commerce Revenue',
     description: 'Specialized analysis for e-commerce conversion and revenue optimization',
     category: 'ecommerce_revenue',
     requires_context: true,
@@ -342,6 +347,7 @@ Focus on measurable revenue impact and conversion rate improvements.`
   {
     id: 'ab_testing',
     name: 'A/B Testing Strategy',
+    displayName: 'A/B Testing Strategy',
     description: 'Generate A/B testing hypotheses and experimental design recommendations',
     category: 'ab_testing',
     requires_context: true,

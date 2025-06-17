@@ -2,6 +2,7 @@
 export interface FigmantPromptTemplate {
   id: string;
   name: string;
+  displayName: string;
   description: string;
   category: 'master' | 'competitor' | 'visual_hierarchy' | 'copy_messaging' | 'ecommerce_revenue' | 'ab_testing';
   prompt_template: string;
