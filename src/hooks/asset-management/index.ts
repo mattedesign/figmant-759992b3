@@ -10,3 +10,6 @@ export { getAllFilesRecursively, getPublicUrl } from './assetFileOperations';
 export { determineAssetType, determineAssetCategory, determineMimeType } from './assetTypeDetection';
 export { createAssetFromFile } from './assetCreation';
 export { createLogoAssets, checkIfLogoExists } from './logoAssetHandler';
+
+// Export operation functions for direct use if needed
+export { uploadAssetOperation, replaceAssetOperation, deleteAssetOperation } from './operations';
