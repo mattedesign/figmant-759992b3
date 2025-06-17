@@ -61,9 +61,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
   };
 
   return (
-    <div className={`bg-white border-l border-gray-200 flex flex-col h-full transition-all duration-300 ${
-      isCollapsed ? 'min-w-[48px]' : 'w-full'
-    }`}>
+    <div className="bg-white border-l border-gray-200 flex flex-col h-full w-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">

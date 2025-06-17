@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, ChevronRight, ChevronDown, Star, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
@@ -81,9 +80,7 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
 
   return (
     <>
-      <div className={`bg-white border-r border-gray-200 flex flex-col h-full transition-all duration-300 ${
-        isCollapsed ? 'min-w-[48px]' : 'w-full'
-      }`}>
+      <div className="bg-white border-r border-gray-200 flex flex-col h-full w-full">
         {/* Header */}
         <div className="p-4 pb-2 border-b border-gray-200">
           <div className="flex items-center justify-between mb-2">
