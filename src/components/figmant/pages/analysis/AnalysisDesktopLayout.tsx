@@ -53,17 +53,39 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
     chatPanelProps.setAttachments(updatedAttachments);
   };
 
+  const handleFileUpload = (files: FileList) => {
+    // This would be handled by the chat panel's file upload logic
+    console.log('File upload in right panel:', files);
+  };
+
+  // Determine the right panel mode based on analysis state
+  const getRightPanelMode = () => {
+    // If analysis is running or complete, show analysis details
+    if (currentAnalysis || chatPanelProps.messages.length > 0) {
+      return 'analysis';
+    }
+    // If templates mode is explicitly set, show templates
+    if (rightPanelMode === 'templates') {
+      return 'templates';
+    }
+    // Default to upload mode
+    return 'upload';
+  };
+
   return (
     <div className="h-full flex bg-gray-50">
       {/* Main Chat Panel */}
       <div className="flex-1 min-w-0">
-        <AnalysisChatPanel {...chatPanelProps} />
+        <AnalysisChatPanel 
+          {...chatPanelProps} 
+          onPromptTemplateSelect={onPromptTemplateSelect}
+        />
       </div>
 
       {/* Right Panel */}
       <div className="w-80 flex-shrink-0">
         <AnalysisDynamicRightPanel
-          mode={rightPanelMode}
+          mode={getRightPanelMode()}
           promptTemplates={promptTemplates}
           selectedPromptTemplate={selectedPromptTemplate}
           onPromptTemplateSelect={onPromptTemplateSelect}
@@ -72,6 +94,8 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
           onAnalysisClick={onAnalysisClick}
           onBackClick={onBackClick}
           onRemoveAttachment={handleRemoveAttachment}
+          onFileUpload={handleFileUpload}
+          onToggleUrlInput={() => chatPanelProps.setShowUrlInput(!chatPanelProps.showUrlInput)}
         />
       </div>
     </div>

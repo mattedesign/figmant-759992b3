@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { PanelRightClose, PanelRightOpen, FileText, Layout, Paperclip, Image, Globe, Eye, Download, Trash2 } from 'lucide-react';
+import { PanelRightClose, PanelRightOpen, FileText, Layout, Paperclip, Image, Globe, Eye, Download, Trash2, Upload } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { TemplatesPanel } from './components/TemplatesPanel';
 import { AnalysisDetailsPanel } from './components/AnalysisDetailsPanel';
@@ -23,7 +23,7 @@ interface PromptTemplate {
 }
 
 interface AnalysisDynamicRightPanelProps {
-  mode: 'templates' | 'analysis';
+  mode: 'templates' | 'analysis' | 'upload';
   promptTemplates?: PromptTemplate[];
   selectedPromptCategory?: string;
   selectedPromptTemplate?: string;
@@ -35,6 +35,8 @@ interface AnalysisDynamicRightPanelProps {
   onBackClick?: () => void;
   onCollapseChange?: (collapsed: boolean) => void;
   onRemoveAttachment?: (id: string) => void;
+  onFileUpload?: (files: FileList) => void;
+  onToggleUrlInput?: () => void;
 }
 
 export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps> = ({
@@ -47,7 +49,9 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
   onAnalysisClick,
   onBackClick,
   onCollapseChange,
-  onRemoveAttachment
+  onRemoveAttachment,
+  onFileUpload,
+  onToggleUrlInput
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -59,18 +63,23 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
     }
   };
 
-  const getHeaderTitle = () => {
-    if (attachments.length > 0) {
-      return 'Attachments';
+  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0 && onFileUpload) {
+      onFileUpload(files);
     }
-    return mode === 'templates' ? 'More' : 'Analysis Details';
+  };
+
+  const getHeaderTitle = () => {
+    if (mode === 'analysis') return 'Analysis Details';
+    if (mode === 'templates') return 'More';
+    return 'Upload Files';
   };
 
   const getModeIcon = () => {
-    if (attachments.length > 0) {
-      return Paperclip;
-    }
-    return mode === 'templates' ? Layout : FileText;
+    if (mode === 'analysis') return FileText;
+    if (mode === 'templates') return Layout;
+    return Upload;
   };
 
   const getFileIcon = (attachment: ChatAttachment) => {
@@ -127,77 +136,121 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
     return `${(size / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const renderAttachmentsView = () => (
+  const renderUploadView = () => (
     <div className="flex-1 overflow-y-auto p-4 bg-white">
       <div className="space-y-4">
-        {attachments.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-gray-400 text-sm mb-2">No attachments yet</div>
-            <div className="text-xs text-gray-500">Upload files or add URLs in the chat to see previews here</div>
-          </div>
-        ) : (
-          attachments.map((attachment) => (
-            <div key={attachment.id} className="p-3 border border-gray-200 rounded-lg bg-white">
-              {/* Preview */}
-              {getPreviewContent(attachment)}
-              
-              {/* File Info */}
-              <div className="space-y-2">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-2 flex-1">
-                    {getFileIcon(attachment)}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-900 truncate">
-                        {attachment.name}
-                      </div>
-                      {attachment.file && (
-                        <div className="text-xs text-gray-500">
-                          {formatFileSize(attachment.file)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <Badge 
-                    variant={
-                      attachment.status === 'uploaded' ? 'default' :
-                      attachment.status === 'uploading' ? 'secondary' : 'destructive'
-                    }
-                    className="text-xs ml-2"
-                  >
-                    {attachment.status}
-                  </Badge>
-                </div>
+        {/* File Upload Area */}
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+          <input
+            type="file"
+            multiple
+            accept="image/*,.pdf"
+            onChange={handleFileInputChange}
+            className="hidden"
+            id="file-upload-right-panel"
+          />
+          <label htmlFor="file-upload-right-panel" className="cursor-pointer">
+            <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <p className="text-lg font-medium text-gray-900 mb-2">
+              Upload design files
+            </p>
+            <p className="text-sm text-gray-500 mb-4">
+              Drag and drop files here, or click to select files
+            </p>
+            <p className="text-xs text-gray-400">
+              Supports: PNG, JPG, PDF (max 50MB each)
+            </p>
+          </label>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="flex items-center justify-center gap-4">
+          <button
+            onClick={() => document.getElementById('file-upload-right-panel')?.click()}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Upload className="h-4 w-4" />
+            Choose Files
+          </button>
+          <button
+            onClick={onToggleUrlInput}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <Paperclip className="h-4 w-4" />
+            Add URL
+          </button>
+        </div>
+
+        {/* Show attachments if any */}
+        {attachments.length > 0 && (
+          <div className="mt-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Attachments</span>
+              <Badge variant="secondary">{attachments.length}</Badge>
+            </div>
+            {attachments.map((attachment) => (
+              <div key={attachment.id} className="p-3 border border-gray-200 rounded-lg bg-white">
+                {/* Preview */}
+                {getPreviewContent(attachment)}
                 
-                {/* Actions */}
-                <div className="flex items-center gap-1">
-                  {attachment.status === 'uploaded' && (
-                    <>
-                      <Button variant="outline" size="sm" className="h-6 text-xs">
-                        <Eye className="h-3 w-3 mr-1" />
-                        View
-                      </Button>
-                      {attachment.type === 'file' && (
-                        <Button variant="outline" size="sm" className="h-6 text-xs">
-                          <Download className="h-3 w-3 mr-1" />
-                          Download
-                        </Button>
-                      )}
-                    </>
-                  )}
-                  {onRemoveAttachment && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="h-6 text-xs ml-auto"
-                      onClick={() => onRemoveAttachment(attachment.id)}
+                {/* File Info */}
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-2 flex-1">
+                      {getFileIcon(attachment)}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-gray-900 truncate">
+                          {attachment.name}
+                        </div>
+                        {attachment.file && (
+                          <div className="text-xs text-gray-500">
+                            {formatFileSize(attachment.file)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <Badge 
+                      variant={
+                        attachment.status === 'uploaded' ? 'default' :
+                        attachment.status === 'uploading' ? 'secondary' : 'destructive'
+                      }
+                      className="text-xs ml-2"
                     >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  )}
+                      {attachment.status}
+                    </Badge>
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="flex items-center gap-1">
+                    {attachment.status === 'uploaded' && (
+                      <>
+                        <Button variant="outline" size="sm" className="h-6 text-xs">
+                          <Eye className="h-3 w-3 mr-1" />
+                          View
+                        </Button>
+                        {attachment.type === 'file' && (
+                          <Button variant="outline" size="sm" className="h-6 text-xs">
+                            <Download className="h-3 w-3 mr-1" />
+                            Download
+                          </Button>
+                        )}
+                      </>
+                    )}
+                    {onRemoveAttachment && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-6 text-xs ml-auto"
+                        onClick={() => onRemoveAttachment(attachment.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
     </div>
@@ -211,7 +264,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
           {!isCollapsed && (
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-gray-900">{getHeaderTitle()}</h3>
-              {attachments.length > 0 && (
+              {attachments.length > 0 && mode === 'upload' && (
                 <Badge variant="secondary" className="text-xs">
                   {attachments.length}
                 </Badge>
@@ -237,21 +290,21 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
       {/* Content */}
       {!isCollapsed && (
         <div className="flex-1 overflow-hidden">
-          {attachments.length > 0 ? (
-            renderAttachmentsView()
-          ) : mode === 'templates' ? (
+          {mode === 'templates' ? (
             <TemplatesPanel
               promptTemplates={promptTemplates}
               selectedPromptTemplate={selectedPromptTemplate}
               onPromptTemplateSelect={onPromptTemplateSelect}
             />
-          ) : (
+          ) : mode === 'analysis' ? (
             <AnalysisDetailsPanel
               currentAnalysis={currentAnalysis}
               attachments={attachments}
               onAnalysisClick={onAnalysisClick}
               onBackClick={onBackClick}
             />
+          ) : (
+            renderUploadView()
           )}
         </div>
       )}
@@ -268,7 +321,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
           >
             {React.createElement(getModeIcon(), { className: "h-5 w-5" })}
           </Button>
-          {attachments.length > 0 && (
+          {attachments.length > 0 && mode === 'upload' && (
             <Badge variant="secondary" className="text-xs mt-2">
               {attachments.length}
             </Badge>
