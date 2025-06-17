@@ -78,31 +78,20 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
   };
 
   return (
-    <div className="w-72 bg-white border-r border-gray-200 flex flex-col h-full" style={{ maxWidth: '288px' }}>
+    <div className="w-72 xl:max-w-64 bg-white border-r border-gray-200 flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">History</h2>
-          <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="h-4 w-4 mr-2" />
-            New Analysis
-          </Button>
         </div>
       </div>
 
-      {/* Current Analysis */}
+      {/* New Analysis Button - moved here */}
       <div className="p-4 border-b border-gray-200">
-        <div className="text-sm font-medium text-gray-500 mb-2">Current Analysis</div>
-        {selectedAnalysis ? (
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="font-medium">{selectedAnalysis.title || 'Analysis'}</div>
-            <div className="text-sm text-gray-600">
-              {truncateText(selectedAnalysis.analysisType || 'General Analysis')}
-            </div>
-          </div>
-        ) : (
-          <div className="text-sm text-gray-500">No analysis selected</div>
-        )}
+        <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
+          <Plus className="h-4 w-4 mr-2" />
+          New Analysis
+        </Button>
       </div>
 
       {/* Recent Analyses */}
