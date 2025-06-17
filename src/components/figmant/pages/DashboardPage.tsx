@@ -68,7 +68,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="container mx-auto px-6 py-6 space-y-8">
+      <div className="container mx-auto px-6 py-6 space-y-8 2xl:max-w-none 2xl:px-8">
         <DashboardHeader 
           dataStats={memoizedDataStats}
           lastUpdated={lastUpdated}
