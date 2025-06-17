@@ -24,7 +24,7 @@ export const AnalysisListItem: React.FC<AnalysisListItemProps> = ({
   return (
     <div className="rounded-lg">
       <div 
-        className="p-3 hover:bg-blue-50 cursor-pointer"
+        className="px-1 py-3 hover:bg-blue-50 cursor-pointer"
         onClick={() => onItemClick(analysis)}
       >
         <div className="flex items-center gap-2 w-full">
@@ -51,7 +51,7 @@ export const AnalysisListItem: React.FC<AnalysisListItemProps> = ({
       </div>
       
       {isExpanded && (
-        <div className="px-3 pb-3 border-t border-gray-100">
+        <div className="px-1 pb-3 border-t border-gray-100">
           <div className="space-y-2 pt-2">
             <div className="flex items-center justify-between text-xs">
               <span className="text-gray-600">Files:</span>
