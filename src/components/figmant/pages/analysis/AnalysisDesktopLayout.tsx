@@ -103,6 +103,7 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
           onAnalysisClick={onAnalysisClick}
           onBackClick={onBackClick}
           onCollapseChange={setRightCollapsed}
+          onRemoveAttachment={chatPanelProps.onRemoveAttachment}
         />
       </div>
     </div>

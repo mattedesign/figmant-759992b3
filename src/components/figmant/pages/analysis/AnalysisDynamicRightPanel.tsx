@@ -34,6 +34,7 @@ interface AnalysisDynamicRightPanelProps {
   onAnalysisClick?: () => void;
   onBackClick?: () => void;
   onCollapseChange?: (collapsed: boolean) => void;
+  onRemoveAttachment?: (id: string) => void;
 }
 
 export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps> = ({
@@ -45,7 +46,8 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
   attachments = [],
   onAnalysisClick,
   onBackClick,
-  onCollapseChange
+  onCollapseChange,
+  onRemoveAttachment
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -90,6 +92,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
             attachments={attachments}
             onAnalysisClick={onAnalysisClick}
             onBackClick={onBackClick}
+            onRemoveAttachment={onRemoveAttachment}
           />
         );
       case 'empty':
