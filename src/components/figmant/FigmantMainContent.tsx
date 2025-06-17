@@ -79,7 +79,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   return (
     <div 
       className={`flex-1 h-screen overflow-hidden transition-all duration-300 ${
-        isSidebarCollapsed ? 'p-4 pl-6' : 'p-4'
+        isSidebarCollapsed ? 'p-4 pl-2' : 'p-4 pl-2'
       }`} 
       style={{ background: 'transparent' }}
     >
