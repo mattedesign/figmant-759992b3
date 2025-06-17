@@ -6,7 +6,7 @@ export const AnalysisChatPlaceholder: React.FC = () => {
   return (
     <div className="flex-1 flex items-center justify-center">
       <div className="text-center py-12">
-        <div className="flex items-center justify-center gap-3 mb-2">
+        <div className="flex items-center justify-center gap-2 mb-2">
           <Logo 
             size="md" 
             variant="collapsed"
