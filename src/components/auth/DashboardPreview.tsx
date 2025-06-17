@@ -33,10 +33,10 @@ export const DashboardPreview = () => {
               key={upload.id || index}
               className="aspect-[3/4] rounded-lg overflow-hidden bg-white shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
             >
-              {upload.file_url ? (
+              {upload.file_path ? (
                 <img
-                  src={upload.file_url}
-                  alt={upload.filename || `Design ${index + 1}`}
+                  src={upload.file_path}
+                  alt={upload.file_name || `Design ${index + 1}`}
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
