@@ -63,24 +63,35 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-[12px] pt-2">
-      <div>
-        <div className="text-sm text-gray-500 mb-1">{formattedDate}</div>
-        {firstName === null ? (
-          // Loading state while profile is being fetched
-          <h1 className="text-[24px] text-gray-900">
-            <span className="font-normal">{getGreeting()}</span>...
-          </h1>
-        ) : (
-          <h1 className="text-[24px] text-gray-900">
-            <span className="font-normal">{getGreeting()}</span>, <span className="font-bold">{firstName}</span>
-          </h1>
-        )}
-        {lastUpdated && (
-          <Badge variant="outline" className="flex items-center gap-1 mt-2">
-            <Calendar className="h-3 w-3" />
-            Updated {format(lastUpdated, 'MMM dd, HH:mm')}
-          </Badge>
-        )}
+      <div className="flex items-center gap-4">
+        <div>
+          <div className="text-sm text-gray-500 mb-1">{formattedDate}</div>
+          {firstName === null ? (
+            // Loading state while profile is being fetched
+            <h1 className="text-[24px] text-gray-900">
+              <span className="font-normal">{getGreeting()}</span>...
+            </h1>
+          ) : (
+            <h1 className="text-[24px] text-gray-900">
+              <span className="font-normal">{getGreeting()}</span>, <span className="font-bold">{firstName}</span>
+            </h1>
+          )}
+          {lastUpdated && (
+            <Badge variant="outline" className="flex items-center gap-1 mt-2">
+              <Calendar className="h-3 w-3" />
+              Updated {format(lastUpdated, 'MMM dd, HH:mm')}
+            </Badge>
+          )}
+        </div>
+        
+        {/* GIF Animation */}
+        <div className="flex-shrink-0">
+          <img 
+            src="https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/n6qsz40gw_06-sun-energy.gif"
+            alt="Morning energy"
+            className="h-8 w-8 object-contain"
+          />
+        </div>
       </div>
     </div>
   );

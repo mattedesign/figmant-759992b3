@@ -108,18 +108,31 @@ const Dashboard = () => {
         <div className="flex-none px-8 py-6 pb-4" style={{ backgroundColor: 'transparent' }}>
           <div className="mb-4">
             <div className="text-sm text-gray-500 mb-1">{currentDate}</div>
-            {firstName === null ? (
-              // Loading state while profile is being fetched
-              <h1 className="text-2xl text-gray-900">
-                <span style={{ fontWeight: 'normal', color: '#455468' }}>{getGreeting()} </span>
-                <span className="font-semibold">...</span>
-              </h1>
-            ) : (
-              <h1 className="text-2xl text-gray-900">
-                <span style={{ fontWeight: 'normal', color: '#455468' }}>{getGreeting()} </span>
-                <span className="font-semibold">{firstName}</span>
-              </h1>
-            )}
+            <div className="flex items-center gap-4">
+              <div>
+                {firstName === null ? (
+                  // Loading state while profile is being fetched
+                  <h1 className="text-2xl text-gray-900">
+                    <span style={{ fontWeight: 'normal', color: '#455468' }}>{getGreeting()} </span>
+                    <span className="font-semibold">...</span>
+                  </h1>
+                ) : (
+                  <h1 className="text-2xl text-gray-900">
+                    <span style={{ fontWeight: 'normal', color: '#455468' }}>{getGreeting()} </span>
+                    <span className="font-semibold">{firstName}</span>
+                  </h1>
+                )}
+              </div>
+              
+              {/* GIF Animation */}
+              <div className="flex-shrink-0">
+                <img 
+                  src="https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/n6qsz40gw_06-sun-energy.gif"
+                  alt="Morning energy"
+                  className="h-8 w-8 object-contain"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
