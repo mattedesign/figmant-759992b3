@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ChatAttachment, ChatMessage } from '@/components/design/DesignChatInterface';
@@ -12,7 +11,6 @@ import { AnalysisChatPlaceholder } from './AnalysisChatPlaceholder';
 import { useAttachmentHandlers } from '@/components/design/chat/hooks/useAttachmentHandlers';
 import { useFileUploadHandler } from './useFileUploadHandler';
 import { useMessageHandler } from './useMessageHandler';
-
 interface AnalysisChatPanelProps {
   message: string;
   setMessage: (message: string) => void;
@@ -29,7 +27,6 @@ interface AnalysisChatPanelProps {
   promptTemplates?: any[];
   onAnalysisComplete?: (result: any) => void;
 }
-
 export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   message,
   setMessage,
@@ -81,7 +78,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   const hasContent = messages.length > 0 || message.trim().length > 0 || attachments.length > 0;
   return <div className="h-full flex flex-col bg-[#F9FAFB]">
       {/* Header with Tabs moved to top */}
-      <div className="p-6 border-b border-gray-200 bg-white">
+      <div className="p-6 border-b border-gray-200 bg-transparent">
         <AnalysisChatHeader />
         
 
