@@ -62,5 +62,8 @@ enable_confirmations = false
 enabled = true
 port = 54328
 
+[functions.stripe-webhook]
+verify_jwt = false
+
 [functions.send-password-reset]
 verify_jwt = false
