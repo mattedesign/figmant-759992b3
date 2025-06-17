@@ -28,6 +28,7 @@ interface AnalysisChatPanelProps {
   selectedPromptCategory?: string;
   promptTemplates?: any[];
   onAnalysisComplete?: (result: any) => void;
+  onAnalysisDetailsUpdate?: (hasMessages: boolean) => void;
 }
 
 export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
@@ -44,7 +45,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   selectedPromptTemplate,
   selectedPromptCategory,
   promptTemplates,
-  onAnalysisComplete
+  onAnalysisComplete,
+  onAnalysisDetailsUpdate
 }) => {
   const {
     addUrlAttachment,
@@ -72,15 +74,24 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     promptTemplates,
     onAnalysisComplete
   });
+  
   const handleAddUrl = () => {
     addUrlAttachment(urlInput);
   };
+  
   const handleFileUploadFromInput = (files: FileList) => {
     Array.from(files).forEach(handleFileUpload);
   };
   
   // Only show messages when there are actual messages, not when user is typing
   const hasMessages = messages.length > 0;
+  
+  // Notify parent about messages state changes
+  React.useEffect(() => {
+    if (onAnalysisDetailsUpdate) {
+      onAnalysisDetailsUpdate(hasMessages);
+    }
+  }, [hasMessages, onAnalysisDetailsUpdate]);
   
   return <div className="h-full flex flex-col bg-[#F9FAFB]">
       {/* Header with Tabs moved to top */}
