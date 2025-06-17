@@ -30,12 +30,12 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
             <Menu className="h-4 w-4" />
           </Button>
           <div className="w-10 h-10 flex items-center justify-center">
-            <Logo size="sm" className="w-8 h-8" />
+            <Logo size="sm" className="w-8 h-8" variant="collapsed" />
           </div>
         </>
       ) : (
         <>
-          <Logo size="md" className="w-auto" />
+          <Logo size="md" className="w-auto" variant="expanded" />
           <Button 
             variant="ghost" 
             size="icon"

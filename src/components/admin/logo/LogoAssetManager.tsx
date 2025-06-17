@@ -14,15 +14,16 @@ export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate
   const { resetToDefault } = useLogoConfig();
   const { toast } = useToast();
 
-  const handleLogoUpload = async (file: File) => {
+  const handleLogoUpload = async (file: File, variant: 'expanded' | 'collapsed' = 'expanded') => {
     try {
-      console.log('Starting logo upload process...', file.type, file.name);
+      console.log(`Starting ${variant} logo upload process...`, file.type, file.name);
       
-      // Upload the asset - this will automatically update the logo configuration
-      const uploadedAsset = await uploadAsset(file, 'logo', 'branding', ['main-logo']);
+      // Upload the asset with variant-specific tags
+      const tags = variant === 'collapsed' ? ['collapsed-logo'] : ['main-logo'];
+      const uploadedAsset = await uploadAsset(file, 'logo', 'branding', tags);
       
       if (uploadedAsset) {
-        console.log('Logo upload completed successfully:', uploadedAsset.url);
+        console.log(`${variant} logo upload completed successfully:`, uploadedAsset.url);
         
         // Call the callback if provided
         if (onLogoUpdate) {
@@ -30,16 +31,16 @@ export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate
         }
         
         toast({
-          title: "Logo Updated",
-          description: "Your logo has been uploaded and set as active successfully.",
+          title: `${variant === 'collapsed' ? 'Collapsed' : 'Main'} Logo Updated`,
+          description: `Your ${variant} logo has been uploaded and set as active successfully.`,
         });
       }
     } catch (error) {
-      console.error('Logo upload failed:', error);
+      console.error(`${variant} logo upload failed:`, error);
       toast({
         variant: "destructive",
         title: "Logo Upload Failed",
-        description: "Failed to upload and set the logo. Please try again.",
+        description: `Failed to upload and set the ${variant} logo. Please try again.`,
       });
     }
   };
@@ -64,7 +65,7 @@ export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate
     }
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>, variant: 'expanded' | 'collapsed' = 'expanded') => {
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type - now including SVG
@@ -88,43 +89,78 @@ export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate
         return;
       }
 
-      handleLogoUpload(file);
+      handleLogoUpload(file, variant);
     }
     // Clear the input to allow uploading the same file again
     event.target.value = '';
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
-        <div>
-          <label htmlFor="logo-upload" className="cursor-pointer">
-            <Button asChild disabled={isLoading}>
-              <span>
-                {isLoading ? 'Uploading...' : 'Upload New Logo'}
-              </span>
-            </Button>
-          </label>
-          <input
-            id="logo-upload"
-            type="file"
-            accept="image/png,image/jpeg,image/jpg,image/svg+xml"
-            onChange={handleFileSelect}
-            className="hidden"
-            disabled={isLoading}
-          />
+    <div className="space-y-6">
+      {/* Main Logo Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Main Logo (Expanded Sidebar)</h3>
+        <div className="flex gap-2">
+          <div>
+            <label htmlFor="logo-upload-main" className="cursor-pointer">
+              <Button asChild disabled={isLoading}>
+                <span>
+                  {isLoading ? 'Uploading...' : 'Upload Main Logo'}
+                </span>
+              </Button>
+            </label>
+            <input
+              id="logo-upload-main"
+              type="file"
+              accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+              onChange={(e) => handleFileSelect(e, 'expanded')}
+              className="hidden"
+              disabled={isLoading}
+            />
+          </div>
         </div>
+        <p className="text-sm text-muted-foreground">
+          Upload a PNG, JPG, or <strong>SVG</strong> file (max 5MB) for the main logo displayed when sidebar is expanded.
+        </p>
+      </div>
+
+      {/* Collapsed Logo Section */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Collapsed Logo (Collapsed Sidebar)</h3>
+        <div className="flex gap-2">
+          <div>
+            <label htmlFor="logo-upload-collapsed" className="cursor-pointer">
+              <Button asChild disabled={isLoading} variant="outline">
+                <span>
+                  {isLoading ? 'Uploading...' : 'Upload Collapsed Logo'}
+                </span>
+              </Button>
+            </label>
+            <input
+              id="logo-upload-collapsed"
+              type="file"
+              accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+              onChange={(e) => handleFileSelect(e, 'collapsed')}
+              className="hidden"
+              disabled={isLoading}
+            />
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Upload a smaller logo or icon (PNG, JPG, or <strong>SVG</strong>, max 5MB) optimized for the collapsed sidebar state.
+        </p>
+      </div>
+
+      {/* Reset Section */}
+      <div className="pt-4 border-t">
         <Button
           variant="outline"
           onClick={handleResetLogo}
           disabled={isLoading}
         >
-          Reset to Default
+          Reset All Logos to Default
         </Button>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Upload a PNG, JPG, or <strong>SVG</strong> file (max 5MB). The uploaded logo will automatically become your active logo.
-      </p>
     </div>
   );
 };

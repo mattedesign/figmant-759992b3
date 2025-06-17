@@ -1,13 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { usePublicLogoConfig } from '@/hooks/usePublicLogoConfig';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  variant?: 'expanded' | 'collapsed'; // New prop for logo variant
 }
 
-export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
+export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', variant = 'expanded' }) => {
   const [imageStatus, setImageStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
   const [currentLogoUrl, setCurrentLogoUrl] = useState<string>('');
   const { logoConfig, isLoading } = usePublicLogoConfig();
@@ -24,14 +24,19 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
       console.log('=== LOGO COMPONENT DEBUG ===');
       console.log('isLoading:', isLoading);
       console.log('logoConfig:', logoConfig);
-      console.log('logoConfig.activeLogoUrl:', logoConfig.activeLogoUrl);
+      console.log('variant:', variant);
       
       setImageStatus('loading');
       
-      // Use the logo from the configuration system
-      const logoToTest = logoConfig.activeLogoUrl;
-      
-      console.log('Logo component: Testing logo URL from config:', logoToTest);
+      // Choose the appropriate logo based on variant
+      let logoToTest: string;
+      if (variant === 'collapsed' && logoConfig.collapsedLogoUrl) {
+        logoToTest = logoConfig.collapsedLogoUrl;
+        console.log('Logo component: Using collapsed logo URL:', logoToTest);
+      } else {
+        logoToTest = logoConfig.activeLogoUrl;
+        console.log('Logo component: Using expanded logo URL:', logoToTest);
+      }
       
       if (!logoToTest || logoToTest === '') {
         console.log('Logo component: No logo URL found in config, using default');
@@ -62,7 +67,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '' }) => {
     if (!isLoading) {
       loadImage();
     }
-  }, [logoConfig.activeLogoUrl, isLoading]);
+  }, [logoConfig.activeLogoUrl, logoConfig.collapsedLogoUrl, isLoading, variant]);
 
   const testImageLoad = (url: string): Promise<boolean> => {
     return new Promise((resolve) => {
