@@ -2,7 +2,8 @@
 import React from 'react';
 import { useChatState } from './ChatStateManager';
 import { AnalysisChatPanel } from './AnalysisChatPanel';
-import { AnalysisRightPanel } from './AnalysisRightPanel';
+import { AnalysisListSidebar } from './AnalysisListSidebar';
+import { AnalysisDynamicRightPanel } from './AnalysisDynamicRightPanel';
 import { PromptTemplateSelector } from './PromptTemplateSelector';
 import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
 
@@ -34,53 +35,97 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
 
   const { data: promptTemplates, isLoading: promptsLoading } = useClaudePromptExamples();
   const [lastAnalysisResult, setLastAnalysisResult] = React.useState<any>(null);
+  const [selectedAnalysis, setSelectedAnalysis] = React.useState<any>(null);
+  const [isHistorySidebarCollapsed, setIsHistorySidebarCollapsed] = React.useState(false);
+  const [isRightPanelCollapsed, setIsRightPanelCollapsed] = React.useState(false);
 
   const handleAnalysisComplete = (result: any) => {
     setLastAnalysisResult(result);
     console.log('Analysis completed:', result);
   };
 
+  const handleAnalysisSelect = (analysis: any) => {
+    setSelectedAnalysis(analysis);
+  };
+
+  const handleRemoveAttachment = (id: string) => {
+    setAttachments(attachments.filter(att => att.id !== id));
+  };
+
+  // Determine right panel mode based on current state
+  const getRightPanelMode = () => {
+    if (lastAnalysisResult || attachments.length > 0) {
+      return 'analysis';
+    }
+    return 'empty';
+  };
+
   console.log('AnalysisPageContainer - Current attachments:', attachments);
 
   return (
     <div className="flex h-full">
-      {/* Left Panel - Prompt Template Selector */}
-      <div className="w-80 bg-white border-r border-gray-200 p-6">
-        <PromptTemplateSelector
+      {/* Left Panel - History Sidebar */}
+      <div className={`bg-white border-r border-gray-200 flex-shrink-0 transition-all duration-300 ${
+        isHistorySidebarCollapsed ? 'w-16' : 'w-80'
+      }`}>
+        <AnalysisListSidebar
+          selectedAnalysis={selectedAnalysis}
+          onAnalysisSelect={handleAnalysisSelect}
+          onCollapseChange={setIsHistorySidebarCollapsed}
+        />
+      </div>
+
+      {/* Center Panel - Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Prompt Template Selector */}
+        <div className="bg-white border-b border-gray-200 p-6">
+          <PromptTemplateSelector
+            promptTemplates={promptTemplates}
+            promptsLoading={promptsLoading}
+            selectedPromptCategory={selectedPromptCategory}
+            selectedPromptTemplate={selectedPromptTemplate}
+            onPromptCategoryChange={setSelectedPromptCategory}
+            onPromptTemplateChange={setSelectedPromptTemplate}
+          />
+        </div>
+
+        {/* Chat Interface */}
+        <div className="flex-1">
+          <AnalysisChatPanel
+            message={message}
+            setMessage={setMessage}
+            messages={messages}
+            setMessages={setMessages}
+            attachments={attachments}
+            setAttachments={setAttachments}
+            urlInput={urlInput}
+            setUrlInput={setUrlInput}
+            showUrlInput={showUrlInput}
+            setShowUrlInput={setShowUrlInput}
+            selectedPromptTemplate={promptTemplates?.find(t => t.id === selectedPromptTemplate)}
+            selectedPromptCategory={selectedPromptCategory}
+            promptTemplates={promptTemplates}
+            onAnalysisComplete={handleAnalysisComplete}
+          />
+        </div>
+      </div>
+
+      {/* Right Panel - Analysis Details */}
+      <div className={`bg-white border-l border-gray-200 flex-shrink-0 transition-all duration-300 ${
+        isRightPanelCollapsed ? 'w-16' : 'w-80'
+      }`}>
+        <AnalysisDynamicRightPanel
+          mode={getRightPanelMode()}
           promptTemplates={promptTemplates}
-          promptsLoading={promptsLoading}
-          selectedPromptCategory={selectedPromptCategory}
           selectedPromptTemplate={selectedPromptTemplate}
-          onPromptCategoryChange={setSelectedPromptCategory}
-          onPromptTemplateChange={setSelectedPromptTemplate}
-        />
-      </div>
-
-      {/* Center Panel - Chat Interface */}
-      <div className="flex-1">
-        <AnalysisChatPanel
-          message={message}
-          setMessage={setMessage}
-          messages={messages}
-          setMessages={setMessages}
+          onPromptTemplateSelect={setSelectedPromptTemplate}
+          currentAnalysis={selectedAnalysis}
           attachments={attachments}
-          setAttachments={setAttachments}
-          urlInput={urlInput}
-          setUrlInput={setUrlInput}
-          showUrlInput={showUrlInput}
-          setShowUrlInput={setShowUrlInput}
-          selectedPromptTemplate={promptTemplates?.find(t => t.id === selectedPromptTemplate)}
-          selectedPromptCategory={selectedPromptCategory}
-          promptTemplates={promptTemplates}
-          onAnalysisComplete={handleAnalysisComplete}
+          onCollapseChange={setIsRightPanelCollapsed}
+          onRemoveAttachment={handleRemoveAttachment}
+          lastAnalysisResult={lastAnalysisResult}
         />
       </div>
-
-      {/* Right Panel - Analysis Results & Attachments */}
-      <AnalysisRightPanel
-        analysis={lastAnalysisResult}
-        attachments={attachments}
-      />
     </div>
   );
 };
