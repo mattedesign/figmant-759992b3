@@ -23,25 +23,43 @@ export const AuthGuard = ({
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('AuthGuard effect - loading:', loading, 'user:', user?.id, 'profile:', profile?.role, 'requireOwner:', requireOwner);
+    
     if (!loading) {
       if (requireAuth && !user) {
+        console.log('AuthGuard: No user, redirecting to auth');
         navigate('/auth');
         return;
       }
       
-      if (requireOwner && profile?.role !== 'owner') {
+      // Wait for profile to be loaded before checking owner requirement
+      if (requireOwner && user && profile !== null && profile?.role !== 'owner') {
+        console.log('AuthGuard: User is not owner, redirecting to dashboard. Profile:', profile);
         navigate('/dashboard');
         return;
       }
     }
   }, [user, profile, loading, navigate, requireAuth, requireOwner]);
 
+  // Show loading while auth state is being determined
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while profile is being fetched for owner-required routes
+  if (requireOwner && user && profile === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading profile...</p>
         </div>
       </div>
     );
@@ -79,7 +97,7 @@ export const AuthGuard = ({
             <Shield className="h-12 w-12 mx-auto mb-4 text-destructive" />
             <CardTitle>Access Denied</CardTitle>
             <CardDescription>
-              You don't have permission to access this page
+              You don't have permission to access this page. Your role: {profile?.role || 'unknown'}
             </CardDescription>
           </CardHeader>
           <CardContent>
