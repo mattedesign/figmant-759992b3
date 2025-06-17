@@ -1,107 +1,127 @@
 
-import { useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { useLogoConfig } from '@/hooks/useLogoConfig';
+import { supabase } from '@/integrations/supabase/client';
 import { Asset, ASSET_CATEGORIES } from '@/types/assets';
-import { uploadAssetToStorage, deleteAssetFromStorage } from './assetStorage';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useAssetOperations = () => {
-  const { toast } = useToast();
   const { user } = useAuth();
-  const { updateActiveLogo } = useLogoConfig();
 
-  const uploadAsset = useCallback(async (
+  const uploadAsset = async (
     file: File,
     type: Asset['type'],
     category: string = ASSET_CATEGORIES.CONTENT,
     tags: string[] = []
   ): Promise<Asset | null> => {
     if (!user) {
-      toast({
-        variant: "destructive",
-        title: "Upload Failed",
-        description: "You must be logged in to upload assets.",
-      });
+      console.error('User not authenticated');
       return null;
     }
 
     try {
-      const { publicUrl, uploadPath } = await uploadAssetToStorage(file, type, category, user.id);
-      const randomId = Math.random().toString(36).substr(2, 9);
+      console.log('Starting asset upload:', { 
+        fileName: file.name, 
+        fileType: file.type, 
+        fileSize: file.size,
+        assetType: type,
+        category 
+      });
 
-      // Create asset record
-      const newAsset: Asset = {
-        id: randomId,
+      // Create organized path: assets/{category}/{type}/{date}/{filename}
+      const today = new Date().toISOString().split('T')[0];
+      const randomId = Math.random().toString(36).substring(2, 11);
+      const fileExtension = file.name.split('.').pop();
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileName = `${randomId}_${sanitizedName}`;
+      const filePath = `assets/${category}/${type}/${today}/${fileName}`;
+
+      console.log('Upload path:', filePath);
+
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('design-uploads')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      console.log('Upload successful:', uploadData);
+
+      // Get the public URL
+      const { data: urlData } = supabase.storage
+        .from('design-uploads')
+        .getPublicUrl(filePath);
+
+      console.log('Public URL generated:', urlData.publicUrl);
+
+      // Create the Asset object
+      const asset: Asset = {
+        id: `${user.id}-${Date.now()}-${randomId}`,
         name: file.name,
         type,
         category,
-        url: publicUrl,
-        uploadPath,
+        url: urlData.publicUrl,
+        uploadPath: filePath,
         fileSize: file.size,
         mimeType: file.type,
         uploadedAt: new Date().toISOString(),
         uploadedBy: user.id,
-        tags,
+        tags: [...tags, type],
         isActive: true
       };
 
-      // If this is a logo asset, update the logo configuration first
-      if (type === 'logo') {
-        console.log('Logo asset uploaded, updating logo configuration...');
-        
-        // Determine variant based on tags
-        const variant = tags.includes('collapsed-logo') ? 'collapsed' : 'expanded';
-        const updateSuccess = await updateActiveLogo(publicUrl, variant);
-        
-        if (!updateSuccess) {
-          // If logo config update failed, clean up the uploaded file
-          await deleteAssetFromStorage(uploadPath);
-          throw new Error('Failed to update logo configuration');
+      console.log('Asset object created:', asset);
+      return asset;
+    } catch (error) {
+      console.error('Error uploading asset:', error);
+      return null;
+    }
+  };
+
+  const deleteAsset = async (asset: Asset): Promise<boolean> => {
+    if (!user) {
+      console.error('User not authenticated');
+      return false;
+    }
+
+    try {
+      console.log('Deleting asset:', asset.name, 'Path:', asset.uploadPath);
+
+      // Extract the file path from the upload path or URL
+      let filePath = asset.uploadPath;
+      
+      // If uploadPath doesn't start with 'assets/', try to extract from URL
+      if (!filePath.startsWith('assets/')) {
+        const urlParts = asset.url.split('/');
+        const assetsIndex = urlParts.findIndex(part => part === 'assets');
+        if (assetsIndex !== -1) {
+          filePath = urlParts.slice(assetsIndex).join('/');
         }
       }
 
-      toast({
-        title: "Asset Uploaded",
-        description: `${file.name} has been uploaded successfully.`,
-      });
+      console.log('Attempting to delete file at path:', filePath);
 
-      console.log('Asset created successfully:', newAsset);
-      return newAsset;
-    } catch (error) {
-      console.error('Asset upload failed:', error);
-      toast({
-        variant: "destructive",
-        title: "Upload Failed",
-        description: error instanceof Error ? error.message : 'Failed to upload asset',
-      });
-      return null;
-    }
-  }, [toast, user, updateActiveLogo]);
+      const { error } = await supabase.storage
+        .from('design-uploads')
+        .remove([filePath]);
 
-  const deleteAsset = useCallback(async (asset: Asset): Promise<boolean> => {
-    if (!user) return false;
-
-    try {
-      await deleteAssetFromStorage(asset.uploadPath);
-
-      toast({
-        title: "Asset Deleted",
-        description: `${asset.name} has been deleted successfully.`,
-      });
+      if (error) {
+        console.error('Error deleting asset from storage:', error);
+        // Don't throw here - the file might already be deleted
+        // Just log the error and continue
+      }
 
       console.log('Asset deleted successfully');
       return true;
     } catch (error) {
-      console.error('Asset deletion failed:', error);
-      toast({
-        variant: "destructive",
-        title: "Delete Failed",
-        description: error instanceof Error ? error.message : 'Failed to delete asset',
-      });
+      console.error('Error deleting asset:', error);
       return false;
     }
-  }, [toast, user]);
+  };
 
   return {
     uploadAsset,
