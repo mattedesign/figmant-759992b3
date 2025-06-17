@@ -62,7 +62,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
 
   return (
     <div className={`bg-white border-l border-gray-200 flex flex-col h-full transition-all duration-300 ${
-      isCollapsed ? 'w-16' : 'w-full'
+      isCollapsed ? 'min-w-[48px]' : 'w-full'
     }`}>
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
@@ -74,7 +74,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
             variant="ghost"
             size="sm"
             onClick={handleToggleCollapse}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 flex-shrink-0"
             title={isCollapsed ? "Expand panel" : "Collapse panel"}
           >
             {isCollapsed ? (

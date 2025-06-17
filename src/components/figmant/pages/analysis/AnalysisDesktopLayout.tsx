@@ -39,13 +39,24 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
 
+  // Calculate panel sizes dynamically based on collapsed states
+  const getLeftPanelSize = () => leftCollapsed ? 3 : 25;
+  const getRightPanelSize = () => rightCollapsed ? 3 : 25;
+  const getChatPanelSize = () => {
+    const leftSize = getLeftPanelSize();
+    const rightSize = getRightPanelSize();
+    return 100 - leftSize - rightSize;
+  };
+
   return (
     <div className="h-full bg-[#F9FAFB]">
       <ResizablePanelGroup direction="horizontal" className="h-full">
         <ResizablePanel 
-          defaultSize={25} 
-          minSize={leftCollapsed ? 5 : 15} 
-          maxSize={leftCollapsed ? 5 : 40}
+          defaultSize={getLeftPanelSize()} 
+          minSize={leftCollapsed ? 3 : 15} 
+          maxSize={leftCollapsed ? 3 : 40}
+          collapsible={true}
+          collapsedSize={3}
         >
           <AnalysisListSidebar 
             selectedAnalysis={selectedAnalysis}
@@ -54,21 +65,23 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
           />
         </ResizablePanel>
         
-        {!leftCollapsed && <ResizableHandle withHandle />}
+        <ResizableHandle withHandle className={leftCollapsed ? "opacity-0 pointer-events-none" : ""} />
         
         <ResizablePanel 
-          defaultSize={50} 
+          defaultSize={getChatPanelSize()} 
           minSize={30}
         >
           <AnalysisChatPanel {...chatPanelProps} />
         </ResizablePanel>
         
-        {!rightCollapsed && <ResizableHandle withHandle />}
+        <ResizableHandle withHandle className={rightCollapsed ? "opacity-0 pointer-events-none" : ""} />
         
         <ResizablePanel 
-          defaultSize={25} 
-          minSize={rightCollapsed ? 5 : 15} 
-          maxSize={rightCollapsed ? 5 : 40}
+          defaultSize={getRightPanelSize()} 
+          minSize={rightCollapsed ? 3 : 15} 
+          maxSize={rightCollapsed ? 3 : 40}
+          collapsible={true}
+          collapsedSize={3}
         >
           <AnalysisDynamicRightPanel
             mode={rightPanelMode}
