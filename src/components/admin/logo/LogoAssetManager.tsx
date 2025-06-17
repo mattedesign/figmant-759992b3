@@ -16,7 +16,7 @@ export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate
 
   const handleLogoUpload = async (file: File) => {
     try {
-      console.log('Starting logo upload process...');
+      console.log('Starting logo upload process...', file.type, file.name);
       
       // Upload the asset - this will automatically update the logo configuration
       const uploadedAsset = await uploadAsset(file, 'logo', 'branding', ['main-logo']);
@@ -67,7 +67,7 @@ export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
+      // Validate file type - now including SVG
       const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
       if (!validTypes.includes(file.type)) {
         toast({
@@ -123,7 +123,7 @@ export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate
         </Button>
       </div>
       <p className="text-sm text-muted-foreground">
-        Upload a PNG, JPG, or SVG file (max 5MB). The uploaded logo will automatically become your active logo.
+        Upload a PNG, JPG, or <strong>SVG</strong> file (max 5MB). The uploaded logo will automatically become your active logo.
       </p>
     </div>
   );

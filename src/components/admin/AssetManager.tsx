@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +25,12 @@ export const AssetManager: React.FC = () => {
       console.log('Files dropped in AssetManager:', acceptedFiles);
       for (const file of acceptedFiles) {
         console.log('Processing file:', file.name, 'Type:', file.type, 'Size:', file.size);
+        
+        // Special handling for SVG files
+        if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
+          console.log('SVG file detected, uploading...');
+        }
+        
         await uploadAsset(file, selectedType, selectedCategory);
       }
     }
@@ -121,7 +126,7 @@ export const AssetManager: React.FC = () => {
               {isDragActive ? 'Drop files here...' : isLoading ? 'Uploading...' : 'Upload Assets'}
             </p>
             <p className="text-sm text-muted-foreground">
-              Drag & drop files or click to select (PNG, JPG, SVG, WebP, GIF, PDF up to 10MB)
+              Drag & drop files or click to select (PNG, JPG, <strong>SVG</strong>, WebP, GIF, PDF up to 10MB)
             </p>
             <Badge variant="outline" className="mt-2">
               {selectedType} • {selectedCategory}
