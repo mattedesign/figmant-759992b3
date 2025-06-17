@@ -37,6 +37,11 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
 
+  // Function to handle history collapse
+  const handleCollapseHistory = () => {
+    setLeftCollapsed(true);
+  };
+
   // Determine the right panel mode based on state
   const getRightPanelMode = () => {
     // If there's an active analysis or analysis result, show analysis details
@@ -90,6 +95,7 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
           promptTemplates={promptTemplates}
           selectedPromptCategory={selectedPromptCategory}
           selectedPromptTemplate={selectedPromptTemplate}
+          onCollapseHistory={handleCollapseHistory}
         />
       </div>
       
