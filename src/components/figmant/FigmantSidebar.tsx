@@ -39,7 +39,6 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
     >
       <SidebarHeader 
         isCollapsed={isCollapsed}
-        onToggleCollapse={handleToggleCollapse} 
       />
       
       <SidebarNavigation 
@@ -47,6 +46,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
         onSectionChange={onSectionChange}
         isOwner={isOwner}
         isCollapsed={isCollapsed}
+        onToggleCollapse={handleToggleCollapse}
       />
 
       {/* Credits Section - Only show for non-owners and when not collapsed */}
