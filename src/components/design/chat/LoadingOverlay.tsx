@@ -39,7 +39,22 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-      <Card className="p-6 max-w-md w-full mx-4 space-y-4">
+      {/* Background Video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover opacity-10"
+      >
+        <source 
+          src="https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/video/2025-06-17/dqsqe4k4m_7.mp4" 
+          type="video/mp4" 
+        />
+      </video>
+
+      {/* Loading Content */}
+      <Card className="p-6 max-w-md w-full mx-4 space-y-4 relative z-10 bg-background/95 backdrop-blur-sm">
         <div className="text-center space-y-2">
           <div className="flex justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
