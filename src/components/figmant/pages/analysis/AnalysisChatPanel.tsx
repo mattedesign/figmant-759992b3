@@ -119,11 +119,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         };
 
         console.log('Creating new URL attachment:', newAttachment);
-        setAttachments(prev => {
-          const updated = [...prev, newAttachment];
-          console.log('Updated attachments:', updated);
-          return updated;
-        });
+        setAttachments([...attachments, newAttachment]);
         
         setUrlInput('');
         setShowUrlInput(false);

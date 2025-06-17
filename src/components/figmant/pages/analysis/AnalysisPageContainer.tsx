@@ -4,7 +4,7 @@ import { useChatState } from './ChatStateManager';
 import { AnalysisChatPanel } from './AnalysisChatPanel';
 import { AnalysisRightPanel } from './AnalysisRightPanel';
 import { PromptTemplateSelector } from './PromptTemplateSelector';
-import { usePromptTemplates } from '@/hooks/usePromptTemplates';
+import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
 
 interface AnalysisPageContainerProps {
   selectedTemplate?: any;
@@ -32,7 +32,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
     }
   });
 
-  const { data: promptTemplates, isLoading: promptsLoading } = usePromptTemplates();
+  const { data: promptTemplates, isLoading: promptsLoading } = useClaudePromptExamples();
   const [lastAnalysisResult, setLastAnalysisResult] = React.useState<any>(null);
 
   const handleAnalysisComplete = (result: any) => {
