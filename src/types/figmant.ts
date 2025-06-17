@@ -1,10 +1,9 @@
-
 export interface FigmantPromptTemplate {
   id: string;
   name: string;
   displayName: string;
   description: string;
-  category: 'master' | 'competitor' | 'visual_hierarchy' | 'copy_messaging' | 'ecommerce_revenue' | 'ab_testing';
+  category: 'master' | 'competitor' | 'visual_hierarchy' | 'copy_messaging' | 'ecommerce_revenue' | 'ab_testing' | 'accessibility' | 'cross_device' | 'seasonal' | 'design_system';
   prompt_template: string;
   analysis_focus: string[];
   requires_context?: boolean;

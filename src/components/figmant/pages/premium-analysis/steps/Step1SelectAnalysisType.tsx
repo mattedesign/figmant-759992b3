@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { StepProps } from '../types';
 import { StepHeader } from '../components/StepHeader';
 import { figmantPromptTemplates } from '@/data/figmantPromptTemplates';
-import { Sparkles, Target, BarChart3, Users, ShoppingCart, FlaskConical, Crown, Brain, Star } from 'lucide-react';
+import { Sparkles, Target, BarChart3, Users, ShoppingCart, FlaskConical, Crown, Brain, Star, Eye, Smartphone, Calendar, Layers } from 'lucide-react';
 
 const getCategoryIcon = (category: string) => {
   switch (category) {
@@ -15,6 +15,10 @@ const getCategoryIcon = (category: string) => {
     case 'copy_messaging': return Users;
     case 'ecommerce_revenue': return ShoppingCart;
     case 'ab_testing': return FlaskConical;
+    case 'accessibility': return Eye;
+    case 'cross_device': return Smartphone;
+    case 'seasonal': return Calendar;
+    case 'design_system': return Layers;
     default: return Brain;
   }
 };
@@ -27,6 +31,10 @@ const getCategoryColor = (category: string) => {
     case 'copy_messaging': return 'bg-orange-100 text-orange-800';
     case 'ecommerce_revenue': return 'bg-emerald-100 text-emerald-800';
     case 'ab_testing': return 'bg-pink-100 text-pink-800';
+    case 'accessibility': return 'bg-indigo-100 text-indigo-800';
+    case 'cross_device': return 'bg-cyan-100 text-cyan-800';
+    case 'seasonal': return 'bg-amber-100 text-amber-800';
+    case 'design_system': return 'bg-slate-100 text-slate-800';
     default: return 'bg-gray-100 text-gray-800';
   }
 };
