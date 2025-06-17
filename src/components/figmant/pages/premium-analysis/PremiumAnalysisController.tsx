@@ -57,11 +57,11 @@ export const PremiumAnalysisController: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-transparent">
-      <div className="flex-1 flex flex-col min-h-0">
-        {/* Step Content - Scrollable */}
-        <ScrollArea className="flex-1">
-          <div className="p-6">
+    <div className="h-full w-full flex flex-col">
+      {/* Scrollable Content Area */}
+      <div className="flex-1 min-h-0">
+        <ScrollArea className="h-full w-full">
+          <div className="p-6 min-h-full">
             <StepRenderer 
               stepData={stepData} 
               setStepData={setStepData} 
@@ -70,32 +70,32 @@ export const PremiumAnalysisController: React.FC = () => {
             />
           </div>
         </ScrollArea>
-
-        {/* Navigation - Fixed at bottom */}
-        {currentStep < 7 && (
-          <div className="flex-shrink-0 p-6 pt-4 border-t bg-white">
-            <div className="flex justify-between">
-              <Button 
-                variant="outline" 
-                onClick={handlePrevious} 
-                disabled={currentStep === 1} 
-                className="flex items-center gap-2"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Previous
-              </Button>
-
-              <Button 
-                onClick={handleNext} 
-                disabled={!canProceedToNextStep()} 
-                className="bg-gray-900 hover:bg-gray-800 text-white"
-              >
-                {currentStep === 6 ? 'Start Analysis' : 'Continue'}
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Fixed Navigation Footer */}
+      {currentStep < 7 && (
+        <div className="flex-shrink-0 border-t bg-white p-6">
+          <div className="flex justify-between">
+            <Button 
+              variant="outline" 
+              onClick={handlePrevious} 
+              disabled={currentStep === 1} 
+              className="flex items-center gap-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+
+            <Button 
+              onClick={handleNext} 
+              disabled={!canProceedToNextStep()} 
+              className="bg-gray-900 hover:bg-gray-800 text-white"
+            >
+              {currentStep === 6 ? 'Start Analysis' : 'Continue'}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
