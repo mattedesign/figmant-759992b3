@@ -1,7 +1,9 @@
 
 import React from 'react';
 import { Brain, Loader2 } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
+import { useAuthState } from '@/hooks/useAuthState';
 
 interface ChatMessage {
   id: string;
@@ -21,6 +23,8 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   messages,
   isAnalyzing
 }) => {
+  const { user } = useAuthState();
+
   if (messages.length === 0) {
     return (
       <div className="text-center text-gray-500 py-8">
@@ -66,9 +70,10 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
           </div>
 
           {msg.role === 'user' && (
-            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-xs font-medium">U</span>
-            </div>
+            <Avatar className="w-8 h-8 flex-shrink-0">
+              <AvatarImage src={user?.user_metadata?.avatar_url} />
+              <AvatarFallback />
+            </Avatar>
           )}
         </div>
       ))}

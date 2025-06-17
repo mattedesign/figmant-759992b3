@@ -11,26 +11,31 @@ interface AnalysisDetailsPanelProps {
   attachments?: ChatAttachment[];
   onAnalysisClick?: () => void;
   onBackClick?: () => void;
+  hasMessages?: boolean;
 }
 
 export const AnalysisDetailsPanel: React.FC<AnalysisDetailsPanelProps> = ({
   currentAnalysis,
   attachments = [],
   onAnalysisClick,
-  onBackClick
+  onBackClick,
+  hasMessages = false
 }) => {
   return (
     <div className="h-full bg-white border-l border-gray-200 flex flex-col">
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-base">Analysis Details</h3>
-          {onBackClick && (
-            <Button variant="ghost" size="sm" onClick={onBackClick}>
-              Back
-            </Button>
-          )}
+      {/* Only show header when there are no messages */}
+      {!hasMessages && (
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-base">Analysis Details</h3>
+            {onBackClick && (
+              <Button variant="ghost" size="sm" onClick={onBackClick}>
+                Back
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       
       <div className="flex-1 overflow-y-auto p-4">
         {currentAnalysis ? (
