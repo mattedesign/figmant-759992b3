@@ -27,6 +27,47 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     return 'Good evening';
   };
 
+  // Get time-based image
+  const getTimeBasedImage = () => {
+    const hour = currentDate.getHours();
+    const minute = currentDate.getMinutes();
+    const timeInMinutes = hour * 60 + minute;
+
+    // 6am to 8am (360 to 480 minutes)
+    if (timeInMinutes >= 360 && timeInMinutes <= 480) {
+      return {
+        src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/zr6geoc2i_Sunrise.svg',
+        alt: 'Sunrise'
+      };
+    }
+    // 8:01am to 5:00pm (481 to 1200 minutes)
+    if (timeInMinutes >= 481 && timeInMinutes <= 1200) {
+      return {
+        src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/km8946rzr_Day.svg',
+        alt: 'Day'
+      };
+    }
+    // 5:01pm to 7:30pm (1201 to 1170 minutes)
+    if (timeInMinutes >= 1201 && timeInMinutes <= 1170) {
+      return {
+        src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/3yi4dyxol_Sunset.svg',
+        alt: 'Sunset'
+      };
+    }
+    // 7:31pm to 8:45pm (1171 to 1245 minutes)
+    if (timeInMinutes >= 1171 && timeInMinutes <= 1245) {
+      return {
+        src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/q6hty7yfd_Dusk.svg',
+        alt: 'Dusk'
+      };
+    }
+    // 8:46pm to 5:59am (1246+ minutes or 0-359 minutes)
+    return {
+      src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/y31tsaijc_Night.svg',
+      alt: 'Night'
+    };
+  };
+
   // Extract first name from full_name or use a fallback with debugging
   const getFirstName = () => {
     console.log('DashboardHeader - Profile data:', profile);
@@ -60,6 +101,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   };
 
   const firstName = getFirstName();
+  const timeBasedImage = getTimeBasedImage();
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-[12px] pt-2">
@@ -84,11 +126,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           )}
         </div>
         
-        {/* GIF Animation */}
+        {/* Time-based Image */}
         <div className="flex-shrink-0">
           <img 
-            src="https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/n6qsz40gw_06-sun-energy.gif"
-            alt="Morning energy"
+            src={timeBasedImage.src}
+            alt={timeBasedImage.alt}
             className="h-8 w-8 object-contain"
           />
         </div>
