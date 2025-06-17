@@ -2,7 +2,7 @@
 import React from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { PremiumAnalysisTabController } from '../../premium-analysis/PremiumAnalysisTabController';
+import { PremiumAnalysisWizard } from '../../premium-analysis/PremiumAnalysisWizard';
 import { AnalysisChatContainer } from './AnalysisChatContainer';
 
 interface AnalysisTabContentProps {
@@ -90,7 +90,7 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
         </TabsContent>
 
         <TabsContent value="wizard" className="flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col">
-          <PremiumAnalysisTabController />
+          <PremiumAnalysisWizard />
         </TabsContent>
       </Tabs>
     </div>
