@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { ChevronLeft } from 'lucide-react';
 import { StepData } from './types';
 import { StepRenderer } from './StepRenderer';
@@ -22,7 +21,6 @@ export const PremiumAnalysisController: React.FC = () => {
   });
 
   const totalSteps = 7;
-  const progress = currentStep / totalSteps * 100;
 
   const canProceedToNextStep = () => {
     switch (currentStep) {
@@ -60,11 +58,6 @@ export const PremiumAnalysisController: React.FC = () => {
   return (
     <div className="h-full flex flex-col p-6 bg-transparent">
       <div className="flex-1 flex flex-col">
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <Progress value={progress} className="h-2" />
-        </div>
-
         {/* Step Content */}
         <div className="flex-1 rounded-lg p-8 mb-8 bg-transparent">
           <StepRenderer 
