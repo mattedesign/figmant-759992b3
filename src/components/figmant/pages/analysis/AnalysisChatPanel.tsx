@@ -42,7 +42,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   onAnalysisComplete
 }) => {
   return (
-    <div className="h-full flex flex-col bg-[#F9FAFB]">
+    <div className="h-full flex flex-col bg-[#F9FAFB] min-h-0">
       <AnalysisChatState
         message={message}
         setMessage={setMessage}
@@ -68,48 +68,52 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
             setAttachments={setAttachments}
           >
             {(handleAddUrl) => (
-              <>
+              <div className="h-full flex flex-col min-h-0">
                 {/* Header with Tabs */}
-                <div className="px-6 pt-6 pb-3 bg-transparent">
+                <div className="px-6 pt-6 pb-3 bg-transparent flex-shrink-0">
                   <AnalysisChatHeader 
                     activeTab={stateProps.activeTab}
                     onTabChange={stateProps.setActiveTab}
                   />
                 </div>
 
-                {/* Tabbed Content */}
-                <AnalysisTabContent
-                  activeTab={stateProps.activeTab}
-                  setActiveTab={stateProps.setActiveTab}
-                  messages={messages}
-                  isAnalyzing={stateProps.isAnalyzing}
-                  message={message}
-                  setMessage={setMessage}
-                  handleSendMessage={stateProps.handleSendMessage}
-                  handleKeyPress={stateProps.handleKeyPress}
-                  getCurrentTemplate={stateProps.getCurrentTemplate}
-                  canSend={stateProps.canSend}
-                  handleFileUpload={stateProps.handleFileUpload}
-                  showUrlInput={showUrlInput}
-                  setShowUrlInput={setShowUrlInput}
-                  urlInput={urlInput}
-                  setUrlInput={setUrlInput}
-                  handleAddUrl={stateProps.addUrlAttachment}
-                  handleTemplateSelect={stateProps.handleTemplateSelect}
-                  figmantTemplates={stateProps.figmantTemplates}
-                  handleViewTemplate={stateProps.handleViewTemplate}
-                  attachments={attachments}
-                  removeAttachment={stateProps.removeAttachment}
-                />
+                {/* Tabbed Content - This needs to take remaining height */}
+                <div className="flex-1 min-h-0">
+                  <AnalysisTabContent
+                    activeTab={stateProps.activeTab}
+                    setActiveTab={stateProps.setActiveTab}
+                    messages={messages}
+                    isAnalyzing={stateProps.isAnalyzing}
+                    message={message}
+                    setMessage={setMessage}
+                    handleSendMessage={stateProps.handleSendMessage}
+                    handleKeyPress={stateProps.handleKeyPress}
+                    getCurrentTemplate={stateProps.getCurrentTemplate}
+                    canSend={stateProps.canSend}
+                    handleFileUpload={stateProps.handleFileUpload}
+                    showUrlInput={showUrlInput}
+                    setShowUrlInput={setShowUrlInput}
+                    urlInput={urlInput}
+                    setUrlInput={setUrlInput}
+                    handleAddUrl={stateProps.addUrlAttachment}
+                    handleTemplateSelect={stateProps.handleTemplateSelect}
+                    figmantTemplates={stateProps.figmantTemplates}
+                    handleViewTemplate={stateProps.handleViewTemplate}
+                    attachments={attachments}
+                    removeAttachment={stateProps.removeAttachment}
+                  />
+                </div>
 
                 {/* URL Input */}
                 {showUrlInput && (
-                  <URLInputSection 
-                    urlInput={urlInput} 
-                    setUrlInput={setUrlInput} 
-                    onAddUrl={handleAddUrl} 
-                    onCancel={() => setShowUrlInput(false)} 
-                  />
+                  <div className="flex-shrink-0">
+                    <URLInputSection 
+                      urlInput={urlInput} 
+                      setUrlInput={setUrlInput} 
+                      onAddUrl={handleAddUrl} 
+                      onCancel={() => setShowUrlInput(false)} 
+                    />
+                  </div>
                 )}
 
                 {/* Template Details Modal */}
@@ -119,7 +123,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
                   onClose={() => stateProps.setShowTemplateModal(false)}
                   onTemplateSelect={stateProps.handleTemplateSelect}
                 />
-              </>
+              </div>
             )}
           </URLAttachmentHandler>
         )}

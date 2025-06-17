@@ -62,9 +62,9 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
   const handleAddUrlWithInput = () => handleAddUrl(urlInput);
 
   return (
-    <div className="h-full flex flex-col">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-        <TabsContent value="chat" className="flex-1 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col">
+    <div className="h-full flex flex-col min-h-0">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col min-h-0">
+        <TabsContent value="chat" className="flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col">
           <AnalysisChatContainer
             messages={messages}
             isAnalyzing={isAnalyzing}
@@ -89,8 +89,10 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
           />
         </TabsContent>
 
-        <TabsContent value="wizard" className="flex-1 overflow-hidden mt-0 data-[state=active]:flex data-[state=active]:flex-col">
-          <PremiumAnalysisController />
+        <TabsContent value="wizard" className="flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col">
+          <div className="h-full min-h-0 flex flex-col">
+            <PremiumAnalysisController />
+          </div>
         </TabsContent>
       </Tabs>
     </div>
