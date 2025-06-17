@@ -60,6 +60,42 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
     return 'empty';
   };
 
+  // Mock handlers for the AnalysisChatPanel props
+  const handleSendMessage = () => {
+    // Implementation needed
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const getCurrentTemplate = () => {
+    return claudePromptTemplates?.find(t => t.id === selectedPromptTemplate);
+  };
+
+  const handleFileUpload = (file: File) => {
+    // Implementation needed
+  };
+
+  const handleAddUrl = (url: string) => {
+    // Implementation needed
+  };
+
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedPromptTemplate(templateId);
+  };
+
+  const handleViewTemplate = (template: any) => {
+    console.log('Viewing template:', template);
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachments(attachments.filter(att => att.id !== id));
+  };
+
   console.log('AnalysisPageContainer - Current attachments:', attachments);
 
   return (
@@ -92,20 +128,29 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
         {/* Chat Interface */}
         <div className="flex-1">
           <AnalysisChatPanel
+            messages={messages}
+            isAnalyzing={false}
             message={message}
             setMessage={setMessage}
-            messages={messages}
-            setMessages={setMessages}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            urlInput={urlInput}
-            setUrlInput={setUrlInput}
+            handleSendMessage={handleSendMessage}
+            handleKeyPress={handleKeyPress}
+            getCurrentTemplate={getCurrentTemplate}
+            canSend={message.trim().length > 0}
+            handleFileUpload={handleFileUpload}
             showUrlInput={showUrlInput}
             setShowUrlInput={setShowUrlInput}
-            selectedPromptTemplate={selectedPromptTemplate}
-            selectedPromptCategory={selectedPromptCategory}
+            urlInput={urlInput}
+            setUrlInput={setUrlInput}
+            handleAddUrl={handleAddUrl}
+            handleTemplateSelect={handleTemplateSelect}
+            figmantTemplates={claudePromptTemplates || []}
+            handleViewTemplate={handleViewTemplate}
+            attachments={attachments}
+            removeAttachment={removeAttachment}
+            onCollapseHistory={() => setIsHistorySidebarCollapsed(true)}
             promptTemplates={claudePromptTemplates}
-            onAnalysisComplete={handleAnalysisComplete}
+            selectedPromptCategory={selectedPromptCategory}
+            selectedPromptTemplate={selectedPromptTemplate}
           />
         </div>
       </div>
