@@ -102,7 +102,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
             setUrlInput={setUrlInput}
             showUrlInput={showUrlInput}
             setShowUrlInput={setShowUrlInput}
-            selectedPromptTemplate={claudePromptTemplates?.find(t => t.id === selectedPromptTemplate)}
+            selectedPromptTemplate={selectedPromptTemplate}
             selectedPromptCategory={selectedPromptCategory}
             promptTemplates={claudePromptTemplates}
             onAnalysisComplete={handleAnalysisComplete}
