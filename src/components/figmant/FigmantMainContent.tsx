@@ -79,7 +79,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       <div 
         className={`h-full bg-[#F9FAFB] ${needsScrolling ? 'overflow-y-auto' : 'overflow-hidden'}`}
         style={{
-          borderRadius: '32px',
+          borderRadius: '24px',
           border: '1px solid rgba(10, 12, 17, 0.10)',
           boxShadow: '0px 0px 0px 1px rgba(255, 255, 255, 0.24), 0px 24px 48px 0px rgba(18, 18, 23, 0.03), 0px 10px 18px 0px rgba(18, 18, 23, 0.04), 0px 5px 8px 0px rgba(18, 18, 23, 0.04), 0px 2px 4px 0px rgba(18, 18, 23, 0.04)'
         }}
