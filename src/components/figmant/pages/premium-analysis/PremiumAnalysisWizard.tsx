@@ -55,11 +55,11 @@ export const PremiumAnalysisWizard: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col max-h-screen overflow-hidden">
-      {/* Fixed height container with proper overflow handling */}
+    <div className="h-full flex flex-col">
+      {/* Main content area that fills remaining space */}
       <div className="flex-1 min-h-0">
         <ScrollArea className="h-full">
-          <div className="p-6 space-y-6 min-h-full">
+          <div className="p-6 space-y-6">
             <StepRenderer 
               stepData={stepData} 
               setStepData={setStepData} 
@@ -68,32 +68,34 @@ export const PremiumAnalysisWizard: React.FC = () => {
               onNextStep={handleNextStep}
               onPreviousStep={handlePreviousStep}
             />
-            
-            {/* Navigation buttons - only show for non-processing steps */}
-            {currentStep < 7 && (
-              <div className="flex justify-between pt-6 border-t mt-8">
-                <Button 
-                  variant="outline" 
-                  onClick={handlePreviousStep} 
-                  disabled={currentStep === 1}
-                  className="flex items-center gap-2"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Previous
-                </Button>
-
-                <Button 
-                  onClick={handleNextStep} 
-                  disabled={!canProceedToNextStep()}
-                  className="bg-gray-900 hover:bg-gray-800 text-white"
-                >
-                  {currentStep === 6 ? 'Start Analysis' : 'Continue'}
-                </Button>
-              </div>
-            )}
           </div>
         </ScrollArea>
       </div>
+      
+      {/* Fixed navigation at bottom - only show for non-processing steps */}
+      {currentStep < 7 && (
+        <div className="flex-shrink-0 border-t bg-background p-6">
+          <div className="flex justify-between">
+            <Button 
+              variant="outline" 
+              onClick={handlePreviousStep} 
+              disabled={currentStep === 1}
+              className="flex items-center gap-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+
+            <Button 
+              onClick={handleNextStep} 
+              disabled={!canProceedToNextStep()}
+              className="bg-gray-900 hover:bg-gray-800 text-white"
+            >
+              {currentStep === 6 ? 'Start Analysis' : 'Continue'}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
