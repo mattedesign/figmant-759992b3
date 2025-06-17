@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, CheckCircle, Clock, ChevronRight } from 'lucide-react';
+import { FileText, CheckCircle, Clock, ChevronRight, Coins } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AttachmentPreview } from '../AttachmentPreview';
 
@@ -42,6 +42,11 @@ export const AnalysisDetailsPanel: React.FC<AnalysisDetailsPanelProps> = ({
     return attachments.length;
   };
 
+  // Standard analysis cost
+  const getAnalysisCost = () => {
+    return 1; // Each analysis costs 1 credit
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Content */}
@@ -68,6 +73,15 @@ export const AnalysisDetailsPanel: React.FC<AnalysisDetailsPanelProps> = ({
                 >
                   {getAnalysisStatus()}
                 </Badge>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Cost:</span>
+                <div className="flex items-center gap-1">
+                  <Coins className="h-4 w-4 text-amber-500" />
+                  <span className="text-lg font-bold text-gray-900">{getAnalysisCost()}</span>
+                  <span className="text-sm text-gray-500">credit</span>
+                </div>
               </div>
             </div>
           </div>
