@@ -8,6 +8,7 @@ import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 export const FigmantLayout: React.FC = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
 
@@ -17,6 +18,10 @@ export const FigmantLayout: React.FC = () => {
 
   const handleRightSidebarModeChange = (mode: string) => {
     console.log('Right sidebar mode changed to:', mode);
+  };
+
+  const handleSidebarCollapsedChange = (collapsed: boolean) => {
+    setIsSidebarCollapsed(collapsed);
   };
 
   if (isMobile) {
@@ -39,42 +44,20 @@ export const FigmantLayout: React.FC = () => {
             selectedAnalysis={selectedAnalysis}
             onBackToList={handleBackToList}
             onRightSidebarModeChange={handleRightSidebarModeChange}
+            isSidebarCollapsed={isSidebarCollapsed}
           />
         </div>
       </div>
     );
   }
 
-  if (isTablet) {
-    return (
-      <div className="min-h-screen flex w-full" style={{ background: 'transparent' }}>
-        {/* Tablet sidebar - more compact */}
-        <div className="w-64 flex-shrink-0">
-          <FigmantSidebar 
-            activeSection={activeSection}
-            onSectionChange={setActiveSection}
-          />
-        </div>
-        {/* Tablet main content */}
-        <div className="flex-1 min-w-0">
-          <FigmantMainContent
-            activeSection={activeSection}
-            setActiveSection={setActiveSection}
-            selectedAnalysis={selectedAnalysis}
-            onBackToList={handleBackToList}
-            onRightSidebarModeChange={handleRightSidebarModeChange}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // Desktop layout
+  // Both tablet and desktop use the same collapsible sidebar layout
   return (
     <div className="min-h-screen flex w-full" style={{ background: 'transparent' }}>
       <FigmantSidebar 
         activeSection={activeSection}
         onSectionChange={setActiveSection}
+        onCollapsedChange={handleSidebarCollapsedChange}
       />
       <FigmantMainContent
         activeSection={activeSection}
@@ -82,6 +65,7 @@ export const FigmantLayout: React.FC = () => {
         selectedAnalysis={selectedAnalysis}
         onBackToList={handleBackToList}
         onRightSidebarModeChange={handleRightSidebarModeChange}
+        isSidebarCollapsed={isSidebarCollapsed}
       />
     </div>
   );
