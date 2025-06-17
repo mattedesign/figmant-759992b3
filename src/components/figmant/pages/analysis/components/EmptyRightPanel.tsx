@@ -4,7 +4,7 @@ import { FileText, Upload, Sparkles } from 'lucide-react';
 
 export const EmptyRightPanel: React.FC = () => {
   return (
-    <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-white border-l border-gray-200">
+    <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-white">
       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
         <FileText className="h-8 w-8 text-gray-400" />
       </div>
