@@ -2,7 +2,7 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Info } from 'lucide-react';
+import { Info, Sparkles } from 'lucide-react';
 
 interface SimpleTemplateSelectorProps {
   selectedTemplate?: any;
@@ -21,28 +21,31 @@ export const SimpleTemplateSelector: React.FC<SimpleTemplateSelectorProps> = ({
 
   return (
     <div className="flex items-center gap-2 flex-1">
-      <Select 
-        value={currentTemplate?.id || ''} 
-        onValueChange={onTemplateSelect}
-      >
-        <SelectTrigger className="flex-1">
-          <SelectValue placeholder="Select analysis template" />
-        </SelectTrigger>
-        <SelectContent>
-          {availableTemplates.map((template) => (
-            <SelectItem key={template.id} value={template.id}>
-              <div className="flex items-center justify-between w-full">
-                <div>
-                  <div className="font-medium">{template.display_name || template.displayName}</div>
-                  <div className="text-xs text-muted-foreground truncate max-w-60">
-                    {template.description}
+      <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 flex-1">
+        <Sparkles className="h-4 w-4 text-blue-600 flex-shrink-0" />
+        <Select 
+          value={currentTemplate?.id || ''} 
+          onValueChange={onTemplateSelect}
+        >
+          <SelectTrigger className="border-0 bg-transparent p-0 h-auto shadow-none focus:ring-0 flex-1">
+            <SelectValue placeholder="Select analysis template" />
+          </SelectTrigger>
+          <SelectContent>
+            {availableTemplates.map((template) => (
+              <SelectItem key={template.id} value={template.id}>
+                <div className="flex items-center justify-between w-full">
+                  <div>
+                    <div className="font-medium">{template.display_name || template.displayName}</div>
+                    <div className="text-xs text-muted-foreground truncate max-w-60">
+                      {template.description}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       
       {currentTemplate && (
         <Button 
