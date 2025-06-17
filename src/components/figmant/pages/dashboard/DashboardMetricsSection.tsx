@@ -20,9 +20,7 @@ export const DashboardMetricsSection: React.FC<DashboardMetricsSectionProps> = (
         </CardHeader>
         
         <CardContent className="w-full">
-          <div className="w-full">
-            <AnalyticsMetricsGrid dataStats={dataStats} className="w-full" />
-          </div>
+          <AnalyticsMetricsGrid dataStats={dataStats} />
         </CardContent>
       </Card>
     </div>

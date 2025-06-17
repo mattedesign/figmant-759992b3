@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -60,7 +61,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   };
 
   return (
-    <Card className="w-full min-w-[320px]">
+    <Card className="w-full flex-1">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-gray-600">
           {title}
@@ -163,7 +164,13 @@ export const AnalyticsMetricsGrid: React.FC<AnalyticsMetricsGridProps> = ({
   ];
 
   return (
-    <div className={cn("w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4", className)}>
+    <div className={cn(
+      "w-full flex flex-wrap gap-4",
+      "sm:grid sm:grid-cols-2 sm:gap-4",
+      "lg:grid-cols-3 lg:gap-4",
+      "xl:grid-cols-6 xl:gap-6",
+      className
+    )}>
       {metrics.map((metric) => (
         <MetricCard key={metric.title} {...metric} />
       ))}
