@@ -3,7 +3,7 @@ export interface Asset {
   id: string;
   name: string;
   type: 'logo' | 'image' | 'document' | 'video' | 'other';
-  category: string;
+  category: 'branding' | 'content' | 'system' | 'user-uploads';
   url: string;
   uploadPath: string;
   fileSize: number;

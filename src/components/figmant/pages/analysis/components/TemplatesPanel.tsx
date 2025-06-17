@@ -1,71 +1,73 @@
 
 import React from 'react';
-import { TemplateIcon } from './TemplateIcon';
-
-interface PromptTemplate {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  business_domain?: string;
-  claude_response?: string;
-  created_at?: string;
-  created_by?: string;
-  effectiveness_rating?: number;
-  is_active?: boolean;
-  original_prompt?: string;
-  use_case_context?: string;
-}
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Sparkles } from 'lucide-react';
+import { ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
 
 interface TemplatesPanelProps {
-  promptTemplates: PromptTemplate[];
+  promptTemplates: ClaudePromptExample[];
   selectedPromptTemplate?: string;
   onPromptTemplateSelect?: (templateId: string) => void;
 }
 
 export const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
-  promptTemplates = [],
+  promptTemplates,
   selectedPromptTemplate,
   onPromptTemplateSelect
 }) => {
-  // Group templates by category - ensure promptTemplates is an array
-  const templatesArray = Array.isArray(promptTemplates) ? promptTemplates : [];
-  const groupedTemplates = templatesArray.reduce((acc, template) => {
-    const category = template.category || 'General';
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(template);
-    return acc;
-  }, {} as Record<string, PromptTemplate[]>);
-
   return (
-    <div className="h-full bg-white border-l border-gray-200 flex flex-col">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {Object.entries(groupedTemplates).map(([category, templates]) => (
-          <div key={category} className="space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-              <TemplateIcon category={category} />
-              <span>{category}</span>
-            </div>
-            
-            <div className="space-y-1">
-              {templates.map((template) => (
-                <button
-                  key={template.id}
-                  onClick={() => onPromptTemplateSelect?.(template.id)}
-                  className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                    selectedPromptTemplate === template.id
-                      ? 'border-blue-200 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                  }`}
+    <div className="p-4 space-y-4">
+      <div>
+        <h3 className="text-sm font-medium text-gray-900 mb-2">Available Templates</h3>
+        <p className="text-xs text-gray-500">Choose a template to get started with your analysis</p>
+      </div>
+      
+      <div className="space-y-3">
+        {promptTemplates.map((template) => (
+          <Card 
+            key={template.id} 
+            className={`cursor-pointer transition-all hover:shadow-md ${
+              selectedPromptTemplate === template.id ? 'ring-2 ring-blue-500' : ''
+            }`}
+            onClick={() => onPromptTemplateSelect?.(template.id)}
+          >
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm">{template.title}</CardTitle>
+                {template.effectiveness_rating && template.effectiveness_rating > 8 && (
+                  <Badge variant="secondary" className="text-xs">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    Best
+                  </Badge>
+                )}
+              </div>
+              {template.description && (
+                <CardDescription className="text-xs">
+                  {template.description}
+                </CardDescription>
+              )}
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500 capitalize">
+                  {template.category.replace('_', ' ')}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPromptTemplateSelect?.(template.id);
+                  }}
                 >
-                  <div className="font-medium text-sm">{template.title}</div>
-                  <div className="text-xs text-gray-500 mt-1 line-clamp-2">
-                    {template.description}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+                  Select
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
