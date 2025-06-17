@@ -28,7 +28,6 @@ interface AnalysisChatPanelProps {
   selectedPromptCategory?: string;
   promptTemplates?: any[];
   onAnalysisComplete?: (result: any) => void;
-  onPromptTemplateSelect?: (templateId: string) => void;
 }
 
 export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
@@ -45,8 +44,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   selectedPromptTemplate,
   selectedPromptCategory,
   promptTemplates,
-  onAnalysisComplete,
-  onPromptTemplateSelect
+  onAnalysisComplete
 }) => {
   const [activeTab, setActiveTab] = useState("chat");
   
@@ -88,14 +86,6 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   const handleTabChange = (value: string) => {
     setActiveTab(value);
   };
-
-  const handlePromptTemplateSelectFromTab = (templateId: string) => {
-    if (onPromptTemplateSelect) {
-      onPromptTemplateSelect(templateId);
-    }
-    // Switch back to chat tab after selecting a template
-    setActiveTab("chat");
-  };
   
   // Only show messages when there are actual messages, not when user is typing
   const hasMessages = messages.length > 0;
@@ -113,7 +103,6 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
           onFileUpload={handleFileUploadFromInput}
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          onPromptTemplateSelect={handlePromptTemplateSelectFromTab}
         />
       </div>
 
@@ -130,15 +119,15 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         </div>
       )}
 
-      {/* Prompts tab content is handled by AnalysisChatTabs component */}
-      {activeTab === "prompts" && (
+      {/* Attachments tab content is handled by AnalysisChatTabs component */}
+      {activeTab === "attachments" && (
         <div className="flex-1 overflow-y-auto bg-[#F9FAFB] p-6">
           {/* Tab content is rendered within AnalysisChatTabs */}
         </div>
       )}
 
       {/* Attachments */}
-      {attachments.length > 0 && activeTab === "chat" && (
+      {attachments.length > 0 && (
         <div className="px-6 py-4 border-t border-gray-100 bg-white">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm font-medium">Attachments</span>

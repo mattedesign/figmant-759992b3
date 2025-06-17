@@ -1,37 +1,22 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { AnalysisListSidebar } from './AnalysisListSidebar';
 import { AnalysisChatPanel } from './AnalysisChatPanel';
 import { AnalysisDynamicRightPanel } from './AnalysisDynamicRightPanel';
-import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
 interface AnalysisDesktopLayoutProps {
-  selectedAnalysis?: any;
-  onAnalysisSelect?: (analysis: any) => void;
-  chatPanelProps: {
-    message: string;
-    setMessage: (message: string) => void;
-    messages: any[];
-    setMessages: (messages: any[]) => void;
-    attachments: ChatAttachment[];
-    setAttachments: (attachments: ChatAttachment[]) => void;
-    urlInput: string;
-    setUrlInput: (url: string) => void;
-    showUrlInput: boolean;
-    setShowUrlInput: (show: boolean) => void;
-    selectedPromptTemplate?: any;
-    selectedPromptCategory?: string;
-    promptTemplates?: any[];
-    onAnalysisComplete?: (result: any) => void;
-  };
+  selectedAnalysis: any;
+  onAnalysisSelect: (analysis: any) => void;
+  chatPanelProps: any;
   rightPanelMode: 'templates' | 'analysis';
-  promptTemplates?: any[];
-  selectedPromptCategory?: string;
-  selectedPromptTemplate?: string;
-  onPromptTemplateSelect?: (templateId: string) => void;
-  onPromptCategoryChange?: (category: string) => void;
-  currentAnalysis?: any;
-  attachments?: ChatAttachment[];
-  onAnalysisClick?: () => void;
+  promptTemplates: any[];
+  selectedPromptCategory: string;
+  selectedPromptTemplate: string;
+  onPromptTemplateSelect: (templateId: string) => void;
+  onPromptCategoryChange: (category: string) => void;
+  currentAnalysis: any;
+  attachments: any[];
+  onAnalysisClick: () => void;
   onBackClick?: () => void;
 }
 
@@ -41,61 +26,69 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
   chatPanelProps,
   rightPanelMode,
   promptTemplates,
+  selectedPromptCategory,
   selectedPromptTemplate,
   onPromptTemplateSelect,
+  onPromptCategoryChange,
   currentAnalysis,
-  attachments = [],
+  attachments,
   onAnalysisClick,
   onBackClick
 }) => {
-  const handleRemoveAttachment = (id: string) => {
-    const updatedAttachments = chatPanelProps.attachments.filter(att => att.id !== id);
-    chatPanelProps.setAttachments(updatedAttachments);
+  const [leftCollapsed, setLeftCollapsed] = useState(false);
+  const [rightCollapsed, setRightCollapsed] = useState(false);
+
+  const getLeftPanelWidth = () => {
+    return leftCollapsed ? 'w-16' : 'w-1/4'; // 25% when expanded, 64px when collapsed
   };
 
-  const handleFileUpload = (files: FileList) => {
-    // This would be handled by the chat panel's file upload logic
-    console.log('File upload in right panel:', files);
+  const getRightPanelWidth = () => {
+    return rightCollapsed ? 'w-16' : 'w-1/4'; // 25% when expanded, 64px when collapsed
   };
 
-  // Determine the right panel mode based on analysis state
-  const getRightPanelMode = () => {
-    // If analysis is running or complete, show analysis details
-    if (currentAnalysis || chatPanelProps.messages.length > 0) {
-      return 'analysis';
+  const getMainContentWidth = () => {
+    if (leftCollapsed && rightCollapsed) {
+      return 'calc(100% - 8rem)'; // Both panels collapsed (64px each)
+    } else if (leftCollapsed || rightCollapsed) {
+      return 'calc(75% - 4rem)'; // One panel collapsed
+    } else {
+      return 'w-1/2'; // 50% when both expanded
     }
-    // If templates mode is explicitly set, show templates
-    if (rightPanelMode === 'templates') {
-      return 'templates';
-    }
-    // Default to upload mode
-    return 'upload';
   };
 
   return (
-    <div className="h-full flex bg-gray-50">
-      {/* Main Chat Panel */}
-      <div className="flex-1 min-w-0">
-        <AnalysisChatPanel 
-          {...chatPanelProps} 
-          onPromptTemplateSelect={onPromptTemplateSelect}
+    <div className="h-full bg-[#F9FAFB] flex">
+      {/* Left Sidebar */}
+      <div className={`flex-shrink-0 transition-all duration-300 ${getLeftPanelWidth()}`}>
+        <AnalysisListSidebar 
+          selectedAnalysis={selectedAnalysis}
+          onAnalysisSelect={onAnalysisSelect}
+          onCollapseChange={setLeftCollapsed}
         />
       </div>
-
+      
+      {/* Main Chat Content */}
+      <div 
+        className="flex-1 min-w-0 transition-all duration-300"
+        style={{ width: getMainContentWidth() }}
+      >
+        <AnalysisChatPanel {...chatPanelProps} />
+      </div>
+      
       {/* Right Panel */}
-      <div className="w-80 flex-shrink-0">
+      <div className={`flex-shrink-0 transition-all duration-300 ${getRightPanelWidth()}`}>
         <AnalysisDynamicRightPanel
-          mode={getRightPanelMode()}
+          mode={rightPanelMode}
           promptTemplates={promptTemplates}
+          selectedPromptCategory={selectedPromptCategory}
           selectedPromptTemplate={selectedPromptTemplate}
           onPromptTemplateSelect={onPromptTemplateSelect}
+          onPromptCategoryChange={onPromptCategoryChange}
           currentAnalysis={currentAnalysis}
-          attachments={chatPanelProps.attachments}
+          attachments={attachments}
           onAnalysisClick={onAnalysisClick}
           onBackClick={onBackClick}
-          onRemoveAttachment={handleRemoveAttachment}
-          onFileUpload={handleFileUpload}
-          onToggleUrlInput={() => chatPanelProps.setShowUrlInput(!chatPanelProps.showUrlInput)}
+          onCollapseChange={setRightCollapsed}
         />
       </div>
     </div>

@@ -3,26 +3,9 @@ import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { 
   MessageSquare,
-  FileText,
+  Paperclip,
   Upload
 } from 'lucide-react';
-import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
-import { TemplateIcon } from './components/TemplateIcon';
-
-interface PromptTemplate {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  business_domain?: string;
-  claude_response?: string;
-  created_at?: string;
-  created_by?: string;
-  effectiveness_rating?: number;
-  is_active?: boolean;
-  original_prompt?: string;
-  use_case_context?: string;
-}
 
 interface AnalysisChatTabsProps {
   showUrlInput: boolean;
@@ -31,7 +14,6 @@ interface AnalysisChatTabsProps {
   onFileUpload?: (files: FileList) => void;
   activeTab?: string;
   onTabChange?: (value: string) => void;
-  onPromptTemplateSelect?: (templateId: string) => void;
 }
 
 export const AnalysisChatTabs: React.FC<AnalysisChatTabsProps> = ({
@@ -40,11 +22,8 @@ export const AnalysisChatTabs: React.FC<AnalysisChatTabsProps> = ({
   onFileSelect,
   onFileUpload,
   activeTab = "chat",
-  onTabChange,
-  onPromptTemplateSelect
+  onTabChange
 }) => {
-  const { data: promptExamples = [] } = useClaudePromptExamples();
-
   const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0 && onFileUpload) {
@@ -52,14 +31,6 @@ export const AnalysisChatTabs: React.FC<AnalysisChatTabsProps> = ({
     }
     onFileSelect(event);
   };
-
-  // Group templates by category
-  const groupedTemplates = promptExamples.reduce((acc, template) => {
-    const category = template.category || 'general';
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(template);
-    return acc;
-  }, {} as Record<string, typeof promptExamples>);
 
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
@@ -82,15 +53,15 @@ export const AnalysisChatTabs: React.FC<AnalysisChatTabsProps> = ({
           Chat
         </TabsTrigger>
         <TabsTrigger 
-          value="prompts"
+          value="attachments"
           style={{
             borderRadius: '6px',
-            background: activeTab === 'prompts' ? 'var(--Background-primary, #FFF)' : 'transparent',
-            boxShadow: activeTab === 'prompts' ? '0px 1px 1px 0px rgba(11, 19, 36, 0.10), 0px 1px 3px 0px rgba(11, 19, 36, 0.10)' : 'none'
+            background: activeTab === 'attachments' ? 'var(--Background-primary, #FFF)' : 'transparent',
+            boxShadow: activeTab === 'attachments' ? '0px 1px 1px 0px rgba(11, 19, 36, 0.10), 0px 1px 3px 0px rgba(11, 19, 36, 0.10)' : 'none'
           }}
         >
-          <FileText className="h-4 w-4 mr-2" />
-          Prompts
+          <Paperclip className="h-4 w-4 mr-2" />
+          Attachments
         </TabsTrigger>
       </TabsList>
 
@@ -98,47 +69,49 @@ export const AnalysisChatTabs: React.FC<AnalysisChatTabsProps> = ({
         {/* Chat content will be handled by parent component */}
       </TabsContent>
 
-      <TabsContent value="prompts" className="mt-6">
-        <div className="space-y-6 max-h-96 overflow-y-auto">
-          {Object.entries(groupedTemplates).map(([category, templates]) => (
-            <div key={category} className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-700 sticky top-0 bg-white py-2">
-                <TemplateIcon category={category} />
-                <span className="capitalize">{category.replace('_', ' ')}</span>
-              </div>
-              
-              <div className="space-y-2">
-                {templates.map((template) => (
-                  <button
-                    key={template.id}
-                    onClick={() => onPromptTemplateSelect?.(template.id)}
-                    className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="font-medium text-sm text-gray-900">{template.title}</div>
-                    <div className="text-xs text-gray-500 mt-1 line-clamp-2">
-                      {template.description}
-                    </div>
-                    {template.effectiveness_rating && (
-                      <div className="flex items-center gap-1 mt-2">
-                        <span className="text-xs text-yellow-600">★</span>
-                        <span className="text-xs text-gray-500">{template.effectiveness_rating}</span>
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-
-          {promptExamples.length === 0 && (
-            <div className="text-center py-8">
-              <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium mb-2">No Templates Available</h3>
-              <p className="text-gray-500 text-sm">
-                Prompt templates will appear here when they're available.
+      <TabsContent value="attachments" className="mt-6">
+        <div className="space-y-4">
+          {/* File Upload Area */}
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+            <input
+              type="file"
+              multiple
+              accept="image/*,.pdf"
+              onChange={handleFileInputChange}
+              className="hidden"
+              id="file-upload"
+            />
+            <label htmlFor="file-upload" className="cursor-pointer">
+              <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <p className="text-lg font-medium text-gray-900 mb-2">
+                Upload design files
               </p>
-            </div>
-          )}
+              <p className="text-sm text-gray-500 mb-4">
+                Drag and drop files here, or click to select files
+              </p>
+              <p className="text-xs text-gray-400">
+                Supports: PNG, JPG, PDF (max 50MB each)
+              </p>
+            </label>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex items-center justify-center gap-4">
+            <button
+              onClick={() => document.getElementById('file-upload')?.click()}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Upload className="h-4 w-4" />
+              Choose Files
+            </button>
+            <button
+              onClick={() => setShowUrlInput(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <Paperclip className="h-4 w-4" />
+              Add URL
+            </button>
+          </div>
         </div>
       </TabsContent>
     </Tabs>
