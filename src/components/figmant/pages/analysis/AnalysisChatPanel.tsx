@@ -23,10 +23,6 @@ interface AnalysisChatPanelProps {
   selectedPromptCategory?: string;
   promptTemplates?: any[];
   onAnalysisComplete?: (result: any) => void;
-  activeTab?: string;
-  setActiveTab?: (tab: string) => void;
-  onActiveTabChange?: (tab: string) => void;
-  onRightPanelCollapseChange?: (collapsed: boolean) => void;
 }
 
 export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
@@ -43,21 +39,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   selectedPromptTemplate,
   selectedPromptCategory,
   promptTemplates,
-  onAnalysisComplete,
-  activeTab,
-  setActiveTab,
-  onActiveTabChange,
-  onRightPanelCollapseChange
+  onAnalysisComplete
 }) => {
-  const handleTabChange = (tab: string) => {
-    if (setActiveTab) {
-      setActiveTab(tab);
-    }
-    if (onActiveTabChange) {
-      onActiveTabChange(tab);
-    }
-  };
-
   return (
     <div className="h-full flex flex-col bg-[#F9FAFB] min-h-0">
       <AnalysisChatState
@@ -89,17 +72,16 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
                 {/* Header with Tabs */}
                 <div className="px-6 pt-6 pb-3 bg-transparent flex-shrink-0">
                   <AnalysisChatHeader 
-                    activeTab={activeTab || stateProps.activeTab}
-                    onTabChange={handleTabChange || stateProps.setActiveTab}
-                    onRightPanelCollapseChange={onRightPanelCollapseChange}
+                    activeTab={stateProps.activeTab}
+                    onTabChange={stateProps.setActiveTab}
                   />
                 </div>
 
                 {/* Tabbed Content - This needs to take remaining height */}
                 <div className="flex-1 min-h-0">
                   <AnalysisTabContent
-                    activeTab={activeTab || stateProps.activeTab}
-                    setActiveTab={handleTabChange || stateProps.setActiveTab}
+                    activeTab={stateProps.activeTab}
+                    setActiveTab={stateProps.setActiveTab}
                     messages={messages}
                     isAnalyzing={stateProps.isAnalyzing}
                     message={message}

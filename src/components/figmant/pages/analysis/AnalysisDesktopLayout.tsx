@@ -36,13 +36,6 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
 }) => {
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState("chat");
-
-  // Handle right panel collapse from wizard tab
-  const handleRightPanelCollapseChange = (collapsed: boolean) => {
-    console.log('AnalysisDesktopLayout: Right panel collapse change requested:', collapsed);
-    setRightCollapsed(collapsed);
-  };
 
   // Determine the right panel mode based on state
   const getRightPanelMode = () => {
@@ -63,26 +56,17 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
   };
 
   const getRightPanelWidth = () => {
-    return rightCollapsed ? 'w-0' : 'w-1/4'; // 25% when expanded, hidden when collapsed
+    return rightCollapsed ? 'w-16' : 'w-1/4'; // 25% when expanded, 64px when collapsed
   };
 
   const getMainContentWidth = () => {
     if (leftCollapsed && rightCollapsed) {
-      return 'calc(100% - 4rem)'; // Both panels collapsed (64px left)
+      return 'calc(100% - 8rem)'; // Both panels collapsed (64px each)
     } else if (leftCollapsed || rightCollapsed) {
       return 'calc(75% - 4rem)'; // One panel collapsed
     } else {
       return 'w-1/2'; // 50% when both expanded
     }
-  };
-
-  // Enhanced chat panel props with tab state management and right panel control
-  const enhancedChatPanelProps = {
-    ...chatPanelProps,
-    activeTab,
-    setActiveTab,
-    onActiveTabChange: setActiveTab,
-    onRightPanelCollapseChange: handleRightPanelCollapseChange
   };
 
   return (
@@ -102,33 +86,31 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
         style={{ width: getMainContentWidth() }}
       >
         <AnalysisChatPanel 
-          {...enhancedChatPanelProps}
+          {...chatPanelProps}
           promptTemplates={promptTemplates}
           selectedPromptCategory={selectedPromptCategory}
           selectedPromptTemplate={selectedPromptTemplate}
         />
       </div>
       
-      {/* Right Panel - Show/hide based on rightCollapsed state */}
-      {!rightCollapsed && (
-        <div className={`flex-shrink-0 transition-all duration-300 ${getRightPanelWidth()}`}>
-          <AnalysisDynamicRightPanel
-            mode={getRightPanelMode()}
-            promptTemplates={promptTemplates}
-            selectedPromptCategory={selectedPromptCategory}
-            selectedPromptTemplate={selectedPromptTemplate}
-            onPromptTemplateSelect={onPromptTemplateSelect}
-            onPromptCategoryChange={onPromptCategoryChange}
-            currentAnalysis={currentAnalysis}
-            attachments={attachments}
-            onAnalysisClick={onAnalysisClick}
-            onBackClick={onBackClick}
-            onCollapseChange={setRightCollapsed}
-            onRemoveAttachment={chatPanelProps.onRemoveAttachment}
-            lastAnalysisResult={chatPanelProps.lastAnalysisResult}
-          />
-        </div>
-      )}
+      {/* Right Panel */}
+      <div className={`flex-shrink-0 transition-all duration-300 ${getRightPanelWidth()}`}>
+        <AnalysisDynamicRightPanel
+          mode={getRightPanelMode()}
+          promptTemplates={promptTemplates}
+          selectedPromptCategory={selectedPromptCategory}
+          selectedPromptTemplate={selectedPromptTemplate}
+          onPromptTemplateSelect={onPromptTemplateSelect}
+          onPromptCategoryChange={onPromptCategoryChange}
+          currentAnalysis={currentAnalysis}
+          attachments={attachments}
+          onAnalysisClick={onAnalysisClick}
+          onBackClick={onBackClick}
+          onCollapseChange={setRightCollapsed}
+          onRemoveAttachment={chatPanelProps.onRemoveAttachment}
+          lastAnalysisResult={chatPanelProps.lastAnalysisResult}
+        />
+      </div>
     </div>
   );
 };
