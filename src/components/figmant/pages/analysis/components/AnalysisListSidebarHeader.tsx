@@ -16,19 +16,28 @@ export const AnalysisListSidebarHeader: React.FC<AnalysisListSidebarHeaderProps>
     <div className="p-4 pb-2 border-b border-gray-200">
       <div className="flex items-center justify-between mb-2">
         {!isCollapsed && <h3 className="font-semibold text-gray-900 pl-3">History</h3>}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggleCollapse}
-          className="h-8 w-8 p-0 flex-shrink-0"
-          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {isCollapsed ? (
-            <PanelLeftOpen className="h-4 w-4" />
-          ) : (
-            <PanelLeftClose className="h-4 w-4" />
-          )}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            className="w-8 h-8 p-0 bg-blue-600 hover:bg-blue-700 flex items-center justify-center"
+            title="New Analysis"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggleCollapse}
+            className="h-8 w-8 p-0 flex-shrink-0"
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? (
+              <PanelLeftOpen className="h-4 w-4" />
+            ) : (
+              <PanelLeftClose className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );

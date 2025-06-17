@@ -5,7 +5,6 @@ import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
 import { getAnalysisDisplayName } from '@/utils/analysisDisplayNames';
 import { AnalysisDetailDrawer } from './AnalysisDetailDrawer';
 import { AnalysisListSidebarHeader } from './components/AnalysisListSidebarHeader';
-import { NewAnalysisButton } from './components/NewAnalysisButton';
 import { ExpandedAnalysisList } from './components/ExpandedAnalysisList';
 import { CollapsedAnalysisList } from './components/CollapsedAnalysisList';
 
@@ -97,9 +96,6 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
 
         {!isCollapsed && (
           <>
-            {/* New Analysis Button */}
-            <NewAnalysisButton isCollapsed={isCollapsed} />
-
             {/* Recent Analyses */}
             <ExpandedAnalysisList
               analyses={recentAnalyses}
@@ -115,14 +111,11 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
 
         {/* Collapsed state content */}
         {isCollapsed && (
-          <>
-            <NewAnalysisButton isCollapsed={isCollapsed} />
-            <CollapsedAnalysisList
-              analyses={recentAnalyses}
-              onItemClick={handleItemClick}
-              onExpandPanel={handleExpandPanel}
-            />
-          </>
+          <CollapsedAnalysisList
+            analyses={recentAnalyses}
+            onItemClick={handleItemClick}
+            onExpandPanel={handleExpandPanel}
+          />
         )}
       </div>
 
