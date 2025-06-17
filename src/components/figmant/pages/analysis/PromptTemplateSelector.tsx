@@ -4,21 +4,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles } from 'lucide-react';
-
-interface PromptTemplate {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  original_prompt: string;
-}
+import { ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
 
 interface BestPrompt {
   id: string;
 }
 
 interface PromptTemplateSelectorProps {
-  promptTemplates?: PromptTemplate[];
+  promptTemplates?: ClaudePromptExample[];
   promptsLoading: boolean;
   selectedPromptCategory: string;
   selectedPromptTemplate: string;
@@ -104,7 +97,7 @@ export const PromptTemplateSelector: React.FC<PromptTemplateSelectorProps> = ({
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">Selected Template</CardTitle>
             <CardDescription className="text-xs">
-              {selectedTemplate.description}
+              {selectedTemplate.description || 'No description available'}
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
