@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { testImageLoad } from './logoTestUtils';
@@ -67,17 +66,26 @@ export const useLogoConfigOperations = () => {
     }
 
     try {
-      // Prepare the update data based on variant
+      // First, get current config to preserve other values
+      const currentConfig = await loadLogoConfig(userId);
+      
+      // Prepare the update data based on variant - only update the specific field
       const updateData: any = {
         user_id: userId,
-        fallback_logo_url: DEFAULT_FALLBACK_LOGO,
+        fallback_logo_url: currentConfig.fallbackLogoUrl,
         updated_at: new Date().toISOString()
       };
 
       if (variant === 'collapsed') {
+        // Only update collapsed logo, keep existing main logo
         updateData.collapsed_logo_url = newLogoUrl;
+        updateData.active_logo_url = currentConfig.activeLogoUrl;
       } else {
+        // Only update main logo, keep existing collapsed logo
         updateData.active_logo_url = newLogoUrl;
+        if (currentConfig.collapsedLogoUrl) {
+          updateData.collapsed_logo_url = currentConfig.collapsedLogoUrl;
+        }
       }
 
       // Update in database using upsert
