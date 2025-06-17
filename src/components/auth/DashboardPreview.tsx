@@ -97,6 +97,16 @@ export const DashboardPreview = () => {
     </div>
   );
 
+  // Helper function to check if an item is a DesignUpload
+  const isDesignUpload = (item: any): boolean => {
+    return 'file_path' in item && 'file_name' in item;
+  };
+
+  // Helper function to check if an item is a DribbbleShot
+  const isDribbbleShot = (item: any): boolean => {
+    return 'images' in item && 'title' in item && 'user' in item;
+  };
+
   return (
     <div className="flex flex-col h-full bg-gray-50 p-6">
       <div className="mb-6">
@@ -114,10 +124,10 @@ export const DashboardPreview = () => {
       <div className="grid grid-cols-3 gap-4 flex-1 overflow-hidden">
         {displayContent.length > 0 ? (
           displayContent.map((item, index) => {
-            // Check if it's a user upload (has file_path) or Dribbble shot (has images)
-            if (item.file_path !== undefined) {
+            // Use type guards to determine which renderer to use
+            if (isDesignUpload(item)) {
               return renderUploadItem(item, index);
-            } else if (item.images) {
+            } else if (isDribbbleShot(item)) {
               return renderDribbbleItem(item, index);
             } else {
               return renderFallbackItem(index);
