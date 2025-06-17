@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Upload } from 'lucide-react';
 import { ChatAttachment, ChatMessage } from '@/components/design/DesignChatInterface';
 import { ChatMessages } from './ChatMessages';
 import { AttachmentPreview } from './AttachmentPreview';
@@ -96,18 +95,15 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     addUrlAttachment(urlInput);
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      Array.from(files).forEach(handleFileUpload);
-    }
+  const handleFileUploadFromInput = (files: FileList) => {
+    Array.from(files).forEach(handleFileUpload);
   };
 
   const canSend = message.trim().length > 0 || attachments.length > 0;
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* Header with Tabs - moved to top */}
+      {/* Header with Tabs */}
       <div className="p-6 border-b border-gray-200">
         <AnalysisChatHeader />
         <p className="text-gray-600 mb-4" style={{ fontSize: '12px' }}>
@@ -117,7 +113,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         <AnalysisChatTabs
           showUrlInput={showUrlInput}
           setShowUrlInput={setShowUrlInput}
-          onFileSelect={handleFileSelect}
+          onFileSelect={() => {}} // This is no longer used since upload is in the input
         />
       </div>
 
@@ -125,10 +121,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
       <div className="flex-1 overflow-y-auto p-6">
         {messages.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <Upload className="h-12 w-12 mx-auto mb-2" />
-            </div>
-            <p className="text-gray-600">Start your analysis by uploading files or asking a question</p>
+            <p className="text-gray-600">Start your analysis by uploading files or asking a question using the input below</p>
           </div>
         ) : (
           <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
@@ -171,6 +164,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         onSendMessage={handleSendMessage}
         selectedPromptTemplate={selectedPromptTemplate}
         canSend={canSend}
+        onFileUpload={handleFileUploadFromInput}
+        onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
       />
     </div>
   );
