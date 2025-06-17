@@ -51,7 +51,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
       const scrollHeight = textareaRef.current.scrollHeight;
       const lineHeight = 24; // Approximate line height
       const maxHeight = lineHeight * 4; // 4 lines max
-      const minHeight = 40; // Increased minimum height to prevent text cutoff
+      const minHeight = 48; // Increased minimum height for better button fit
       
       const newHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight);
       textareaRef.current.style.height = `${newHeight}px`;
@@ -61,7 +61,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   // Reset height when message is cleared
   useEffect(() => {
     if (!message && textareaRef.current) {
-      textareaRef.current.style.height = '40px'; // Reset to proper single line height
+      textareaRef.current.style.height = '48px'; // Reset to proper single line height
     }
   }, [message]);
 
@@ -83,13 +83,13 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
             onChange={handleMessageChange}
             onKeyPress={handleKeyPress}
             placeholder="Describe your design analysis needs..."
-            className="min-h-[40px] max-h-[96px] resize-none pr-32 overflow-y-auto"
-            style={{ height: '40px' }}
+            className="min-h-[48px] max-h-[96px] resize-none pr-36 overflow-y-auto"
+            style={{ height: '48px' }}
             disabled={isAnalyzing}
           />
           
-          {/* Input controls - positioned inside the textarea */}
-          <div className="absolute bottom-2 right-2 flex items-center space-x-1">
+          {/* Input controls - positioned inside the textarea with proper spacing */}
+          <div className="absolute top-1/2 right-3 transform -translate-y-1/2 flex items-center space-x-2">
             {/* File upload */}
             <label className="cursor-pointer">
               <input
@@ -104,7 +104,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0"
+                className="h-7 w-7 p-0 hover:bg-gray-100"
                 disabled={isAnalyzing}
               >
                 <Paperclip className="h-4 w-4" />
@@ -117,7 +117,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
               variant="ghost"
               size="sm"
               onClick={onToggleUrlInput}
-              className="h-8 w-8 p-0"
+              className="h-7 w-7 p-0 hover:bg-gray-100"
               disabled={isAnalyzing}
             >
               <Link className="h-4 w-4" />
@@ -128,7 +128,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
               onClick={onSendMessage}
               disabled={!canSend || isAnalyzing}
               size="sm"
-              className="h-8 w-8 p-0"
+              className="h-7 w-7 p-0"
             >
               {isAnalyzing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
