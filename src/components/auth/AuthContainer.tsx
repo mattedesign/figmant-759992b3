@@ -22,7 +22,7 @@ export const AuthContainer: React.FC<AuthContainerProps> = ({
     <div className="w-full max-w-md mx-auto px-4">
       {showLogo && (
         <div className="mb-8">
-          <Logo size="md" />
+          <Logo size="md" variant="expanded" />
           {welcomeText && (
             <div className="mt-6 mb-2">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{welcomeText}</h1>
