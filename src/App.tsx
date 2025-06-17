@@ -11,6 +11,7 @@ import Dashboard from '@/pages/Dashboard';
 import Subscription from '@/pages/Subscription';
 import PaymentSuccess from '@/pages/PaymentSuccess';
 import OwnerDashboard from '@/pages/OwnerDashboard';
+import DesignAnalysis from '@/pages/DesignAnalysis';
 import { FigmantLayout } from '@/components/figmant/FigmantLayout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import ProfilePage from './pages/ProfilePage';
@@ -34,6 +35,14 @@ const App: React.FC = () => {
           element={
             <AuthGuard>
               <Dashboard />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/analysis"
+          element={
+            <AuthGuard>
+              <DesignAnalysis />
             </AuthGuard>
           }
         />
