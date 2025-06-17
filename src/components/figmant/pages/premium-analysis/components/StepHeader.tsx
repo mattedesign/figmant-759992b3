@@ -14,8 +14,8 @@ export const StepHeader: React.FC<StepHeaderProps> = ({
   totalSteps 
 }) => {
   return (
-    <div className="text-center mb-8">
-      <h2 className="text-3xl font-bold mb-4">{title}</h2>
+    <div className="flex items-center justify-between mb-8">
+      <h2 className="text-3xl font-bold">{title}</h2>
       <Badge variant="outline" className="text-blue-600 border-blue-200">
         {currentStep} / {totalSteps}
       </Badge>
