@@ -38,12 +38,28 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
 
+  const getLeftPanelWidth = () => {
+    return leftCollapsed ? 'w-16' : 'w-1/4'; // 25% when expanded, 64px when collapsed
+  };
+
+  const getRightPanelWidth = () => {
+    return rightCollapsed ? 'w-16' : 'w-1/4'; // 25% when expanded, 64px when collapsed
+  };
+
+  const getMainContentWidth = () => {
+    if (leftCollapsed && rightCollapsed) {
+      return 'calc(100% - 8rem)'; // Both panels collapsed (64px each)
+    } else if (leftCollapsed || rightCollapsed) {
+      return 'calc(75% - 4rem)'; // One panel collapsed
+    } else {
+      return 'w-1/2'; // 50% when both expanded
+    }
+  };
+
   return (
     <div className="h-full bg-[#F9FAFB] flex">
       {/* Left Sidebar */}
-      <div className={`flex-shrink-0 transition-all duration-300 ${
-        leftCollapsed ? 'w-12' : 'w-80'
-      }`}>
+      <div className={`flex-shrink-0 transition-all duration-300 ${getLeftPanelWidth()}`}>
         <AnalysisListSidebar 
           selectedAnalysis={selectedAnalysis}
           onAnalysisSelect={onAnalysisSelect}
@@ -52,14 +68,15 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
       </div>
       
       {/* Main Chat Content */}
-      <div className="flex-1 min-w-0">
+      <div 
+        className="flex-1 min-w-0 transition-all duration-300"
+        style={{ width: getMainContentWidth() }}
+      >
         <AnalysisChatPanel {...chatPanelProps} />
       </div>
       
       {/* Right Panel */}
-      <div className={`flex-shrink-0 transition-all duration-300 ${
-        rightCollapsed ? 'w-12' : 'w-80'
-      }`}>
+      <div className={`flex-shrink-0 transition-all duration-300 ${getRightPanelWidth()}`}>
         <AnalysisDynamicRightPanel
           mode={rightPanelMode}
           promptTemplates={promptTemplates}

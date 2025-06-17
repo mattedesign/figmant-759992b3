@@ -72,7 +72,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
             variant="ghost"
             size="sm"
             onClick={handleToggleCollapse}
-            className="h-8 w-8 p-0 flex-shrink-0"
+            className={`h-8 w-8 p-0 flex-shrink-0 ${isCollapsed ? 'mx-auto' : ''}`}
             title={isCollapsed ? "Expand panel" : "Collapse panel"}
           >
             {isCollapsed ? (

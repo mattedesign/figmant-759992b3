@@ -21,11 +21,11 @@ export const CollapsedAnalysisList: React.FC<CollapsedAnalysisListProps> = ({
             key={`${analysis.type}-${analysis.id}`}
             variant="ghost"
             size="sm"
-            className="w-10 h-10 p-0"
+            className="w-12 h-12 p-0 flex items-center justify-center"
             onClick={() => onItemClick(analysis)}
             title={analysis.title}
           >
-            <TemplateIcon className="h-4 w-4" />
+            <TemplateIcon className="h-5 w-5" />
           </Button>
         );
       })}
