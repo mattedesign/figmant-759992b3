@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AnalysisChatHeader } from './AnalysisChatHeader';
@@ -89,12 +88,6 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     Array.from(files).forEach(handleFileUpload);
   };
 
-  // Handler for when user clicks on the template selector above input
-  const handleTemplateSelectClick = () => {
-    setModalTemplate(getCurrentTemplate());
-    setShowTemplateModal(true);
-  };
-
   return (
     <div className="h-full flex flex-col bg-[#F9FAFB]">
       {/* Header */}
@@ -119,10 +112,11 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         setUrlInput={setUrlInput}
         onAddUrl={handleAddUrl}
         onCancelUrl={() => setShowUrlInput(false)}
-        onTemplateSelect={handleTemplateSelectClick}
+        onTemplateSelect={handleTemplateSelect}
+        availableTemplates={figmantTemplates}
       />
 
-      {/* Template Details Modal */}
+      {/* Template Details Modal - keeping this for potential future use */}
       <PromptTemplateModal 
         template={modalTemplate}
         isOpen={showTemplateModal}

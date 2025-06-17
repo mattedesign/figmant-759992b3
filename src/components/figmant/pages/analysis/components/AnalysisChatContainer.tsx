@@ -22,7 +22,8 @@ interface AnalysisChatContainerProps {
   setUrlInput: (url: string) => void;
   onAddUrl: () => void;
   onCancelUrl: () => void;
-  onTemplateSelect: () => void;
+  onTemplateSelect: (templateId: string) => void;
+  availableTemplates: any[];
 }
 
 export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
@@ -41,7 +42,8 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   setUrlInput,
   onAddUrl,
   onCancelUrl,
-  onTemplateSelect
+  onTemplateSelect,
+  availableTemplates
 }) => {
   const hasMessages = messages.length > 0;
 
@@ -82,6 +84,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         onFileUpload={onFileUpload} 
         onToggleUrlInput={onToggleUrlInput}
         onTemplateSelect={onTemplateSelect}
+        availableTemplates={availableTemplates}
       />
     </>
   );
