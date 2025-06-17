@@ -20,7 +20,7 @@ export const LogoPreviewSection: React.FC = () => {
           <div>
             <CardTitle>Current Public Logo Preview</CardTitle>
             <CardDescription>
-              Preview how the public logo appears across different sizes (visible to all users)
+              Preview how the logos appear in different contexts (expanded and collapsed sidebar states)
             </CardDescription>
           </div>
           <Button
@@ -35,36 +35,77 @@ export const LogoPreviewSection: React.FC = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Small (Navigation)</p>
-              <div className="p-2 bg-background rounded border">
-                <Logo size="sm" />
+        <div className="space-y-6">
+          {/* Expanded Sidebar Logo Preview */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-gray-700">Expanded Sidebar Logo</h4>
+            <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Small</p>
+                <div className="p-2 bg-background rounded border">
+                  <Logo size="sm" variant="expanded" />
+                </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Medium (Header)</p>
-              <div className="p-2 bg-background rounded border">
-                <Logo size="md" />
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Medium</p>
+                <div className="p-2 bg-background rounded border">
+                  <Logo size="md" variant="expanded" />
+                </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Large (Landing)</p>
-              <div className="p-2 bg-background rounded border">
-                <Logo size="lg" />
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Large</p>
+                <div className="p-2 bg-background rounded border">
+                  <Logo size="lg" variant="expanded" />
+                </div>
               </div>
             </div>
           </div>
-          <div className="text-sm text-muted-foreground space-y-1">
-            <div className="break-all">
-              <strong>Active Logo URL:</strong> {logoConfig.activeLogoUrl}
+
+          {/* Collapsed Sidebar Logo Preview */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-gray-700">Collapsed Sidebar Logo</h4>
+            <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Small</p>
+                <div className="p-2 bg-background rounded border">
+                  <Logo size="sm" variant="collapsed" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Medium</p>
+                <div className="p-2 bg-background rounded border">
+                  <Logo size="md" variant="collapsed" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Large</p>
+                <div className="p-2 bg-background rounded border">
+                  <Logo size="lg" variant="collapsed" />
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Logo URLs Information */}
+          <div className="text-sm text-muted-foreground space-y-2 pt-4 border-t">
+            <div className="break-all">
+              <strong>Main Logo URL (Expanded):</strong> {logoConfig.activeLogoUrl}
+            </div>
+            {logoConfig.collapsedLogoUrl && (
+              <div className="break-all">
+                <strong>Collapsed Logo URL:</strong> {logoConfig.collapsedLogoUrl}
+              </div>
+            )}
             <div className="break-all">
               <strong>Fallback Logo URL:</strong> {logoConfig.fallbackLogoUrl}
             </div>
             {isLoading && (
               <div className="text-blue-600">Loading public logo configuration...</div>
+            )}
+            {!logoConfig.collapsedLogoUrl && (
+              <div className="text-amber-600 text-xs">
+                No collapsed logo uploaded yet. Upload a collapsed logo to see it in the preview above.
+              </div>
             )}
           </div>
         </div>
