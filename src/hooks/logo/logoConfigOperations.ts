@@ -13,7 +13,7 @@ export const useLogoConfigOperations = () => {
       
       const { data, error } = await supabase
         .from('logo_configuration')
-        .select('active_logo_url, fallback_logo_url')
+        .select('active_logo_url, fallback_logo_url, collapsed_logo_url')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -29,7 +29,8 @@ export const useLogoConfigOperations = () => {
         console.log('logoConfigOperations: Loaded logo config from database:', data);
         const config = {
           activeLogoUrl: data.active_logo_url || DEFAULT_FALLBACK_LOGO,
-          fallbackLogoUrl: data.fallback_logo_url || DEFAULT_FALLBACK_LOGO
+          fallbackLogoUrl: data.fallback_logo_url || DEFAULT_FALLBACK_LOGO,
+          collapsedLogoUrl: data.collapsed_logo_url || undefined
         };
         console.log('logoConfigOperations: Final processed config:', config);
         return config;
@@ -49,8 +50,8 @@ export const useLogoConfigOperations = () => {
     }
   };
 
-  const updateActiveLogo = async (userId: string, newLogoUrl: string): Promise<boolean> => {
-    console.log('logoConfigOperations: Attempting to update active logo to:', newLogoUrl, 'for user:', userId);
+  const updateActiveLogo = async (userId: string, newLogoUrl: string, variant: 'expanded' | 'collapsed' = 'expanded'): Promise<boolean> => {
+    console.log(`logoConfigOperations: Attempting to update ${variant} logo to:`, newLogoUrl, 'for user:', userId);
     
     // Test if the new logo URL is accessible
     const isAccessible = await testImageLoad(newLogoUrl);
@@ -66,15 +67,23 @@ export const useLogoConfigOperations = () => {
     }
 
     try {
+      // Prepare the update data based on variant
+      const updateData: any = {
+        user_id: userId,
+        fallback_logo_url: DEFAULT_FALLBACK_LOGO,
+        updated_at: new Date().toISOString()
+      };
+
+      if (variant === 'collapsed') {
+        updateData.collapsed_logo_url = newLogoUrl;
+      } else {
+        updateData.active_logo_url = newLogoUrl;
+      }
+
       // Update in database using upsert
       const { error } = await supabase
         .from('logo_configuration')
-        .upsert({
-          user_id: userId,
-          active_logo_url: newLogoUrl,
-          fallback_logo_url: DEFAULT_FALLBACK_LOGO,
-          updated_at: new Date().toISOString()
-        }, {
+        .upsert(updateData, {
           onConflict: 'user_id'
         });
 
@@ -91,10 +100,11 @@ export const useLogoConfigOperations = () => {
       console.log('logoConfigOperations: Successfully updated logo in database');
       
       // Also update the public logo configuration for global use
+      const settingKey = variant === 'collapsed' ? 'collapsed_logo_url' : 'logo_url';
       const { error: publicError } = await supabase
         .from('admin_settings')
         .upsert({
-          setting_key: 'logo_url',
+          setting_key: settingKey,
           setting_value: newLogoUrl,
           updated_at: new Date().toISOString()
         }, {
@@ -104,15 +114,15 @@ export const useLogoConfigOperations = () => {
       if (publicError) {
         console.error('logoConfigOperations: Error updating public logo configuration:', publicError);
       } else {
-        console.log('logoConfigOperations: Successfully updated public logo configuration');
+        console.log(`logoConfigOperations: Successfully updated public ${variant} logo configuration`);
       }
 
       toast({
         title: "Logo Updated",
-        description: "The active logo has been updated successfully.",
+        description: `The ${variant} logo has been updated successfully.`,
       });
       
-      console.log('logoConfigOperations: Active logo updated successfully to:', newLogoUrl);
+      console.log(`logoConfigOperations: ${variant} logo updated successfully to:`, newLogoUrl);
       return true;
     } catch (error) {
       console.error('logoConfigOperations: Failed to update logo configuration:', error);
@@ -135,6 +145,7 @@ export const useLogoConfigOperations = () => {
           user_id: userId,
           active_logo_url: DEFAULT_FALLBACK_LOGO,
           fallback_logo_url: DEFAULT_FALLBACK_LOGO,
+          collapsed_logo_url: null,
           updated_at: new Date().toISOString()
         }, {
           onConflict: 'user_id'
@@ -146,23 +157,32 @@ export const useLogoConfigOperations = () => {
       }
 
       // Also reset the public logo configuration
-      const { error: publicError } = await supabase
-        .from('admin_settings')
-        .upsert({
-          setting_key: 'logo_url',
-          setting_value: DEFAULT_FALLBACK_LOGO,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'setting_key'
-        });
+      const resetPromises = [
+        supabase
+          .from('admin_settings')
+          .upsert({
+            setting_key: 'logo_url',
+            setting_value: DEFAULT_FALLBACK_LOGO,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'setting_key'
+          }),
+        supabase
+          .from('admin_settings')
+          .delete()
+          .eq('setting_key', 'collapsed_logo_url')
+      ];
 
-      if (publicError) {
-        console.error('logoConfigOperations: Error resetting public logo configuration:', publicError);
-      }
+      const results = await Promise.allSettled(resetPromises);
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.error(`logoConfigOperations: Error resetting public logo configuration ${index}:`, result.reason);
+        }
+      });
 
       toast({
         title: "Logo Reset",
-        description: "Logo has been reset to default.",
+        description: "All logos have been reset to default.",
       });
 
       console.log('logoConfigOperations: Successfully reset logo to default');

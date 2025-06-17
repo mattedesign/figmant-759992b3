@@ -50,18 +50,25 @@ export const useLogoConfig = () => {
     }
   }, [user, publicLogoConfig, publicLoading]);
 
-  const updateActiveLogo = async (newLogoUrl: string) => {
+  const updateActiveLogo = async (newLogoUrl: string, variant: 'expanded' | 'collapsed' = 'expanded') => {
     if (!user) {
       console.error('User not authenticated');
       return false;
     }
 
-    const success = await updateActiveLogoDb(user.id, newLogoUrl);
+    const success = await updateActiveLogoDb(user.id, newLogoUrl, variant);
     if (success) {
-      setLogoConfig(prev => ({
-        ...prev,
-        activeLogoUrl: newLogoUrl
-      }));
+      if (variant === 'collapsed') {
+        setLogoConfig(prev => ({
+          ...prev,
+          collapsedLogoUrl: newLogoUrl
+        }));
+      } else {
+        setLogoConfig(prev => ({
+          ...prev,
+          activeLogoUrl: newLogoUrl
+        }));
+      }
     }
     return success;
   };

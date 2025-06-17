@@ -15,67 +15,50 @@ export const usePublicLogoConfig = () => {
       setIsLoading(true);
       console.log('=== LOADING PUBLIC LOGO CONFIG ===');
       
-      // First, try to get the public logo configuration
-      const { data, error } = await supabase.rpc('get_public_logo_config');
-      
-      if (error) {
-        console.error('usePublicLogoConfig: Error loading public logo config:', error);
+      // Get both main and collapsed logo URLs from admin_settings
+      const { data: logoData, error: logoError } = await supabase
+        .from('admin_settings')
+        .select('setting_key, setting_value')
+        .in('setting_key', ['logo_url', 'collapsed_logo_url']);
         
-        // If function doesn't exist or fails, fall back to checking admin_settings
-        console.log('usePublicLogoConfig: Fallback to admin_settings...');
-        
-        const { data: adminData, error: adminError } = await supabase
-          .from('admin_settings')
-          .select('setting_value')
-          .eq('setting_key', 'logo_url')
-          .maybeSingle();
-          
-        if (adminError) {
-          console.error('usePublicLogoConfig: Admin settings query failed:', adminError);
-        } else if (adminData?.setting_value) {
-          // Handle both direct string values and object values with .value property
-          let logoUrl: string;
-          if (typeof adminData.setting_value === 'string') {
-            logoUrl = adminData.setting_value;
-          } else if (typeof adminData.setting_value === 'object' && adminData.setting_value !== null && 'value' in adminData.setting_value) {
-            logoUrl = adminData.setting_value.value as string;
-          } else {
-            logoUrl = DEFAULT_FALLBACK_LOGO;
-          }
-          
-          console.log('usePublicLogoConfig: Found logo in admin_settings:', logoUrl);
-          
-          return {
-            activeLogoUrl: logoUrl,
-            fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
-          };
-        }
-        
-        // Final fallback to default
+      if (logoError) {
+        console.error('usePublicLogoConfig: Error loading logo settings:', logoError);
         return {
           activeLogoUrl: DEFAULT_FALLBACK_LOGO,
           fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
         };
       }
 
-      if (data && data.length > 0) {
-        const config = data[0];
-        console.log('usePublicLogoConfig: Loaded public logo config:', config);
-        
-        const logoConfig = {
-          activeLogoUrl: config.logo_url || DEFAULT_FALLBACK_LOGO,
-          fallbackLogoUrl: config.fallback_logo_url || DEFAULT_FALLBACK_LOGO
-        };
-        
-        console.log('usePublicLogoConfig: Final logo config:', logoConfig);
-        return logoConfig;
-      } else {
-        console.log('usePublicLogoConfig: No public logo configuration found, using defaults');
-        return {
-          activeLogoUrl: DEFAULT_FALLBACK_LOGO,
-          fallbackLogoUrl: DEFAULT_FALLBACK_LOGO
-        };
+      let activeLogoUrl = DEFAULT_FALLBACK_LOGO;
+      let collapsedLogoUrl: string | undefined;
+
+      // Process the settings data
+      if (logoData && logoData.length > 0) {
+        for (const setting of logoData) {
+          let logoUrl: string;
+          if (typeof setting.setting_value === 'string') {
+            logoUrl = setting.setting_value;
+          } else if (typeof setting.setting_value === 'object' && setting.setting_value !== null && 'value' in setting.setting_value) {
+            logoUrl = setting.setting_value.value as string;
+          } else {
+            continue;
+          }
+
+          if (setting.setting_key === 'logo_url') {
+            activeLogoUrl = logoUrl;
+          } else if (setting.setting_key === 'collapsed_logo_url') {
+            collapsedLogoUrl = logoUrl;
+          }
+        }
       }
+
+      console.log('usePublicLogoConfig: Final logo config:', { activeLogoUrl, collapsedLogoUrl });
+      
+      return {
+        activeLogoUrl,
+        fallbackLogoUrl: DEFAULT_FALLBACK_LOGO,
+        collapsedLogoUrl
+      };
     } catch (error) {
       console.error('usePublicLogoConfig: Failed to load public logo configuration:', error);
       return {

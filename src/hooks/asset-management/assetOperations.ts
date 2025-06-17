@@ -49,7 +49,10 @@ export const useAssetOperations = () => {
       // If this is a logo asset, update the logo configuration first
       if (type === 'logo') {
         console.log('Logo asset uploaded, updating logo configuration...');
-        const updateSuccess = await updateActiveLogo(publicUrl);
+        
+        // Determine variant based on tags
+        const variant = tags.includes('collapsed-logo') ? 'collapsed' : 'expanded';
+        const updateSuccess = await updateActiveLogo(publicUrl, variant);
         
         if (!updateSuccess) {
           // If logo config update failed, clean up the uploaded file

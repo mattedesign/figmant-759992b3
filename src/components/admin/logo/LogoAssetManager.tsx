@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAssetManagement } from '@/hooks/useAssetManagement';
 import { useLogoConfig } from '@/hooks/useLogoConfig';
 import { Button } from '@/components/ui/button';
@@ -10,12 +10,17 @@ interface LogoAssetManagerProps {
 }
 
 export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate }) => {
-  const { uploadAsset, isLoading } = useAssetManagement();
+  const { uploadAsset } = useAssetManagement();
   const { resetToDefault } = useLogoConfig();
   const { toast } = useToast();
+  const [mainLogoLoading, setMainLogoLoading] = useState(false);
+  const [collapsedLogoLoading, setCollapsedLogoLoading] = useState(false);
 
   const handleLogoUpload = async (file: File, variant: 'expanded' | 'collapsed' = 'expanded') => {
+    const setLoading = variant === 'collapsed' ? setCollapsedLogoLoading : setMainLogoLoading;
+    
     try {
+      setLoading(true);
       console.log(`Starting ${variant} logo upload process...`, file.type, file.name);
       
       // Upload the asset with variant-specific tags
@@ -42,6 +47,8 @@ export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate
         title: "Logo Upload Failed",
         description: `Failed to upload and set the ${variant} logo. Please try again.`,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -103,9 +110,9 @@ export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate
         <div className="flex gap-2">
           <div>
             <label htmlFor="logo-upload-main" className="cursor-pointer">
-              <Button asChild disabled={isLoading}>
+              <Button asChild disabled={mainLogoLoading}>
                 <span>
-                  {isLoading ? 'Uploading...' : 'Upload Main Logo'}
+                  {mainLogoLoading ? 'Uploading...' : 'Upload Main Logo'}
                 </span>
               </Button>
             </label>
@@ -115,7 +122,7 @@ export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate
               accept="image/png,image/jpeg,image/jpg,image/svg+xml"
               onChange={(e) => handleFileSelect(e, 'expanded')}
               className="hidden"
-              disabled={isLoading}
+              disabled={mainLogoLoading}
             />
           </div>
         </div>
@@ -130,9 +137,9 @@ export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate
         <div className="flex gap-2">
           <div>
             <label htmlFor="logo-upload-collapsed" className="cursor-pointer">
-              <Button asChild disabled={isLoading} variant="outline">
+              <Button asChild disabled={collapsedLogoLoading} variant="outline">
                 <span>
-                  {isLoading ? 'Uploading...' : 'Upload Collapsed Logo'}
+                  {collapsedLogoLoading ? 'Uploading...' : 'Upload Collapsed Logo'}
                 </span>
               </Button>
             </label>
@@ -142,7 +149,7 @@ export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate
               accept="image/png,image/jpeg,image/jpg,image/svg+xml"
               onChange={(e) => handleFileSelect(e, 'collapsed')}
               className="hidden"
-              disabled={isLoading}
+              disabled={collapsedLogoLoading}
             />
           </div>
         </div>
@@ -156,7 +163,7 @@ export const LogoAssetManager: React.FC<LogoAssetManagerProps> = ({ onLogoUpdate
         <Button
           variant="outline"
           onClick={handleResetLogo}
-          disabled={isLoading}
+          disabled={mainLogoLoading || collapsedLogoLoading}
         >
           Reset All Logos to Default
         </Button>
