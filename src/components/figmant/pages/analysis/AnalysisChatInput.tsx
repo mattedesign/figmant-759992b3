@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Send, Upload, Link, Loader2, X, Globe, FileText } from 'lucide-react';
 import { SimpleTemplateSelector } from './SimpleTemplateSelector';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
+
 interface AnalysisChatInputProps {
   message: string;
   setMessage: (message: string) => void;
@@ -22,6 +23,7 @@ interface AnalysisChatInputProps {
   attachments?: ChatAttachment[];
   onRemoveAttachment?: (attachmentId: string) => void;
 }
+
 export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   message,
   setMessage,
@@ -39,9 +41,11 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   onRemoveAttachment
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
@@ -49,7 +53,8 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
     }
     e.target.value = '';
   };
-  return <div className="p-4 border-t border-gray-200 space-y-3 bg-transparent">
+
+  return <div className="p-4 space-y-3 bg-transparent">
       <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf" onChange={handleFileChange} style={{
       display: 'none'
     }} />
