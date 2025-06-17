@@ -2,7 +2,7 @@
 export interface Asset {
   id: string;
   name: string;
-  type: 'logo' | 'image' | 'document' | 'other';
+  type: 'logo' | 'image' | 'document' | 'video' | 'other';
   category: string;
   url: string;
   uploadPath: string;
@@ -31,5 +31,6 @@ export const ASSET_TYPES = {
   LOGO: 'logo',
   IMAGE: 'image',
   DOCUMENT: 'document',
+  VIDEO: 'video',
   OTHER: 'other'
 } as const;

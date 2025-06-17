@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, Trash2, Image, FileText, Settings, AlertCircle } from 'lucide-react';
+import { Upload, Trash2, Image, FileText, Video, Settings, AlertCircle } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useAssetManagement } from '@/hooks/useAssetManagement';
 import { Asset, ASSET_CATEGORIES, ASSET_TYPES } from '@/types/assets';
@@ -19,15 +20,18 @@ export const AssetManager: React.FC = () => {
     accept: {
       'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'],
       'application/pdf': ['.pdf'],
+      'video/*': ['.mp4', '.webm', '.mov', '.avi', '.mkv'],
     },
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 50 * 1024 * 1024, // 50MB for videos
     onDrop: async (acceptedFiles) => {
       console.log('Files dropped in AssetManager:', acceptedFiles);
       for (const file of acceptedFiles) {
         console.log('Processing file:', file.name, 'Type:', file.type, 'Size:', file.size);
         
-        // Special handling for SVG files
-        if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
+        // Special handling for different file types
+        if (file.type.startsWith('video/')) {
+          console.log('Video file detected, uploading...');
+        } else if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
           console.log('SVG file detected, uploading...');
         }
         
@@ -41,6 +45,8 @@ export const AssetManager: React.FC = () => {
       case 'logo':
       case 'image':
         return <Image className="h-4 w-4" />;
+      case 'video':
+        return <Video className="h-4 w-4" />;
       case 'document':
         return <FileText className="h-4 w-4" />;
       default:
@@ -64,7 +70,7 @@ export const AssetManager: React.FC = () => {
         <CardHeader>
           <CardTitle>Asset Management</CardTitle>
           <CardDescription>
-            Upload and manage assets with organized folder structure. Supports images (PNG, JPG, SVG, WebP, GIF) and PDFs up to 10MB.
+            Upload and manage assets with organized folder structure. Supports images (PNG, JPG, SVG, WebP, GIF), videos (MP4, WebM, MOV, AVI, MKV), and PDFs up to 50MB.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -78,6 +84,7 @@ export const AssetManager: React.FC = () => {
                 <SelectContent>
                   <SelectItem value="logo">Logo</SelectItem>
                   <SelectItem value="image">Image</SelectItem>
+                  <SelectItem value="video">Video</SelectItem>
                   <SelectItem value="document">Document</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
@@ -126,7 +133,7 @@ export const AssetManager: React.FC = () => {
               {isDragActive ? 'Drop files here...' : isLoading ? 'Uploading...' : 'Upload Assets'}
             </p>
             <p className="text-sm text-muted-foreground">
-              Drag & drop files or click to select (PNG, JPG, <strong>SVG</strong>, WebP, GIF, PDF up to 10MB)
+              Drag & drop files or click to select (Images, <strong>Videos</strong>, PDFs up to 50MB)
             </p>
             <Badge variant="outline" className="mt-2">
               {selectedType} • {selectedCategory}
@@ -160,6 +167,17 @@ export const AssetManager: React.FC = () => {
                           className="w-full h-full object-contain"
                           onError={(e) => {
                             console.error('Asset image failed to load:', asset.url);
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : asset.type === 'video' ? (
+                        <video 
+                          src={asset.url}
+                          className="w-full h-full object-contain"
+                          controls
+                          preload="metadata"
+                          onError={(e) => {
+                            console.error('Asset video failed to load:', asset.url);
                             e.currentTarget.style.display = 'none';
                           }}
                         />
