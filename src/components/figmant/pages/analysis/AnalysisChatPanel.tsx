@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ChatAttachment, ChatMessage } from '@/components/design/DesignChatInterface';
@@ -77,7 +78,10 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   const handleFileUploadFromInput = (files: FileList) => {
     Array.from(files).forEach(handleFileUpload);
   };
-  const hasContent = messages.length > 0 || message.trim().length > 0 || attachments.length > 0;
+  
+  // Only show messages when there are actual messages, not when user is typing
+  const hasMessages = messages.length > 0;
+  
   return <div className="h-full flex flex-col bg-[#F9FAFB]">
       {/* Header with Tabs moved to top */}
       <div className="p-6 bg-transparent">
@@ -90,7 +94,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
 
       {/* Messages Area or Placeholder */}
       <div className="flex-1 overflow-y-auto bg-[#F9FAFB]">
-        {hasContent ? <div className="p-6">
+        {hasMessages ? <div className="p-6">
             <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
           </div> : <AnalysisChatPlaceholder />}
       </div>
