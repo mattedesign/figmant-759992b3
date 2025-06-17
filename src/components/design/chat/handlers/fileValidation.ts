@@ -49,11 +49,12 @@ export const validateAndProcessImageFile = async (file: File): Promise<Validatio
       isValid: true,
       processedFile: file,
       processingInfo: {
+        file: file,
         originalSize: file.size,
         processedSize: file.size,
         compressionRatio: 0,
-        originalDimensions: { width: 0, height: 0 },
-        processedDimensions: { width: 0, height: 0 }
+        dimensions: { width: 0, height: 0 },
+        format: 'svg+xml'
       }
     };
   }
@@ -100,11 +101,12 @@ export const validateAndProcessImageFile = async (file: File): Promise<Validatio
                 isValid: true,
                 processedFile,
                 processingInfo: {
+                  file: processedFile,
                   originalSize,
                   processedSize: blob.size,
                   compressionRatio,
-                  originalDimensions: { width: img.width, height: img.height },
-                  processedDimensions: { width, height }
+                  dimensions: { width, height },
+                  format: file.type.split('/')[1]
                 }
               });
             } else {
