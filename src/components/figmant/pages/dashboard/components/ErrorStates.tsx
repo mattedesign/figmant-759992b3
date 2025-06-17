@@ -54,3 +54,6 @@ export const NotesError: React.FC<{ onRetry?: () => void }> = ({ onRetry }) => (
     onRetry={onRetry}
   />
 );
+
+// Add InsightsError as an alias for backward compatibility
+export const InsightsError = InsightsSectionError;

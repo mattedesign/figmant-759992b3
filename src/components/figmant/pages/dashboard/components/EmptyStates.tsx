@@ -61,3 +61,6 @@ export const NotesEmpty: React.FC<EmptyStateProps> = ({ onAction }) => (
     )}
   </div>
 );
+
+// Add InsightsEmpty as an alias for backward compatibility
+export const InsightsEmpty = InsightsSectionEmpty;

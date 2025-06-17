@@ -101,3 +101,6 @@ export const NotesSectionLoading: React.FC = () => (
     </div>
   </div>
 );
+
+// Add InsightsLoading as an alias for backward compatibility
+export const InsightsLoading = InsightsSectionLoading;

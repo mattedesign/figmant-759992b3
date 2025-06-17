@@ -5,20 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, TrendingUp, Users, Target, Lightbulb } from 'lucide-react';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
-import { InsightsLoading } from './components/LoadingStates';
-import { InsightsEmpty } from './components/EmptyStates';
-import { InsightsError } from './components/ErrorStates';
-
-interface InsightData {
-  id: string;
-  title: string;
-  description: string;
-  category: 'performance' | 'user-behavior' | 'optimization' | 'trend';
-  impact: 'high' | 'medium' | 'low';
-  value: string;
-  change: string;
-  trend: 'up' | 'down' | 'stable';
-}
+import { InsightsSectionLoading } from './components/LoadingStates';
+import { InsightsSectionEmpty } from './components/EmptyStates';
+import { InsightsSectionError } from './components/ErrorStates';
+import { InsightData } from './types/dashboard';
 
 interface InsightsSectionProps {
   insightsData: InsightData[];
@@ -82,23 +72,35 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({
       </div>
       
       {/* Loading State */}
-      {isLoading && <InsightsLoading />}
+      {isLoading && <InsightsSectionLoading />}
       
       {/* Error State */}
-      {error && !isLoading && <InsightsError onRetry={onRetry} />}
+      {error && !isLoading && <InsightsSectionError onRetry={onRetry} />}
       
       {/* Empty State */}
-      {!isLoading && !error && insightsData.length === 0 && <InsightsEmpty />}
+      {!isLoading && !error && insightsData.length === 0 && <InsightsSectionEmpty />}
       
-      {/* Data State */}
+      {/* Data State - Transform data from dashboard types to display format */}
       {!isLoading && !error && insightsData.length > 0 && (
         <div className="space-y-4">
           {insightsData.map((insight) => {
-            const CategoryIcon = getCategoryIcon(insight.category);
+            // Transform the InsightData from dashboard types to display format
+            const displayInsight = {
+              id: insight.id.toString(),
+              title: `${insight.name} Activity`,
+              description: `${insight.role} has ${insight.change} activity ${insight.period}`,
+              category: 'performance' as const,
+              impact: 'medium' as const,
+              value: `${insight.total} total`,
+              change: insight.change,
+              trend: insight.change.includes('+') ? 'up' as const : 'down' as const
+            };
+            
+            const CategoryIcon = getCategoryIcon(displayInsight.category);
             
             return (
               <Card 
-                key={insight.id} 
+                key={displayInsight.id} 
                 className="border-0"
                 style={{
                   borderRadius: 'var(--corner-radius-xl, 12px)',
@@ -110,14 +112,14 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <CategoryIcon className={`h-4 w-4 text-gray-400 ${isTablet ? 'h-3 w-3' : ''}`} />
-                      <span className={`font-medium ${isTablet ? 'text-sm' : ''}`}>{insight.title}</span>
+                      <span className={`font-medium ${isTablet ? 'text-sm' : ''}`}>{displayInsight.title}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge 
                         variant="secondary" 
-                        className={`${getImpactColor(insight.impact)} ${isTablet ? 'text-xs' : ''}`}
+                        className={`${getImpactColor(displayInsight.impact)} ${isTablet ? 'text-xs' : ''}`}
                       >
-                        {insight.impact} impact
+                        {displayInsight.impact} impact
                       </Badge>
                       <Button 
                         variant="ghost" 
@@ -131,15 +133,15 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({
                 <CardContent className={`pt-0 ${isTablet ? 'px-4 pb-4' : ''}`}>
                   <div className={`space-y-2 ${isTablet ? 'space-y-1' : ''}`}>
                     <p className={`text-sm text-gray-600 ${isTablet ? 'text-xs' : ''}`}>
-                      {insight.description}
+                      {displayInsight.description}
                     </p>
                     <div className={`flex justify-between items-center text-sm ${isTablet ? 'text-xs' : ''}`}>
-                      <span className="font-medium">{insight.value}</span>
+                      <span className="font-medium">{displayInsight.value}</span>
                       <span className={`${
-                        insight.trend === 'up' ? 'text-green-600' : 
-                        insight.trend === 'down' ? 'text-red-600' : 'text-gray-600'
+                        displayInsight.trend === 'up' ? 'text-green-600' : 
+                        displayInsight.trend === 'down' ? 'text-red-600' : 'text-gray-600'
                       }`}>
-                        {insight.change}
+                        {displayInsight.change}
                       </span>
                     </div>
                   </div>
