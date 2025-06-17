@@ -43,14 +43,10 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   return (
     <div className="border-t border-gray-200 p-6">
       <div className="flex flex-col space-y-3">
-        {/* Selected template indicator or default helper text */}
-        {selectedPromptTemplate ? (
+        {/* Selected template indicator */}
+        {selectedPromptTemplate && (
           <div className="text-sm text-gray-600 bg-blue-50 px-3 py-2 rounded-md">
             Using template: <span className="font-medium">{selectedPromptTemplate.display_name || selectedPromptTemplate.title}</span>
-          </div>
-        ) : (
-          <div className="text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-md">
-            How can I help
           </div>
         )}
         
