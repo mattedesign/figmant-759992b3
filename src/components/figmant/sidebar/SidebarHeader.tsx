@@ -25,9 +25,9 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
             variant="ghost" 
             size="icon"
             onClick={handleToggle}
-            className="h-8 w-8 text-gray-500 hover:text-gray-700"
+            className="h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-transparent active:bg-transparent"
           >
-            <PanelLeftOpen className="h-5 w-5" />
+            <PanelLeftOpen className="h-9 w-9" />
           </Button>
           <div className="w-10 h-10 flex items-center justify-center">
             <Logo size="sm" className="w-8 h-8" variant="collapsed" />
@@ -40,9 +40,9 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
             variant="ghost" 
             size="icon"
             onClick={handleToggle}
-            className="h-8 w-8 text-gray-500 hover:text-gray-700"
+            className="h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-transparent active:bg-transparent"
           >
-            <PanelLeftClose className="h-5 w-5" />
+            <PanelLeftClose className="h-9 w-9" />
           </Button>
         </>
       )}
