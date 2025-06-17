@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from 'lucide-react';
@@ -40,15 +39,15 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         alt: 'Sunrise'
       };
     }
-    // 8:01am to 5:00pm (481 to 1200 minutes)
-    if (timeInMinutes >= 481 && timeInMinutes <= 1200) {
+    // 8:01am to 5:00pm (481 to 1020 minutes)
+    if (timeInMinutes >= 481 && timeInMinutes <= 1020) {
       return {
         src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/km8946rzr_Day.svg',
         alt: 'Day'
       };
     }
-    // 5:01pm to 7:30pm (1201 to 1170 minutes)
-    if (timeInMinutes >= 1201 && timeInMinutes <= 1170) {
+    // 5:01pm to 7:30pm (1021 to 1170 minutes)
+    if (timeInMinutes >= 1021 && timeInMinutes <= 1170) {
       return {
         src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/3yi4dyxol_Sunset.svg',
         alt: 'Sunset'
@@ -61,9 +60,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         alt: 'Dusk'
       };
     }
-    // 8:46pm to 5:59am (1246+ minutes or 0-359 minutes)
+    // 8:46pm to 5:59am (1246+ minutes or 0-359 minutes) - Good evening period
     return {
-      src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/y31tsaijc_Night.svg',
+      src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/jv746fkjt_Night2.svg',
       alt: 'Night'
     };
   };
