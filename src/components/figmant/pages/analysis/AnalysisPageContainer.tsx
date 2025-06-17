@@ -65,7 +65,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
   return (
     <div className="flex h-full">
       {/* Left Panel - History Sidebar */}
-      <div className={`bg-white border-r border-gray-200 flex-shrink-0 transition-all duration-300 ${
+      <div className={`bg-white flex-shrink-0 transition-all duration-300 ${
         isHistorySidebarCollapsed ? 'w-16' : 'w-80'
       }`}>
         <AnalysisListSidebar
@@ -111,7 +111,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
       </div>
 
       {/* Right Panel - Analysis Details */}
-      <div className={`bg-white border-l border-gray-200 flex-shrink-0 transition-all duration-300 ${
+      <div className={`bg-white flex-shrink-0 transition-all duration-300 ${
         isRightPanelCollapsed ? 'w-16' : 'w-80'
       }`}>
         <AnalysisDynamicRightPanel
