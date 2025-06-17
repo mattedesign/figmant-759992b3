@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { PanelRightClose, PanelRightOpen, FileText, Layout } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { TemplatesPanel } from './components/TemplatesPanel';
 import { AnalysisDetailsPanel } from './components/AnalysisDetailsPanel';
@@ -60,6 +60,10 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
     return mode === 'templates' ? 'Templates' : 'Analysis Details';
   };
 
+  const getModeIcon = () => {
+    return mode === 'templates' ? Layout : FileText;
+  };
+
   return (
     <div className="bg-white border-l border-gray-200 flex flex-col h-full w-full">
       {/* Header */}
@@ -107,9 +111,15 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
       {/* Collapsed state content */}
       {isCollapsed && (
         <div className="flex-1 flex flex-col items-center pt-4">
-          <div className="text-xs text-gray-400 writing-vertical-lr rotate-180 mt-8">
-            {getHeaderTitle()}
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-12 h-12 p-0 flex items-center justify-center"
+            onClick={handleToggleCollapse}
+            title={getHeaderTitle()}
+          >
+            {React.createElement(getModeIcon(), { className: "h-5 w-5" })}
+          </Button>
         </div>
       )}
     </div>
