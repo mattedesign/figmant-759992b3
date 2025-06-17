@@ -1,10 +1,10 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-interface FileItem {
+export interface FileItem {
   id: string | null;
   name: string;
-  fullPath?: string;
+  fullPath: string; // Made required to match createAssetFromFile expectations
   created_at?: string;
   metadata?: any;
 }
@@ -31,7 +31,7 @@ export const getAllFilesRecursively = async (prefix = ''): Promise<FileItem[]> =
       const subFiles = await getAllFilesRecursively(subPath);
       allFiles.push(...subFiles);
     } else {
-      // This is a file
+      // This is a file - ensure fullPath is always defined
       const fullPath = prefix ? `${prefix}/${item.name}` : item.name;
       allFiles.push({
         ...item,

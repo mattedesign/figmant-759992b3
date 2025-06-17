@@ -31,7 +31,11 @@ export const useAssetLoader = ({ setAssets, setIsLoading }: UseAssetLoaderProps)
 
       // Process each file and create asset objects
       for (const file of allFiles) {
-        if (!file.name || !file.fullPath) continue;
+        // Skip files that don't have required properties
+        if (!file.name || !file.fullPath) {
+          console.warn('Skipping file with missing name or fullPath:', file);
+          continue;
+        }
         
         const asset = createAssetFromFile(file, user.id);
         loadedAssets.push(asset);

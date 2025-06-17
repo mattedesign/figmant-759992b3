@@ -1,14 +1,7 @@
 
 import { Asset } from '@/types/assets';
 import { determineAssetType, determineAssetCategory, determineMimeType } from './assetTypeDetection';
-import { getPublicUrl } from './assetFileOperations';
-
-interface FileItem {
-  name: string;
-  fullPath: string;
-  created_at?: string;
-  metadata?: any;
-}
+import { getPublicUrl, FileItem } from './assetFileOperations';
 
 export const createAssetFromFile = (file: FileItem, userId: string): Asset => {
   const assetType = determineAssetType(file.name, file.fullPath);
