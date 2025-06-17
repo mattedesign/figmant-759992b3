@@ -17,7 +17,7 @@ interface AssetUploadSectionProps {
   getInputProps: () => any;
   isDragActive: boolean;
   isLoading: boolean;
-  fileRejections: FileRejection[];
+  fileRejections: readonly FileRejection[];
 }
 
 export const AssetUploadSection: React.FC<AssetUploadSectionProps> = ({
