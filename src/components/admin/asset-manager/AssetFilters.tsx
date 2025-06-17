@@ -5,9 +5,9 @@ import { Asset, ASSET_CATEGORIES } from '@/types/assets';
 
 interface AssetFiltersProps {
   selectedType: Asset['type'];
-  selectedCategory: string;
+  selectedCategory: Asset['category'];
   onTypeChange: (type: Asset['type']) => void;
-  onCategoryChange: (category: string) => void;
+  onCategoryChange: (category: Asset['category']) => void;
 }
 
 export const AssetFilters: React.FC<AssetFiltersProps> = ({
