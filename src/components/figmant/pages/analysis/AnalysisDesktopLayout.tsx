@@ -3,6 +3,7 @@ import React from 'react';
 import { AnalysisListSidebar } from './AnalysisListSidebar';
 import { AnalysisChatPanel } from './AnalysisChatPanel';
 import { AnalysisDynamicRightPanel } from './AnalysisDynamicRightPanel';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 interface AnalysisDesktopLayoutProps {
   selectedAnalysis: any;
@@ -36,18 +37,24 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
   onBackClick
 }) => {
   return (
-    <div className="h-full flex bg-[#F9FAFB]">
-      <AnalysisListSidebar 
-        selectedAnalysis={selectedAnalysis}
-        onAnalysisSelect={onAnalysisSelect}
-      />
-      
-      <div className="flex-1 flex min-w-0">
-        <div className="flex-1 min-w-0">
-          <AnalysisChatPanel {...chatPanelProps} />
-        </div>
+    <div className="h-full bg-[#F9FAFB]">
+      <ResizablePanelGroup direction="horizontal" className="h-full">
+        <ResizablePanel defaultSize={25} minSize={15} maxSize={40}>
+          <AnalysisListSidebar 
+            selectedAnalysis={selectedAnalysis}
+            onAnalysisSelect={onAnalysisSelect}
+          />
+        </ResizablePanel>
         
-        <div className="w-80 flex-shrink-0">
+        <ResizableHandle withHandle />
+        
+        <ResizablePanel defaultSize={50} minSize={30}>
+          <AnalysisChatPanel {...chatPanelProps} />
+        </ResizablePanel>
+        
+        <ResizableHandle withHandle />
+        
+        <ResizablePanel defaultSize={25} minSize={15} maxSize={40}>
           <AnalysisDynamicRightPanel
             mode={rightPanelMode}
             promptTemplates={promptTemplates}
@@ -60,8 +67,8 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
             onAnalysisClick={onAnalysisClick}
             onBackClick={onBackClick}
           />
-        </div>
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };
