@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnalysisListSidebar } from './AnalysisListSidebar';
 import { AnalysisChatPanel } from './AnalysisChatPanel';
 import { AnalysisDynamicRightPanel } from './AnalysisDynamicRightPanel';
@@ -36,25 +36,60 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
   onAnalysisClick,
   onBackClick
 }) => {
+  const [leftCollapsed, setLeftCollapsed] = useState(false);
+  const [rightCollapsed, setRightCollapsed] = useState(false);
+
+  // Calculate panel sizes based on collapse states
+  const getLeftPanelSize = () => {
+    if (leftCollapsed) return 5; // Minimal size when collapsed
+    return 25; // Default size when expanded
+  };
+
+  const getRightPanelSize = () => {
+    if (rightCollapsed) return 5; // Minimal size when collapsed
+    return 25; // Default size when expanded
+  };
+
+  const getChatPanelSize = () => {
+    const leftSize = getLeftPanelSize();
+    const rightSize = getRightPanelSize();
+    return 100 - leftSize - rightSize; // Fill remaining space
+  };
+
   return (
     <div className="h-full bg-[#F9FAFB]">
       <ResizablePanelGroup direction="horizontal" className="h-full">
-        <ResizablePanel defaultSize={25} minSize={15} maxSize={40}>
+        <ResizablePanel 
+          defaultSize={getLeftPanelSize()} 
+          minSize={leftCollapsed ? 5 : 15} 
+          maxSize={leftCollapsed ? 5 : 40}
+          size={getLeftPanelSize()}
+        >
           <AnalysisListSidebar 
             selectedAnalysis={selectedAnalysis}
             onAnalysisSelect={onAnalysisSelect}
+            onCollapseChange={setLeftCollapsed}
           />
         </ResizablePanel>
         
-        <ResizableHandle withHandle />
+        {!leftCollapsed && <ResizableHandle withHandle />}
         
-        <ResizablePanel defaultSize={50} minSize={30}>
+        <ResizablePanel 
+          defaultSize={getChatPanelSize()} 
+          minSize={30}
+          size={getChatPanelSize()}
+        >
           <AnalysisChatPanel {...chatPanelProps} />
         </ResizablePanel>
         
-        <ResizableHandle withHandle />
+        {!rightCollapsed && <ResizableHandle withHandle />}
         
-        <ResizablePanel defaultSize={25} minSize={15} maxSize={40}>
+        <ResizablePanel 
+          defaultSize={getRightPanelSize()} 
+          minSize={rightCollapsed ? 5 : 15} 
+          maxSize={rightCollapsed ? 5 : 40}
+          size={getRightPanelSize()}
+        >
           <AnalysisDynamicRightPanel
             mode={rightPanelMode}
             promptTemplates={promptTemplates}
@@ -66,6 +101,7 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
             attachments={attachments}
             onAnalysisClick={onAnalysisClick}
             onBackClick={onBackClick}
+            onCollapseChange={setRightCollapsed}
           />
         </ResizablePanel>
       </ResizablePanelGroup>

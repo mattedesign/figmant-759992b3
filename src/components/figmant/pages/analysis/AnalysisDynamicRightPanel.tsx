@@ -32,6 +32,7 @@ interface AnalysisDynamicRightPanelProps {
   attachments?: ChatAttachment[];
   onAnalysisClick?: () => void;
   onBackClick?: () => void;
+  onCollapseChange?: (collapsed: boolean) => void;
 }
 
 export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps> = ({
@@ -42,9 +43,18 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
   currentAnalysis,
   attachments = [],
   onAnalysisClick,
-  onBackClick
+  onBackClick,
+  onCollapseChange
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const handleToggleCollapse = () => {
+    const newCollapsed = !isCollapsed;
+    setIsCollapsed(newCollapsed);
+    if (onCollapseChange) {
+      onCollapseChange(newCollapsed);
+    }
+  };
 
   const getHeaderTitle = () => {
     return mode === 'templates' ? 'Templates' : 'Analysis Details';
@@ -63,7 +73,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={handleToggleCollapse}
             className="h-8 w-8 p-0"
             title={isCollapsed ? "Expand panel" : "Collapse panel"}
           >

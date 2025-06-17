@@ -11,17 +11,27 @@ import { AnalysisDetailDrawer } from './AnalysisDetailDrawer';
 interface AnalysisListSidebarProps {
   selectedAnalysis: any;
   onAnalysisSelect: (analysis: any) => void;
+  onCollapseChange?: (collapsed: boolean) => void;
 }
 
 export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
   selectedAnalysis,
-  onAnalysisSelect
+  onAnalysisSelect,
+  onCollapseChange
 }) => {
   const { data: designAnalyses = [], isLoading } = useDesignAnalyses();
   const { data: chatAnalyses = [] } = useChatAnalysisHistory();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [drawerAnalysis, setDrawerAnalysis] = useState<any>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const handleToggleCollapse = () => {
+    const newCollapsed = !isCollapsed;
+    setIsCollapsed(newCollapsed);
+    if (onCollapseChange) {
+      onCollapseChange(newCollapsed);
+    }
+  };
 
   // Combine both types of analyses and sort by date
   const allAnalyses = [
@@ -80,7 +90,7 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsCollapsed(!isCollapsed)}
+              onClick={handleToggleCollapse}
               className="h-8 w-8 p-0"
               title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
