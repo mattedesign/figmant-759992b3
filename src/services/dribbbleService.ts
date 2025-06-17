@@ -26,7 +26,7 @@ class DribbbleService {
     try {
       // Using Dribbble's public API endpoint for popular shots
       // Note: This uses a public endpoint that doesn't require authentication
-      const response = await fetch(`https://api.dribbble.com/v2/shots?per_page=${limit}&sort=popularity&timeframe=week&tags=product-design,ui,ux`, {
+      const response = await fetch(`https://api.dribbble.com/v2/shots?per_page=${limit}&sort=popularity&timeframe=year&tags=ui,ux`, {
         headers: {
           'Accept': 'application/json',
         },
