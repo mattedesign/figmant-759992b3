@@ -24,7 +24,7 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
     <div className={className}>
       <Card className="w-full">
         <CardHeader>
-          <h2 className="text-lg font-semibold">Analytics Dashboard</h2>
+          <CardTitle className="text-xl font-semibold">Analytics Dashboard</CardTitle>
         </CardHeader>
         
         <CardContent className="w-full">

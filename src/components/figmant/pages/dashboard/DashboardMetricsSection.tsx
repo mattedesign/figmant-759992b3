@@ -16,7 +16,7 @@ export const DashboardMetricsSection: React.FC<DashboardMetricsSectionProps> = (
     <div className={className}>
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Key Metrics</CardTitle>
+          <CardTitle className="text-xl font-semibold">Key Metrics</CardTitle>
         </CardHeader>
         
         <CardContent className="w-full">
