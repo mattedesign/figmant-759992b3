@@ -1,47 +1,52 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { MessageSquare, Paperclip } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  MessageSquare,
+  Paperclip
+} from 'lucide-react';
 
 interface AnalysisChatTabsProps {
-  activeTab: 'chat' | 'attachments';
-  onTabChange: (tab: 'chat' | 'attachments') => void;
-  attachmentCount?: number;
+  showUrlInput: boolean;
+  setShowUrlInput: (show: boolean) => void;
+  onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const AnalysisChatTabs: React.FC<AnalysisChatTabsProps> = ({
-  activeTab,
-  onTabChange,
-  attachmentCount = 0
+  showUrlInput,
+  setShowUrlInput,
+  onFileSelect
 }) => {
   return (
-    <div className="px-6 pt-4">
-      <div className="flex space-x-1">
-        <Button
-          variant={activeTab === 'chat' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => onTabChange('chat')}
-          className="flex items-center gap-2"
+    <Tabs defaultValue="chat" className="w-full">
+      <TabsList 
+        className="grid w-full grid-cols-2"
+        style={{
+          borderRadius: '8px',
+          background: 'var(--action-background-neutral-light_active, rgba(28, 34, 43, 0.05))'
+        }}
+      >
+        <TabsTrigger 
+          value="chat"
+          style={{
+            borderRadius: '6px',
+            background: 'var(--Background-primary, #FFF)',
+            boxShadow: '0px 1px 1px 0px rgba(11, 19, 36, 0.10), 0px 1px 3px 0px rgba(11, 19, 36, 0.10)'
+          }}
         >
-          <MessageSquare className="h-4 w-4" />
+          <MessageSquare className="h-4 w-4 mr-2" />
           Chat
-        </Button>
-        
-        <Button
-          variant={activeTab === 'attachments' ? 'default' : 'ghost'}
-          size="sm"
-          onClick={() => onTabChange('attachments')}
-          className="flex items-center gap-2"
+        </TabsTrigger>
+        <TabsTrigger 
+          value="attachments"
+          style={{
+            borderRadius: '6px'
+          }}
         >
-          <Paperclip className="h-4 w-4" />
+          <Paperclip className="h-4 w-4 mr-2" />
           Attachments
-          {attachmentCount > 0 && (
-            <span className="ml-1 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              {attachmentCount}
-            </span>
-          )}
-        </Button>
-      </div>
-    </div>
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
   );
 };
