@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, Image } from 'lucide-react';
+import { ArrowLeft, FileText } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AttachmentPreview } from '../AttachmentPreview';
 
@@ -30,21 +30,20 @@ export const AnalysisDetailsPanel: React.FC<AnalysisDetailsPanelProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        {onBackClick && (
+      {/* Back button only if provided */}
+      {onBackClick && (
+        <div className="p-4 border-b border-gray-200">
           <Button
             variant="ghost"
             size="sm"
             onClick={onBackClick}
-            className="mb-2 p-0"
+            className="p-0"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-        )}
-        <h4 className="font-medium text-gray-900">Analysis Details</h4>
-      </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
