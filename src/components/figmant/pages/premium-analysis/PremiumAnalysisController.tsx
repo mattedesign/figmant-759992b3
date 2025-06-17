@@ -53,7 +53,7 @@ export const PremiumAnalysisController: React.FC = () => {
       setCurrentStep(currentStep - 1);
     }
   };
-  return <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 p-6 bg-transparent">
+  return <div className="min-h-screen p-6 bg-transparent">
       <div className="max-w-4xl mx-auto">
         {/* Progress Bar */}
         <div className="mb-8">
