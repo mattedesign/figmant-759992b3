@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,7 +7,6 @@ import { SignInView } from './views/SignInView';
 import { PasswordResetForm } from './PasswordResetForm';
 import { UpdatePasswordForm } from './UpdatePasswordForm';
 import { ModernOnboardingFlow } from './ModernOnboardingFlow';
-import { DashboardPreview } from './DashboardPreview';
 
 export const SplitScreenAuth = () => {
   const {
@@ -76,9 +76,9 @@ export const SplitScreenAuth = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-white">
-      {/* Left side - Authentication forms */}
-      <div className="flex-1 lg:w-1/2 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24">
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      {/* Single centered authentication form */}
+      <div className="w-full max-w-md px-4 py-12">
         <AuthContainer 
           title={getAuthTitle()} 
           subtitle={getAuthSubtitle()}
@@ -116,11 +116,6 @@ export const SplitScreenAuth = () => {
             <a href="#" className="text-blue-600 hover:text-blue-500 font-medium">Privacy Policy</a>
           </p>
         </div>
-      </div>
-
-      {/* Right side - Recent uploads preview */}
-      <div className="hidden lg:flex lg:w-1/2">
-        <DashboardPreview />
       </div>
     </div>
   );
