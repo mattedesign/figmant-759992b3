@@ -48,7 +48,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         className="absolute inset-0 w-full h-full object-cover opacity-10"
       >
         <source 
-          src="https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/video/2025-06-17/dqsqe4k4m_7.mp4" 
+          src="https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/video/2025-06-17/clrcpd7ij_Brand.mp4" 
           type="video/mp4" 
         />
       </video>
