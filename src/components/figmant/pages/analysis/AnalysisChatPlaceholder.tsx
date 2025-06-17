@@ -1,14 +1,15 @@
 
 import React from 'react';
+import { Logo } from '@/components/common/Logo';
 
 export const AnalysisChatPlaceholder: React.FC = () => {
   return (
     <div className="flex-1 flex items-center justify-center">
       <div className="text-center py-12">
         <div className="flex items-center justify-center gap-3 mb-4">
-          <img 
-            src="/lovable-uploads/c52140a4-1da3-4d65-aa1d-35e9ccd21d91.png" 
-            alt="Design Analysis" 
+          <Logo 
+            size="lg" 
+            variant="collapsed"
             className="w-12 h-12"
           />
         </div>
