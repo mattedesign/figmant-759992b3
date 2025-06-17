@@ -70,7 +70,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
             {(handleAddUrl) => (
               <>
                 {/* Header with Tabs */}
-                <div className="p-6 bg-transparent">
+                <div className="px-6 pt-6 pb-3 bg-transparent">
                   <AnalysisChatHeader 
                     activeTab={stateProps.activeTab}
                     onTabChange={stateProps.setActiveTab}
