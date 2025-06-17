@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Home,
-  BarChart3, 
+  Wand, 
   Star, 
   FileText, 
   Settings,
@@ -31,7 +31,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 }) => {
   const mainSections = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'analysis', label: 'Analysis', icon: BarChart3 },
+    { id: 'analysis', label: 'Analysis', icon: Wand },
     { id: 'premium-analysis', label: 'Premium Analysis', icon: Star },
     { id: 'templates', label: 'Templates', icon: FileText },
     { id: 'preferences', label: 'Preferences', icon: Settings },
@@ -44,7 +44,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 
   if (isCollapsed) {
     return (
-      <div className="flex-1 overflow-y-auto flex flex-col">
+      <div className="flex-1 overflow-y-auto flex flex-col py-6">
         <div className="p-2 space-y-2 flex-1">
           {mainSections.map((section) => (
             <Button
@@ -71,7 +71,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
         </div>
         
         {/* Toggle button at bottom */}
-        <div className="p-2 border-t border-gray-200/30">
+        <div className="p-2 border-t border-gray-200/30 flex justify-center">
           <Button 
             variant="ghost" 
             size="icon"
@@ -86,7 +86,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto flex flex-col">
+    <div className="flex-1 overflow-y-auto flex flex-col py-6">
       {/* Pages Section */}
       <div className="p-4 space-y-6 flex-1">
         <div>
@@ -124,7 +124,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       </div>
 
       {/* Toggle button at bottom */}
-      <div className="p-4 border-t border-gray-200/30">
+      <div className="p-4 border-t border-gray-200/30 flex justify-center">
         <Button 
           variant="ghost" 
           size="icon"
