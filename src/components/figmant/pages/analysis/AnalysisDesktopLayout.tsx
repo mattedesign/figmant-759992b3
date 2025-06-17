@@ -40,8 +40,8 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
 
   // Determine the right panel mode based on state
   const getRightPanelMode = () => {
-    // If there's an active analysis, show analysis details
-    if (currentAnalysis || chatPanelProps.messages?.length > 0) {
+    // If there's an active analysis or analysis result, show analysis details
+    if (currentAnalysis || chatPanelProps.lastAnalysisResult || chatPanelProps.messages?.length > 0) {
       return 'analysis';
     }
     // If there are attachments or user is actively engaged, show templates
@@ -104,6 +104,7 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
           onBackClick={onBackClick}
           onCollapseChange={setRightCollapsed}
           onRemoveAttachment={chatPanelProps.onRemoveAttachment}
+          lastAnalysisResult={chatPanelProps.lastAnalysisResult}
         />
       </div>
     </div>
