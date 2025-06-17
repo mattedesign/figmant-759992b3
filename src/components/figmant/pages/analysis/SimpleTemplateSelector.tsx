@@ -30,15 +30,13 @@ export const SimpleTemplateSelector: React.FC<SimpleTemplateSelectorProps> = ({
           <SelectTrigger className="border-0 bg-transparent p-0 h-auto shadow-none focus:ring-0 flex-1">
             <SelectValue placeholder="Select analysis template" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="w-full min-w-[300px]">
             {availableTemplates.map((template) => (
-              <SelectItem key={template.id} value={template.id}>
-                <div className="flex items-center justify-between w-full">
-                  <div>
-                    <div className="font-medium">{template.display_name || template.displayName}</div>
-                    <div className="text-xs text-muted-foreground truncate max-w-60">
-                      {template.description}
-                    </div>
+              <SelectItem key={template.id} value={template.id} className="w-full">
+                <div className="w-full text-left">
+                  <div className="font-medium text-left">{template.display_name || template.displayName}</div>
+                  <div className="text-xs text-muted-foreground text-left whitespace-normal">
+                    {template.description}
                   </div>
                 </div>
               </SelectItem>
