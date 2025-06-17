@@ -35,7 +35,8 @@ serve(async (req) => {
     const body = await req.text();
     logStep("Constructing webhook event", { signatureExists: !!signature, bodyLength: body.length });
     
-    const event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
+    // Use the async version of constructEvent
+    const event = await stripe.webhooks.constructEventAsync(body, signature, endpointSecret);
     
     logStep(`Webhook event received: ${event.type}`, { eventId: event.id });
 
@@ -132,7 +133,7 @@ serve(async (req) => {
           newTotalPurchased 
         });
 
-        // Update or insert credits
+        // Update or insert credits using upsert with conflict resolution
         const { error: creditsError } = await supabase
           .from('user_credits')
           .upsert({
@@ -141,6 +142,9 @@ serve(async (req) => {
             total_purchased: newTotalPurchased,
             total_used: currentCredits?.total_used || 0,
             updated_at: new Date().toISOString()
+          }, { 
+            onConflict: 'user_id',
+            ignoreDuplicates: false 
           });
 
         if (creditsError) {
