@@ -13,24 +13,32 @@ interface AnalysisDynamicRightPanelProps {
   mode: 'empty' | 'templates' | 'analysis';
   promptTemplates?: ClaudePromptExample[];
   selectedPromptTemplate?: string;
+  selectedPromptCategory?: string;
   onPromptTemplateSelect?: (templateId: string) => void;
+  onPromptCategoryChange?: (category: string) => void;
   currentAnalysis?: any;
   attachments?: ChatAttachment[];
   onCollapseChange?: (collapsed: boolean) => void;
   onRemoveAttachment?: (id: string) => void;
   lastAnalysisResult?: any;
+  onAnalysisClick?: () => void;
+  onBackClick?: () => void;
 }
 
 export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps> = ({
   mode,
   promptTemplates,
   selectedPromptTemplate,
+  selectedPromptCategory,
   onPromptTemplateSelect,
+  onPromptCategoryChange,
   currentAnalysis,
   attachments = [],
   onCollapseChange,
   onRemoveAttachment,
-  lastAnalysisResult
+  lastAnalysisResult,
+  onAnalysisClick,
+  onBackClick
 }) => {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
@@ -77,7 +85,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
             {(currentAnalysis || lastAnalysisResult) && (
               <div className="flex-1">
                 <AnalysisDetailsPanel
-                  analysis={currentAnalysis || lastAnalysisResult}
+                  currentAnalysis={currentAnalysis || lastAnalysisResult}
                 />
               </div>
             )}

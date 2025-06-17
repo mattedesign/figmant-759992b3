@@ -9,7 +9,7 @@ export const useAssetOperations = () => {
   const uploadAsset = async (
     file: File,
     type: Asset['type'],
-    category: string = ASSET_CATEGORIES.CONTENT,
+    category: Asset['category'] = ASSET_CATEGORIES.CONTENT,
     tags: string[] = []
   ): Promise<Asset | null> => {
     if (!user) {

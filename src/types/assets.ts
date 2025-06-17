@@ -21,16 +21,16 @@ export interface AssetUploadConfig {
 }
 
 export const ASSET_CATEGORIES = {
-  BRANDING: 'branding',
-  CONTENT: 'content',
-  SYSTEM: 'system',
-  USER_UPLOADS: 'user-uploads'
+  BRANDING: 'branding' as const,
+  CONTENT: 'content' as const,
+  SYSTEM: 'system' as const,
+  USER_UPLOADS: 'user-uploads' as const
 } as const;
 
 export const ASSET_TYPES = {
-  LOGO: 'logo',
-  IMAGE: 'image',
-  DOCUMENT: 'document',
-  VIDEO: 'video',
-  OTHER: 'other'
+  LOGO: 'logo' as const,
+  IMAGE: 'image' as const,
+  DOCUMENT: 'document' as const,
+  VIDEO: 'video' as const,
+  OTHER: 'other' as const
 } as const;
