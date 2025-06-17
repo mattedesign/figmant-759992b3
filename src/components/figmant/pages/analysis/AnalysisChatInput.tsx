@@ -83,8 +83,8 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
             onChange={handleMessageChange}
             onKeyPress={handleKeyPress}
             placeholder="How can I help..."
-            className="min-h-[48px] max-h-[96px] resize-none pr-32 overflow-y-auto flex-1"
-            style={{ height: '48px' }}
+            className="min-h-[48px] max-h-[96px] resize-none pr-32 overflow-y-auto flex-1 leading-6 py-3"
+            style={{ height: '48px', lineHeight: '1.5' }}
             disabled={isAnalyzing}
           />
           
