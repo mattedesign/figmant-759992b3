@@ -165,7 +165,7 @@ serve(async (req) => {
         newTotalPurchased 
       });
 
-      // Update credits
+      // Update credits using upsert with conflict resolution
       const { error: creditsError } = await supabase
         .from('user_credits')
         .upsert({
@@ -174,6 +174,9 @@ serve(async (req) => {
           total_purchased: newTotalPurchased,
           total_used: currentCredits?.total_used || 0,
           updated_at: new Date().toISOString()
+        }, { 
+          onConflict: 'user_id',
+          ignoreDuplicates: false 
         });
 
       if (creditsError) {
