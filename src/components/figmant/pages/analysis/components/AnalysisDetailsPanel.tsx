@@ -119,19 +119,6 @@ export const AnalysisDetailsPanel: React.FC<AnalysisDetailsPanelProps> = ({
             </p>
           </div>
         )}
-
-        {/* Actions */}
-        {onAnalysisClick && !lastAnalysisResult && (
-          <div className="mt-6">
-            <Button
-              onClick={onAnalysisClick}
-              className="w-full"
-              size="sm"
-            >
-              Start Analysis
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
