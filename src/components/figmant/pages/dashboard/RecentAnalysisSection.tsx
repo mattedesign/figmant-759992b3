@@ -82,7 +82,7 @@ export const RecentAnalysisSection: React.FC<RecentAnalysisSectionProps> = ({
         style={containerStyle}
       >
         <div className="mb-4">
-          <h2 className="text-base font-medium">Recent Analysis</h2>
+          <CardTitle className="text-xl font-semibold">Recent Analysis</CardTitle>
         </div>
         
         {/* Loading State */}
