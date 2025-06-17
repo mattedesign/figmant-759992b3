@@ -2,7 +2,7 @@
 import React from 'react';
 import { Logo } from '@/components/common/Logo';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
+import { PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 
 interface SidebarHeaderProps {
   isCollapsed?: boolean;
@@ -27,7 +27,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
             onClick={handleToggle}
             className="h-8 w-8 text-gray-500 hover:text-gray-700"
           >
-            <Menu className="h-4 w-4" />
+            <PanelLeftOpen className="h-4 w-4" />
           </Button>
           <div className="w-10 h-10 flex items-center justify-center">
             <Logo size="sm" className="w-8 h-8" variant="collapsed" />
@@ -42,7 +42,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
             onClick={handleToggle}
             className="h-8 w-8 text-gray-500 hover:text-gray-700"
           >
-            <Menu className="h-4 w-4" />
+            <PanelLeftClose className="h-4 w-4" />
           </Button>
         </>
       )}
