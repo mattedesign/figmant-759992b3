@@ -23,6 +23,8 @@ interface BasicInfoFieldsProps {
     display_name: string;
     description: string;
     category: CategoryType;
+    original_prompt: string;
+    claude_response: string;
     use_case_context: string;
     business_domain: string;
     effectiveness_rating: number;

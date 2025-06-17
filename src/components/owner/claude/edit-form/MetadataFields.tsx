@@ -6,6 +6,7 @@ import { CategoryType } from '@/types/promptTypes';
 
 interface EditedPromptData {
   title: string;
+  display_name: string;
   description: string;
   category: CategoryType;
   original_prompt: string;
@@ -19,7 +20,7 @@ interface EditedPromptData {
 
 interface MetadataFieldsProps {
   editedPrompt: EditedPromptData;
-  setEditedPrompt: (prompt: EditedPromptData) => void;
+  setEditedPrompt: React.Dispatch<React.SetStateAction<EditedPromptData>>;
 }
 
 export const MetadataFields: React.FC<MetadataFieldsProps> = ({
@@ -37,7 +38,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
             min="1"
             max="5"
             value={editedPrompt.effectiveness_rating}
-            onChange={(e) => setEditedPrompt({ ...editedPrompt, effectiveness_rating: parseInt(e.target.value) || 1 })}
+            onChange={(e) => setEditedPrompt(prev => ({ ...prev, effectiveness_rating: parseInt(e.target.value) || 1 }))}
           />
         </div>
         <div className="space-y-2">
@@ -45,7 +46,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
           <Input
             id="edit-domain"
             value={editedPrompt.business_domain}
-            onChange={(e) => setEditedPrompt({ ...editedPrompt, business_domain: e.target.value })}
+            onChange={(e) => setEditedPrompt(prev => ({ ...prev, business_domain: e.target.value }))}
             placeholder="e.g., E-commerce, SaaS, Healthcare"
           />
         </div>
@@ -56,7 +57,7 @@ export const MetadataFields: React.FC<MetadataFieldsProps> = ({
         <Input
           id="edit-context"
           value={editedPrompt.use_case_context}
-          onChange={(e) => setEditedPrompt({ ...editedPrompt, use_case_context: e.target.value })}
+          onChange={(e) => setEditedPrompt(prev => ({ ...prev, use_case_context: e.target.value }))}
           placeholder="When and how this prompt should be used"
         />
       </div>

@@ -6,6 +6,7 @@ import { CategoryType } from '@/types/promptTypes';
 
 interface EditedTemplateData {
   title: string;
+  display_name: string;
   description: string;
   category: CategoryType;
   original_prompt: string;
@@ -19,7 +20,7 @@ interface EditedTemplateData {
 
 interface PromptContentFieldsProps {
   editedPrompt: EditedTemplateData;
-  setEditedPrompt: (prompt: EditedTemplateData) => void;
+  setEditedPrompt: React.Dispatch<React.SetStateAction<EditedTemplateData>>;
 }
 
 export const PromptContentFields: React.FC<PromptContentFieldsProps> = ({
@@ -33,7 +34,7 @@ export const PromptContentFields: React.FC<PromptContentFieldsProps> = ({
         <Textarea
           id="edit-prompt"
           value={editedPrompt.original_prompt}
-          onChange={(e) => setEditedPrompt({ ...editedPrompt, original_prompt: e.target.value })}
+          onChange={(e) => setEditedPrompt(prev => ({ ...prev, original_prompt: e.target.value }))}
           rows={6}
           placeholder="Enter the prompt template text"
         />
@@ -44,7 +45,7 @@ export const PromptContentFields: React.FC<PromptContentFieldsProps> = ({
         <Textarea
           id="edit-response"
           value={editedPrompt.claude_response}
-          onChange={(e) => setEditedPrompt({ ...editedPrompt, claude_response: e.target.value })}
+          onChange={(e) => setEditedPrompt(prev => ({ ...prev, claude_response: e.target.value }))}
           rows={4}
           placeholder="Describe the expected response format"
         />
