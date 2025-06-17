@@ -1,4 +1,11 @@
 
+import { LucideIcon } from 'lucide-react';
+
+export interface Stakeholder {
+  name: string;
+  title: string;
+}
+
 export interface StepData {
   selectedType: string;
   projectName: string;
@@ -7,8 +14,9 @@ export interface StepData {
   improvementMetric: string;
   deadline: string;
   date: string;
-  stakeholders: string[];
+  stakeholders: Stakeholder[];
   referenceLinks: string[];
+  uploadedFiles?: File[];
   customPrompt: string;
 }
 
@@ -19,4 +27,10 @@ export interface StepProps {
   totalSteps: number;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
+}
+
+export interface AnalysisType {
+  id: string;
+  title: string;
+  icon: LucideIcon;
 }
