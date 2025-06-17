@@ -41,13 +41,19 @@ const Dashboard = () => {
     console.log('Dashboard - Profile full_name:', profile?.full_name);
     console.log('Dashboard - Profile email:', profile?.email);
 
-    if (profile?.full_name && profile.full_name.trim()) {
+    // Return early if no profile data is loaded yet
+    if (!profile) {
+      console.log('Dashboard - No profile data yet, showing loading state');
+      return null; // This will trigger loading state
+    }
+
+    if (profile.full_name && profile.full_name.trim()) {
       const firstName = profile.full_name.split(' ')[0].trim();
       console.log('Dashboard - Extracted firstName from full_name:', firstName);
       return firstName || 'there';
     }
     // If no full_name, try to extract from email
-    if (profile?.email) {
+    if (profile.email) {
       const emailName = profile.email.split('@')[0];
       console.log('Dashboard - Extracted emailName:', emailName);
       // Capitalize first letter and return if it looks like a name
@@ -91,6 +97,8 @@ const Dashboard = () => {
     markCreditDepletionPromptSeen();
   };
 
+  const firstName = getFirstName();
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -100,10 +108,18 @@ const Dashboard = () => {
         <div className="flex-none px-8 py-6 pb-4" style={{ backgroundColor: 'transparent' }}>
           <div className="mb-4">
             <div className="text-sm text-gray-500 mb-1">{currentDate}</div>
-            <h1 className="text-2xl text-gray-900">
-              <span style={{ fontWeight: 'normal', color: '#455468' }}>{getGreeting()} </span>
-              <span className="font-semibold">{getFirstName()}</span>
-            </h1>
+            {firstName === null ? (
+              // Loading state while profile is being fetched
+              <h1 className="text-2xl text-gray-900">
+                <span style={{ fontWeight: 'normal', color: '#455468' }}>{getGreeting()} </span>
+                <span className="font-semibold">...</span>
+              </h1>
+            ) : (
+              <h1 className="text-2xl text-gray-900">
+                <span style={{ fontWeight: 'normal', color: '#455468' }}>{getGreeting()} </span>
+                <span className="font-semibold">{firstName}</span>
+              </h1>
+            )}
           </div>
         </div>
 

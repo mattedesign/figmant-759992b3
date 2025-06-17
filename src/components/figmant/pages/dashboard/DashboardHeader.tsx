@@ -33,13 +33,19 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     console.log('DashboardHeader - Profile full_name:', profile?.full_name);
     console.log('DashboardHeader - Profile email:', profile?.email);
 
-    if (profile?.full_name && profile.full_name.trim()) {
+    // Return early if no profile data is loaded yet
+    if (!profile) {
+      console.log('DashboardHeader - No profile data yet, showing loading state');
+      return null; // This will trigger loading state
+    }
+
+    if (profile.full_name && profile.full_name.trim()) {
       const firstName = profile.full_name.split(' ')[0].trim();
       console.log('DashboardHeader - Extracted firstName from full_name:', firstName);
       return firstName || 'there';
     }
     // If no full_name, try to extract from email
-    if (profile?.email) {
+    if (profile.email) {
       const emailName = profile.email.split('@')[0];
       console.log('DashboardHeader - Extracted emailName:', emailName);
       // Capitalize first letter and return if it looks like a name
@@ -53,13 +59,22 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     return 'there';
   };
 
+  const firstName = getFirstName();
+
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-[12px] pt-2">
       <div>
         <div className="text-sm text-gray-500 mb-1">{formattedDate}</div>
-        <h1 className="text-[24px] text-gray-900">
-          <span className="font-normal">{getGreeting()}</span>, <span className="font-bold">{getFirstName()}</span>
-        </h1>
+        {firstName === null ? (
+          // Loading state while profile is being fetched
+          <h1 className="text-[24px] text-gray-900">
+            <span className="font-normal">{getGreeting()}</span>...
+          </h1>
+        ) : (
+          <h1 className="text-[24px] text-gray-900">
+            <span className="font-normal">{getGreeting()}</span>, <span className="font-bold">{firstName}</span>
+          </h1>
+        )}
         {lastUpdated && (
           <Badge variant="outline" className="flex items-center gap-1 mt-2">
             <Calendar className="h-3 w-3" />
