@@ -200,6 +200,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          display_name: string
           effectiveness_rating: number | null
           id: string
           is_active: boolean | null
@@ -218,6 +219,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          display_name: string
           effectiveness_rating?: number | null
           id?: string
           is_active?: boolean | null
@@ -236,6 +238,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          display_name?: string
           effectiveness_rating?: number | null
           id?: string
           is_active?: boolean | null

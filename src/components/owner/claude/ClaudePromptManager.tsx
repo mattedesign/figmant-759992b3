@@ -27,6 +27,7 @@ export const ClaudePromptManager: React.FC = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newPrompt, setNewPrompt] = useState<Partial<ClaudePromptExample>>({
     title: '',
+    display_name: '',
     description: '',
     category: 'general' as const,
     original_prompt: '',
@@ -86,7 +87,7 @@ export const ClaudePromptManager: React.FC = () => {
   };
 
   const handleSavePrompt = async () => {
-    if (!newPrompt.title || !newPrompt.original_prompt || !newPrompt.claude_response) {
+    if (!newPrompt.title || !newPrompt.display_name || !newPrompt.original_prompt || !newPrompt.claude_response) {
       return;
     }
 
@@ -95,6 +96,7 @@ export const ClaudePromptManager: React.FC = () => {
       setShowCreateForm(false);
       setNewPrompt({
         title: '',
+        display_name: '',
         description: '',
         category: 'general' as const,
         original_prompt: '',
@@ -114,6 +116,7 @@ export const ClaudePromptManager: React.FC = () => {
     setShowCreateForm(false);
     setNewPrompt({
       title: '',
+      display_name: '',
       description: '',
       category: 'general' as const,
       original_prompt: '',

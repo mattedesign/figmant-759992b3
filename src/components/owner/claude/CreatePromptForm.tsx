@@ -34,7 +34,7 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
   onCancel,
   isSaving
 }) => {
-  const isFormValid = newPrompt.title && newPrompt.original_prompt && newPrompt.claude_response && newPrompt.category;
+  const isFormValid = newPrompt.title && newPrompt.display_name && newPrompt.original_prompt && newPrompt.claude_response && newPrompt.category;
 
   return (
     <Card>
@@ -53,6 +53,16 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
               value={newPrompt.title || ''}
               onChange={(e) => setNewPrompt({ ...newPrompt, title: e.target.value })}
               placeholder="e.g., Master UX Analysis Template"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="display_name">Display Name *</Label>
+            <Input
+              id="display_name"
+              value={newPrompt.display_name || ''}
+              onChange={(e) => setNewPrompt({ ...newPrompt, display_name: e.target.value })}
+              placeholder="e.g., Master UX Analysis"
             />
           </div>
           

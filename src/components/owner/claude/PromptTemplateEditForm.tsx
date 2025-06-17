@@ -11,6 +11,7 @@ import { MetadataFields } from './edit-form/MetadataFields';
 
 interface EditedTemplateData {
   title: string;
+  display_name: string;
   description: string;
   category: CategoryType;
   original_prompt: string;
@@ -40,6 +41,7 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
   
   const [editedTemplate, setEditedTemplate] = useState<EditedTemplateData>({
     title: template.title,
+    display_name: template.display_name || template.title,
     description: template.description || '',
     category: template.category,
     original_prompt: template.original_prompt,
@@ -58,6 +60,15 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
       toast({
         title: "Validation Error",
         description: "Title is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!editedTemplate.display_name.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Display name is required",
         variant: "destructive",
       });
       return;

@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface ClaudePromptExample {
   id: string;
   title: string;
+  display_name: string;
   description?: string;
   category: 'master' | 'competitor' | 'visual_hierarchy' | 'copy_messaging' | 'ecommerce_revenue' | 'ab_testing' | 'premium' | 'general';
   original_prompt: string;

@@ -1,24 +1,19 @@
 
-export interface PromptUpdateStatus {
-  status: 'idle' | 'updating' | 'success' | 'error';
-  message?: string;
-}
-
-export interface PromptUpdaterProps {
-  templateId: string;
-  icon: React.ComponentType<{ className?: string }>;
-  accentColor: string;
-}
-
 export type CategoryType = 'master' | 'competitor' | 'visual_hierarchy' | 'copy_messaging' | 'ecommerce_revenue' | 'ab_testing' | 'premium' | 'general';
 
-export const CATEGORY_OPTIONS = [
-  { value: 'master' as const, label: 'Master UX Analysis' },
-  { value: 'competitor' as const, label: 'Competitor Analysis' },
-  { value: 'visual_hierarchy' as const, label: 'Visual Hierarchy' },
-  { value: 'copy_messaging' as const, label: 'Copy & Messaging' },
-  { value: 'ecommerce_revenue' as const, label: 'E-commerce Revenue' },
-  { value: 'ab_testing' as const, label: 'A/B Testing' },
-  { value: 'premium' as const, label: 'Premium Analysis' },
-  { value: 'general' as const, label: 'General' }
-];
+export interface PromptTemplate {
+  id: string;
+  title: string;
+  display_name: string;
+  description?: string;
+  category: CategoryType;
+  original_prompt: string;
+  claude_response: string;
+  effectiveness_rating?: number;
+  use_case_context?: string;
+  business_domain?: string;
+  is_template: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
