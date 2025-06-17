@@ -4,6 +4,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { validateAndProcessImageFile } from '@/components/design/chat/handlers/fileValidation';
 
+// Utility function to sanitize file names for storage
+const sanitizeFileName = (fileName: string): string => {
+  // Remove or replace problematic characters
+  const sanitized = fileName
+    .replace(/[^a-zA-Z0-9.-]/g, '_') // Replace special chars with underscore
+    .replace(/_{2,}/g, '_') // Replace multiple underscores with single
+    .replace(/^_|_$/g, '') // Remove leading/trailing underscores
+    .toLowerCase();
+  
+  return sanitized;
+};
+
 export const useFileUploadHandler = (setAttachments: React.Dispatch<React.SetStateAction<ChatAttachment[]>>) => {
   const { toast } = useToast();
 
@@ -18,7 +30,7 @@ export const useFileUploadHandler = (setAttachments: React.Dispatch<React.SetSta
         ? { 
             ...att, 
             status, 
-            error: errorMessage,
+            errorMessage: errorMessage,
             uploadPath
           }
         : att
@@ -63,9 +75,13 @@ export const useFileUploadHandler = (setAttachments: React.Dispatch<React.SetSta
         }
       }
 
-      // Upload to Supabase storage
+      // Upload to Supabase storage with sanitized filename
       updateAttachmentStatus(attachmentId, 'uploading');
-      const fileName = `${Date.now()}-${fileToUpload.name}`;
+      const sanitizedFileName = sanitizeFileName(fileToUpload.name);
+      const fileName = `${Date.now()}-${sanitizedFileName}`;
+      
+      console.log('Uploading file with sanitized name:', fileName);
+      
       const { data, error } = await supabase.storage
         .from('design-uploads')
         .upload(`figmant-chat/${fileName}`, fileToUpload);
