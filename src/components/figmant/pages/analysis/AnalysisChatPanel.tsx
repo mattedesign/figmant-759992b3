@@ -11,6 +11,7 @@ import { AnalysisChatInput } from './AnalysisChatInput';
 import { AnalysisChatPlaceholder } from './AnalysisChatPlaceholder';
 import { useAttachmentHandlers } from '@/components/design/chat/hooks/useAttachmentHandlers';
 import { useFileUploadHandler } from './useFileUploadHandler';
+import { useMessageHandler } from './useMessageHandler';
 
 interface AnalysisChatPanelProps {
   message: string;
@@ -41,10 +42,10 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   showUrlInput,
   setShowUrlInput,
   selectedPromptTemplate,
+  selectedPromptCategory,
+  promptTemplates,
   onAnalysisComplete
 }) => {
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  
   const { addUrlAttachment, removeAttachment } = useAttachmentHandlers(
     attachments,
     setAttachments,
@@ -54,43 +55,24 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
 
   const { handleFileUpload } = useFileUploadHandler(setAttachments);
 
-  const handleSendMessage = async () => {
-    if (!message.trim() && attachments.length === 0) return;
-
-    const newMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content: message,
-      attachments: attachments.length > 0 ? attachments : undefined,
-      timestamp: new Date()
-    };
-
-    const updatedMessages = [...messages, newMessage];
-    setMessages(updatedMessages);
-    setMessage('');
-    setIsAnalyzing(true);
-
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: 'Thank you for your submission. I\'m analyzing your design...',
-        timestamp: new Date()
-      };
-      setMessages([...updatedMessages, aiResponse]);
-      
-      // Simulate analysis completion
-      setTimeout(() => {
-        setIsAnalyzing(false);
-        onAnalysisComplete?.({
-          score: Math.floor(Math.random() * 3) + 8,
-          status: 'Completed',
-          title: 'Design Analysis Complete'
-        });
-      }, 2000);
-    }, 1000);
-  };
+  // Use the real message handler that connects to Claude AI
+  const { 
+    isAnalyzing, 
+    canSend, 
+    handleSendMessage, 
+    handleKeyPress 
+  } = useMessageHandler({
+    message,
+    setMessage,
+    attachments,
+    setAttachments,
+    messages,
+    setMessages,
+    selectedPromptTemplate,
+    selectedPromptCategory,
+    promptTemplates,
+    onAnalysisComplete
+  });
 
   const handleAddUrl = () => {
     addUrlAttachment(urlInput);
@@ -100,7 +82,6 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     Array.from(files).forEach(handleFileUpload);
   };
 
-  const canSend = message.trim().length > 0 || attachments.length > 0;
   const hasContent = messages.length > 0 || message.trim().length > 0 || attachments.length > 0;
 
   return (
@@ -164,8 +145,10 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         message={message}
         setMessage={setMessage}
         onSendMessage={handleSendMessage}
+        onKeyPress={handleKeyPress}
         selectedPromptTemplate={selectedPromptTemplate}
         canSend={canSend}
+        isAnalyzing={isAnalyzing}
         onFileUpload={handleFileUploadFromInput}
         onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
       />
