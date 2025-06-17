@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { PremiumAnalysisWizard } from '../../premium-analysis/PremiumAnalysisWizard';
@@ -27,7 +27,6 @@ interface AnalysisTabContentProps {
   handleViewTemplate: (template: any) => void;
   attachments: ChatAttachment[];
   removeAttachment: (id: string) => void;
-  onCollapseHistory?: () => void;
 }
 
 export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
@@ -51,16 +50,8 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
   figmantTemplates,
   handleViewTemplate,
   attachments,
-  removeAttachment,
-  onCollapseHistory
+  removeAttachment
 }) => {
-  // Auto-collapse history when switching to wizard tab
-  useEffect(() => {
-    if (activeTab === 'wizard' && onCollapseHistory) {
-      onCollapseHistory();
-    }
-  }, [activeTab, onCollapseHistory]);
-
   const handleFileUploadFromInput = (files: FileList) => {
     Array.from(files).forEach(file => handleFileUpload(file));
   };
