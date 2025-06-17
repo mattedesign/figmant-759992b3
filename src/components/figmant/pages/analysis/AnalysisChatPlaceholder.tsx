@@ -10,7 +10,7 @@ export const AnalysisChatPlaceholder: React.FC = () => {
           <Logo 
             size="md" 
             variant="collapsed"
-            className="w-9 h-9"
+            className="w-6 h-6"
           />
           <h2 className="text-xl font-semibold text-gray-900">Design Analysis</h2>
         </div>
