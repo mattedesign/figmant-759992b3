@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PanelRightClose, PanelRightOpen, FileText, Layout } from 'lucide-react';
@@ -57,7 +56,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
   };
 
   const getHeaderTitle = () => {
-    return mode === 'templates' ? 'Templates' : 'Analysis Details';
+    return mode === 'templates' ? 'More' : 'Analysis Details';
   };
 
   const getModeIcon = () => {
