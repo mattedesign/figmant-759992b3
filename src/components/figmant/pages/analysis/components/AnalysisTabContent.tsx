@@ -62,37 +62,37 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
   const handleAddUrlWithInput = () => handleAddUrl(urlInput);
 
   return (
-    <div className="flex-1 overflow-hidden">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-        <TabsContent value="chat" className="flex-1 overflow-hidden mt-0">
-          <AnalysisChatContainer
-            messages={messages}
-            isAnalyzing={isAnalyzing}
-            message={message}
-            setMessage={setMessage}
-            onSendMessage={handleSendMessage}
-            onKeyPress={handleKeyPress}
-            getCurrentTemplate={getCurrentTemplate}
-            canSend={canSend}
-            onFileUpload={handleFileUploadFromInput}
-            onToggleUrlInput={handleToggleUrlInput}
-            showUrlInput={showUrlInput}
-            urlInput={urlInput}
-            setUrlInput={setUrlInput}
-            onAddUrl={handleAddUrlWithInput}
-            onCancelUrl={handleCancelUrl}
-            onTemplateSelect={handleTemplateSelect}
-            availableTemplates={figmantTemplates}
-            onViewTemplate={handleViewTemplate}
-            attachments={attachments}
-            onRemoveAttachment={removeAttachment}
-          />
-        </TabsContent>
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+      <TabsContent value="chat" className="flex-1 overflow-hidden mt-0 h-full">
+        <AnalysisChatContainer
+          messages={messages}
+          isAnalyzing={isAnalyzing}
+          message={message}
+          setMessage={setMessage}
+          onSendMessage={handleSendMessage}
+          onKeyPress={handleKeyPress}
+          getCurrentTemplate={getCurrentTemplate}
+          canSend={canSend}
+          onFileUpload={handleFileUploadFromInput}
+          onToggleUrlInput={handleToggleUrlInput}
+          showUrlInput={showUrlInput}
+          urlInput={urlInput}
+          setUrlInput={setUrlInput}
+          onAddUrl={handleAddUrlWithInput}
+          onCancelUrl={handleCancelUrl}
+          onTemplateSelect={handleTemplateSelect}
+          availableTemplates={figmantTemplates}
+          onViewTemplate={handleViewTemplate}
+          attachments={attachments}
+          onRemoveAttachment={removeAttachment}
+        />
+      </TabsContent>
 
-        <TabsContent value="wizard" className="flex-1 overflow-hidden mt-0">
+      <TabsContent value="wizard" className="flex-1 overflow-hidden mt-0 h-full">
+        <div className="h-full">
           <PremiumAnalysisController />
-        </TabsContent>
-      </Tabs>
-    </div>
+        </div>
+      </TabsContent>
+    </Tabs>
   );
 };
