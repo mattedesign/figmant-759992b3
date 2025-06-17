@@ -34,7 +34,6 @@ export const AnalysisChatHeader: React.FC<AnalysisChatHeaderProps> = ({
           <TabsTrigger 
             value="chat" 
             className="flex items-center gap-2"
-            disabled={false}
           >
             <MessageSquare className="h-4 w-4" />
             Chat
@@ -42,7 +41,6 @@ export const AnalysisChatHeader: React.FC<AnalysisChatHeaderProps> = ({
           <TabsTrigger 
             value="wizard" 
             className="flex items-center gap-2"
-            disabled={false}
           >
             <Sparkles className="h-4 w-4" />
             Wizard

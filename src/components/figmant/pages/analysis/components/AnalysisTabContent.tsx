@@ -61,20 +61,15 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
   
   const handleAddUrlWithInput = () => handleAddUrl(urlInput);
 
-  const handleTabChange = (value: string) => {
-    console.log('AnalysisTabContent: Tab change requested:', value);
-    setActiveTab(value);
-  };
-
   // For wizard tab, we want full width without the context panel
-  const contentClassName = activeTab === 'wizard' 
-    ? "flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col w-full"
-    : "flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col";
+  const contentClassName = "flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col w-full";
 
   return (
     <div className="h-full flex flex-col min-h-0">
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col min-h-0">
-        <TabsContent value="chat" className={contentClassName}>
+      {/* Note: We don't need another Tabs component here since the tabs are handled in the header */}
+      
+      {activeTab === "chat" && (
+        <div className={contentClassName}>
           <AnalysisChatContainer
             messages={messages}
             isAnalyzing={isAnalyzing}
@@ -97,12 +92,14 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
             attachments={attachments}
             onRemoveAttachment={removeAttachment}
           />
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="wizard" className={contentClassName}>
+      {activeTab === "wizard" && (
+        <div className={contentClassName}>
           <PremiumAnalysisWizard />
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </div>
   );
 };
