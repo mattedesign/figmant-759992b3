@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { ChatContainer } from './chat/ChatContainer';
 import { useDesignChatLogic } from './chat/hooks/useDesignChatLogic';
+import { ProcessedImage } from '@/utils/imageProcessing';
 
 // Type definitions
 export interface ChatAttachment {
@@ -9,9 +11,11 @@ export interface ChatAttachment {
   name: string;
   file?: File;
   url?: string;
-  status: 'uploading' | 'processing' | 'uploaded' | 'error';
+  status: 'uploading' | 'processing' | 'uploaded' | 'error' | 'pending';
   uploadPath?: string;
   error?: string;
+  errorMessage?: string;
+  processingInfo?: ProcessedImage;
 }
 
 export interface ChatMessage {

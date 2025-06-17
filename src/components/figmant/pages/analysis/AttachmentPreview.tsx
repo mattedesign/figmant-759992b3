@@ -43,8 +43,10 @@ export const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({
         return 'Uploading';
       case 'processing':
         return 'Processing';
+      case 'pending':
+        return 'Pending';
       case 'error':
-        return attachment.error || 'Error';
+        return attachment.errorMessage || attachment.error || 'Error';
       default:
         return attachment.status;
     }
@@ -62,7 +64,7 @@ export const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({
           <Badge 
             variant={
               attachment.status === 'uploaded' ? 'default' :
-              attachment.status === 'uploading' || attachment.status === 'processing' ? 'secondary' : 
+              attachment.status === 'uploading' || attachment.status === 'processing' || attachment.status === 'pending' ? 'secondary' : 
               'destructive'
             }
             className="text-xs"
@@ -70,9 +72,9 @@ export const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({
             {getStatusText()}
           </Badge>
         </div>
-        {attachment.status === 'error' && attachment.error && (
-          <div className="text-xs text-red-600 mt-1 truncate" title={attachment.error}>
-            {attachment.error}
+        {attachment.status === 'error' && (attachment.errorMessage || attachment.error) && (
+          <div className="text-xs text-red-600 mt-1 truncate" title={attachment.errorMessage || attachment.error}>
+            {attachment.errorMessage || attachment.error}
           </div>
         )}
       </div>
