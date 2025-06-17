@@ -30,11 +30,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
             <Menu className="h-4 w-4" />
           </Button>
           <div className="w-10 h-10 flex items-center justify-center">
-            <img 
-              src="/lovable-uploads/4b1400ea-3704-45a3-b6e8-6cf63812bd8e.png" 
-              alt="Logo" 
-              className="w-8 h-8 object-contain"
-            />
+            <Logo size="sm" className="w-8 h-8" />
           </div>
         </>
       ) : (
