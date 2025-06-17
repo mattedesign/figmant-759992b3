@@ -2,7 +2,7 @@
 import React from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { Sparkles } from 'lucide-react';
+import { PremiumAnalysisController } from '../../premium-analysis/PremiumAnalysisController';
 import { AnalysisChatContainer } from './AnalysisChatContainer';
 
 interface AnalysisTabContentProps {
@@ -90,13 +90,7 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
         </TabsContent>
 
         <TabsContent value="wizard" className="flex-1 overflow-hidden mt-0">
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center text-muted-foreground">
-              <Sparkles className="h-12 w-12 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Wizard Coming Soon</h3>
-              <p>This guided analysis wizard will help you step through your design analysis.</p>
-            </div>
-          </div>
+          <PremiumAnalysisController />
         </TabsContent>
       </Tabs>
     </div>
