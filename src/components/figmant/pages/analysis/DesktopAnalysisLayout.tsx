@@ -26,12 +26,12 @@ export const DesktopAnalysisLayout: React.FC<DesktopAnalysisLayoutProps> = ({
   onPromptTemplateChange
 }) => {
   return (
-    <div className="h-full flex overflow-hidden">
+    <div className="h-full flex overflow-hidden bg-[#F9FAFB]">
       {/* Collapsible Analysis History Sidebar */}
       <CollapsibleHistorySidebar onNewAnalysis={onNewAnalysis} />
 
       {/* Main Chat Content - Centered */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-gray-50">
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#F9FAFB]">
         {/* Header with Chat/Attachments tabs */}
         <div className="flex-shrink-0 bg-white border-b border-gray-200">
           <div className="flex items-center justify-center py-4">

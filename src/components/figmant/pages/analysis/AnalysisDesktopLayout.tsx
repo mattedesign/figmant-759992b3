@@ -36,7 +36,7 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
   onBackClick
 }) => {
   return (
-    <div className="h-full flex">
+    <div className="h-full flex bg-[#F9FAFB]">
       <AnalysisListSidebar 
         selectedAnalysis={selectedAnalysis}
         onAnalysisSelect={onAnalysisSelect}
