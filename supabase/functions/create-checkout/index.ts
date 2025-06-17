@@ -42,8 +42,8 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { planType = "basic" } = await req.json().catch(() => ({}));
-    logStep("Plan type requested", { planType });
+    const { planId, planType = "credits", amount, creditAmount } = await req.json();
+    logStep("Request data parsed", { planId, planType, amount, creditAmount });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     
@@ -57,17 +57,9 @@ serve(async (req) => {
       logStep("No existing customer found");
     }
 
-    // Define pricing based on plan type
-    const planPricing = {
-      basic: { amount: 2900, name: "Basic Plan" }, // $29
-      unlimited: { amount: 9900, name: "Unlimited Plan" } // $99
-    };
-
-    const selectedPlan = planPricing[planType as keyof typeof planPricing] || planPricing.basic;
-    logStep("Selected plan", selectedPlan);
-
     const origin = req.headers.get("origin") || "https://ux-analytics-ai.vercel.app";
     
+    // Create checkout session for credit purchase (one-time payment)
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -76,21 +68,22 @@ serve(async (req) => {
           price_data: {
             currency: "usd",
             product_data: { 
-              name: selectedPlan.name,
-              description: `Monthly subscription to ${selectedPlan.name}`
+              name: `${creditAmount} Analysis Credits`,
+              description: `Purchase ${creditAmount} credits for design analysis`
             },
-            unit_amount: selectedPlan.amount,
-            recurring: { interval: "month" },
+            unit_amount: amount, // Amount already in cents
           },
           quantity: 1,
         },
       ],
-      mode: "subscription",
-      success_url: `${origin}/subscription?success=true`,
+      mode: "payment", // One-time payment for credits
+      success_url: `${origin}/subscription?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/subscription?canceled=true`,
       metadata: {
         user_id: user.id,
-        plan_type: planType
+        plan_id: planId,
+        plan_type: planType,
+        credit_amount: creditAmount.toString()
       }
     });
 

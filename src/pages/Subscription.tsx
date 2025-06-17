@@ -1,20 +1,51 @@
+
+import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans';
 import { useCreditPurchase } from '@/hooks/useCreditPurchase';
-import { Check, CreditCard, Star, Zap, Coins } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Check, CreditCard, Star, Zap, Coins, CheckCircle, XCircle } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Subscription() {
   const { profile } = useAuth();
-  const { credits } = useUserCredits();
+  const { credits, refetchCredits } = useUserCredits();
   const { plans } = useSubscriptionPlans();
   const { handlePurchaseCredits, isProcessing } = useCreditPurchase();
+  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
 
   const isOwner = profile?.role === 'owner';
   const currentBalance = credits?.current_balance || 0;
+
+  // Handle success/cancel redirects from Stripe
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const canceled = searchParams.get('canceled');
+    const sessionId = searchParams.get('session_id');
+
+    if (success === 'true') {
+      toast({
+        title: "Payment Successful!",
+        description: "Your credits have been added to your account.",
+        duration: 5000,
+      });
+      // Refresh credits after successful payment
+      refetchCredits();
+    } else if (canceled === 'true') {
+      toast({
+        variant: "destructive",
+        title: "Payment Canceled",
+        description: "Your payment was canceled. No charges were made.",
+        duration: 5000,
+      });
+    }
+  }, [searchParams, toast, refetchCredits]);
 
   // Only show credit-based plans
   const creditPlans = plans?.filter(plan => plan.plan_type === 'credits' && plan.is_active) || [];
@@ -99,6 +130,25 @@ export default function Subscription() {
             Choose a credit pack that fits your UX analysis needs
           </p>
         </div>
+
+        {/* Success/Error Messages */}
+        {searchParams.get('success') === 'true' && (
+          <Alert className="mb-6 border-green-200 bg-green-50">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              Payment successful! Your credits have been added to your account.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {searchParams.get('canceled') === 'true' && (
+          <Alert className="mb-6 border-red-200 bg-red-50">
+            <XCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800">
+              Payment was canceled. No charges were made to your account.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Current Status */}
         {currentBalance > 0 && (
@@ -188,7 +238,7 @@ export default function Subscription() {
         {/* Additional Info */}
         <div className="text-center mt-8 text-sm text-muted-foreground">
           <p>All purchases include secure payment processing. Credits never expire.</p>
-          <p className="mt-2 text-xs">Payment processing requires Stripe configuration by administrator.</p>
+          <p className="mt-2 text-xs">Secure payments powered by Stripe.</p>
         </div>
       </div>
     </div>

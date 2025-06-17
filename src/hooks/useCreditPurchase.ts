@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useCreditPurchase = () => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -10,32 +11,35 @@ export const useCreditPurchase = () => {
     setIsProcessing(true);
     
     try {
-      // For now, show a toast explaining that payment processing needs to be set up
-      toast({
-        title: "Payment Processing Required",
-        description: `To purchase ${creditAmount} credits for $${price}, payment processing with Stripe needs to be configured. Contact your administrator to set up payments.`,
-        duration: 5000,
-      });
+      console.log('Starting credit purchase:', { planId, planName, creditAmount, price });
       
-      console.log('Credit purchase attempted:', {
-        planId,
-        planName,
-        creditAmount,
-        price
+      // Call the create-checkout edge function to create a Stripe session
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { 
+          planId,
+          planType: 'credits',
+          amount: price * 100, // Convert to cents
+          creditAmount
+        }
       });
-      
-      // TODO: Implement actual Stripe integration here
-      // This would involve:
-      // 1. Creating a checkout session
-      // 2. Redirecting to Stripe
-      // 3. Handling the success/failure callbacks
+
+      if (error) {
+        throw new Error(error.message || 'Failed to create checkout session');
+      }
+
+      if (data?.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
       
     } catch (error) {
       console.error('Error purchasing credits:', error);
       toast({
         variant: "destructive",
-        title: "Purchase Failed",
-        description: "Unable to process credit purchase. Please try again later.",
+        title: "Purchase Failed", 
+        description: error instanceof Error ? error.message : "Unable to process credit purchase. Please try again later.",
       });
     } finally {
       setIsProcessing(false);
