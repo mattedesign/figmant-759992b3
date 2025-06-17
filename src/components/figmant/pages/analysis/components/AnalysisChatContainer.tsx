@@ -24,6 +24,7 @@ interface AnalysisChatContainerProps {
   onCancelUrl: () => void;
   onTemplateSelect: (templateId: string) => void;
   availableTemplates: any[];
+  onViewTemplate: (template: any) => void;
 }
 
 export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
@@ -43,7 +44,8 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   onAddUrl,
   onCancelUrl,
   onTemplateSelect,
-  availableTemplates
+  availableTemplates,
+  onViewTemplate
 }) => {
   const hasMessages = messages.length > 0;
 
@@ -85,6 +87,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         onToggleUrlInput={onToggleUrlInput}
         onTemplateSelect={onTemplateSelect}
         availableTemplates={availableTemplates}
+        onViewTemplate={onViewTemplate}
       />
     </>
   );

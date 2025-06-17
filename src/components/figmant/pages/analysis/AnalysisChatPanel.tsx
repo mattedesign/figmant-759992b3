@@ -114,9 +114,10 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         onCancelUrl={() => setShowUrlInput(false)}
         onTemplateSelect={handleTemplateSelect}
         availableTemplates={figmantTemplates}
+        onViewTemplate={handleViewTemplate}
       />
 
-      {/* Template Details Modal - keeping this for potential future use */}
+      {/* Template Details Modal */}
       <PromptTemplateModal 
         template={modalTemplate}
         isOpen={showTemplateModal}
