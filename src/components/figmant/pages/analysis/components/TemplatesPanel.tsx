@@ -39,11 +39,6 @@ export const TemplatesPanel: React.FC<TemplatesPanelProps> = ({
 
   return (
     <div className="h-full bg-white border-l border-gray-200 flex flex-col">
-      <div className="p-4 border-b border-gray-200">
-        <h3 className="font-semibold text-base">Prompt Templates</h3>
-        <p className="text-xs text-gray-500 mt-1">Select a template to auto-fill your analysis</p>
-      </div>
-      
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {Object.entries(groupedTemplates).map(([category, templates]) => (
           <div key={category} className="space-y-2">
