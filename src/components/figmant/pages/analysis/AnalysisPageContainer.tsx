@@ -77,8 +77,8 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
 
       {/* Center Panel - Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Prompt Template Selector */}
-        <div className="bg-white border-b border-gray-200 p-6">
+        {/* Prompt Template Selector - Hidden */}
+        <div className="bg-white border-b border-gray-200 p-6 hidden">
           <PromptTemplateSelector
             promptTemplates={claudePromptTemplates}
             promptsLoading={promptsLoading}
