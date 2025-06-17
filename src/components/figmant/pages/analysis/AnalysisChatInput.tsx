@@ -51,66 +51,65 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
         )}
         
         {/* Input area */}
-        <div className="flex items-end space-x-3">
-          <div className="flex-1 relative">
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Describe your design analysis needs..."
-              className="min-h-[80px] resize-none pr-24"
-              disabled={isAnalyzing}
-            />
-            
-            {/* Input controls */}
-            <div className="absolute bottom-2 right-2 flex items-center space-x-1">
-              {/* File upload */}
-              <label className="cursor-pointer">
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*,.pdf"
-                  onChange={handleFileInputChange}
-                  className="hidden"
-                  disabled={isAnalyzing}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  disabled={isAnalyzing}
-                >
-                  <Paperclip className="h-4 w-4" />
-                </Button>
-              </label>
-              
-              {/* URL input toggle */}
+        <div className="relative">
+          <Textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Describe your design analysis needs..."
+            className="min-h-[80px] resize-none pr-32"
+            disabled={isAnalyzing}
+          />
+          
+          {/* Input controls - positioned inside the textarea */}
+          <div className="absolute bottom-2 right-2 flex items-center space-x-1">
+            {/* File upload */}
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                multiple
+                accept="image/*,.pdf"
+                onChange={handleFileInputChange}
+                className="hidden"
+                disabled={isAnalyzing}
+              />
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={onToggleUrlInput}
                 className="h-8 w-8 p-0"
                 disabled={isAnalyzing}
               >
-                <Link className="h-4 w-4" />
+                <Paperclip className="h-4 w-4" />
               </Button>
-            </div>
+            </label>
+            
+            {/* URL input toggle */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onToggleUrlInput}
+              className="h-8 w-8 p-0"
+              disabled={isAnalyzing}
+            >
+              <Link className="h-4 w-4" />
+            </Button>
+
+            {/* Send button */}
+            <Button
+              onClick={onSendMessage}
+              disabled={!canSend || isAnalyzing}
+              size="sm"
+              className="h-8 w-8 p-0"
+            >
+              {isAnalyzing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
           </div>
-          
-          {/* Send button */}
-          <Button
-            onClick={onSendMessage}
-            disabled={!canSend || isAnalyzing}
-            className="px-6"
-          >
-            {isAnalyzing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
         </div>
       </div>
     </div>
