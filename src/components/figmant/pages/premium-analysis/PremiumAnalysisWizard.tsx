@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { StepData } from './types';
@@ -61,7 +62,7 @@ export const PremiumAnalysisWizard: React.FC = () => {
       </div>
       
       {/* Fixed navigation at bottom - only show for non-processing steps */}
-      {currentStep < 7 && <div className="flex-shrink-0 p-6 bg-transparent">
+      {currentStep < 7 && <div className="flex-shrink-0 p-6 bg-transparent" style={{ borderTop: 'none' }}>
           <div className="flex justify-between">
             <Button variant="outline" onClick={handlePreviousStep} disabled={currentStep === 1} className="flex items-center gap-2">
               <ChevronLeft className="h-4 w-4" />
