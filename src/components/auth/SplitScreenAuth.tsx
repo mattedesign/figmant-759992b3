@@ -29,7 +29,7 @@ export const SplitScreenAuth = () => {
       if (isOwner) {
         navigate('/owner');
       } else {
-        navigate('/dashboard');
+        navigate('/figmant');
       }
     }
   }, [user, loading, resetMode, showOnboarding, isOwner, navigate]);
@@ -77,39 +77,50 @@ export const SplitScreenAuth = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-background">
+    <div className="min-h-screen flex bg-white">
       {/* Left side - Authentication forms */}
-      <div className="flex-1 lg:w-1/2 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-md">
-          <AuthContainer title={getAuthTitle()} subtitle={getAuthSubtitle()}>
-            {showPasswordReset ? (
-              <div className="space-y-6">
-                <PasswordResetForm onBack={() => setShowPasswordReset(false)} />
-              </div>
-            ) : (
-              <SignInView 
-                activeTab={activeTab} 
-                onTabChange={setActiveTab} 
-                onForgotPassword={() => setShowPasswordReset(true)} 
-                onSignUpSuccess={handleSuccessfulSignUp} 
-              />
-            )}
-          </AuthContainer>
+      <div className="flex-1 lg:w-1/2 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24">
+        <AuthContainer 
+          title={getAuthTitle()} 
+          subtitle={getAuthSubtitle()}
+          welcomeText={activeTab === 'signin' ? "Welcome to UX Analytics AI" : undefined}
+        >
+          {showPasswordReset ? (
+            <div className="space-y-6">
+              <PasswordResetForm onBack={() => setShowPasswordReset(false)} />
+            </div>
+          ) : (
+            <SignInView 
+              activeTab={activeTab} 
+              onTabChange={setActiveTab} 
+              onForgotPassword={() => setShowPasswordReset(true)} 
+              onSignUpSuccess={handleSuccessfulSignUp} 
+            />
+          )}
+        </AuthContainer>
 
-          {/* Terms of Service - Now properly positioned */}
-          <div className="text-center text-xs text-muted-foreground mt-6 px-4">
-            <p>
-              By continuing, you agree to our{' '}
-              <a href="#" className="text-primary hover:underline font-medium">Terms of Service</a>{' '}
-              and{' '}
-              <a href="#" className="text-primary hover:underline font-medium">Privacy Policy</a>
-            </p>
-          </div>
+        {/* Terms of Service */}
+        <div className="mt-8 text-center text-xs text-gray-500 max-w-md mx-auto">
+          <p>
+            {activeTab === 'signin' ? 'New to UX Analytics AI?' : 'Already have an account?'}{' '}
+            <button
+              onClick={() => setActiveTab(activeTab === 'signin' ? 'signup' : 'signin')}
+              className="text-blue-600 hover:text-blue-500 font-medium"
+            >
+              {activeTab === 'signin' ? 'Create an account' : 'Sign in'}
+            </button>
+          </p>
+          <p className="mt-4">
+            By continuing, you agree to our{' '}
+            <a href="#" className="text-blue-600 hover:text-blue-500 font-medium">Terms of Service</a>{' '}
+            and{' '}
+            <a href="#" className="text-blue-600 hover:text-blue-500 font-medium">Privacy Policy</a>
+          </p>
         </div>
       </div>
 
-      {/* Right side - Dashboard preview */}
-      <div className="hidden lg:flex lg:w-1/2 p-8 bg-muted/30">
+      {/* Right side - Recent uploads preview */}
+      <div className="hidden lg:flex lg:w-1/2">
         <DashboardPreview />
       </div>
     </div>
