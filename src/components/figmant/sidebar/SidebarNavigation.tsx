@@ -45,8 +45,8 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             className={cn(
               "w-10 h-10 p-0",
               activeSection === section.id 
-                ? "bg-[#F9FAFB] text-[#3D4A5C]" 
-                : "hover:bg-[#F9FAFB] hover:text-[#3D4A5C]"
+                ? "bg-white text-[#3D4A5C]" 
+                : "hover:bg-white hover:text-[#3D4A5C]"
             )}
             onClick={() => onSectionChange(section.id)}
             title={section.label}
@@ -76,8 +76,8 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               className={cn(
                 "w-full justify-start",
                 activeSection === section.id 
-                  ? "bg-[#F9FAFB] text-[#3D4A5C] rounded-[20px]"
-                  : "hover:bg-[#F9FAFB] hover:text-[#3D4A5C] hover:rounded-[20px]"
+                  ? "bg-white text-[#3D4A5C] rounded-[20px]"
+                  : "hover:bg-white hover:text-[#3D4A5C] hover:rounded-[20px]"
               )}
               onClick={() => onSectionChange(section.id)}
             >
