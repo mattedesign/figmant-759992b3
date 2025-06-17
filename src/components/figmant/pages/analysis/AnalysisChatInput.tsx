@@ -1,21 +1,12 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Paperclip, Link, Send, Sparkles, ChevronDown, Info } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Textarea } from '@/components/ui/textarea';
+import { Send, Upload, Link, Loader2, Sparkles, X, Globe, FileText } from 'lucide-react';
+import { PromptTemplateSelector } from './PromptTemplateSelector';
+import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
 interface AnalysisChatInputProps {
   message: string;
@@ -27,9 +18,11 @@ interface AnalysisChatInputProps {
   isAnalyzing: boolean;
   onFileUpload: (files: FileList) => void;
   onToggleUrlInput: () => void;
-  onTemplateSelect?: (templateId: string) => void;
-  availableTemplates?: any[];
-  onViewTemplate?: (template: any) => void;
+  onTemplateSelect: (templateId: string) => void;
+  availableTemplates: any[];
+  onViewTemplate: (template: any) => void;
+  attachments?: ChatAttachment[];
+  onRemoveAttachment?: (attachmentId: string) => void;
 }
 
 export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
@@ -43,157 +36,132 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   onFileUpload,
   onToggleUrlInput,
   onTemplateSelect,
-  availableTemplates = [],
-  onViewTemplate
+  availableTemplates,
+  onViewTemplate,
+  attachments = [],
+  onRemoveAttachment
 }) => {
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileClick = () => {
+  const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
+    if (files && files.length > 0) {
       onFileUpload(files);
     }
-    // Reset the input value so the same file can be selected again
     e.target.value = '';
   };
 
-  const handleTemplateSelect = (templateId: string) => {
-    if (onTemplateSelect) {
-      onTemplateSelect(templateId);
-    }
-  };
-
-  const handleInfoClick = (e: React.MouseEvent, template: any) => {
-    e.stopPropagation();
-    if (onViewTemplate) {
-      onViewTemplate(template);
-    }
-  };
-
   return (
-    <TooltipProvider>
-      <div className="p-6 bg-white border-t border-gray-100">
-        {/* Template Dropdown Selector */}
-        {selectedPromptTemplate && (
-          <div className="mb-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="h-auto p-2 flex items-center gap-2 hover:bg-gray-50 border border-gray-200 rounded-lg"
-                  disabled={isAnalyzing}
-                >
-                  <Sparkles className="h-4 w-4 text-blue-500" />
-                  <span className="font-medium text-gray-900">{selectedPromptTemplate.display_name}</span>
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-80 max-h-96 overflow-y-auto bg-white z-50">
-                {availableTemplates.map((template) => (
-                  <DropdownMenuItem
-                    key={template.id}
-                    onClick={() => handleTemplateSelect(template.id)}
-                    className={`cursor-pointer p-3 ${
-                      template.id === selectedPromptTemplate.id 
-                        ? 'bg-blue-50 border-l-2 border-blue-500' 
-                        : 'hover:bg-gray-50'
-                    }`}
+    <div className="p-4 border-t border-gray-200 bg-white space-y-3">
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*,.pdf"
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+      />
+
+      {/* Attachments Display */}
+      {attachments.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-gray-700">Attachments ({attachments.length})</div>
+          <div className="flex flex-wrap gap-2">
+            {attachments.map((attachment) => (
+              <Badge 
+                key={attachment.id} 
+                variant="secondary" 
+                className="px-3 py-1 flex items-center gap-2"
+              >
+                {attachment.type === 'url' ? (
+                  <Globe className="h-3 w-3" />
+                ) : (
+                  <FileText className="h-3 w-3" />
+                )}
+                <span className="max-w-32 truncate">
+                  {attachment.type === 'url' ? attachment.url : attachment.name}
+                </span>
+                {onRemoveAttachment && (
+                  <button
+                    onClick={() => onRemoveAttachment(attachment.id)}
+                    className="ml-1 hover:text-red-600"
                   >
-                    <div className="flex items-center gap-2 w-full">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium">{template.display_name}</span>
-                          {template.id === selectedPromptTemplate.id && (
-                            <Badge variant="default" className="text-xs">Current</Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-600 text-left">{template.description}</p>
-                      </div>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 hover:bg-gray-200"
-                            onClick={(e) => handleInfoClick(e, template)}
-                          >
-                            <Info className="h-3 w-3" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>View template details</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
-        
-        {/* Input Area */}
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={onKeyPress}
-              placeholder="Describe what you'd like me to analyze..."
-              className="min-h-[100px] resize-none text-left"
-              style={{ textAlign: 'left' }}
-              disabled={isAnalyzing}
-            />
-          </div>
-          
-          <div className="flex flex-col gap-2">
-            {/* File Upload Button */}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleFileClick}
-              title="Upload files"
-              disabled={isAnalyzing}
-            >
-              <Paperclip className="h-4 w-4" />
-            </Button>
-            
-            {/* URL Input Button */}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={onToggleUrlInput}
-              title="Add website URL"
-              disabled={isAnalyzing}
-            >
-              <Link className="h-4 w-4" />
-            </Button>
-            
-            {/* Send Button */}
-            <Button
-              onClick={onSendMessage}
-              disabled={!canSend || isAnalyzing}
-              size="icon"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </Badge>
+            ))}
           </div>
         </div>
-        
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept="image/*,.pdf,.doc,.docx,.txt"
-          onChange={handleFileChange}
-          className="hidden"
+      )}
+
+      {/* Template Selector */}
+      <div className="flex items-center gap-2">
+        <Sparkles className="h-4 w-4 text-blue-600" />
+        <span className="text-sm font-medium">Analysis Template:</span>
+        <PromptTemplateSelector
+          selectedTemplate={selectedPromptTemplate}
+          onTemplateSelect={onTemplateSelect}
+          availableTemplates={availableTemplates}
+          onViewTemplate={onViewTemplate}
         />
       </div>
-    </TooltipProvider>
+
+      {/* Message Input */}
+      <div className="space-y-2">
+        <Textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Describe what you'd like me to analyze..."
+          className="min-h-[100px] resize-none"
+          onKeyDown={onKeyPress}
+        />
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onToggleUrlInput}
+              className="flex items-center gap-2"
+            >
+              <Link className="h-4 w-4" />
+              Add URL
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleUploadClick}
+              className="flex items-center gap-2"
+            >
+              <Upload className="h-4 w-4" />
+              Upload Files
+            </Button>
+          </div>
+          
+          <Button 
+            onClick={onSendMessage}
+            disabled={!canSend || isAnalyzing}
+            className="flex items-center gap-2"
+          >
+            {isAnalyzing ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <Send className="h-4 w-4" />
+                Send Analysis
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 };

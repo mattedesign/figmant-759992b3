@@ -25,6 +25,8 @@ interface AnalysisChatContainerProps {
   onTemplateSelect: (templateId: string) => void;
   availableTemplates: any[];
   onViewTemplate: (template: any) => void;
+  attachments?: ChatAttachment[];
+  onRemoveAttachment?: (attachmentId: string) => void;
 }
 
 export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
@@ -45,7 +47,9 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   onCancelUrl,
   onTemplateSelect,
   availableTemplates,
-  onViewTemplate
+  onViewTemplate,
+  attachments = [],
+  onRemoveAttachment
 }) => {
   const hasMessages = messages.length > 0;
 
@@ -88,6 +92,8 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         onTemplateSelect={onTemplateSelect}
         availableTemplates={availableTemplates}
         onViewTemplate={onViewTemplate}
+        attachments={attachments}
+        onRemoveAttachment={onRemoveAttachment}
       />
     </>
   );

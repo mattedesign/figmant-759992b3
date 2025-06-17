@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AnalysisChatHeader } from './AnalysisChatHeader';
@@ -81,7 +82,10 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   });
 
   const handleAddUrl = () => {
-    addUrlAttachment(urlInput);
+    if (urlInput.trim()) {
+      addUrlAttachment(urlInput);
+      setShowUrlInput(false);
+    }
   };
 
   const handleFileUploadFromInput = (files: FileList) => {
@@ -115,6 +119,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         onTemplateSelect={handleTemplateSelect}
         availableTemplates={figmantTemplates}
         onViewTemplate={handleViewTemplate}
+        attachments={attachments}
+        onRemoveAttachment={removeAttachment}
       />
 
       {/* Template Details Modal */}
