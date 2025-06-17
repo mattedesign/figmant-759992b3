@@ -10,11 +10,12 @@ export const useAssetManagement = () => {
     setIsLoading,
     addAsset,
     removeAsset,
+    updateAsset,
     getAssetsByType,
     getAssetsByCategory
   } = useAssetState();
 
-  const { uploadAsset: uploadAssetOperation, deleteAsset: deleteAssetOperation } = useAssetOperations();
+  const { uploadAsset: uploadAssetOperation, replaceAsset: replaceAssetOperation, deleteAsset: deleteAssetOperation } = useAssetOperations();
 
   const uploadAsset = async (
     file: File,
@@ -29,6 +30,19 @@ export const useAssetManagement = () => {
         addAsset(asset);
       }
       return asset;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const replaceAsset = async (existingAsset: Asset, newFile: File): Promise<Asset | null> => {
+    setIsLoading(true);
+    try {
+      const updatedAsset = await replaceAssetOperation(existingAsset, newFile);
+      if (updatedAsset) {
+        updateAsset(updatedAsset);
+      }
+      return updatedAsset;
     } finally {
       setIsLoading(false);
     }
@@ -51,6 +65,7 @@ export const useAssetManagement = () => {
     assets,
     isLoading,
     uploadAsset,
+    replaceAsset,
     deleteAsset,
     getAssetsByType,
     getAssetsByCategory

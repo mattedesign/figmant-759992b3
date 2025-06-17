@@ -8,6 +8,7 @@ interface AssetGridProps {
   assets: Asset[];
   selectedType: Asset['type'];
   onDeleteAsset: (asset: Asset) => void;
+  onReplaceAsset: (asset: Asset, newFile: File) => void;
   isLoading: boolean;
 }
 
@@ -15,6 +16,7 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
   assets,
   selectedType,
   onDeleteAsset,
+  onReplaceAsset,
   isLoading,
 }) => {
   return (
@@ -37,6 +39,7 @@ export const AssetGrid: React.FC<AssetGridProps> = ({
                 key={asset.id}
                 asset={asset}
                 onDelete={onDeleteAsset}
+                onReplace={onReplaceAsset}
                 isLoading={isLoading}
               />
             ))}

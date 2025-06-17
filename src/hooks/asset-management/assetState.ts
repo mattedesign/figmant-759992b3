@@ -210,6 +210,12 @@ export const useAssetState = () => {
     });
   }, []);
 
+  const updateAsset = useCallback((updatedAsset: Asset) => {
+    setAssets(prev => prev.map(asset => 
+      asset.id === updatedAsset.id ? updatedAsset : asset
+    ));
+  }, []);
+
   const removeAsset = useCallback((assetId: string) => {
     setAssets(prev => prev.filter(a => a.id !== assetId));
   }, []);
@@ -227,6 +233,7 @@ export const useAssetState = () => {
     isLoading,
     setIsLoading,
     addAsset,
+    updateAsset,
     removeAsset,
     getAssetsByType,
     getAssetsByCategory,

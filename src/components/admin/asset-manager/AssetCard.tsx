@@ -1,22 +1,26 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Image, Video, FileText, Settings } from 'lucide-react';
+import { Trash2, Image, Video, FileText, Settings, Upload } from 'lucide-react';
 import { Asset } from '@/types/assets';
 
 interface AssetCardProps {
   asset: Asset;
   onDelete: (asset: Asset) => void;
+  onReplace: (asset: Asset, newFile: File) => void;
   isLoading: boolean;
 }
 
 export const AssetCard: React.FC<AssetCardProps> = ({
   asset,
   onDelete,
+  onReplace,
   isLoading,
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const getAssetIcon = (asset: Asset) => {
     switch (asset.type) {
       case 'logo':
@@ -37,6 +41,33 @@ export const AssetCard: React.FC<AssetCardProps> = ({
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleReplaceClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      onReplace(asset, file);
+      // Reset the input so the same file can be selected again if needed
+      event.target.value = '';
+    }
+  };
+
+  const getAcceptTypes = () => {
+    switch (asset.type) {
+      case 'image':
+      case 'logo':
+        return 'image/*';
+      case 'video':
+        return 'video/*';
+      case 'document':
+        return 'application/pdf';
+      default:
+        return '*/*';
+    }
   };
 
   return (
@@ -94,6 +125,15 @@ export const AssetCard: React.FC<AssetCardProps> = ({
             <Button
               variant="outline"
               size="sm"
+              onClick={handleReplaceClick}
+              disabled={isLoading}
+              title="Replace asset"
+            >
+              <Upload className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => onDelete(asset)}
               disabled={isLoading}
               title="Delete asset"
@@ -101,6 +141,13 @@ export const AssetCard: React.FC<AssetCardProps> = ({
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={getAcceptTypes()}
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
         </div>
       </CardContent>
     </Card>

@@ -7,12 +7,17 @@ import { AssetUploadSection } from './asset-manager/AssetUploadSection';
 import { AssetGrid } from './asset-manager/AssetGrid';
 
 export const AssetManager: React.FC = () => {
-  const { assets, isLoading, uploadAsset, deleteAsset, getAssetsByType } = useAssetManagement();
+  const { assets, isLoading, uploadAsset, replaceAsset, deleteAsset, getAssetsByType } = useAssetManagement();
   const [selectedType, setSelectedType] = useState<Asset['type']>('logo');
   const [selectedCategory, setSelectedCategory] = useState<Asset['category']>(ASSET_CATEGORIES.BRANDING);
 
   const handleCategoryChange = (category: Asset['category']) => {
     setSelectedCategory(category);
+  };
+
+  const handleReplaceAsset = async (asset: Asset, newFile: File) => {
+    console.log('Replacing asset:', asset.name, 'with new file:', newFile.name);
+    await replaceAsset(asset, newFile);
   };
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
@@ -59,6 +64,7 @@ export const AssetManager: React.FC = () => {
         assets={currentAssets}
         selectedType={selectedType}
         onDeleteAsset={deleteAsset}
+        onReplaceAsset={handleReplaceAsset}
         isLoading={isLoading}
       />
     </div>
