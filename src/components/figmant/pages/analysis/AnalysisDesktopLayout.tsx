@@ -24,7 +24,6 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
   selectedAnalysis,
   onAnalysisSelect,
   chatPanelProps,
-  rightPanelMode,
   promptTemplates,
   selectedPromptCategory,
   selectedPromptTemplate,
@@ -86,7 +85,12 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
         className="flex-1 min-w-0 transition-all duration-300"
         style={{ width: getMainContentWidth() }}
       >
-        <AnalysisChatPanel {...chatPanelProps} />
+        <AnalysisChatPanel 
+          {...chatPanelProps}
+          promptTemplates={promptTemplates}
+          selectedPromptCategory={selectedPromptCategory}
+          selectedPromptTemplate={selectedPromptTemplate}
+        />
       </div>
       
       {/* Right Panel */}
