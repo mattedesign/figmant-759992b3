@@ -1,36 +1,16 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, FileText, ChevronRight, ChevronDown, Star, FileImage } from 'lucide-react';
+import { Plus, ChevronRight, ChevronDown, Star } from 'lucide-react';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
 import { formatDistanceToNow } from 'date-fns';
-import { Sparkles, Target, BarChart3, Users, ShoppingCart, FlaskConical } from 'lucide-react';
+import { getTemplateIcon } from './components/TemplateIcon';
 
 interface AnalysisListSidebarProps {
   selectedAnalysis: any;
   onAnalysisSelect: (analysis: any) => void;
 }
-
-const getTemplateIcon = (analysisType: string) => {
-  const type = analysisType?.toLowerCase() || '';
-  
-  if (type.includes('master') || type.includes('comprehensive')) {
-    return Sparkles;
-  } else if (type.includes('competitor') || type.includes('competitive')) {
-    return Target;
-  } else if (type.includes('visual') || type.includes('hierarchy')) {
-    return BarChart3;
-  } else if (type.includes('copy') || type.includes('messaging') || type.includes('content')) {
-    return Users;
-  } else if (type.includes('ecommerce') || type.includes('revenue') || type.includes('conversion')) {
-    return ShoppingCart;
-  } else if (type.includes('ab') || type.includes('test') || type.includes('experiment')) {
-    return FlaskConical;
-  } else {
-    return Sparkles;
-  }
-};
 
 export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
   selectedAnalysis,
@@ -53,8 +33,8 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
     ...chatAnalyses.map(a => ({ 
       ...a, 
       type: 'chat', 
-      title: 'Chat Analysis',
-      analysisType: a.analysis_type || 'General',
+      title: a.analysis_type || 'Master Analysis',
+      analysisType: a.analysis_type || 'Master Analysis',
       score: Math.floor((a.confidence_score || 0.8) * 10),
       fileCount: a.analysis_results?.attachments_processed || 1
     }))
@@ -82,7 +62,7 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">History</h2>
+          <h2 className="text-xl font-semibold pl-3">History</h2>
         </div>
       </div>
 
@@ -108,7 +88,7 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
                 const isExpanded = expandedItems.has(`${analysis.type}-${analysis.id}`);
                 
                 return (
-                  <div key={`${analysis.type}-${analysis.id}`} className="border border-gray-200 rounded-lg">
+                  <div key={`${analysis.type}-${analysis.id}`} className="rounded-lg">
                     <div className="p-3 hover:bg-blue-50 cursor-pointer">
                       <div className="flex items-center gap-2 w-full">
                         <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
