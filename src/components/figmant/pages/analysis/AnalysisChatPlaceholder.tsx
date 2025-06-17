@@ -3,7 +3,7 @@ import React from 'react';
 
 export const AnalysisChatPlaceholder: React.FC = () => {
   return (
-    <div className="flex-1 flex items-center justify-center min-h-full">
+    <div className="flex-1 flex items-center justify-center h-full">
       <div className="text-center py-12 px-8 max-w-2xl">
         <div className="flex items-center justify-center gap-2 mb-2">
           <img 
