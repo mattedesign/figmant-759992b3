@@ -102,7 +102,6 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
       {/* Template Selector */}
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-blue-600" />
-        <span className="text-sm font-medium">Analysis Template:</span>
         <SimpleTemplateSelector
           selectedTemplate={selectedPromptTemplate}
           onTemplateSelect={onTemplateSelect}
