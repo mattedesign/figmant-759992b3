@@ -51,7 +51,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
       const scrollHeight = textareaRef.current.scrollHeight;
       const lineHeight = 24; // Approximate line height
       const maxHeight = lineHeight * 4; // 4 lines max
-      const minHeight = lineHeight * 1; // 1 line min
+      const minHeight = 40; // Increased minimum height to prevent text cutoff
       
       const newHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight);
       textareaRef.current.style.height = `${newHeight}px`;
@@ -61,7 +61,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   // Reset height when message is cleared
   useEffect(() => {
     if (!message && textareaRef.current) {
-      textareaRef.current.style.height = '24px'; // Reset to single line
+      textareaRef.current.style.height = '40px'; // Reset to proper single line height
     }
   }, [message]);
 
@@ -83,8 +83,8 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
             onChange={handleMessageChange}
             onKeyPress={handleKeyPress}
             placeholder="Describe your design analysis needs..."
-            className="min-h-[24px] max-h-[96px] resize-none pr-32 overflow-y-auto"
-            style={{ height: '24px' }}
+            className="min-h-[40px] max-h-[96px] resize-none pr-32 overflow-y-auto"
+            style={{ height: '40px' }}
             disabled={isAnalyzing}
           />
           
