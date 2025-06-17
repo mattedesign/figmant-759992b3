@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Home,
   Wand, 
-  Star, 
+  Crown, 
   FileText, 
   Settings,
   Search,
@@ -32,7 +32,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   const mainSections = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'analysis', label: 'Analysis', icon: Wand },
-    { id: 'premium-analysis', label: 'Premium Analysis', icon: Star },
+    { id: 'premium-analysis', label: 'Premium Analysis', icon: Crown },
     { id: 'templates', label: 'Templates', icon: FileText },
     { id: 'preferences', label: 'Preferences', icon: Settings },
     { id: 'search', label: 'Search', icon: Search },
@@ -124,14 +124,14 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       </div>
 
       {/* Toggle button at bottom */}
-      <div className="p-4 border-t border-gray-200/30 flex justify-center">
+      <div className="p-4 border-t border-gray-200/30">
         <Button 
-          variant="ghost" 
-          size="icon"
+          variant="ghost"
           onClick={handleToggle}
-          className="h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-transparent active:bg-transparent"
+          className="w-full justify-start text-gray-500 hover:text-gray-700 hover:bg-transparent active:bg-transparent"
         >
-          <PanelLeftClose className="h-9 w-9" />
+          <PanelLeftClose className="h-4 w-4 mr-3" />
+          <span className="text-sm font-medium">Collapse</span>
         </Button>
       </div>
     </div>
