@@ -46,6 +46,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   promptTemplates,
   onAnalysisComplete
 }) => {
+  const [activeTab, setActiveTab] = useState("chat");
+  
   const {
     addUrlAttachment,
     removeAttachment
@@ -72,48 +74,101 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     promptTemplates,
     onAnalysisComplete
   });
+
   const handleAddUrl = () => {
     addUrlAttachment(urlInput);
   };
+
   const handleFileUploadFromInput = (files: FileList) => {
     Array.from(files).forEach(handleFileUpload);
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
   };
   
   // Only show messages when there are actual messages, not when user is typing
   const hasMessages = messages.length > 0;
   
-  return <div className="h-full flex flex-col bg-[#F9FAFB]">
+  return (
+    <div className="h-full flex flex-col bg-[#F9FAFB]">
       {/* Header with Tabs moved to top */}
       <div className="p-6 bg-transparent">
         <AnalysisChatHeader />
         
-
-        <AnalysisChatTabs showUrlInput={showUrlInput} setShowUrlInput={setShowUrlInput} onFileSelect={() => {}} // This is no longer used since upload is in the input
-      />
+        <AnalysisChatTabs 
+          showUrlInput={showUrlInput} 
+          setShowUrlInput={setShowUrlInput} 
+          onFileSelect={() => {}} // This is no longer used since upload is in the input
+          onFileUpload={handleFileUploadFromInput}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
       </div>
 
-      {/* Messages Area or Placeholder */}
-      <div className="flex-1 overflow-y-auto bg-[#F9FAFB]">
-        {hasMessages ? <div className="p-6">
-            <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
-          </div> : <AnalysisChatPlaceholder />}
-      </div>
+      {/* Messages Area or Placeholder - only show when chat tab is active */}
+      {activeTab === "chat" && (
+        <div className="flex-1 overflow-y-auto bg-[#F9FAFB]">
+          {hasMessages ? (
+            <div className="p-6">
+              <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
+            </div>
+          ) : (
+            <AnalysisChatPlaceholder />
+          )}
+        </div>
+      )}
+
+      {/* Attachments tab content is handled by AnalysisChatTabs component */}
+      {activeTab === "attachments" && (
+        <div className="flex-1 overflow-y-auto bg-[#F9FAFB] p-6">
+          {/* Tab content is rendered within AnalysisChatTabs */}
+        </div>
+      )}
 
       {/* Attachments */}
-      {attachments.length > 0 && <div className="px-6 py-4 border-t border-gray-100 bg-white">
+      {attachments.length > 0 && (
+        <div className="px-6 py-4 border-t border-gray-100 bg-white">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm font-medium">Attachments</span>
             <Badge variant="secondary">{attachments.length}</Badge>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {attachments.map(attachment => <AttachmentPreview key={attachment.id} attachment={attachment} onRemove={removeAttachment} />)}
+            {attachments.map(attachment => (
+              <AttachmentPreview 
+                key={attachment.id} 
+                attachment={attachment} 
+                onRemove={removeAttachment} 
+              />
+            ))}
           </div>
-        </div>}
+        </div>
+      )}
 
       {/* URL Input */}
-      {showUrlInput && <URLInputSection urlInput={urlInput} setUrlInput={setUrlInput} onAddUrl={handleAddUrl} onCancel={() => setShowUrlInput(false)} />}
+      {showUrlInput && (
+        <URLInputSection 
+          urlInput={urlInput} 
+          setUrlInput={setUrlInput} 
+          onAddUrl={handleAddUrl} 
+          onCancel={() => setShowUrlInput(false)} 
+        />
+      )}
 
-      {/* Chat Input */}
-      <AnalysisChatInput message={message} setMessage={setMessage} onSendMessage={handleSendMessage} onKeyPress={handleKeyPress} selectedPromptTemplate={selectedPromptTemplate} canSend={canSend} isAnalyzing={isAnalyzing} onFileUpload={handleFileUploadFromInput} onToggleUrlInput={() => setShowUrlInput(!showUrlInput)} />
-    </div>;
+      {/* Chat Input - only show when chat tab is active */}
+      {activeTab === "chat" && (
+        <AnalysisChatInput 
+          message={message} 
+          setMessage={setMessage} 
+          onSendMessage={handleSendMessage} 
+          onKeyPress={handleKeyPress} 
+          selectedPromptTemplate={selectedPromptTemplate} 
+          canSend={canSend} 
+          isAnalyzing={isAnalyzing} 
+          onFileUpload={handleFileUploadFromInput} 
+          onToggleUrlInput={() => setShowUrlInput(!showUrlInput)} 
+        />
+      )}
+    </div>
+  );
 };
