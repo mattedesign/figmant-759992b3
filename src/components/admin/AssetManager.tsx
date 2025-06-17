@@ -11,6 +11,10 @@ export const AssetManager: React.FC = () => {
   const [selectedType, setSelectedType] = useState<Asset['type']>('logo');
   const [selectedCategory, setSelectedCategory] = useState<Asset['category']>(ASSET_CATEGORIES.BRANDING);
 
+  const handleCategoryChange = (category: Asset['category']) => {
+    setSelectedCategory(category);
+  };
+
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     accept: {
       'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'],
@@ -43,7 +47,7 @@ export const AssetManager: React.FC = () => {
         selectedType={selectedType}
         selectedCategory={selectedCategory}
         onTypeChange={setSelectedType}
-        onCategoryChange={setSelectedCategory}
+        onCategoryChange={handleCategoryChange}
         getRootProps={getRootProps}
         getInputProps={getInputProps}
         isDragActive={isDragActive}

@@ -10,9 +10,9 @@ import { AssetFilters } from './AssetFilters';
 
 interface AssetUploadSectionProps {
   selectedType: Asset['type'];
-  selectedCategory: string;
+  selectedCategory: Asset['category'];
   onTypeChange: (type: Asset['type']) => void;
-  onCategoryChange: (category: string) => void;
+  onCategoryChange: (category: Asset['category']) => void;
   getRootProps: () => any;
   getInputProps: () => any;
   isDragActive: boolean;
