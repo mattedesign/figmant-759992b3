@@ -64,7 +64,9 @@ export const PremiumAnalysisWizard: React.FC = () => {
               stepData={stepData} 
               setStepData={setStepData} 
               currentStep={currentStep} 
-              totalSteps={totalSteps} 
+              totalSteps={totalSteps}
+              onNextStep={handleNextStep}
+              onPreviousStep={handlePreviousStep}
             />
             
             {/* Navigation buttons - only show for non-processing steps */}

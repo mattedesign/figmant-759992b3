@@ -2,10 +2,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { StepProps } from '../types';
 import { StepHeader } from '../components/StepHeader';
 import { figmantPromptTemplates } from '@/data/figmantPromptTemplates';
-import { Sparkles, Target, BarChart3, Users, ShoppingCart, FlaskConical, Crown, Brain, Star, Eye, Smartphone, Calendar, Layers } from 'lucide-react';
+import { Sparkles, Target, BarChart3, Users, ShoppingCart, FlaskConical, Crown, Brain, Star, Eye, Smartphone, Calendar, Layers, ArrowRight } from 'lucide-react';
 
 const getCategoryIcon = (category: string) => {
   switch (category) {
@@ -43,10 +44,15 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
   stepData, 
   setStepData, 
   currentStep, 
-  totalSteps 
+  totalSteps,
+  onNextStep
 }) => {
   const handleTypeSelection = (templateId: string) => {
     setStepData({ ...stepData, selectedType: templateId });
+    // Automatically proceed to next step after selection
+    if (onNextStep) {
+      onNextStep();
+    }
   };
 
   return (
@@ -60,16 +66,16 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {figmantPromptTemplates.map((template) => {
           const IconComponent = getCategoryIcon(template.category);
+          const isSelected = stepData.selectedType === template.id;
           
           return (
             <Card 
               key={template.id} 
-              className={`transition-all hover:shadow-md cursor-pointer group ${
-                stepData.selectedType === template.id
+              className={`transition-all hover:shadow-md group ${
+                isSelected
                   ? 'ring-2 ring-primary shadow-md'
                   : ''
               }`}
-              onClick={() => handleTypeSelection(template.id)}
             >
               <CardHeader>
                 <div className="flex items-start justify-between mb-3">
@@ -86,7 +92,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                 </div>
                 
                 <CardTitle className={`text-lg transition-colors ${
-                  stepData.selectedType === template.id 
+                  isSelected 
                     ? 'text-primary' 
                     : 'group-hover:text-primary'
                 }`}>
@@ -133,6 +139,20 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                       </div>
                     </div>
                   )}
+
+                  <div className="pt-3 border-t">
+                    <Button 
+                      onClick={() => handleTypeSelection(template.id)}
+                      className={`w-full flex items-center justify-center gap-2 ${
+                        isSelected 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'bg-gray-900 hover:bg-gray-800 text-white'
+                      }`}
+                    >
+                      {isSelected ? 'Selected' : 'Select'}
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
