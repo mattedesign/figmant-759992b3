@@ -36,7 +36,7 @@ export interface AnalysisChatStateRenderProps {
   handleViewTemplate: (template: any) => void;
   setShowTemplateModal: (show: boolean) => void;
   setModalTemplate: (template: any) => void;
-  addUrlAttachment: () => void;
+  addUrlAttachment: (urlInput: string) => void;
   removeAttachment: (id: string) => void;
   handleFileUpload: (file: File) => void;
   isAnalyzing: boolean;
@@ -77,7 +77,7 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
   } = useAnalysisChatState({ selectedPromptTemplate, onAnalysisComplete });
 
   const {
-    addUrlAttachment,
+    addUrlAttachment: originalAddUrlAttachment,
     removeAttachment
   } = useAttachmentHandlers(attachments, setAttachments, setUrlInput, setShowUrlInput);
 
@@ -102,6 +102,11 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
     promptTemplates,
     onAnalysisComplete
   });
+
+  // Wrapper function to match the expected signature
+  const addUrlAttachment = (urlInput: string) => {
+    originalAddUrlAttachment(urlInput);
+  };
 
   return children({
     activeTab,

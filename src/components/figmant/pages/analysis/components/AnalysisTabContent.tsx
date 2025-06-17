@@ -16,12 +16,12 @@ interface AnalysisTabContentProps {
   handleKeyPress: (e: React.KeyboardEvent) => void;
   getCurrentTemplate: () => any;
   canSend: boolean;
-  handleFileUpload: (files: FileList) => void;
+  handleFileUpload: (file: File) => void;
   showUrlInput: boolean;
   setShowUrlInput: (show: boolean) => void;
   urlInput: string;
   setUrlInput: (url: string) => void;
-  handleAddUrl: () => void;
+  handleAddUrl: (urlInput: string) => void;
   handleTemplateSelect: (templateId: string) => void;
   figmantTemplates: any[];
   handleViewTemplate: (template: any) => void;
@@ -53,11 +53,13 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
   removeAttachment
 }) => {
   const handleFileUploadFromInput = (files: FileList) => {
-    Array.from(files).forEach(handleFileUpload);
+    Array.from(files).forEach(file => handleFileUpload(file));
   };
 
   const handleToggleUrlInput = () => setShowUrlInput(!showUrlInput);
   const handleCancelUrl = () => setShowUrlInput(false);
+  
+  const handleAddUrlWithInput = () => handleAddUrl(urlInput);
 
   return (
     <div className="flex-1 overflow-hidden">
@@ -77,7 +79,7 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
             showUrlInput={showUrlInput}
             urlInput={urlInput}
             setUrlInput={setUrlInput}
-            onAddUrl={handleAddUrl}
+            onAddUrl={handleAddUrlWithInput}
             onCancelUrl={handleCancelUrl}
             onTemplateSelect={handleTemplateSelect}
             availableTemplates={figmantTemplates}
