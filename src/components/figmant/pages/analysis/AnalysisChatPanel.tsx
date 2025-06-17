@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AnalysisChatHeader } from './AnalysisChatHeader';
-import { AnalysisChatContainer } from './components/AnalysisChatContainer';
 import { PromptTemplateModal } from './PromptTemplateModal';
-import { useAttachmentHandlers } from '@/components/design/chat/hooks/useAttachmentHandlers';
-import { useFileUploadHandler } from './useFileUploadHandler';
-import { useMessageHandler } from './useMessageHandler';
-import { useAnalysisChatState } from './hooks/useAnalysisChatState';
-import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { Sparkles } from 'lucide-react';
+import { URLInputSection } from './URLInputSection';
+import { AnalysisChatState } from './components/AnalysisChatState';
+import { URLAttachmentHandler } from './components/URLAttachmentHandler';
+import { AnalysisTabContent } from './components/AnalysisTabContent';
 
 interface AnalysisChatPanelProps {
   message: string;
@@ -44,163 +41,89 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   promptTemplates,
   onAnalysisComplete
 }) => {
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("chat");
-  
-  const {
-    figmantTemplates,
-    selectedTemplate,
-    showTemplateModal,
-    modalTemplate,
-    getCurrentTemplate,
-    handleTemplateSelect,
-    handleViewTemplate,
-    setShowTemplateModal,
-    setModalTemplate
-  } = useAnalysisChatState({ selectedPromptTemplate, onAnalysisComplete });
-
-  const {
-    addUrlAttachment,
-    removeAttachment
-  } = useAttachmentHandlers(attachments, setAttachments, setUrlInput, setShowUrlInput);
-
-  const {
-    handleFileUpload
-  } = useFileUploadHandler(setAttachments);
-
-  const {
-    isAnalyzing,
-    canSend,
-    handleSendMessage,
-    handleKeyPress
-  } = useMessageHandler({
-    message,
-    setMessage,
-    attachments,
-    setAttachments,
-    messages,
-    setMessages,
-    selectedPromptTemplate: getCurrentTemplate(),
-    selectedPromptCategory,
-    promptTemplates,
-    onAnalysisComplete
-  });
-
-  const handleAddUrl = () => {
-    if (urlInput.trim()) {
-      console.log('Adding URL:', urlInput);
-      
-      // Validate URL format
-      let formattedUrl = urlInput.trim();
-      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-        formattedUrl = `https://${formattedUrl}`;
-      }
-
-      try {
-        const urlObj = new URL(formattedUrl);
-        const hostname = urlObj.hostname;
-
-        // Check if URL already exists
-        const urlExists = attachments.some(att => att.url === formattedUrl);
-        if (urlExists) {
-          toast({
-            variant: "destructive",
-            title: "URL Already Added",
-            description: `${hostname} is already in your attachments.`,
-          });
-          return;
-        }
-
-        // Create new URL attachment
-        const newAttachment: ChatAttachment = {
-          id: crypto.randomUUID(),
-          type: 'url',
-          name: hostname,
-          url: formattedUrl,
-          status: 'uploaded'
-        };
-
-        console.log('Creating new URL attachment:', newAttachment);
-        setAttachments([...attachments, newAttachment]);
-        
-        setUrlInput('');
-        setShowUrlInput(false);
-        
-        toast({
-          title: "Website Added",
-          description: `${hostname} has been added for analysis.`,
-        });
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Invalid URL",
-          description: "Please enter a valid website URL.",
-        });
-      }
-    }
-  };
-
-  const handleFileUploadFromInput = (files: FileList) => {
-    Array.from(files).forEach(handleFileUpload);
-  };
-
   return (
     <div className="h-full flex flex-col bg-[#F9FAFB]">
-      {/* Header with Tabs */}
-      <div className="p-6 bg-transparent">
-        <AnalysisChatHeader 
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
-      </div>
+      <AnalysisChatState
+        message={message}
+        setMessage={setMessage}
+        messages={messages}
+        setMessages={setMessages}
+        attachments={attachments}
+        setAttachments={setAttachments}
+        urlInput={urlInput}
+        setUrlInput={setUrlInput}
+        showUrlInput={showUrlInput}
+        setShowUrlInput={setShowUrlInput}
+        selectedPromptTemplate={selectedPromptTemplate}
+        selectedPromptCategory={selectedPromptCategory}
+        promptTemplates={promptTemplates}
+        onAnalysisComplete={onAnalysisComplete}
+      >
+        {(stateProps) => (
+          <URLAttachmentHandler
+            urlInput={urlInput}
+            setUrlInput={setUrlInput}
+            setShowUrlInput={setShowUrlInput}
+            attachments={attachments}
+            setAttachments={setAttachments}
+          >
+            {(handleAddUrl) => (
+              <>
+                {/* Header with Tabs */}
+                <div className="p-6 bg-transparent">
+                  <AnalysisChatHeader 
+                    activeTab={stateProps.activeTab}
+                    onTabChange={stateProps.setActiveTab}
+                  />
+                </div>
 
-      {/* Tabbed Content */}
-      <div className="flex-1 overflow-hidden">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <TabsContent value="chat" className="flex-1 overflow-hidden mt-0">
-            <AnalysisChatContainer
-              messages={messages}
-              isAnalyzing={isAnalyzing}
-              message={message}
-              setMessage={setMessage}
-              onSendMessage={handleSendMessage}
-              onKeyPress={handleKeyPress}
-              getCurrentTemplate={getCurrentTemplate}
-              canSend={canSend}
-              onFileUpload={handleFileUploadFromInput}
-              onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
-              showUrlInput={showUrlInput}
-              urlInput={urlInput}
-              setUrlInput={setUrlInput}
-              onAddUrl={handleAddUrl}
-              onCancelUrl={() => setShowUrlInput(false)}
-              onTemplateSelect={handleTemplateSelect}
-              availableTemplates={figmantTemplates}
-              onViewTemplate={handleViewTemplate}
-              attachments={attachments}
-              onRemoveAttachment={removeAttachment}
-            />
-          </TabsContent>
+                {/* Tabbed Content */}
+                <AnalysisTabContent
+                  activeTab={stateProps.activeTab}
+                  setActiveTab={stateProps.setActiveTab}
+                  messages={messages}
+                  isAnalyzing={stateProps.isAnalyzing}
+                  message={message}
+                  setMessage={setMessage}
+                  handleSendMessage={stateProps.handleSendMessage}
+                  handleKeyPress={stateProps.handleKeyPress}
+                  getCurrentTemplate={stateProps.getCurrentTemplate}
+                  canSend={stateProps.canSend}
+                  handleFileUpload={stateProps.handleFileUpload}
+                  showUrlInput={showUrlInput}
+                  setShowUrlInput={setShowUrlInput}
+                  urlInput={urlInput}
+                  setUrlInput={setUrlInput}
+                  handleAddUrl={handleAddUrl}
+                  handleTemplateSelect={stateProps.handleTemplateSelect}
+                  figmantTemplates={stateProps.figmantTemplates}
+                  handleViewTemplate={stateProps.handleViewTemplate}
+                  attachments={attachments}
+                  removeAttachment={stateProps.removeAttachment}
+                />
 
-          <TabsContent value="wizard" className="flex-1 overflow-hidden mt-0">
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <Sparkles className="h-12 w-12 mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Wizard Coming Soon</h3>
-                <p>This guided analysis wizard will help you step through your design analysis.</p>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+                {/* URL Input */}
+                {showUrlInput && (
+                  <URLInputSection 
+                    urlInput={urlInput} 
+                    setUrlInput={setUrlInput} 
+                    onAddUrl={handleAddUrl} 
+                    onCancel={() => setShowUrlInput(false)} 
+                  />
+                )}
 
-      {/* Template Details Modal */}
-      <PromptTemplateModal 
-        template={modalTemplate}
-        isOpen={showTemplateModal}
-        onClose={() => setShowTemplateModal(false)}
-        onTemplateSelect={handleTemplateSelect}
-      />
+                {/* Template Details Modal */}
+                <PromptTemplateModal 
+                  template={stateProps.modalTemplate}
+                  isOpen={stateProps.showTemplateModal}
+                  onClose={() => stateProps.setShowTemplateModal(false)}
+                  onTemplateSelect={stateProps.handleTemplateSelect}
+                />
+              </>
+            )}
+          </URLAttachmentHandler>
+        )}
+      </AnalysisChatState>
     </div>
   );
 };
