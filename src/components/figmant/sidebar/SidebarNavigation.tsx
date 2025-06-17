@@ -7,7 +7,6 @@ import {
   Palette, 
   Crown, 
   FileText, 
-  Settings,
   Search,
   PanelLeftOpen,
   PanelLeftClose,
@@ -35,7 +34,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     { id: 'analysis', label: 'Analysis', icon: Palette },
     { id: 'premium-analysis', label: 'Premium Analysis', icon: Crown },
     { id: 'templates', label: 'Templates', icon: FileText },
-    { id: 'preferences', label: 'Preferences', icon: Settings },
     { id: 'search', label: 'Search', icon: Search },
   ];
 
