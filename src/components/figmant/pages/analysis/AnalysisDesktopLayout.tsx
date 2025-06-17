@@ -38,6 +38,12 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("chat");
 
+  // Handle right panel collapse from wizard tab
+  const handleRightPanelCollapseChange = (collapsed: boolean) => {
+    console.log('AnalysisDesktopLayout: Right panel collapse change requested:', collapsed);
+    setRightCollapsed(collapsed);
+  };
+
   // Determine the right panel mode based on state
   const getRightPanelMode = () => {
     // If there's an active analysis or analysis result, show analysis details
@@ -57,19 +63,12 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
   };
 
   const getRightPanelWidth = () => {
-    // Hide right panel when wizard tab is active
-    if (activeTab === 'wizard') return 'w-0';
-    return rightCollapsed ? 'w-16' : 'w-1/4'; // 25% when expanded, 64px when collapsed
+    return rightCollapsed ? 'w-0' : 'w-1/4'; // 25% when expanded, hidden when collapsed
   };
 
   const getMainContentWidth = () => {
-    // Full width minus left panel when wizard tab is active
-    if (activeTab === 'wizard') {
-      return leftCollapsed ? 'calc(100% - 4rem)' : 'calc(75%)';
-    }
-    
     if (leftCollapsed && rightCollapsed) {
-      return 'calc(100% - 8rem)'; // Both panels collapsed (64px each)
+      return 'calc(100% - 4rem)'; // Both panels collapsed (64px left)
     } else if (leftCollapsed || rightCollapsed) {
       return 'calc(75% - 4rem)'; // One panel collapsed
     } else {
@@ -77,12 +76,13 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
     }
   };
 
-  // Enhanced chat panel props with tab state management
+  // Enhanced chat panel props with tab state management and right panel control
   const enhancedChatPanelProps = {
     ...chatPanelProps,
     activeTab,
     setActiveTab,
-    onActiveTabChange: setActiveTab
+    onActiveTabChange: setActiveTab,
+    onRightPanelCollapseChange: handleRightPanelCollapseChange
   };
 
   return (
@@ -109,8 +109,8 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
         />
       </div>
       
-      {/* Right Panel - Hidden when wizard tab is active */}
-      {activeTab !== 'wizard' && (
+      {/* Right Panel - Show/hide based on rightCollapsed state */}
+      {!rightCollapsed && (
         <div className={`flex-shrink-0 transition-all duration-300 ${getRightPanelWidth()}`}>
           <AnalysisDynamicRightPanel
             mode={getRightPanelMode()}

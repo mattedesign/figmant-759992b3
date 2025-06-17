@@ -6,14 +6,22 @@ import { MessageSquare, Sparkles } from 'lucide-react';
 interface AnalysisChatHeaderProps {
   activeTab?: string;
   onTabChange?: (value: string) => void;
+  onRightPanelCollapseChange?: (collapsed: boolean) => void;
 }
 
 export const AnalysisChatHeader: React.FC<AnalysisChatHeaderProps> = ({
   activeTab = "chat",
-  onTabChange
+  onTabChange,
+  onRightPanelCollapseChange
 }) => {
   const handleTabChange = (value: string) => {
     console.log('AnalysisChatHeader: Tab change requested:', value);
+    
+    // Directly control right panel collapse based on tab
+    if (onRightPanelCollapseChange) {
+      onRightPanelCollapseChange(value === 'wizard');
+    }
+    
     if (onTabChange) {
       onTabChange(value);
     }

@@ -26,6 +26,7 @@ interface AnalysisChatPanelProps {
   activeTab?: string;
   setActiveTab?: (tab: string) => void;
   onActiveTabChange?: (tab: string) => void;
+  onRightPanelCollapseChange?: (collapsed: boolean) => void;
 }
 
 export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
@@ -45,7 +46,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   onAnalysisComplete,
   activeTab,
   setActiveTab,
-  onActiveTabChange
+  onActiveTabChange,
+  onRightPanelCollapseChange
 }) => {
   const handleTabChange = (tab: string) => {
     if (setActiveTab) {
@@ -89,6 +91,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
                   <AnalysisChatHeader 
                     activeTab={activeTab || stateProps.activeTab}
                     onTabChange={handleTabChange || stateProps.setActiveTab}
+                    onRightPanelCollapseChange={onRightPanelCollapseChange}
                   />
                 </div>
 
