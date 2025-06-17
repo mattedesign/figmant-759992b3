@@ -51,6 +51,7 @@ export const SimpleTemplateSelector: React.FC<SimpleTemplateSelectorProps> = ({
           size="icon" 
           onClick={() => onViewTemplate(currentTemplate)}
           title="View template details"
+          className="shadow-none hover:shadow-none focus:shadow-none focus-visible:shadow-none"
         >
           <Info className="h-4 w-4" />
         </Button>
