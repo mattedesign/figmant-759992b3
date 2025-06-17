@@ -3,7 +3,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, ChevronDown, Star } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { getTemplateIcon } from './TemplateIcon';
 
 interface AnalysisListItemProps {
   analysis: any;
@@ -22,8 +21,6 @@ export const AnalysisListItem: React.FC<AnalysisListItemProps> = ({
   onAnalysisSelect,
   truncateText
 }) => {
-  const TemplateIcon = getTemplateIcon(analysis.analysisType);
-
   return (
     <div className="rounded-lg">
       <div 
@@ -31,9 +28,6 @@ export const AnalysisListItem: React.FC<AnalysisListItemProps> = ({
         onClick={() => onItemClick(analysis)}
       >
         <div className="flex items-center gap-2 w-full">
-          <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
-            <TemplateIcon className="w-3 h-3 text-blue-500" />
-          </div>
           <div className="text-left flex-1 min-w-0">
             <div className="font-medium text-sm">{truncateText(analysis.title)}</div>
             <div className="text-xs text-gray-500">

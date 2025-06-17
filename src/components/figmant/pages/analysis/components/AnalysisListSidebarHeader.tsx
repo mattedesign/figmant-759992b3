@@ -15,7 +15,7 @@ export const AnalysisListSidebarHeader: React.FC<AnalysisListSidebarHeaderProps>
   return (
     <div className="p-4 pb-2 border-b border-gray-200">
       <div className="flex items-center justify-between mb-2">
-        {!isCollapsed && <h2 className="text-xl font-semibold pl-3">History</h2>}
+        {!isCollapsed && <h3 className="font-semibold text-gray-900 pl-3">History</h3>}
         <Button
           variant="ghost"
           size="sm"
