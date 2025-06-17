@@ -25,10 +25,10 @@ export const useAssetState = () => {
       console.log('Loading existing assets from storage...');
       setIsLoading(true);
       
-      // Get all files from the design-uploads bucket
+      // Get all files from the design-uploads bucket recursively
       const { data: files, error } = await supabase.storage
         .from('design-uploads')
-        .list('assets', {
+        .list('', {
           limit: 1000,
           sortBy: { column: 'created_at', order: 'desc' }
         });
@@ -42,33 +42,76 @@ export const useAssetState = () => {
 
       const loadedAssets: Asset[] = [];
 
+      // First, get all files recursively by exploring subdirectories
+      const getAllFiles = async (prefix = '') => {
+        const { data: items, error } = await supabase.storage
+          .from('design-uploads')
+          .list(prefix, {
+            limit: 1000,
+            sortBy: { column: 'created_at', order: 'desc' }
+          });
+
+        if (error) {
+          console.error('Error listing files in', prefix, ':', error);
+          return [];
+        }
+
+        const allFiles = [];
+        
+        for (const item of items || []) {
+          if (item.id === null) {
+            // This is a directory, explore it recursively
+            const subPath = prefix ? `${prefix}/${item.name}` : item.name;
+            const subFiles = await getAllFiles(subPath);
+            allFiles.push(...subFiles);
+          } else {
+            // This is a file
+            const fullPath = prefix ? `${prefix}/${item.name}` : item.name;
+            allFiles.push({
+              ...item,
+              fullPath
+            });
+          }
+        }
+        
+        return allFiles;
+      };
+
+      const allFiles = await getAllFiles();
+      console.log('All files found recursively:', allFiles);
+
       // Process each file and create asset objects
-      for (const file of files || []) {
-        if (file.name && !file.name.includes('/')) continue; // Skip directories
-        
-        // Extract path components to determine type and category
-        const pathParts = file.name.split('/');
-        if (pathParts.length < 3) continue; // Skip malformed paths
-        
-        const [category, type, datePath, filename] = pathParts;
+      for (const file of allFiles) {
+        if (!file.name || !file.fullPath) continue;
         
         // Get the public URL for the file
         const { data: urlData } = supabase.storage
           .from('design-uploads')
-          .getPublicUrl(`assets/${file.name}`);
+          .getPublicUrl(file.fullPath);
 
-        // Determine asset type based on file extension and path
+        // Determine asset type based on file extension
+        const extension = file.name.split('.').pop()?.toLowerCase();
         let assetType: Asset['type'] = 'other';
-        const extension = filename?.split('.').pop()?.toLowerCase();
         
-        if (type === 'logo') {
-          assetType = 'logo';
-        } else if (type === 'image' || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension || '')) {
-          assetType = 'image';
-        } else if (type === 'video' || ['mp4', 'webm', 'mov', 'avi', 'mkv'].includes(extension || '')) {
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension || '')) {
+          // Check if it's specifically a logo based on path or filename
+          if (file.fullPath.includes('/logo/') || file.name.toLowerCase().includes('logo')) {
+            assetType = 'logo';
+          } else {
+            assetType = 'image';
+          }
+        } else if (['mp4', 'webm', 'mov', 'avi', 'mkv'].includes(extension || '')) {
           assetType = 'video';
         } else if (['pdf'].includes(extension || '')) {
           assetType = 'document';
+        }
+
+        // Determine category based on path structure
+        let category = ASSET_CATEGORIES.CONTENT;
+        if (file.fullPath.includes('branding/') || file.fullPath.includes('/logo/')) {
+          category = ASSET_CATEGORIES.BRANDING;
+        } else if (file.fullPath.includes('system/')) {
+          category = ASSET_CATEGORIES.SYSTEM;
         }
 
         // Determine MIME type
@@ -86,17 +129,17 @@ export const useAssetState = () => {
         else if (extension === 'pdf') mimeType = 'application/pdf';
 
         const asset: Asset = {
-          id: `storage-${file.name.replace(/[^a-zA-Z0-9]/g, '-')}`,
-          name: filename || file.name,
+          id: `storage-${file.fullPath.replace(/[^a-zA-Z0-9]/g, '-')}`,
+          name: file.name,
           type: assetType,
-          category: category || ASSET_CATEGORIES.CONTENT,
+          category,
           url: urlData.publicUrl,
-          uploadPath: `assets/${file.name}`,
+          uploadPath: file.fullPath,
           fileSize: file.metadata?.size || 0,
           mimeType,
           uploadedAt: file.created_at || new Date().toISOString(),
           uploadedBy: user.id,
-          tags: [type || 'general'],
+          tags: [assetType, category],
           isActive: true
         };
 
@@ -104,12 +147,12 @@ export const useAssetState = () => {
         console.log('Loaded asset:', asset);
       }
 
-      // If we have a logo configuration that's not the default, add it too
+      // If we have a logo configuration that's not the default, add it too if not already present
       if (logoConfig.activeLogoUrl && logoConfig.activeLogoUrl.includes('supabase')) {
         const existingLogo = loadedAssets.find(a => a.url === logoConfig.activeLogoUrl);
         if (!existingLogo) {
           const mockLogoAsset: Asset = {
-            id: 'current-logo',
+            id: 'current-active-logo',
             name: 'Current Active Logo',
             type: 'logo',
             category: ASSET_CATEGORIES.BRANDING,
@@ -119,10 +162,32 @@ export const useAssetState = () => {
             mimeType: 'image/png',
             uploadedAt: new Date().toISOString(),
             uploadedBy: user.id,
-            tags: ['main-logo'],
+            tags: ['active-logo', 'branding'],
             isActive: true
           };
           loadedAssets.unshift(mockLogoAsset);
+        }
+      }
+
+      // Add collapsed logo if it exists and is different
+      if (logoConfig.collapsedLogoUrl && logoConfig.collapsedLogoUrl.includes('supabase')) {
+        const existingCollapsed = loadedAssets.find(a => a.url === logoConfig.collapsedLogoUrl);
+        if (!existingCollapsed) {
+          const mockCollapsedAsset: Asset = {
+            id: 'current-collapsed-logo',
+            name: 'Current Collapsed Logo',
+            type: 'logo',
+            category: ASSET_CATEGORIES.BRANDING,
+            url: logoConfig.collapsedLogoUrl,
+            uploadPath: logoConfig.collapsedLogoUrl,
+            fileSize: 0,
+            mimeType: 'image/svg+xml',
+            uploadedAt: new Date().toISOString(),
+            uploadedBy: user.id,
+            tags: ['collapsed-logo', 'branding'],
+            isActive: true
+          };
+          loadedAssets.unshift(mockCollapsedAsset);
         }
       }
 
