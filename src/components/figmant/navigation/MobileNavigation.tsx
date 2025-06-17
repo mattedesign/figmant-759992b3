@@ -76,9 +76,11 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
                   variant="ghost"
                   className={cn(
                     "w-full justify-start h-12 text-base",
-                    activeSection === section.id && "bg-[#F9FAFB] text-[#3D4A5C] rounded-[20px]",
-                    section.id === 'admin' && activeSection !== section.id && "border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100",
-                    section.id === 'admin' && activeSection === section.id && "bg-[#F9FAFB] text-[#3D4A5C] rounded-[20px] border-none"
+                    activeSection === section.id 
+                      ? "bg-[#F9FAFB] text-[#3D4A5C] rounded-[20px]"
+                      : section.id === 'admin' 
+                        ? "border border-orange-200 bg-orange-50 text-orange-700 hover:bg-[#F9FAFB] hover:text-[#3D4A5C] hover:rounded-[20px] hover:border-none"
+                        : "hover:bg-[#F9FAFB] hover:text-[#3D4A5C] hover:rounded-[20px]"
                   )}
                   onClick={() => handleSectionChange(section.id)}
                 >

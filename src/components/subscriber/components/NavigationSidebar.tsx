@@ -61,7 +61,9 @@ export const NavigationSidebar = ({
                   onClick={() => !item.disabled && onTabChange(item.id)}
                   className={cn(
                     "w-full justify-start h-10 px-3 flex-shrink-0",
-                    activeTab === item.id && "bg-accent text-accent-foreground",
+                    activeTab === item.id 
+                      ? "bg-accent text-accent-foreground"
+                      : "hover:bg-accent hover:text-accent-foreground",
                     item.disabled && "opacity-50 cursor-not-allowed"
                   )}
                   disabled={item.disabled}
