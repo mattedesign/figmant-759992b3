@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { FileRejection } from 'react-dropzone';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Upload, AlertCircle } from 'lucide-react';
@@ -16,7 +17,7 @@ interface AssetUploadSectionProps {
   getInputProps: () => any;
   isDragActive: boolean;
   isLoading: boolean;
-  fileRejections: any[];
+  fileRejections: FileRejection[];
 }
 
 export const AssetUploadSection: React.FC<AssetUploadSectionProps> = ({
