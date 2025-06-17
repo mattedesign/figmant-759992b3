@@ -61,10 +61,15 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
   
   const handleAddUrlWithInput = () => handleAddUrl(urlInput);
 
+  // For wizard tab, we want full width without the context panel
+  const contentClassName = activeTab === 'wizard' 
+    ? "flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col w-full"
+    : "flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col";
+
   return (
     <div className="h-full flex flex-col min-h-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col min-h-0">
-        <TabsContent value="chat" className="flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col">
+        <TabsContent value="chat" className={contentClassName}>
           <AnalysisChatContainer
             messages={messages}
             isAnalyzing={isAnalyzing}
@@ -89,7 +94,7 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
           />
         </TabsContent>
 
-        <TabsContent value="wizard" className="flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col">
+        <TabsContent value="wizard" className={contentClassName}>
           <PremiumAnalysisWizard />
         </TabsContent>
       </Tabs>

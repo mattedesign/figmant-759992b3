@@ -23,6 +23,8 @@ interface AnalysisChatPanelProps {
   selectedPromptCategory?: string;
   promptTemplates?: any[];
   onAnalysisComplete?: (result: any) => void;
+  activeTab?: string;
+  setActiveTab?: (tab: string) => void;
 }
 
 export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
@@ -39,7 +41,9 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   selectedPromptTemplate,
   selectedPromptCategory,
   promptTemplates,
-  onAnalysisComplete
+  onAnalysisComplete,
+  activeTab,
+  setActiveTab
 }) => {
   return (
     <div className="h-full flex flex-col bg-[#F9FAFB] min-h-0">
@@ -72,16 +76,16 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
                 {/* Header with Tabs */}
                 <div className="px-6 pt-6 pb-3 bg-transparent flex-shrink-0">
                   <AnalysisChatHeader 
-                    activeTab={stateProps.activeTab}
-                    onTabChange={stateProps.setActiveTab}
+                    activeTab={activeTab || stateProps.activeTab}
+                    onTabChange={setActiveTab || stateProps.setActiveTab}
                   />
                 </div>
 
                 {/* Tabbed Content - This needs to take remaining height */}
                 <div className="flex-1 min-h-0">
                   <AnalysisTabContent
-                    activeTab={stateProps.activeTab}
-                    setActiveTab={stateProps.setActiveTab}
+                    activeTab={activeTab || stateProps.activeTab}
+                    setActiveTab={setActiveTab || stateProps.setActiveTab}
                     messages={messages}
                     isAnalyzing={stateProps.isAnalyzing}
                     message={message}
