@@ -5,11 +5,6 @@ import { FileText, Upload, Sparkles } from 'lucide-react';
 export const EmptyRightPanel: React.FC = () => {
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* Header to match history sidebar */}
-      <div className="p-4 pb-2 border-b border-gray-200">
-        <h3 className="font-semibold text-gray-900 pl-3">Context</h3>
-      </div>
-
       {/* Empty state content */}
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">

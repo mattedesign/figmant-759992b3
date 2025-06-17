@@ -98,21 +98,23 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
 
   return (
     <div className="h-full flex flex-col bg-white border-l border-gray-200">
-      {/* Collapse Toggle Button */}
-      <div className="flex justify-between items-center p-2 border-b border-gray-200">
-        <div className="flex-1" />
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleToggleCollapse}
-          className="h-8 w-8"
-        >
-          {isCollapsed ? (
-            <ChevronLeft className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          )}
-        </Button>
+      {/* Header with Context title and collapse button */}
+      <div className="p-4 pb-2 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          {!isCollapsed && <h3 className="font-semibold text-gray-900">Context</h3>}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleToggleCollapse}
+            className="h-8 w-8"
+          >
+            {isCollapsed ? (
+              <ChevronLeft className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Content */}
