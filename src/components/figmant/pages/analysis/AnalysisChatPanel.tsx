@@ -8,6 +8,7 @@ import { useAttachmentHandlers } from '@/components/design/chat/hooks/useAttachm
 import { useFileUploadHandler } from './useFileUploadHandler';
 import { useMessageHandler } from './useMessageHandler';
 import { useAnalysisChatState } from './hooks/useAnalysisChatState';
+import { useToast } from '@/hooks/use-toast';
 
 interface AnalysisChatPanelProps {
   message: string;
@@ -42,6 +43,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   promptTemplates,
   onAnalysisComplete
 }) => {
+  const { toast } = useToast();
+  
   const {
     figmantTemplates,
     selectedTemplate,
@@ -83,8 +86,59 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
 
   const handleAddUrl = () => {
     if (urlInput.trim()) {
-      addUrlAttachment(urlInput);
-      setShowUrlInput(false);
+      console.log('Adding URL:', urlInput);
+      
+      // Validate URL format
+      let formattedUrl = urlInput.trim();
+      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+        formattedUrl = `https://${formattedUrl}`;
+      }
+
+      try {
+        const urlObj = new URL(formattedUrl);
+        const hostname = urlObj.hostname;
+
+        // Check if URL already exists
+        const urlExists = attachments.some(att => att.url === formattedUrl);
+        if (urlExists) {
+          toast({
+            variant: "destructive",
+            title: "URL Already Added",
+            description: `${hostname} is already in your attachments.`,
+          });
+          return;
+        }
+
+        // Create new URL attachment
+        const newAttachment: ChatAttachment = {
+          id: crypto.randomUUID(),
+          type: 'url',
+          name: hostname,
+          url: formattedUrl,
+          status: 'uploaded'
+        };
+
+        console.log('Creating new URL attachment:', newAttachment);
+        setAttachments(prev => {
+          const updated = [...prev, newAttachment];
+          console.log('Updated attachments:', updated);
+          return updated;
+        });
+        
+        setUrlInput('');
+        setShowUrlInput(false);
+        
+        toast({
+          title: "Website Added",
+          description: `${hostname} has been added for analysis.`,
+        });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Invalid URL",
+          description: "Please enter a valid website URL.",
+        });
+      }
     }
   };
 

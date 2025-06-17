@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Globe, Check } from 'lucide-react';
+import { Globe, Check, AlertCircle } from 'lucide-react';
 
 interface URLInputSectionProps {
   urlInput: string;
@@ -20,7 +20,7 @@ export const URLInputSection: React.FC<URLInputSectionProps> = ({
 }) => {
   const isValidUrl = (url: string) => {
     try {
-      new URL(url);
+      new URL(url.startsWith('http') ? url : `https://${url}`);
       return true;
     } catch {
       return false;
@@ -34,6 +34,7 @@ export const URLInputSection: React.FC<URLInputSectionProps> = ({
   };
 
   const canAdd = urlInput.trim() && isValidUrl(urlInput);
+  const showError = urlInput.trim() && !isValidUrl(urlInput);
 
   return (
     <div className="p-4 border-t border-gray-100 bg-gray-50">
@@ -47,14 +48,20 @@ export const URLInputSection: React.FC<URLInputSectionProps> = ({
               Valid URL
             </Badge>
           )}
+          {showError && (
+            <Badge variant="destructive" className="text-xs">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              Invalid URL
+            </Badge>
+          )}
         </div>
         <div className="flex gap-2">
           <Input
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
-            placeholder="https://example.com/page"
+            placeholder="https://example.com/page or example.com"
             onKeyPress={(e) => e.key === 'Enter' && canAdd && handleAddUrl()}
-            className={`${canAdd ? 'border-green-300 focus:border-green-500' : ''}`}
+            className={`${canAdd ? 'border-green-300 focus:border-green-500' : showError ? 'border-red-300 focus:border-red-500' : ''}`}
           />
           <Button 
             onClick={handleAddUrl} 
@@ -66,8 +73,8 @@ export const URLInputSection: React.FC<URLInputSectionProps> = ({
           </Button>
           <Button variant="ghost" onClick={onCancel} size="sm">Cancel</Button>
         </div>
-        {urlInput && !isValidUrl(urlInput) && (
-          <p className="text-xs text-red-600">Please enter a valid URL starting with http:// or https://</p>
+        {showError && (
+          <p className="text-xs text-red-600">Please enter a valid URL (e.g., https://example.com or example.com)</p>
         )}
       </div>
     </div>

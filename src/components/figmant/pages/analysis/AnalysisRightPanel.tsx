@@ -14,6 +14,8 @@ export const AnalysisRightPanel: React.FC<AnalysisRightPanelProps> = ({
   analysis,
   attachments = []
 }) => {
+  console.log('AnalysisRightPanel - Received attachments:', attachments);
+
   const getFileIcon = (attachment: ChatAttachment) => {
     if (attachment.type === 'url') {
       return <Globe className="h-4 w-4 text-blue-600" />;
@@ -41,10 +43,11 @@ export const AnalysisRightPanel: React.FC<AnalysisRightPanelProps> = ({
     
     if (attachment.type === 'url') {
       return (
-        <div className="aspect-video bg-gray-100 rounded mb-2 flex items-center justify-center border-2 border-dashed border-gray-300">
+        <div className="aspect-video bg-gradient-to-br from-blue-50 to-blue-100 rounded mb-2 flex items-center justify-center border border-blue-200">
           <div className="text-center p-4">
-            <Globe className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-            <div className="text-xs text-gray-500 break-all">{attachment.url}</div>
+            <Globe className="h-8 w-8 mx-auto text-blue-600 mb-2" />
+            <div className="text-xs text-blue-800 font-medium break-all">{attachment.name}</div>
+            <div className="text-xs text-blue-600 mt-1">Website URL</div>
           </div>
         </div>
       );
@@ -66,6 +69,10 @@ export const AnalysisRightPanel: React.FC<AnalysisRightPanelProps> = ({
     if (size < 1024) return `${size} B`;
     if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
     return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const openUrl = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -103,6 +110,11 @@ export const AnalysisRightPanel: React.FC<AnalysisRightPanelProps> = ({
                         <div className="text-sm font-medium text-gray-900 truncate">
                           {attachment.name}
                         </div>
+                        {attachment.type === 'url' && (
+                          <div className="text-xs text-blue-600 truncate">
+                            {attachment.url}
+                          </div>
+                        )}
                         {attachment.file && (
                           <div className="text-xs text-gray-500">
                             {formatFileSize(attachment.file)}
@@ -129,8 +141,13 @@ export const AnalysisRightPanel: React.FC<AnalysisRightPanelProps> = ({
                           <Eye className="h-3 w-3 mr-1" />
                           View
                         </Button>
-                        {attachment.type === 'url' && (
-                          <Button variant="outline" size="sm" className="h-6 text-xs">
+                        {attachment.type === 'url' && attachment.url && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-6 text-xs"
+                            onClick={() => openUrl(attachment.url!)}
+                          >
                             <ExternalLink className="h-3 w-3 mr-1" />
                             Open
                           </Button>
