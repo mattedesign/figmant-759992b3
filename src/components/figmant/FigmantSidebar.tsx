@@ -10,11 +10,13 @@ import { SidebarUserProfile } from './sidebar/SidebarUserProfile';
 interface FigmantSidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
 export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   activeSection,
-  onSectionChange
+  onSectionChange,
+  onCollapsedChange
 }) => {
   const { isOwner, profile, user, subscription, signOut } = useAuth();
   const { credits, creditsLoading } = useUserCredits();
@@ -25,6 +27,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
 
   const handleToggleCollapse = (collapsed: boolean) => {
     setIsCollapsed(collapsed);
+    onCollapsedChange?.(collapsed);
   };
 
   return (

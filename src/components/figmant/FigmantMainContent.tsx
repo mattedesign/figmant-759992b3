@@ -17,6 +17,7 @@ interface FigmantMainContentProps {
   selectedAnalysis: any;
   onBackToList: () => void;
   onRightSidebarModeChange: (mode: string) => void;
+  isSidebarCollapsed?: boolean;
 }
 
 export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
@@ -24,7 +25,8 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   setActiveSection,
   selectedAnalysis,
   onBackToList,
-  onRightSidebarModeChange
+  onRightSidebarModeChange,
+  isSidebarCollapsed = true
 }) => {
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -75,13 +77,18 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   }
 
   return (
-    <div className="flex-1 h-screen overflow-hidden p-4" style={{ background: 'transparent' }}>
+    <div 
+      className={`flex-1 h-screen overflow-hidden transition-all duration-300 ${
+        isSidebarCollapsed ? 'p-4 pl-6' : 'p-4'
+      }`} 
+      style={{ background: 'transparent' }}
+    >
       <div 
         className={`h-full bg-[#F9FAFB] ${needsScrolling ? 'overflow-y-auto' : 'overflow-hidden'}`}
         style={{
           borderRadius: '24px',
           border: '1px solid rgba(10, 12, 17, 0.10)',
-          boxShadow: '0px 0px 0px 1px rgba(255, 255, 255, 0.18), 0px 18px 36px 0px rgba(18, 18, 23, 0.02), 0px 8px 14px 0px rgba(18, 18, 23, 0.03), 0px 4px 6px 0px rgba(18, 18, 23, 0.03), 0px 2px 3px 0px rgba(18, 18, 23, 0.03)'
+          boxShadow: '0px 0px 0px 1px rgba(255, 255, 255, 0.18), 0px 13.5px 27px 0px rgba(18, 18, 23, 0.015), 0px 6px 10.5px 0px rgba(18, 18, 23, 0.0225), 0px 3px 4.5px 0px rgba(18, 18, 23, 0.0225), 0px 1.5px 2.25px 0px rgba(18, 18, 23, 0.0225)'
         }}
       >
         {renderContent()}
