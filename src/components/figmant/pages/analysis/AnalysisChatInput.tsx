@@ -28,6 +28,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   onToggleUrlInput
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (onKeyPress) {
@@ -40,6 +41,10 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
       onFileUpload(e.target.files);
       e.target.value = ''; // Reset input
     }
+  };
+
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
   };
 
   const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -75,6 +80,17 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
           </div>
         )}
         
+        {/* Hidden file input for multiple file selection */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/*,.pdf"
+          onChange={handleFileInputChange}
+          className="hidden"
+          disabled={isAnalyzing}
+        />
+        
         {/* Input area */}
         <div className="relative flex items-center">
           <Textarea
@@ -90,26 +106,18 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
           
           {/* Input controls - positioned inside the textarea with proper vertical centering */}
           <div className="absolute right-2 flex items-center space-x-1">
-            {/* File upload */}
-            <label className="cursor-pointer">
-              <input
-                type="file"
-                multiple
-                accept="image/*,.pdf"
-                onChange={handleFileInputChange}
-                className="hidden"
-                disabled={isAnalyzing}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 hover:bg-gray-100 flex items-center justify-center"
-                disabled={isAnalyzing}
-              >
-                <Paperclip className="h-4 w-4" />
-              </Button>
-            </label>
+            {/* File upload - now properly wired */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleAttachClick}
+              className="h-8 w-8 p-0 hover:bg-gray-100 flex items-center justify-center"
+              disabled={isAnalyzing}
+              title="Attach files"
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
             
             {/* URL input toggle */}
             <Button
@@ -119,6 +127,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
               onClick={onToggleUrlInput}
               className="h-8 w-8 p-0 hover:bg-gray-100 flex items-center justify-center"
               disabled={isAnalyzing}
+              title="Add URL"
             >
               <Link className="h-4 w-4" />
             </Button>
@@ -129,6 +138,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
               disabled={!canSend || isAnalyzing}
               size="sm"
               className="h-8 w-8 p-0 flex items-center justify-center"
+              title="Send message"
             >
               {isAnalyzing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
