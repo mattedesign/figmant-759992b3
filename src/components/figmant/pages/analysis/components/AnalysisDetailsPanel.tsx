@@ -50,7 +50,7 @@ export const AnalysisDetailsPanel: React.FC<AnalysisDetailsPanelProps> = ({
         <div className="mb-6">
           <div className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Current Analysis</h3>
+              <div className="text-sm font-medium text-gray-700">Current Analysis</div>
               <ChevronRight className="h-5 w-5 text-gray-400" />
             </div>
             
