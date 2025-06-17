@@ -717,6 +717,7 @@ export type Database = {
       logo_configuration: {
         Row: {
           active_logo_url: string
+          collapsed_logo_url: string | null
           created_at: string
           fallback_logo_url: string
           id: string
@@ -725,6 +726,7 @@ export type Database = {
         }
         Insert: {
           active_logo_url: string
+          collapsed_logo_url?: string | null
           created_at?: string
           fallback_logo_url: string
           id?: string
@@ -733,6 +735,7 @@ export type Database = {
         }
         Update: {
           active_logo_url?: string
+          collapsed_logo_url?: string | null
           created_at?: string
           fallback_logo_url?: string
           id?: string
