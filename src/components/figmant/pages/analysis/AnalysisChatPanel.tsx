@@ -11,6 +11,7 @@ import { AnalysisChatPlaceholder } from './AnalysisChatPlaceholder';
 import { useAttachmentHandlers } from '@/components/design/chat/hooks/useAttachmentHandlers';
 import { useFileUploadHandler } from './useFileUploadHandler';
 import { useMessageHandler } from './useMessageHandler';
+
 interface AnalysisChatPanelProps {
   message: string;
   setMessage: (message: string) => void;
@@ -27,6 +28,7 @@ interface AnalysisChatPanelProps {
   promptTemplates?: any[];
   onAnalysisComplete?: (result: any) => void;
 }
+
 export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   message,
   setMessage,
