@@ -7,5 +7,5 @@ interface AnalysisPageProps {
 }
 
 export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) => {
-  return <AnalysisPageContainer />;
+  return <AnalysisPageContainer selectedTemplate={selectedTemplate} />;
 };
