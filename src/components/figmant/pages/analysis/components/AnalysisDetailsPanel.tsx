@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, FileText, CheckCircle, Clock, ChevronRight } from 'lucide-react';
+import { FileText, CheckCircle, Clock, ChevronRight } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AttachmentPreview } from '../AttachmentPreview';
 
@@ -44,21 +44,6 @@ export const AnalysisDetailsPanel: React.FC<AnalysisDetailsPanelProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Back button only if provided */}
-      {onBackClick && (
-        <div className="p-4 border-b border-gray-200">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBackClick}
-            className="p-0"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-        </div>
-      )}
-
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
         {/* Current Analysis Card */}
