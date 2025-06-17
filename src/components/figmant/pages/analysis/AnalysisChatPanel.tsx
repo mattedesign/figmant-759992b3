@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ChatAttachment, ChatMessage } from '@/components/design/DesignChatInterface';
@@ -93,6 +92,10 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     }
   }, [hasMessages, onAnalysisDetailsUpdate]);
   
+  const handleSelectPrompt = (prompt: string) => {
+    setMessage(prompt);
+  };
+  
   return <div className="h-full flex flex-col bg-[#F9FAFB]">
       {/* Header with Tabs moved to top */}
       <div className="p-6 bg-transparent">
@@ -107,7 +110,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
       <div className="flex-1 overflow-y-auto bg-[#F9FAFB]">
         {hasMessages ? <div className="p-6">
             <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
-          </div> : <AnalysisChatPlaceholder />}
+          </div> : <AnalysisChatPlaceholder onSelectPrompt={handleSelectPrompt} />}
       </div>
 
       {/* Attachments */}
