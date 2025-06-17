@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { AuthContainer } from './shared/AuthContainer';
+import { AuthContainer } from './AuthContainer';
 import { SignInView } from './views/SignInView';
 import { PasswordResetForm } from './PasswordResetForm';
 import { UpdatePasswordForm } from './UpdatePasswordForm';
