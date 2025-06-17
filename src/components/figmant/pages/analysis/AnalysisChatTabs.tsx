@@ -1,10 +1,7 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Upload, 
-  Link, 
   MessageSquare,
   Paperclip
 } from 'lucide-react';
@@ -50,59 +47,6 @@ export const AnalysisChatTabs: React.FC<AnalysisChatTabsProps> = ({
           Attachments
         </TabsTrigger>
       </TabsList>
-      
-      <TabsContent value="chat" className="mt-4">
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={onFileSelect}
-              className="hidden"
-              id="file-upload"
-            />
-            <label htmlFor="file-upload">
-              <Button variant="outline" className="cursor-pointer" asChild>
-                <span>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Files
-                </span>
-              </Button>
-            </label>
-          </div>
-        </div>
-      </TabsContent>
-      
-      <TabsContent value="attachments" className="mt-4">
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={onFileSelect}
-              className="hidden"
-              id="file-upload-attachments"
-            />
-            <label htmlFor="file-upload-attachments">
-              <Button variant="outline" className="cursor-pointer" asChild>
-                <span>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Files
-                </span>
-              </Button>
-            </label>
-            <Button
-              variant="outline"
-              onClick={() => setShowUrlInput(true)}
-            >
-              <Link className="h-4 w-4 mr-2" />
-              Add Website URL
-            </Button>
-          </div>
-        </div>
-      </TabsContent>
     </Tabs>
   );
 };

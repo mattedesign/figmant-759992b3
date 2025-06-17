@@ -8,6 +8,7 @@ import { URLInputSection } from './URLInputSection';
 import { AnalysisChatHeader } from './AnalysisChatHeader';
 import { AnalysisChatTabs } from './AnalysisChatTabs';
 import { AnalysisChatInput } from './AnalysisChatInput';
+import { AnalysisChatPlaceholder } from './AnalysisChatPlaceholder';
 import { useAttachmentHandlers } from '@/components/design/chat/hooks/useAttachmentHandlers';
 import { useFileUploadHandler } from './useFileUploadHandler';
 
@@ -100,10 +101,11 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   };
 
   const canSend = message.trim().length > 0 || attachments.length > 0;
+  const hasContent = messages.length > 0 || message.trim().length > 0 || attachments.length > 0;
 
   return (
     <div className="h-full flex flex-col bg-white">
-      {/* Header with Tabs */}
+      {/* Header with Tabs moved to top */}
       <div className="p-6 border-b border-gray-200">
         <AnalysisChatHeader />
         <p className="text-gray-600 mb-4" style={{ fontSize: '12px' }}>
@@ -117,14 +119,14 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         />
       </div>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {messages.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Start your analysis by uploading files or asking a question using the input below</p>
+      {/* Messages Area or Placeholder */}
+      <div className="flex-1 overflow-y-auto">
+        {hasContent ? (
+          <div className="p-6">
+            <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
           </div>
         ) : (
-          <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
+          <AnalysisChatPlaceholder />
         )}
       </div>
 
