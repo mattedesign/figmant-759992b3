@@ -37,6 +37,17 @@ export const useCreditTransactionManager = () => {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) throw new Error('Not authenticated');
 
+      // Ensure user has complete profile setup
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (!profile) {
+        throw new Error('User profile not found. Please contact support.');
+      }
+
       // Create credit transaction first
       const { error: transactionError } = await supabase
         .from('credit_transactions')

@@ -7,6 +7,7 @@ import { SignInView } from './views/SignInView';
 import { PasswordResetForm } from './PasswordResetForm';
 import { UpdatePasswordForm } from './UpdatePasswordForm';
 import { ModernOnboardingFlow } from './ModernOnboardingFlow';
+import { AuthProfileSync } from './AuthProfileSync';
 
 export const SplitScreenAuth = () => {
   const {
@@ -70,9 +71,12 @@ export const SplitScreenAuth = () => {
   // If user is authenticated and not in reset mode or onboarding, the useEffect will handle redirect
   // This return should only be reached during the brief moment before redirect
   if (user && !resetMode) {
-    return <div className="min-h-screen flex items-center justify-center bg-background">
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <AuthProfileSync />
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>;
+      </div>
+    );
   }
 
   return (
