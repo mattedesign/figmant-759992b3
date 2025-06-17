@@ -1,10 +1,47 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { StepProps } from '../types';
 import { StepHeader } from '../components/StepHeader';
-import { useClaudePromptExamplesByCategory } from '@/hooks/useClaudePromptExamples';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { figmantPromptTemplates } from '@/data/figmantPromptTemplates';
+import { Sparkles, Target, BarChart3, Users, ShoppingCart, FlaskConical, Crown, Brain } from 'lucide-react';
+
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case 'master': return <Brain className="h-6 w-6" />;
+    case 'competitor': return <Target className="h-6 w-6" />;
+    case 'visual_hierarchy': return <BarChart3 className="h-6 w-6" />;
+    case 'copy_messaging': return <Users className="h-6 w-6" />;
+    case 'ecommerce_revenue': return <ShoppingCart className="h-6 w-6" />;
+    case 'ab_testing': return <FlaskConical className="h-6 w-6" />;
+    default: return <Sparkles className="h-6 w-6" />;
+  }
+};
+
+const getCategoryColor = (category: string) => {
+  switch (category) {
+    case 'master': return 'bg-purple-100 text-purple-600';
+    case 'competitor': return 'bg-blue-100 text-blue-600';
+    case 'visual_hierarchy': return 'bg-green-100 text-green-600';
+    case 'copy_messaging': return 'bg-orange-100 text-orange-600';
+    case 'ecommerce_revenue': return 'bg-emerald-100 text-emerald-600';
+    case 'ab_testing': return 'bg-pink-100 text-pink-600';
+    default: return 'bg-gray-100 text-gray-600';
+  }
+};
+
+const getCategoryDisplayName = (category: string) => {
+  switch (category) {
+    case 'master': return 'Master Analysis';
+    case 'competitor': return 'Competitor Analysis';
+    case 'visual_hierarchy': return 'Visual Hierarchy';
+    case 'copy_messaging': return 'Copy & Messaging';
+    case 'ecommerce_revenue': return 'E-commerce Revenue';
+    case 'ab_testing': return 'A/B Testing';
+    default: return category;
+  }
+};
 
 export const Step1SelectAnalysisType: React.FC<StepProps> = ({ 
   stepData, 
@@ -12,10 +49,8 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
   currentStep, 
   totalSteps 
 }) => {
-  const { data: premiumPrompts, isLoading, error } = useClaudePromptExamplesByCategory('premium');
-
-  const handleTypeSelection = (promptId: string) => {
-    setStepData({ ...stepData, selectedType: promptId });
+  const handleTypeSelection = (templateId: string) => {
+    setStepData({ ...stepData, selectedType: templateId });
   };
 
   return (
@@ -26,66 +61,67 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
         totalSteps={totalSteps}
       />
 
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-          <span className="ml-2 text-gray-600">Loading premium analysis options...</span>
-        </div>
-      ) : error ? (
-        <div className="text-center py-12">
-          <p className="text-red-600">Error loading premium analysis options</p>
-        </div>
-      ) : !premiumPrompts || premiumPrompts.length === 0 ? (
-        <div className="text-center py-12">
-          <Sparkles className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Premium Analysis Available</h3>
-          <p className="text-gray-600">Premium analysis prompts will be available soon.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {premiumPrompts.map((prompt) => (
-            <Card
-              key={prompt.id}
-              className={`cursor-pointer transition-all duration-200 ${
-                stepData.selectedType === prompt.id
-                  ? 'border-blue-500 bg-blue-50 shadow-md'
-                  : 'border-gray-200 hover:border-blue-200 hover:shadow-sm'
-              }`}
-              onClick={() => handleTypeSelection(prompt.id)}
-            >
-              <CardContent className="p-6">
-                <div className={`w-12 h-12 rounded-lg mx-auto mb-3 flex items-center justify-center ${
-                  stepData.selectedType === prompt.id
-                    ? 'bg-blue-100 text-blue-600'
-                    : 'bg-gray-100 text-gray-600'
-                }`}>
-                  <Sparkles className="h-6 w-6" />
-                </div>
-                <h3 className="font-medium text-center mb-2">{prompt.title}</h3>
-                {prompt.description && (
-                  <p className="text-sm text-gray-600 text-center">{prompt.description}</p>
-                )}
-                {prompt.effectiveness_rating && (
-                  <div className="mt-3 flex justify-center">
-                    <div className="flex items-center space-x-1">
-                      {[...Array(5)].map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-2 h-2 rounded-full ${
-                            i < prompt.effectiveness_rating! 
-                              ? 'bg-yellow-400' 
-                              : 'bg-gray-200'
-                          }`}
-                        />
-                      ))}
-                    </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {figmantPromptTemplates.map((template) => (
+          <Card
+            key={template.id}
+            className={`cursor-pointer transition-all duration-200 ${
+              stepData.selectedType === template.id
+                ? 'border-blue-500 bg-blue-50 shadow-md'
+                : 'border-gray-200 hover:border-blue-200 hover:shadow-sm'
+            }`}
+            onClick={() => handleTypeSelection(template.id)}
+          >
+            <CardContent className="p-6">
+              <div className={`w-12 h-12 rounded-lg mx-auto mb-3 flex items-center justify-center ${
+                stepData.selectedType === template.id
+                  ? getCategoryColor(template.category)
+                  : 'bg-gray-100 text-gray-600'
+              }`}>
+                {getCategoryIcon(template.category)}
+              </div>
+              <h3 className="font-medium text-center mb-2">{template.displayName}</h3>
+              <p className="text-sm text-gray-600 text-center mb-3">{template.description}</p>
+              
+              <div className="flex justify-center mb-3">
+                <Badge 
+                  variant="outline" 
+                  className={`text-xs ${
+                    stepData.selectedType === template.id 
+                      ? 'border-blue-500 text-blue-700' 
+                      : 'border-gray-300 text-gray-600'
+                  }`}
+                >
+                  {getCategoryDisplayName(template.category)}
+                </Badge>
+              </div>
+
+              {template.best_for && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-gray-700">Best for:</p>
+                  <div className="text-xs text-gray-600">
+                    {template.best_for.slice(0, 2).map((item, index) => (
+                      <div key={index} className="flex items-center">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full mr-2" />
+                        {item}
+                      </div>
+                    ))}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                </div>
+              )}
+
+              {template.requires_context && (
+                <div className="mt-3 flex justify-center">
+                  <Badge variant="secondary" className="text-xs">
+                    <Crown className="h-3 w-3 mr-1" />
+                    Context Enhanced
+                  </Badge>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
