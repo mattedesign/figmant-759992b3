@@ -34,6 +34,13 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
     }
   };
 
+  const handleExpandPanel = () => {
+    setIsCollapsed(false);
+    if (onCollapseChange) {
+      onCollapseChange(false);
+    }
+  };
+
   // Combine both types of analyses and sort by date
   const allAnalyses = [
     ...designAnalyses.map(a => ({ 
@@ -113,6 +120,7 @@ export const AnalysisListSidebar: React.FC<AnalysisListSidebarProps> = ({
             <CollapsedAnalysisList
               analyses={recentAnalyses}
               onItemClick={handleItemClick}
+              onExpandPanel={handleExpandPanel}
             />
           </>
         )}
