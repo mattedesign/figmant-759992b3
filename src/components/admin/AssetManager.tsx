@@ -9,7 +9,7 @@ import { AssetGrid } from './asset-manager/AssetGrid';
 export const AssetManager: React.FC = () => {
   const { assets, isLoading, uploadAsset, deleteAsset, getAssetsByType } = useAssetManagement();
   const [selectedType, setSelectedType] = useState<Asset['type']>('logo');
-  const [selectedCategory, setSelectedCategory] = useState<string>(ASSET_CATEGORIES.BRANDING);
+  const [selectedCategory, setSelectedCategory] = useState<Asset['category']>(ASSET_CATEGORIES.BRANDING);
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     accept: {
