@@ -64,6 +64,38 @@ serve(async (req) => {
       // Test creating a checkout session
       logStep("Creating test checkout session");
       
+      // Get the actual user ID from the email
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', userEmail)
+        .maybeSingle();
+
+      if (profileError) {
+        logStep("ERROR: Failed to find user profile for checkout", { error: profileError });
+        return new Response(JSON.stringify({
+          success: false,
+          error: "Failed to find user profile"
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      if (!profile) {
+        logStep("ERROR: No user found with email for checkout", { email: userEmail });
+        return new Response(JSON.stringify({
+          success: false,
+          error: `No user found with email: ${userEmail}`
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      const actualUserId = profile.id;
+      logStep("Found user for checkout", { userId: actualUserId, email: userEmail });
+      
       const session = await stripe.checkout.sessions.create({
         customer_email: userEmail,
         line_items: [
@@ -83,13 +115,13 @@ serve(async (req) => {
         success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${req.headers.get("origin")}/subscription?canceled=true`,
         metadata: {
-          user_id: 'test-user-id',
+          user_id: actualUserId, // Use the actual user ID instead of test-user-id
           credit_amount: creditAmount.toString(),
           test_mode: 'true'
         }
       });
 
-      logStep("Test checkout session created", { sessionId: session.id, url: session.url });
+      logStep("Test checkout session created", { sessionId: session.id, url: session.url, userId: actualUserId });
 
       return new Response(JSON.stringify({
         success: true,
@@ -190,7 +222,8 @@ serve(async (req) => {
         });
       }
 
-      // Create transaction record
+      // Create transaction record with proper UUID for reference_id
+      const transactionReferenceId = `test-simulation-${Date.now()}`;
       const { error: transactionError } = await supabase
         .from('credit_transactions')
         .insert({
@@ -198,12 +231,14 @@ serve(async (req) => {
           transaction_type: 'purchase',
           amount: creditAmount,
           description: `Test credit purchase simulation - ${creditAmount} credits`,
-          reference_id: `test-${Date.now()}`,
+          reference_id: transactionReferenceId,
           created_by: userId
         });
 
       if (transactionError) {
         logStep("ERROR: Failed to create transaction record", { error: transactionError });
+      } else {
+        logStep("Transaction record created successfully", { referenceId: transactionReferenceId });
       }
 
       logStep("Test simulation completed successfully", { 
