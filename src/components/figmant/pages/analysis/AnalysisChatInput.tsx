@@ -76,20 +76,20 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
         )}
         
         {/* Input area */}
-        <div className="relative">
+        <div className="relative flex items-center">
           <Textarea
             ref={textareaRef}
             value={message}
             onChange={handleMessageChange}
             onKeyPress={handleKeyPress}
             placeholder="How can I help..."
-            className="min-h-[48px] max-h-[96px] resize-none pr-36 overflow-y-auto"
+            className="min-h-[48px] max-h-[96px] resize-none pr-32 overflow-y-auto flex-1"
             style={{ height: '48px' }}
             disabled={isAnalyzing}
           />
           
-          {/* Input controls - positioned inside the textarea with proper spacing */}
-          <div className="absolute top-1/2 right-3 transform -translate-y-1/2 flex items-center space-x-2">
+          {/* Input controls - positioned inside the textarea with proper vertical centering */}
+          <div className="absolute right-2 flex items-center space-x-1">
             {/* File upload */}
             <label className="cursor-pointer">
               <input
@@ -104,7 +104,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-7 w-7 p-0 hover:bg-gray-100"
+                className="h-8 w-8 p-0 hover:bg-gray-100 flex items-center justify-center"
                 disabled={isAnalyzing}
               >
                 <Paperclip className="h-4 w-4" />
@@ -117,7 +117,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
               variant="ghost"
               size="sm"
               onClick={onToggleUrlInput}
-              className="h-7 w-7 p-0 hover:bg-gray-100"
+              className="h-8 w-8 p-0 hover:bg-gray-100 flex items-center justify-center"
               disabled={isAnalyzing}
             >
               <Link className="h-4 w-4" />
@@ -128,7 +128,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
               onClick={onSendMessage}
               disabled={!canSend || isAnalyzing}
               size="sm"
-              className="h-7 w-7 p-0"
+              className="h-8 w-8 p-0 flex items-center justify-center"
             >
               {isAnalyzing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
