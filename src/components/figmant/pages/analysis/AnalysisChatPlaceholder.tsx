@@ -14,7 +14,7 @@ export const AnalysisChatPlaceholder: React.FC = () => {
           />
           <h2 className="text-xl font-semibold text-gray-900">Design Analysis</h2>
         </div>
-        <p className="text-gray-600 max-w-md mx-auto">
+        <p className="text-gray-600 max-w-md mx-auto text-xs">
           Upload files or start typing to begin your design analysis. Use the input below to get started.
         </p>
       </div>
