@@ -19,7 +19,7 @@ export const WelcomeBackView: React.FC<WelcomeBackViewProps> = ({
     <Card className="modern-card border-0 shadow-xl">
       <CardContent className="p-8 text-center space-y-6">
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold">Ready to continue?</h2>
+          <h2 className="text-xl font-semibold">Welcome back!</h2>
           <p className="text-sm text-muted-foreground">
             You're signed in and ready to analyze your designs with AI-powered insights.
           </p>
