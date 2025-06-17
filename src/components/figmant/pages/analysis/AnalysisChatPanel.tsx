@@ -9,6 +9,8 @@ import { useFileUploadHandler } from './useFileUploadHandler';
 import { useMessageHandler } from './useMessageHandler';
 import { useAnalysisChatState } from './hooks/useAnalysisChatState';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MessageSquare, Sparkles } from 'lucide-react';
 
 interface AnalysisChatPanelProps {
   message: string;
@@ -149,29 +151,58 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         <AnalysisChatHeader />
       </div>
 
-      {/* Chat Container */}
-      <AnalysisChatContainer
-        messages={messages}
-        isAnalyzing={isAnalyzing}
-        message={message}
-        setMessage={setMessage}
-        onSendMessage={handleSendMessage}
-        onKeyPress={handleKeyPress}
-        getCurrentTemplate={getCurrentTemplate}
-        canSend={canSend}
-        onFileUpload={handleFileUploadFromInput}
-        onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
-        showUrlInput={showUrlInput}
-        urlInput={urlInput}
-        setUrlInput={setUrlInput}
-        onAddUrl={handleAddUrl}
-        onCancelUrl={() => setShowUrlInput(false)}
-        onTemplateSelect={handleTemplateSelect}
-        availableTemplates={figmantTemplates}
-        onViewTemplate={handleViewTemplate}
-        attachments={attachments}
-        onRemoveAttachment={removeAttachment}
-      />
+      {/* Tabbed Content */}
+      <div className="flex-1 overflow-hidden">
+        <Tabs defaultValue="chat" className="h-full flex flex-col">
+          <div className="px-6 pb-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="chat" className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Chat
+              </TabsTrigger>
+              <TabsTrigger value="wizard" className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                Wizard
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="chat" className="flex-1 overflow-hidden mt-0">
+            <AnalysisChatContainer
+              messages={messages}
+              isAnalyzing={isAnalyzing}
+              message={message}
+              setMessage={setMessage}
+              onSendMessage={handleSendMessage}
+              onKeyPress={handleKeyPress}
+              getCurrentTemplate={getCurrentTemplate}
+              canSend={canSend}
+              onFileUpload={handleFileUploadFromInput}
+              onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
+              showUrlInput={showUrlInput}
+              urlInput={urlInput}
+              setUrlInput={setUrlInput}
+              onAddUrl={handleAddUrl}
+              onCancelUrl={() => setShowUrlInput(false)}
+              onTemplateSelect={handleTemplateSelect}
+              availableTemplates={figmantTemplates}
+              onViewTemplate={handleViewTemplate}
+              attachments={attachments}
+              onRemoveAttachment={removeAttachment}
+            />
+          </TabsContent>
+
+          <TabsContent value="wizard" className="flex-1 overflow-hidden mt-0">
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center text-muted-foreground">
+                <Sparkles className="h-12 w-12 mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Wizard Coming Soon</h3>
+                <p>This guided analysis wizard will help you step through your design analysis.</p>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
 
       {/* Template Details Modal */}
       <PromptTemplateModal 
