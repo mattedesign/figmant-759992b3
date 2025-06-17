@@ -27,20 +27,29 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     return 'Good evening';
   };
 
-  // Extract first name from full_name or use a fallback
+  // Extract first name from full_name or use a fallback with debugging
   const getFirstName = () => {
+    console.log('DashboardHeader - Profile data:', profile);
+    console.log('DashboardHeader - Profile full_name:', profile?.full_name);
+    console.log('DashboardHeader - Profile email:', profile?.email);
+
     if (profile?.full_name && profile.full_name.trim()) {
       const firstName = profile.full_name.split(' ')[0].trim();
+      console.log('DashboardHeader - Extracted firstName from full_name:', firstName);
       return firstName || 'there';
     }
     // If no full_name, try to extract from email
     if (profile?.email) {
       const emailName = profile.email.split('@')[0];
+      console.log('DashboardHeader - Extracted emailName:', emailName);
       // Capitalize first letter and return if it looks like a name
       if (emailName && emailName.length > 0) {
-        return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+        const capitalizedName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
+        console.log('DashboardHeader - Capitalized email name:', capitalizedName);
+        return capitalizedName;
       }
     }
+    console.log('DashboardHeader - Falling back to "there"');
     return 'there';
   };
 

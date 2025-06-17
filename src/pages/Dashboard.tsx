@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Navigation } from '@/components/layout/Navigation';
 import { QuickActions } from '@/components/dashboard/QuickActions';
@@ -34,20 +35,29 @@ const Dashboard = () => {
     return 'Good Evening';
   };
 
-  // Get user's first name from profile with improved logic
+  // Get user's first name from profile with improved logic and debugging
   const getFirstName = () => {
+    console.log('Dashboard - Profile data:', profile);
+    console.log('Dashboard - Profile full_name:', profile?.full_name);
+    console.log('Dashboard - Profile email:', profile?.email);
+
     if (profile?.full_name && profile.full_name.trim()) {
       const firstName = profile.full_name.split(' ')[0].trim();
+      console.log('Dashboard - Extracted firstName from full_name:', firstName);
       return firstName || 'there';
     }
     // If no full_name, try to extract from email
     if (profile?.email) {
       const emailName = profile.email.split('@')[0];
+      console.log('Dashboard - Extracted emailName:', emailName);
       // Capitalize first letter and return if it looks like a name
       if (emailName && emailName.length > 0) {
-        return emailName.charAt(0).toUpperCase() + emailName.slice(1);
+        const capitalizedName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
+        console.log('Dashboard - Capitalized email name:', capitalizedName);
+        return capitalizedName;
       }
     }
+    console.log('Dashboard - Falling back to "there"');
     return 'there';
   };
 
