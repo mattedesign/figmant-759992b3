@@ -80,7 +80,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   const hasContent = messages.length > 0 || message.trim().length > 0 || attachments.length > 0;
   return <div className="h-full flex flex-col bg-[#F9FAFB]">
       {/* Header with Tabs moved to top */}
-      <div className="p-6 border-b border-gray-200 bg-transparent">
+      <div className="p-6 bg-transparent">
         <AnalysisChatHeader />
         
 
