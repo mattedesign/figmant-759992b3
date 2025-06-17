@@ -77,11 +77,12 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
     }
   };
 
-  // Pass activeTab to chatPanelProps if it doesn't already have it
+  // Enhanced chat panel props with tab state management
   const enhancedChatPanelProps = {
     ...chatPanelProps,
     activeTab,
-    setActiveTab
+    setActiveTab,
+    onActiveTabChange: setActiveTab
   };
 
   return (
