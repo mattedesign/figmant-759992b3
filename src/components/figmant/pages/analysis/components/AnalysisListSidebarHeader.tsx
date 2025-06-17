@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 interface AnalysisListSidebarHeaderProps {
   isCollapsed: boolean;
@@ -17,13 +17,6 @@ export const AnalysisListSidebarHeader: React.FC<AnalysisListSidebarHeaderProps>
       <div className="flex items-center justify-between">
         {!isCollapsed && <h3 className="font-semibold text-gray-900">History</h3>}
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            className="w-8 h-8 p-0 bg-blue-600 hover:bg-blue-700 flex items-center justify-center"
-            title="New Analysis"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
           <Button
             variant="ghost"
             size="sm"
