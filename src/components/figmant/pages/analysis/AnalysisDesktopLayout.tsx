@@ -8,7 +8,7 @@ interface AnalysisDesktopLayoutProps {
   selectedAnalysis: any;
   onAnalysisSelect: (analysis: any) => void;
   chatPanelProps: any;
-  rightPanelMode: 'templates' | 'analysis';
+  rightPanelMode: 'templates' | 'analysis' | 'empty';
   promptTemplates: any[];
   selectedPromptCategory: string;
   selectedPromptTemplate: string;
@@ -37,6 +37,20 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
 }) => {
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
+
+  // Determine the right panel mode based on state
+  const getRightPanelMode = () => {
+    // If there's an active analysis, show analysis details
+    if (currentAnalysis || chatPanelProps.messages?.length > 0) {
+      return 'analysis';
+    }
+    // If there are attachments or user is actively engaged, show templates
+    if (attachments?.length > 0 || chatPanelProps.message?.length > 0) {
+      return 'templates';
+    }
+    // Default to empty state
+    return 'empty';
+  };
 
   const getLeftPanelWidth = () => {
     return leftCollapsed ? 'w-16' : 'w-1/4'; // 25% when expanded, 64px when collapsed
@@ -78,7 +92,7 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
       {/* Right Panel */}
       <div className={`flex-shrink-0 transition-all duration-300 ${getRightPanelWidth()}`}>
         <AnalysisDynamicRightPanel
-          mode={rightPanelMode}
+          mode={getRightPanelMode()}
           promptTemplates={promptTemplates}
           selectedPromptCategory={selectedPromptCategory}
           selectedPromptTemplate={selectedPromptTemplate}

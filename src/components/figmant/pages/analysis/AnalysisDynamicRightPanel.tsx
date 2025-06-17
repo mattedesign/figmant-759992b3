@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PanelRightClose, PanelRightOpen, FileText, Layout } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { TemplatesPanel } from './components/TemplatesPanel';
 import { AnalysisDetailsPanel } from './components/AnalysisDetailsPanel';
+import { EmptyRightPanel } from './components/EmptyRightPanel';
 
 interface PromptTemplate {
   id: string;
@@ -21,7 +23,7 @@ interface PromptTemplate {
 }
 
 interface AnalysisDynamicRightPanelProps {
-  mode: 'templates' | 'analysis';
+  mode: 'templates' | 'analysis' | 'empty';
   promptTemplates?: PromptTemplate[];
   selectedPromptCategory?: string;
   selectedPromptTemplate?: string;
@@ -56,11 +58,44 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
   };
 
   const getHeaderTitle = () => {
-    return mode === 'templates' ? 'More' : 'Analysis Details';
+    switch (mode) {
+      case 'templates':
+        return 'More';
+      case 'analysis':
+        return 'Analysis Details';
+      case 'empty':
+      default:
+        return 'Analysis';
+    }
   };
 
   const getModeIcon = () => {
     return mode === 'templates' ? Layout : FileText;
+  };
+
+  const renderContent = () => {
+    switch (mode) {
+      case 'templates':
+        return (
+          <TemplatesPanel
+            promptTemplates={promptTemplates}
+            selectedPromptTemplate={selectedPromptTemplate}
+            onPromptTemplateSelect={onPromptTemplateSelect}
+          />
+        );
+      case 'analysis':
+        return (
+          <AnalysisDetailsPanel
+            currentAnalysis={currentAnalysis}
+            attachments={attachments}
+            onAnalysisClick={onAnalysisClick}
+            onBackClick={onBackClick}
+          />
+        );
+      case 'empty':
+      default:
+        return <EmptyRightPanel />;
+    }
   };
 
   return (
@@ -90,20 +125,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
       {/* Content */}
       {!isCollapsed && (
         <div className="flex-1 overflow-hidden">
-          {mode === 'templates' ? (
-            <TemplatesPanel
-              promptTemplates={promptTemplates}
-              selectedPromptTemplate={selectedPromptTemplate}
-              onPromptTemplateSelect={onPromptTemplateSelect}
-            />
-          ) : (
-            <AnalysisDetailsPanel
-              currentAnalysis={currentAnalysis}
-              attachments={attachments}
-              onAnalysisClick={onAnalysisClick}
-              onBackClick={onBackClick}
-            />
-          )}
+          {renderContent()}
         </div>
       )}
 

@@ -119,8 +119,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         </div>
       )}
 
-      {/* Attachments tab content is handled by AnalysisChatTabs component */}
-      {activeTab === "attachments" && (
+      {/* Templates tab content is handled by AnalysisChatTabs component */}
+      {activeTab === "templates" && (
         <div className="flex-1 overflow-y-auto bg-[#F9FAFB] p-6">
           {/* Tab content is rendered within AnalysisChatTabs */}
         </div>
