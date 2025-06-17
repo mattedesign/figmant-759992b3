@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyRightPanel } from './components/EmptyRightPanel';
 import { TemplatesPanel } from './components/TemplatesPanel';
@@ -64,32 +64,14 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
         );
       case 'analysis':
         return (
-          <div className="flex flex-col h-full">
-            {/* Attachments Section */}
-            {attachments.length > 0 && (
-              <div className="p-4 border-b border-gray-200">
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Attachments</h3>
-                <div className="space-y-2">
-                  {attachments.map((attachment) => (
-                    <AttachmentPreview
-                      key={attachment.id}
-                      attachment={attachment}
-                      onRemove={onRemoveAttachment}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Analysis Results Section */}
-            {(currentAnalysis || lastAnalysisResult) && (
-              <div className="flex-1">
-                <AnalysisDetailsPanel
-                  currentAnalysis={currentAnalysis || lastAnalysisResult}
-                />
-              </div>
-            )}
-          </div>
+          <AnalysisDetailsPanel
+            currentAnalysis={currentAnalysis}
+            attachments={attachments}
+            onRemoveAttachment={onRemoveAttachment}
+            lastAnalysisResult={lastAnalysisResult}
+            onAnalysisClick={onAnalysisClick}
+            onBackClick={onBackClick}
+          />
         );
       default:
         return <EmptyRightPanel />;
@@ -108,11 +90,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
             onClick={handleToggleCollapse}
             className="h-8 w-8"
           >
-            {isCollapsed ? (
-              <ChevronLeft className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
+            <Maximize2 className="h-4 w-4" />
           </Button>
         </div>
       </div>

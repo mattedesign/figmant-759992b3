@@ -35,7 +35,7 @@ export const AnalysisDetailsPanel: React.FC<AnalysisDetailsPanelProps> = ({
   const getAnalysisStatus = () => {
     if (lastAnalysisResult) return 'Ready';
     if (currentAnalysis) return 'Processing';
-    return 'Ready';
+    return 'Processing';
   };
 
   const getFileCount = () => {
@@ -49,6 +49,11 @@ export const AnalysisDetailsPanel: React.FC<AnalysisDetailsPanelProps> = ({
 
   return (
     <div className="h-full flex flex-col">
+      {/* Analysis Details Header */}
+      <div className="p-4 border-b border-gray-200">
+        <h3 className="font-semibold text-gray-900">Analysis Details</h3>
+      </div>
+
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
         {/* Current Analysis Card */}
