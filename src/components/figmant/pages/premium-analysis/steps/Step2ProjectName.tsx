@@ -15,7 +15,7 @@ export const Step2ProjectName: React.FC<StepProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 flex flex-col items-center">
       <StepHeader 
         title="What's the name of your project?"
         currentStep={currentStep}
