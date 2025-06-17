@@ -22,7 +22,7 @@ export const Step2ProjectName: React.FC<StepProps> = ({
         totalSteps={totalSteps}
       />
 
-      <div className="max-w-md mx-auto">
+      <div className="w-full max-w-md mx-auto">
         <FormField
           id="projectName"
           type="input"
@@ -30,6 +30,7 @@ export const Step2ProjectName: React.FC<StepProps> = ({
           placeholder="e.g. Anything you like"
           value={stepData.projectName}
           onChange={handleProjectNameChange}
+          className="w-full"
         />
       </div>
     </div>
