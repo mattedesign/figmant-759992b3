@@ -50,7 +50,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
       <StepHeader 
         title="Choose Your Premium Analysis"
         currentStep={currentStep}
