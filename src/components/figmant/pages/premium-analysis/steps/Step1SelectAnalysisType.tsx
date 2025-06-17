@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -63,7 +62,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
         totalSteps={totalSteps}
       />
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {figmantPromptTemplates.map((template) => {
           const IconComponent = getCategoryIcon(template.category);
           const isSelected = stepData.selectedType === template.id;
