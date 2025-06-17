@@ -106,6 +106,15 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-[12px] pt-2">
       <div className="flex items-center gap-4">
+        {/* Time-based Image - moved to the left */}
+        <div className="flex-shrink-0">
+          <img 
+            src={timeBasedImage.src}
+            alt={timeBasedImage.alt}
+            className="h-8 w-8 object-contain"
+          />
+        </div>
+        
         <div>
           <div className="text-sm text-gray-500 mb-1">{formattedDate}</div>
           {firstName === null ? (
@@ -124,15 +133,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               Updated {format(lastUpdated, 'MMM dd, HH:mm')}
             </Badge>
           )}
-        </div>
-        
-        {/* Time-based Image */}
-        <div className="flex-shrink-0">
-          <img 
-            src={timeBasedImage.src}
-            alt={timeBasedImage.alt}
-            className="h-8 w-8 object-contain"
-          />
         </div>
       </div>
     </div>
