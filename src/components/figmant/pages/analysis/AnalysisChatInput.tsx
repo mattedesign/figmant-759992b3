@@ -1,3 +1,4 @@
+
 import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,22 +59,6 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
       <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf" onChange={handleFileChange} style={{
       display: 'none'
     }} />
-
-      {/* Attachments Display */}
-      {attachments.length > 0 && <div className="space-y-2">
-          <div className="text-sm font-medium text-gray-700">Attachments ({attachments.length})</div>
-          <div className="flex flex-wrap gap-2">
-            {attachments.map(attachment => <Badge key={attachment.id} variant="secondary" className="px-3 py-1 flex items-center gap-2">
-                {attachment.type === 'url' ? <Globe className="h-3 w-3" /> : <FileText className="h-3 w-3" />}
-                <span className="max-w-32 truncate">
-                  {attachment.type === 'url' ? attachment.url : attachment.name}
-                </span>
-                {onRemoveAttachment && <button onClick={() => onRemoveAttachment(attachment.id)} className="ml-1 hover:text-red-600">
-                    <X className="h-3 w-3" />
-                  </button>}
-              </Badge>)}
-          </div>
-        </div>}
 
       {/* Template Selector */}
       <div className="flex items-center gap-2">
