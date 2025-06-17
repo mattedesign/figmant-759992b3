@@ -2,7 +2,6 @@
 import React from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AnalysisChatHeader } from './AnalysisChatHeader';
-import { AnalysisTemplateSelector } from './components/AnalysisTemplateSelector';
 import { AnalysisChatContainer } from './components/AnalysisChatContainer';
 import { PromptTemplateModal } from './PromptTemplateModal';
 import { useAttachmentHandlers } from '@/components/design/chat/hooks/useAttachmentHandlers';
@@ -51,7 +50,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     getCurrentTemplate,
     handleTemplateSelect,
     handleViewTemplate,
-    setShowTemplateModal
+    setShowTemplateModal,
+    setModalTemplate
   } = useAnalysisChatState({ selectedPromptTemplate, onAnalysisComplete });
 
   const {
@@ -89,20 +89,17 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     Array.from(files).forEach(handleFileUpload);
   };
 
+  // Handler for when user clicks on the template selector above input
+  const handleTemplateSelectClick = () => {
+    setModalTemplate(getCurrentTemplate());
+    setShowTemplateModal(true);
+  };
+
   return (
     <div className="h-full flex flex-col bg-[#F9FAFB]">
       {/* Header */}
       <div className="p-6 bg-transparent">
         <AnalysisChatHeader />
-        
-        {/* Template Selector */}
-        <AnalysisTemplateSelector
-          figmantTemplates={figmantTemplates}
-          selectedTemplate={selectedTemplate}
-          onTemplateSelect={handleTemplateSelect}
-          onViewTemplate={handleViewTemplate}
-          getCurrentTemplate={getCurrentTemplate}
-        />
       </div>
 
       {/* Chat Container */}
@@ -122,6 +119,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         setUrlInput={setUrlInput}
         onAddUrl={handleAddUrl}
         onCancelUrl={() => setShowUrlInput(false)}
+        onTemplateSelect={handleTemplateSelectClick}
       />
 
       {/* Template Details Modal */}
@@ -129,6 +127,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         template={modalTemplate}
         isOpen={showTemplateModal}
         onClose={() => setShowTemplateModal(false)}
+        onTemplateSelect={handleTemplateSelect}
       />
     </div>
   );

@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Paperclip, Link, Send, Sparkles } from 'lucide-react';
+import { Paperclip, Link, Send, Sparkles, ChevronDown } from 'lucide-react';
 
 interface AnalysisChatInputProps {
   message: string;
@@ -15,6 +15,7 @@ interface AnalysisChatInputProps {
   isAnalyzing: boolean;
   onFileUpload: (files: FileList) => void;
   onToggleUrlInput: () => void;
+  onTemplateSelect?: () => void;
 }
 
 export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
@@ -26,7 +27,8 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   canSend,
   isAnalyzing,
   onFileUpload,
-  onToggleUrlInput
+  onToggleUrlInput,
+  onTemplateSelect
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -45,13 +47,19 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
 
   return (
     <div className="p-6 bg-white border-t border-gray-100">
-      {/* Selected Template Badge */}
+      {/* Clickable Template Selector */}
       {selectedPromptTemplate && (
         <div className="mb-3">
-          <Badge variant="secondary" className="flex items-center gap-1 w-fit">
-            <Sparkles className="h-3 w-3" />
-            {selectedPromptTemplate.display_name}
-          </Badge>
+          <Button
+            variant="ghost"
+            onClick={onTemplateSelect}
+            className="h-auto p-2 flex items-center gap-2 hover:bg-gray-50 border border-gray-200 rounded-lg"
+            disabled={isAnalyzing}
+          >
+            <Sparkles className="h-4 w-4 text-blue-500" />
+            <span className="font-medium text-gray-900">{selectedPromptTemplate.display_name}</span>
+            <ChevronDown className="h-4 w-4 text-gray-500" />
+          </Button>
         </div>
       )}
       

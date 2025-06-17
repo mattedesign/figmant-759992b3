@@ -29,6 +29,7 @@ export const useAnalysisChatState = ({
 
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
+    setShowTemplateModal(false);
   };
 
   const handleViewTemplate = (template: any) => {
@@ -44,6 +45,7 @@ export const useAnalysisChatState = ({
     getCurrentTemplate,
     handleTemplateSelect,
     handleViewTemplate,
-    setShowTemplateModal
+    setShowTemplateModal,
+    setModalTemplate
   };
 };
