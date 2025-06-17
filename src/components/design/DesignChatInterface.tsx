@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChatContainer } from './chat/ChatContainer';
 import { useDesignChatLogic } from './chat/hooks/useDesignChatLogic';
@@ -10,10 +9,9 @@ export interface ChatAttachment {
   name: string;
   file?: File;
   url?: string;
-  status: 'pending' | 'processing' | 'uploading' | 'uploaded' | 'error';
-  errorMessage?: string;
+  status: 'uploading' | 'processing' | 'uploaded' | 'error';
   uploadPath?: string;
-  processingInfo?: any;
+  error?: string;
 }
 
 export interface ChatMessage {
