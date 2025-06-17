@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Upload, Link, Loader2, Sparkles, X, Globe, FileText } from 'lucide-react';
+import { Send, Upload, Link, Loader2, X, Globe, FileText } from 'lucide-react';
 import { SimpleTemplateSelector } from './SimpleTemplateSelector';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
@@ -101,7 +101,6 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
 
       {/* Template Selector */}
       <div className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-blue-600" />
         <SimpleTemplateSelector
           selectedTemplate={selectedPromptTemplate}
           onTemplateSelect={onTemplateSelect}
