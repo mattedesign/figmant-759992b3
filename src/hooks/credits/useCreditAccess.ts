@@ -106,7 +106,7 @@ export const useCreditAccess = () => {
       // For non-subscribers, check and deduct actual credits
       const { data: currentCredits } = await supabase
         .from('user_credits')
-        .select('current_balance')
+        .select('current_balance, total_used')
         .eq('user_id', user.id)
         .single();
 
