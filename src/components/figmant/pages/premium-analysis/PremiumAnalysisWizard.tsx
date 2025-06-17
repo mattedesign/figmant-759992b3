@@ -4,6 +4,7 @@ import { StepData } from './types';
 import { StepRenderer } from './StepRenderer';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
+
 export const PremiumAnalysisWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [stepData, setStepData] = useState<StepData>({
@@ -60,7 +61,7 @@ export const PremiumAnalysisWizard: React.FC = () => {
       </div>
       
       {/* Fixed navigation at bottom - only show for non-processing steps */}
-      {currentStep < 7 && <div className="flex-shrink-0 border-t p-6 bg-transparent">
+      {currentStep < 7 && <div className="flex-shrink-0 p-6 bg-transparent">
           <div className="flex justify-between">
             <Button variant="outline" onClick={handlePreviousStep} disabled={currentStep === 1} className="flex items-center gap-2">
               <ChevronLeft className="h-4 w-4" />
