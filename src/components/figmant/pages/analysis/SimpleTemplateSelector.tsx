@@ -27,7 +27,7 @@ export const SimpleTemplateSelector: React.FC<SimpleTemplateSelectorProps> = ({
           value={currentTemplate?.id || ''} 
           onValueChange={onTemplateSelect}
         >
-          <SelectTrigger className="border-0 bg-transparent p-0 h-auto shadow-none focus:ring-0 flex-1">
+          <SelectTrigger className="border-0 bg-transparent p-0 h-auto shadow-none focus:ring-0 focus:shadow-none focus-visible:ring-0 focus-visible:shadow-none flex-1">
             <SelectValue placeholder="Select analysis template" />
           </SelectTrigger>
           <SelectContent className="w-full min-w-[300px]">
