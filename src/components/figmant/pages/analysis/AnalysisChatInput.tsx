@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Paperclip, Link, Send, Loader2 } from 'lucide-react';
@@ -27,6 +27,8 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   onFileUpload,
   onToggleUrlInput
 }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (onKeyPress) {
       onKeyPress(e);
@@ -39,6 +41,29 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
       e.target.value = ''; // Reset input
     }
   };
+
+  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+    
+    // Auto-resize textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const scrollHeight = textareaRef.current.scrollHeight;
+      const lineHeight = 24; // Approximate line height
+      const maxHeight = lineHeight * 4; // 4 lines max
+      const minHeight = lineHeight * 1; // 1 line min
+      
+      const newHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight);
+      textareaRef.current.style.height = `${newHeight}px`;
+    }
+  };
+
+  // Reset height when message is cleared
+  useEffect(() => {
+    if (!message && textareaRef.current) {
+      textareaRef.current.style.height = '24px'; // Reset to single line
+    }
+  }, [message]);
 
   return (
     <div className="border-t border-gray-200 p-6">
@@ -53,11 +78,13 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
         {/* Input area */}
         <div className="relative">
           <Textarea
+            ref={textareaRef}
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={handleMessageChange}
             onKeyPress={handleKeyPress}
             placeholder="Describe your design analysis needs..."
-            className="min-h-[80px] resize-none pr-32"
+            className="min-h-[24px] max-h-[96px] resize-none pr-32 overflow-y-auto"
+            style={{ height: '24px' }}
             disabled={isAnalyzing}
           />
           
