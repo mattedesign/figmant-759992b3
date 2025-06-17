@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { History } from 'lucide-react';
+import { PanelRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyRightPanel } from './components/EmptyRightPanel';
 import { TemplatesPanel } from './components/TemplatesPanel';
@@ -90,7 +90,7 @@ export const AnalysisDynamicRightPanel: React.FC<AnalysisDynamicRightPanelProps>
             onClick={handleToggleCollapse}
             className="h-8 w-8"
           >
-            <History className="h-4 w-4" />
+            <PanelRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
