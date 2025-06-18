@@ -17,12 +17,15 @@ export async function processAttachmentsForVision(supabase: any, attachments: At
       type: attachment.type,
       name: attachment.name,
       hasUploadPath: !!attachment.uploadPath,
-      hasUrl: !!attachment.url
+      hasUrl: !!attachment.url,
+      isImageMimeType: attachment.type?.startsWith('image/')
     });
 
     let processedItems: Array<{ type: 'text' | 'image'; text?: string; source?: any }> = [];
 
-    if (attachment.type === 'file') {
+    // Handle different attachment types
+    if (attachment.type === 'file' || attachment.type?.startsWith('image/')) {
+      // Handle both explicit 'file' type and image MIME types
       processedItems = await processFileAttachment(supabase, attachment);
     } else if (attachment.type === 'url') {
       processedItems = await processUrlAttachment(attachment);

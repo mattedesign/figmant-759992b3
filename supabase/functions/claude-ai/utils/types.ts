@@ -1,27 +1,14 @@
 
 export interface ClaudeMessage {
-  role: 'user' | 'assistant';
-  content: string | Array<{
-    type: 'text' | 'image';
-    text?: string;
-    source?: {
-      type: 'base64';
-      media_type: string;
-      data: string;
-    };
-  }>;
+  role: 'user' | 'assistant' | 'system';
+  content: string | Array<{ type: 'text' | 'image'; text?: string; source?: any }>;
 }
 
 export interface AttachmentData {
-  type: 'file' | 'url';
   name: string;
-  file?: File;
-  url?: string;
+  type: string; // This can be 'file', 'url', or image MIME types like 'image/png', 'image/jpeg', etc.
+  path?: string;
   uploadPath?: string;
-}
-
-export interface ClaudeSettings {
-  apiKey: string;
-  model: string;
-  systemPrompt: string;
+  url?: string;
+  size?: number;
 }
