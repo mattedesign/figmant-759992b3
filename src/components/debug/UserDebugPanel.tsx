@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useUserDebugInfo } from '@/hooks/useUserDebugInfo';
-import { AlertTriangle, CheckCircle, XCircle, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { AlertTriangle, CheckCircle, XCircle, RefreshCw, Eye, EyeOff, Database, User, CreditCard } from 'lucide-react';
 
 export const UserDebugPanel: React.FC = () => {
   const { data: debugInfo, isLoading, error, refetch } = useUserDebugInfo();
@@ -53,7 +53,7 @@ export const UserDebugPanel: React.FC = () => {
   }
 
   // Check if this is an error response
-  if ('error' in debugInfo) {
+  if ('error' in debugInfo && debugInfo.error) {
     return (
       <Card>
         <CardHeader>
@@ -63,13 +63,30 @@ export const UserDebugPanel: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-red-600 mb-2">{debugInfo.error}</p>
-          {debugInfo.profilesError && (
-            <p className="text-sm text-gray-600">Profile Error: {debugInfo.profilesError}</p>
-          )}
-          <Button onClick={() => refetch()} className="mt-2">
-            Retry
-          </Button>
+          <div className="space-y-3">
+            <p className="text-red-600 font-medium">{debugInfo.error}</p>
+            
+            {debugInfo.profilesError && (
+              <div className="p-2 bg-red-50 border border-red-200 rounded">
+                <p className="text-sm text-red-700">Profile Error: {debugInfo.profilesError}</p>
+              </div>
+            )}
+
+            {debugInfo.debugInfo?.similarEmails && debugInfo.debugInfo.similarEmails.length > 0 && (
+              <div className="p-2 bg-blue-50 border border-blue-200 rounded">
+                <p className="text-sm text-blue-700 font-medium">Similar email addresses found:</p>
+                <ul className="text-sm text-blue-600 mt-1">
+                  {debugInfo.debugInfo.similarEmails.map((email, index) => (
+                    <li key={index}>• {email}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <Button onClick={() => refetch()} className="mt-2">
+              Retry
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
@@ -98,7 +115,10 @@ export const UserDebugPanel: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            Debug Info: Mbrown@tfin.com
+            <div className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Debug Info: Mbrown@tfin.com
+            </div>
             <div className="flex gap-2">
               <Button 
                 onClick={() => setShowRawData(!showRawData)} 
@@ -125,86 +145,95 @@ export const UserDebugPanel: React.FC = () => {
         <CardContent className="space-y-4">
           {/* Access Summary */}
           <div className="p-3 border rounded bg-gray-50">
-            <h4 className="font-semibold mb-2">Access Analysis</h4>
+            <h4 className="font-semibold mb-2 flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              Access Analysis
+            </h4>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <span>Is Owner:</span>
-              <span className={isOwner ? 'text-green-600' : 'text-red-600'}>
+              <span className={isOwner ? 'text-green-600 font-medium' : 'text-red-600'}>
                 {isOwner ? 'YES' : 'NO'}
               </span>
               <span>Has Active Subscription:</span>
-              <span className={hasActiveSubscription ? 'text-green-600' : 'text-red-600'}>
-                {hasActiveSubscription ? 'YES' : 'NO'}
+              <span className={hasActiveSubscription ? 'text-green-600 font-medium' : 'text-red-600'}>
+                {hasActiveSubscription ? 'YES' : 'NO'} 
+                {debugInfo.subscription && ` (${debugInfo.subscription.status})`}
               </span>
               <span>Has Credits:</span>
-              <span className={hasCredits ? 'text-green-600' : 'text-red-600'}>
+              <span className={hasCredits ? 'text-green-600 font-medium' : 'text-red-600'}>
                 {hasCredits ? 'YES' : 'NO'}
+                {debugInfo.credits && ` (${debugInfo.credits.current_balance})`}
               </span>
               <span>Database Access Check:</span>
-              <span className={debugInfo.hasAccess ? 'text-green-600' : 'text-red-600'}>
+              <span className={debugInfo.hasAccess ? 'text-green-600 font-medium' : 'text-red-600'}>
                 {debugInfo.hasAccess ? 'ALLOWED' : 'DENIED'}
               </span>
             </div>
           </div>
 
-          {/* User Profile */}
-          <div className="flex items-center justify-between p-3 border rounded">
-            <div className="flex items-center gap-2">
-              {getStatusIcon(!!debugInfo.profile, !!debugInfo.errors.profileError)}
-              <span className="font-medium">Profile</span>
+          {/* Database Query Status */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* User Profile */}
+            <div className="flex items-center justify-between p-3 border rounded">
+              <div className="flex items-center gap-2">
+                {getStatusIcon(!!debugInfo.profile, !!debugInfo.errors.profileError)}
+                <span className="font-medium">Profile</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {getStatusBadge(!!debugInfo.profile, !!debugInfo.errors.profileError)}
+                {debugInfo.profile && (
+                  <span className="text-sm text-gray-600">
+                    Role: {debugInfo.profile.role}
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              {getStatusBadge(!!debugInfo.profile, !!debugInfo.errors.profileError)}
-              {debugInfo.profile && (
-                <span className="text-sm text-gray-600">
-                  Role: {debugInfo.profile.role}
-                </span>
-              )}
-            </div>
-          </div>
 
-          {/* Subscription */}
-          <div className="flex items-center justify-between p-3 border rounded">
-            <div className="flex items-center gap-2">
-              {getStatusIcon(!!debugInfo.subscription, !!debugInfo.errors.subscriptionError)}
-              <span className="font-medium">Subscription</span>
+            {/* Subscription */}
+            <div className="flex items-center justify-between p-3 border rounded">
+              <div className="flex items-center gap-2">
+                {getStatusIcon(!!debugInfo.subscription, !!debugInfo.errors.subscriptionError)}
+                <span className="font-medium">Subscription</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {getStatusBadge(!!debugInfo.subscription, !!debugInfo.errors.subscriptionError)}
+                {debugInfo.subscription && (
+                  <span className="text-sm text-gray-600">
+                    Status: {debugInfo.subscription.status}
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              {getStatusBadge(!!debugInfo.subscription, !!debugInfo.errors.subscriptionError)}
-              {debugInfo.subscription && (
-                <span className="text-sm text-gray-600">
-                  Status: {debugInfo.subscription.status}
-                </span>
-              )}
-            </div>
-          </div>
 
-          {/* Credits */}
-          <div className="flex items-center justify-between p-3 border rounded">
-            <div className="flex items-center gap-2">
-              {getStatusIcon(!!debugInfo.credits, !!debugInfo.errors.creditsError)}
-              <span className="font-medium">Credits</span>
+            {/* Credits */}
+            <div className="flex items-center justify-between p-3 border rounded">
+              <div className="flex items-center gap-2">
+                {getStatusIcon(!!debugInfo.credits, !!debugInfo.errors.creditsError)}
+                <CreditCard className="h-4 w-4" />
+                <span className="font-medium">Credits</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {getStatusBadge(!!debugInfo.credits, !!debugInfo.errors.creditsError)}
+                {debugInfo.credits && (
+                  <span className="text-sm text-gray-600">
+                    Balance: {debugInfo.credits.current_balance}/{debugInfo.credits.total_purchased}
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              {getStatusBadge(!!debugInfo.credits, !!debugInfo.errors.creditsError)}
-              {debugInfo.credits && (
-                <span className="text-sm text-gray-600">
-                  Balance: {debugInfo.credits.current_balance}/{debugInfo.credits.total_purchased}
-                </span>
-              )}
-            </div>
-          </div>
 
-          {/* Access Check */}
-          <div className="flex items-center justify-between p-3 border rounded">
-            <div className="flex items-center gap-2">
-              {getStatusIcon(debugInfo.hasAccess === true, !!debugInfo.errors.accessError)}
-              <span className="font-medium">Access Permission</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {getStatusBadge(debugInfo.hasAccess === true, !!debugInfo.errors.accessError)}
-              <span className="text-sm text-gray-600">
-                {debugInfo.hasAccess ? 'Allowed' : 'Denied'}
-              </span>
+            {/* Access Check */}
+            <div className="flex items-center justify-between p-3 border rounded">
+              <div className="flex items-center gap-2">
+                {getStatusIcon(debugInfo.hasAccess === true, !!debugInfo.errors.accessError)}
+                <span className="font-medium">Access Permission</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {getStatusBadge(debugInfo.hasAccess === true, !!debugInfo.errors.accessError)}
+                <span className="text-sm text-gray-600">
+                  {debugInfo.hasAccess ? 'Allowed' : 'Denied'}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -233,7 +262,7 @@ export const UserDebugPanel: React.FC = () => {
           {showRawData && (
             <div className="p-3 border rounded bg-gray-50">
               <h4 className="font-semibold mb-2">Raw Debug Data</h4>
-              <pre className="text-xs overflow-auto max-h-60 bg-white p-2 rounded border">
+              <pre className="text-xs overflow-auto max-h-60 bg-white p-2 rounded border whitespace-pre-wrap">
                 {JSON.stringify(debugInfo, null, 2)}
               </pre>
             </div>
@@ -245,7 +274,7 @@ export const UserDebugPanel: React.FC = () => {
       {debugInfo.errors && Object.values(debugInfo.errors).some(error => error) && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-red-600">Error Details</CardTitle>
+            <CardTitle className="text-red-600">Database Query Errors</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {Object.entries(debugInfo.errors).map(([key, error]) => 
@@ -268,7 +297,7 @@ export const UserDebugPanel: React.FC = () => {
       {/* User Information */}
       <Card>
         <CardHeader>
-          <CardTitle>User Information</CardTitle>
+          <CardTitle>User Information Summary</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-2 text-sm">
@@ -276,8 +305,12 @@ export const UserDebugPanel: React.FC = () => {
             <span className="font-mono text-xs">{debugInfo.user?.id || 'Not available'}</span>
             <span>Email:</span>
             <span>{debugInfo.user?.email || 'Not available'}</span>
+            <span>Full Name:</span>
+            <span>{debugInfo.user?.full_name || 'Not available'}</span>
+            <span>Role:</span>
+            <span>{debugInfo.user?.role || 'Not available'}</span>
             <span>Target User:</span>
-            <span>Mbrown@tfin.com</span>
+            <span className="font-medium text-blue-600">Mbrown@tfin.com</span>
           </div>
         </CardContent>
       </Card>
