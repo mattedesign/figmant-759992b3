@@ -42,10 +42,13 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
     switch (activeSection) {
       case 'dashboard':
         return <DashboardPage />;
+      case 'chat':
       case 'analysis':
         return <AnalysisPage selectedTemplate={location.state?.selectedTemplate} />;
+      case 'wizard':
       case 'premium-analysis':
         return <PremiumAnalysisPage />;
+      case 'prompts':
       case 'templates':
         return <TemplatesPage />;
       case 'search':
@@ -55,14 +58,21 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       case 'preferences':
         return <PreferencesPage />;
       case 'admin':
+      case 'users':
+      case 'products':
+      case 'assets':
+      case 'settings':
         return <AdminPage />;
+      case 'support':
+        // For now, redirect to preferences or show a support page
+        return <PreferencesPage />;
       default:
-        return <DashboardPage />;
+        return <AnalysisPage selectedTemplate={location.state?.selectedTemplate} />;
     }
   };
 
   // Determine if we need scrolling based on the active section
-  const needsScrolling = activeSection === 'premium-analysis';
+  const needsScrolling = activeSection === 'premium-analysis' || activeSection === 'wizard';
 
   if (isMobile) {
     return (
