@@ -51,9 +51,9 @@ export const FigmantLayout: React.FC = () => {
     );
   }
 
-  // Both tablet and desktop use the same collapsible sidebar layout
+  // Both tablet and desktop use the same collapsible sidebar layout with 16px gap
   return (
-    <div className="min-h-screen flex w-full" style={{ background: 'transparent' }}>
+    <div className="min-h-screen flex w-full gap-4" style={{ background: 'transparent' }}>
       <FigmantSidebar 
         activeSection={activeSection}
         onSectionChange={setActiveSection}
