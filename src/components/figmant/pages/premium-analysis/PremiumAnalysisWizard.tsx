@@ -20,17 +20,21 @@ export const PremiumAnalysisWizard: React.FC = () => {
     referenceLinks: [''],
     customPrompt: ''
   });
+  
   const totalSteps = 7;
+  
   const handleNextStep = () => {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
   };
+  
   const handlePreviousStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
+  
   const canProceedToNextStep = () => {
     switch (currentStep) {
       case 1:
@@ -42,37 +46,56 @@ export const PremiumAnalysisWizard: React.FC = () => {
       case 4:
         return stepData.desiredOutcome.trim() !== '';
       case 5:
-        return true;
-      // Optional step
+        return true; // Optional step
       case 6:
-        return true;
-      // Optional step
+        return true; // Optional step
       default:
         return false;
     }
   };
-  return <div className="h-full flex flex-col">
-      {/* Main content area that fills remaining space */}
-      <div className="flex-1 min-h-0">
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* Scrollable content area */}
+      <div className="flex-1 min-h-0 overflow-hidden">
         <ScrollArea className="h-full">
-          <div className="p-6 space-y-6">
-            <StepRenderer stepData={stepData} setStepData={setStepData} currentStep={currentStep} totalSteps={totalSteps} onNextStep={handleNextStep} onPreviousStep={handlePreviousStep} />
+          <div className="p-6">
+            <StepRenderer 
+              stepData={stepData} 
+              setStepData={setStepData} 
+              currentStep={currentStep} 
+              totalSteps={totalSteps} 
+              onNextStep={handleNextStep} 
+              onPreviousStep={handlePreviousStep} 
+            />
           </div>
         </ScrollArea>
       </div>
       
       {/* Fixed navigation at bottom - only show for non-processing steps */}
-      {currentStep < 7 && <div className="flex-shrink-0 p-6 bg-transparent" style={{ borderTop: 'none' }}>
+      {currentStep < 7 && (
+        <div className="flex-shrink-0 p-6 bg-white border-t border-gray-200">
           <div className="flex justify-between">
-            <Button variant="outline" onClick={handlePreviousStep} disabled={currentStep === 1} className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              onClick={handlePreviousStep} 
+              disabled={currentStep === 1} 
+              className="flex items-center gap-2"
+            >
               <ChevronLeft className="h-4 w-4" />
               Previous
             </Button>
 
-            <Button onClick={handleNextStep} disabled={!canProceedToNextStep()} className="bg-gray-900 hover:bg-gray-800 text-white">
+            <Button 
+              onClick={handleNextStep} 
+              disabled={!canProceedToNextStep()} 
+              className="bg-gray-900 hover:bg-gray-800 text-white"
+            >
               {currentStep === 6 ? 'Start Analysis' : 'Continue'}
             </Button>
           </div>
-        </div>}
-    </div>;
+        </div>
+      )}
+    </div>
+  );
 };
