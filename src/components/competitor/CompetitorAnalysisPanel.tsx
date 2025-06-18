@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,10 +15,13 @@ import {
   Trash2,
   Monitor,
   Smartphone,
-  AlertTriangle
+  AlertTriangle,
+  Settings
 } from 'lucide-react';
 import { useCompetitorAnalysis, CompetitorAnalysisData } from '@/hooks/useCompetitorAnalysis';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ScreenshotOneConfig } from './ScreenshotOneConfig';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface CompetitorAnalysisPanelProps {
   onAnalysisComplete?: (results: CompetitorAnalysisData[]) => void;
@@ -30,6 +32,7 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
 }) => {
   const [urlInput, setUrlInput] = useState('');
   const [urlList, setUrlList] = useState<string[]>([]);
+  const [showConfig, setShowConfig] = useState(false);
   
   const {
     analysisData,
@@ -103,13 +106,29 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Target className="h-5 w-5 text-blue-600" />
-          Competitor Analysis - Market Positioning
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-blue-600" />
+            Competitor Analysis - Market Positioning
+          </CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowConfig(!showConfig)}
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {/* Configuration Section */}
+        <Collapsible open={showConfig} onOpenChange={setShowConfig}>
+          <CollapsibleContent>
+            <ScreenshotOneConfig className="mb-4" />
+          </CollapsibleContent>
+        </Collapsible>
+
         {/* URL Input Section */}
         <div className="space-y-4">
           <div className="flex gap-2">
