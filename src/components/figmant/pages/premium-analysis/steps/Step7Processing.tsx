@@ -7,6 +7,7 @@ import { StepProps } from '../types';
 import { StepHeader } from '../components/StepHeader';
 import { usePremiumAnalysisSubmission } from '@/hooks/usePremiumAnalysisSubmission';
 import { useClaudePromptExamplesByCategory } from '@/hooks/useClaudePromptExamplesByCategory';
+import { figmantPromptTemplates } from '@/data/figmantPromptTemplates';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,8 +26,6 @@ export const Step7Processing: React.FC<StepProps> = ({
   const { data: premiumPrompts } = useClaudePromptExamplesByCategory('premium');
   const premiumAnalysis = usePremiumAnalysisSubmission();
 
-  const selectedPrompt = premiumPrompts?.find(prompt => prompt.id === stepData.selectedType);
-
   // Helper function to add debug logs
   const addDebugLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -35,27 +34,63 @@ export const Step7Processing: React.FC<StepProps> = ({
     setDebugLogs(prev => [...prev, logMessage]);
   };
 
+  // Find the selected template from either premium prompts or figmant templates
+  const selectedTemplate = React.useMemo(() => {
+    addDebugLog(`Looking for template with ID: ${stepData.selectedType}`);
+    
+    // First try to find in premium prompts (database)
+    if (premiumPrompts?.length > 0) {
+      const premiumTemplate = premiumPrompts.find(prompt => prompt.id === stepData.selectedType);
+      if (premiumTemplate) {
+        addDebugLog(`Found template in premium prompts: ${premiumTemplate.title}`);
+        return {
+          id: premiumTemplate.id,
+          title: premiumTemplate.title,
+          category: premiumTemplate.category,
+          original_prompt: premiumTemplate.original_prompt
+        };
+      }
+    }
+    
+    // If not found in premium prompts, try figmant templates
+    const figmantTemplate = figmantPromptTemplates.find(template => template.id === stepData.selectedType);
+    if (figmantTemplate) {
+      addDebugLog(`Found template in figmant templates: ${figmantTemplate.name}`);
+      return {
+        id: figmantTemplate.id,
+        title: figmantTemplate.name,
+        category: 'premium', // Treat figmant templates as premium for analysis
+        original_prompt: figmantTemplate.prompt_template
+      };
+    }
+    
+    addDebugLog(`Template not found in either source`);
+    return null;
+  }, [stepData.selectedType, premiumPrompts]);
+
   useEffect(() => {
     console.log('🔍 Step7Processing mounted with:', {
       stepData,
       selectedPromptId: stepData.selectedType,
       processingStatus,
-      premiumPromptsCount: premiumPrompts?.length || 0
+      premiumPromptsCount: premiumPrompts?.length || 0,
+      figmantTemplatesCount: figmantPromptTemplates.length
     });
 
     addDebugLog('Step7Processing component mounted');
     addDebugLog(`Selected prompt ID: ${stepData.selectedType}`);
     addDebugLog(`Premium prompts loaded: ${premiumPrompts?.length || 0}`);
-    addDebugLog(`Selected prompt found: ${!!selectedPrompt}`);
+    addDebugLog(`Figmant templates available: ${figmantPromptTemplates.length}`);
+    addDebugLog(`Selected template found: ${!!selectedTemplate}`);
 
-    if (selectedPrompt && processingStatus === 'processing') {
+    if (selectedTemplate && processingStatus === 'processing') {
       addDebugLog('Starting analysis submission...');
       handleAnalysisSubmission();
-    } else if (!selectedPrompt && premiumPrompts?.length > 0) {
-      addDebugLog('ERROR: Selected prompt not found in premium prompts');
+    } else if (!selectedTemplate && (premiumPrompts?.length > 0 || figmantPromptTemplates.length > 0)) {
+      addDebugLog('ERROR: Selected template not found in any source');
       setProcessingStatus('error');
     }
-  }, [selectedPrompt, premiumPrompts]);
+  }, [selectedTemplate, premiumPrompts]);
 
   // Monitor mutation state changes
   useEffect(() => {
@@ -72,8 +107,8 @@ export const Step7Processing: React.FC<StepProps> = ({
   }, [premiumAnalysis.isPending, premiumAnalysis.isError, premiumAnalysis.isSuccess, premiumAnalysis.data]);
 
   const handleAnalysisSubmission = async () => {
-    if (!selectedPrompt) {
-      addDebugLog('ERROR: No selected prompt available for submission');
+    if (!selectedTemplate) {
+      addDebugLog('ERROR: No selected template available for submission');
       setProcessingStatus('error');
       return;
     }
@@ -91,7 +126,7 @@ export const Step7Processing: React.FC<StepProps> = ({
       
       const result = await premiumAnalysis.mutateAsync({
         stepData,
-        selectedPrompt
+        selectedPrompt: selectedTemplate
       });
       
       addDebugLog('Analysis submission completed successfully');
@@ -152,7 +187,7 @@ export const Step7Processing: React.FC<StepProps> = ({
             <div className="space-y-2">
               <h3 className="text-lg font-medium">Analyzing your project...</h3>
               <p className="text-gray-600">
-                Using premium {selectedPrompt?.title} analysis framework
+                Using {selectedTemplate?.title || 'selected'} analysis framework
               </p>
               <div className="text-sm text-gray-500">
                 This may take up to 2 minutes for comprehensive results
@@ -180,7 +215,7 @@ export const Step7Processing: React.FC<StepProps> = ({
               <div className="space-y-2">
                 <h3 className="text-lg font-medium text-green-600">Premium Analysis Complete!</h3>
                 <p className="text-gray-600">
-                  Your comprehensive {selectedPrompt?.title} analysis is ready
+                  Your comprehensive {selectedTemplate?.title} analysis is ready
                 </p>
               </div>
             </div>
