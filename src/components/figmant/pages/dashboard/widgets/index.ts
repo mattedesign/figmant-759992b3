@@ -1,1 +1,3 @@
-// Widget exports removed - no widgets currently exported
+
+export { RevenueImpactTracker } from './RevenueImpactTracker';
+export { CompetitorAnalysisOverview } from './CompetitorAnalysisOverview';
