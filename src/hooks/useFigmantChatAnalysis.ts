@@ -65,8 +65,41 @@ const analyzeWithFigmantChat = async (request: FigmantChatAnalysisRequest): Prom
 
   console.log('User authenticated:', user.id);
 
-  // Check user access first
-  console.log('Checking user access and deducting credits...');
+  // Enhanced debugging for user access
+  console.log('Checking user access and credits...');
+  
+  // First check if user profile exists
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+    
+  if (profileError) {
+    console.error('Profile check error:', profileError);
+    throw new Error('User profile not found. Please contact support.');
+  }
+  
+  console.log('User profile found:', { role: profile.role, email: profile.email });
+
+  // Check if user has credits
+  const { data: userCredits, error: creditsError } = await supabase
+    .from('user_credits')
+    .select('*')
+    .eq('user_id', user.id)
+    .single();
+    
+  if (creditsError) {
+    console.error('Credits check error:', creditsError);
+    throw new Error('Unable to verify user credits. Please contact support.');
+  }
+  
+  console.log('User credits found:', {
+    currentBalance: userCredits.current_balance,
+    totalPurchased: userCredits.total_purchased
+  });
+
+  // Check user access using the database function
   const { data: hasAccess, error: accessError } = await supabase
     .rpc('user_has_access', { user_id: user.id });
 
@@ -75,11 +108,14 @@ const analyzeWithFigmantChat = async (request: FigmantChatAnalysisRequest): Prom
     throw new Error('Unable to verify user access');
   }
 
+  console.log('User access check result:', hasAccess);
+
   if (!hasAccess) {
     throw new Error('You need an active subscription or credits to perform analysis');
   }
 
   // Deduct credits for the analysis
+  console.log('Attempting to deduct 1 credit...');
   const { data: creditDeducted, error: creditError } = await supabase
     .rpc('deduct_analysis_credits', { 
       analysis_user_id: user.id,
@@ -95,6 +131,8 @@ const analyzeWithFigmantChat = async (request: FigmantChatAnalysisRequest): Prom
   if (!creditDeducted) {
     throw new Error('Insufficient credits for analysis');
   }
+
+  console.log('Credits deducted successfully');
 
   // Process attachments - create database records for files that have upload paths
   const uploadIds: string[] = [];
