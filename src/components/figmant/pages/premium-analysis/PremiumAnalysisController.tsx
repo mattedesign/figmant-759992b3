@@ -12,6 +12,7 @@ export const PremiumAnalysisController: React.FC = () => {
     desiredOutcome: '',
     improvementMetric: '',
     deadline: '',
+    date: '',
     stakeholders: [],
     referenceLinks: [''],
     uploadedFiles: [],
@@ -27,15 +28,6 @@ export const PremiumAnalysisController: React.FC = () => {
       uploadedFilesCount: stepData.uploadedFiles?.length || 0
     }
   });
-
-  const updateStepData = useCallback((updates: Partial<StepData>) => {
-    console.log('🔍 Updating step data:', updates);
-    setStepData(prev => {
-      const newData = { ...prev, ...updates };
-      console.log('🔍 New step data:', newData);
-      return newData;
-    });
-  }, []);
 
   const goToNextStep = useCallback(() => {
     console.log('🔍 Going to next step, current:', currentStep);
@@ -66,10 +58,9 @@ export const PremiumAnalysisController: React.FC = () => {
         currentStep={currentStep}
         totalSteps={7}
         stepData={stepData}
-        updateStepData={updateStepData}
-        goToNextStep={goToNextStep}
-        goToPreviousStep={goToPreviousStep}
-        goToStep={goToStep}
+        setStepData={setStepData}
+        onNextStep={goToNextStep}
+        onPreviousStep={goToPreviousStep}
       />
     </div>
   );
