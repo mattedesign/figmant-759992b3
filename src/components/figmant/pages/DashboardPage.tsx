@@ -11,6 +11,7 @@ import { DashboardCompetitorSection } from './dashboard/DashboardCompetitorSecti
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
 import { useToast } from '@/hooks/use-toast';
+import { transformForCompetitorWidget, transformForRevenueWidget } from './dashboard/utils/widgetDataTransformers';
 
 export const DashboardPage: React.FC = () => {
   const {
@@ -72,12 +73,16 @@ export const DashboardPage: React.FC = () => {
     return <EnhancedDashboardSkeleton />;
   }
 
+  // Transform raw data for widgets
+  const competitorWidgetData = transformForCompetitorWidget(rawAnalysisData || []);
+  const revenueWidgetData = transformForRevenueWidget(rawAnalysisData || []);
+
   return (
     <div className="h-full overflow-y-auto">
       <div className="container mx-auto px-6 py-6 space-y-8 2xl:max-w-none 2xl:px-8">
         <DashboardHeader 
           dataStats={memoizedDataStats}
-          lastUpdated={lastUpdated}
+          lastUpdated={lastUpdated ? new Date(lastUpdated) : null}
           onRefresh={refreshAllData}
           isRefreshing={isRefreshing}
         />
@@ -91,13 +96,13 @@ export const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <DashboardCompetitorSection
-              analysisData={rawAnalysisData || []}
+              analysisData={competitorWidgetData}
               userCredits={userCredits}
             />
           </div>
           <div className="lg:col-span-1">
             <DashboardRevenueSection
-              analysisData={rawAnalysisData || []}
+              analysisData={revenueWidgetData}
             />
           </div>
         </div>

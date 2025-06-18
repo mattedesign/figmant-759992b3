@@ -171,7 +171,7 @@ export const useDashboardDataManager = () => {
   };
 
   const error = analysesError || insightsError || promptsError;
-  const lastUpdated = new Date().toISOString();
+  const lastUpdated = new Date().toISOString(); // Return as string, will be converted to Date in DashboardPage
 
   return {
     // Processed data
