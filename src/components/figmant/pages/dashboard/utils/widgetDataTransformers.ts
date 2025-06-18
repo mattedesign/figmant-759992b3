@@ -41,6 +41,12 @@ interface RevenueWidgetData {
   suggestions?: any;
 }
 
+interface PerformanceWidgetData {
+  id: string;
+  confidence_score: number;
+  suggestions?: any;
+}
+
 export const transformForCompetitorWidget = (rawData: any[]): CompetitorWidgetData[] => {
   return rawData.map(item => {
     // Get confidence score from first design analysis or use default
@@ -67,6 +73,20 @@ export const transformForRevenueWidget = (rawData: any[]): RevenueWidgetData[] =
       id: item.id,
       confidence_score,
       impact_summary: firstAnalysis?.impact_summary,
+      suggestions: firstAnalysis?.suggestions
+    };
+  });
+};
+
+export const transformForPerformanceWidget = (rawData: any[]): PerformanceWidgetData[] => {
+  return rawData.map(item => {
+    // Get confidence score from first design analysis or use default
+    const firstAnalysis = item.design_analysis?.[0];
+    const confidence_score = firstAnalysis?.confidence_score || 75; // Default confidence score
+
+    return {
+      id: item.id,
+      confidence_score,
       suggestions: firstAnalysis?.suggestions
     };
   });

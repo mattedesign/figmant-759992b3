@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { DashboardHeader } from './dashboard/DashboardHeader';
 import { RecentAnalysisSection } from './dashboard/RecentAnalysisSection';
@@ -8,10 +7,12 @@ import { DashboardMetricsSection } from './dashboard/DashboardMetricsSection';
 import { DashboardAnalyticsTabsSection } from './dashboard/DashboardAnalyticsTabsSection';
 import { DashboardRevenueSection } from './dashboard/DashboardRevenueSection';
 import { DashboardCompetitorSection } from './dashboard/DashboardCompetitorSection';
+import { DashboardCreditUsageSection } from './dashboard/DashboardCreditUsageSection';
+import { DashboardAnalysisPerformanceSection } from './dashboard/DashboardAnalysisPerformanceSection';
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
 import { useToast } from '@/hooks/use-toast';
-import { transformForCompetitorWidget, transformForRevenueWidget } from './dashboard/utils/widgetDataTransformers';
+import { transformForCompetitorWidget, transformForRevenueWidget, transformForPerformanceWidget } from './dashboard/utils/widgetDataTransformers';
 
 export const DashboardPage: React.FC = () => {
   const {
@@ -76,6 +77,7 @@ export const DashboardPage: React.FC = () => {
   // Transform raw data for widgets
   const competitorWidgetData = transformForCompetitorWidget(rawAnalysisData || []);
   const revenueWidgetData = transformForRevenueWidget(rawAnalysisData || []);
+  const performanceWidgetData = transformForPerformanceWidget(rawAnalysisData || []);
 
   return (
     <div className="h-full overflow-y-auto">
@@ -92,7 +94,7 @@ export const DashboardPage: React.FC = () => {
           dataStats={memoizedDataStats}
         />
 
-        {/* Revenue-focused top row - Competitor Intelligence & Credit Usage */}
+        {/* Revenue-focused top row - Competitor Intelligence & Revenue Impact */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <DashboardCompetitorSection
@@ -105,6 +107,16 @@ export const DashboardPage: React.FC = () => {
               analysisData={revenueWidgetData}
             />
           </div>
+        </div>
+
+        {/* Secondary widgets row - Credit Usage & Analysis Performance */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <DashboardCreditUsageSection
+            userCredits={userCredits}
+          />
+          <DashboardAnalysisPerformanceSection
+            analysisData={performanceWidgetData}
+          />
         </div>
 
         {/* Analytics Dashboard Section */}
