@@ -22,6 +22,7 @@ export interface AnalysisResults {
   desired_outcome: string;
   files_uploaded: number;
   reference_links: number;
+  uploaded_file_paths: string[]; // Add this missing property
   is_premium: boolean;
   premium_type: string;
   credits_used: number;
