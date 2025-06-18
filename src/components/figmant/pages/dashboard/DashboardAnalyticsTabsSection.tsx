@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,6 +18,9 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
   className
 }) => {
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Hide the analytics dashboard card
+  return null;
 
   return (
     <div className={className}>
