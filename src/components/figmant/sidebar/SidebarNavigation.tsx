@@ -9,8 +9,7 @@ import {
   FileText, 
   Search,
   PanelLeftOpen,
-  PanelLeftClose,
-  Plus
+  PanelLeftClose
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -41,12 +40,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     onToggleCollapse?.(!isCollapsed);
   };
 
-  const handleNewAnalysis = () => {
-    // Navigate to analysis page and trigger new analysis
-    onSectionChange('analysis');
-    // Additional logic for new analysis could be added here
-  };
-
   if (isCollapsed) {
     return (
       <div className="flex-1 overflow-y-auto flex flex-col py-6">
@@ -73,17 +66,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               )} />
             </Button>
           ))}
-          
-          {/* New Analysis Button - Collapsed */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-10 h-10 p-0 bg-blue-600 hover:bg-blue-700 text-white"
-            onClick={handleNewAnalysis}
-            title="New Analysis"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
         </div>
         
         {/* Toggle button at bottom */}
@@ -135,16 +117,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                 </span>
               </Button>
             ))}
-            
-            {/* New Analysis Button - Expanded */}
-            <Button
-              variant="ghost"
-              className="w-full justify-start bg-blue-600 hover:bg-blue-700 text-white rounded-[20px]"
-              onClick={handleNewAnalysis}
-            >
-              <Plus className="h-4 w-4 mr-3" />
-              <span className="font-medium">New Analysis</span>
-            </Button>
           </div>
         </div>
       </div>
