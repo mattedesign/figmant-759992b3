@@ -6,8 +6,6 @@ import { InsightsSection } from './dashboard/InsightsSection';
 import { PatternAnalysisSection } from './dashboard/PatternAnalysisSection';
 import { DashboardMetricsSection } from './dashboard/DashboardMetricsSection';
 import { DashboardAnalyticsTabsSection } from './dashboard/DashboardAnalyticsTabsSection';
-import { DashboardRevenueSection } from './dashboard/DashboardRevenueSection';
-import { DashboardCompetitorSection } from './dashboard/DashboardCompetitorSection';
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
 import { useToast } from '@/hooks/use-toast';
@@ -81,22 +79,6 @@ export const DashboardPage: React.FC = () => {
         {/* Key Metrics Section */}
         <DashboardMetricsSection
           dataStats={memoizedDataStats}
-        />
-
-        {/* Revenue Impact Tracker Section */}
-        <DashboardRevenueSection
-          analysisData={memoizedAnalysisData}
-          className="mb-8"
-        />
-
-        {/* Competitor Analysis Overview Section */}
-        <DashboardCompetitorSection
-          analysisData={memoizedAnalysisData}
-          userCredits={{
-            current_balance: 12, // This should come from your credits system
-            total_used: 18
-          }}
-          className="mb-8"
         />
 
         {/* Analytics Dashboard Section */}
