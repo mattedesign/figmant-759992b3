@@ -18,6 +18,7 @@ export const Step7Processing: React.FC<StepProps> = ({
   const [processingStatus, setProcessingStatus] = useState<'processing' | 'complete' | 'error'>('processing');
   const [analysisResult, setAnalysisResult] = useState<string>('');
   const [savedAnalysisId, setSavedAnalysisId] = useState<string | null>(null);
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   
@@ -26,51 +27,112 @@ export const Step7Processing: React.FC<StepProps> = ({
 
   const selectedPrompt = premiumPrompts?.find(prompt => prompt.id === stepData.selectedType);
 
+  // Helper function to add debug logs
+  const addDebugLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const logMessage = `[${timestamp}] ${message}`;
+    console.log('🔍 PREMIUM ANALYSIS DEBUG:', logMessage);
+    setDebugLogs(prev => [...prev, logMessage]);
+  };
+
   useEffect(() => {
+    console.log('🔍 Step7Processing mounted with:', {
+      stepData,
+      selectedPromptId: stepData.selectedType,
+      processingStatus,
+      premiumPromptsCount: premiumPrompts?.length || 0
+    });
+
+    addDebugLog('Step7Processing component mounted');
+    addDebugLog(`Selected prompt ID: ${stepData.selectedType}`);
+    addDebugLog(`Premium prompts loaded: ${premiumPrompts?.length || 0}`);
+    addDebugLog(`Selected prompt found: ${!!selectedPrompt}`);
+
     if (selectedPrompt && processingStatus === 'processing') {
+      addDebugLog('Starting analysis submission...');
       handleAnalysisSubmission();
+    } else if (!selectedPrompt && premiumPrompts?.length > 0) {
+      addDebugLog('ERROR: Selected prompt not found in premium prompts');
+      setProcessingStatus('error');
     }
-  }, [selectedPrompt]);
+  }, [selectedPrompt, premiumPrompts]);
+
+  // Monitor mutation state changes
+  useEffect(() => {
+    addDebugLog(`Mutation state changed - isPending: ${premiumAnalysis.isPending}, isError: ${premiumAnalysis.isError}, isSuccess: ${premiumAnalysis.isSuccess}`);
+    
+    if (premiumAnalysis.isError) {
+      addDebugLog(`Mutation error: ${premiumAnalysis.error?.message || 'Unknown error'}`);
+    }
+    
+    if (premiumAnalysis.isSuccess && premiumAnalysis.data) {
+      addDebugLog('Mutation completed successfully');
+      addDebugLog(`Analysis result length: ${premiumAnalysis.data.analysis?.length || 0}`);
+    }
+  }, [premiumAnalysis.isPending, premiumAnalysis.isError, premiumAnalysis.isSuccess, premiumAnalysis.data]);
 
   const handleAnalysisSubmission = async () => {
     if (!selectedPrompt) {
+      addDebugLog('ERROR: No selected prompt available for submission');
       setProcessingStatus('error');
       return;
     }
 
+    addDebugLog('Preparing to submit analysis...');
+    addDebugLog(`Step data: ${JSON.stringify({
+      projectName: stepData.projectName,
+      analysisGoals: stepData.analysisGoals?.substring(0, 100) + '...',
+      selectedType: stepData.selectedType,
+      uploadedFilesCount: stepData.uploadedFiles?.length || 0
+    })}`);
+
     try {
+      addDebugLog('Calling premiumAnalysis.mutateAsync...');
+      
       const result = await premiumAnalysis.mutateAsync({
         stepData,
         selectedPrompt
       });
       
+      addDebugLog('Analysis submission completed successfully');
+      addDebugLog(`Result analysis length: ${result.analysis?.length || 0}`);
+      addDebugLog(`Saved analysis ID: ${result.savedAnalysisId}`);
+      
       setAnalysisResult(result.analysis);
       setSavedAnalysisId(result.savedAnalysisId);
       setProcessingStatus('complete');
       
+      addDebugLog('Invalidating queries...');
       // Invalidate relevant queries to update the UI
       queryClient.invalidateQueries({ queryKey: ['user-credits'] });
       queryClient.invalidateQueries({ queryKey: ['credit-transactions'] });
       queryClient.invalidateQueries({ queryKey: ['chat-analysis-history'] });
+      addDebugLog('Queries invalidated successfully');
+      
     } catch (error) {
-      console.error('Analysis submission failed:', error);
+      console.error('🔍 Analysis submission failed:', error);
+      addDebugLog(`ERROR: Analysis submission failed - ${error.message || 'Unknown error'}`);
       setProcessingStatus('error');
     }
   };
 
   const handleRetry = () => {
+    addDebugLog('Retrying analysis submission...');
     setProcessingStatus('processing');
     setAnalysisResult('');
     setSavedAnalysisId(null);
+    setDebugLogs(prev => [...prev, '--- RETRY ATTEMPT ---']);
     handleAnalysisSubmission();
   };
 
   const handleViewInAnalysis = () => {
+    addDebugLog('Navigating to analysis page...');
     // Navigate to the analysis page in the figmant interface
     navigate('/figmant', { state: { activeSection: 'analysis' } });
   };
 
   const handleBackToAnalysis = () => {
+    addDebugLog('Navigating back to analysis page...');
     navigate('/figmant', { state: { activeSection: 'analysis' } });
   };
 
@@ -95,6 +157,18 @@ export const Step7Processing: React.FC<StepProps> = ({
               <div className="text-sm text-gray-500">
                 This may take up to 2 minutes for comprehensive results
               </div>
+              
+              {/* Debug logs section during processing */}
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-sm text-gray-400 hover:text-gray-600">
+                  View Debug Logs ({debugLogs.length})
+                </summary>
+                <div className="mt-2 max-h-32 overflow-y-auto bg-gray-50 p-2 rounded text-xs font-mono">
+                  {debugLogs.map((log, index) => (
+                    <div key={index} className="text-gray-600">{log}</div>
+                  ))}
+                </div>
+              </details>
             </div>
           </div>
         )}
@@ -144,6 +218,23 @@ export const Step7Processing: React.FC<StepProps> = ({
                 <p className="text-gray-600">
                   There was an error processing your premium analysis
                 </p>
+                {premiumAnalysis.error && (
+                  <p className="text-sm text-red-500 mt-2">
+                    Error: {premiumAnalysis.error.message}
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            {/* Debug logs section for errors */}
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-2xl mx-auto">
+              <h4 className="font-medium text-red-800 mb-2">Debug Information:</h4>
+              <div className="max-h-48 overflow-y-auto bg-white p-2 rounded text-xs font-mono">
+                {debugLogs.map((log, index) => (
+                  <div key={index} className={`${log.includes('ERROR') ? 'text-red-600' : 'text-gray-600'}`}>
+                    {log}
+                  </div>
+                ))}
               </div>
             </div>
             

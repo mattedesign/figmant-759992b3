@@ -16,31 +16,53 @@ export const usePremiumAnalysisSubmission = () => {
 
   return useMutation({
     mutationFn: async ({ stepData, selectedPrompt }: PremiumAnalysisRequest) => {
-      console.log('Starting premium analysis submission...');
+      console.log('🔍 PREMIUM ANALYSIS SUBMISSION - Starting mutation...');
+      console.log('🔍 Step data:', {
+        projectName: stepData.projectName,
+        selectedType: stepData.selectedType,
+        uploadedFilesCount: stepData.uploadedFiles?.length || 0
+      });
+      console.log('🔍 Selected prompt:', {
+        id: selectedPrompt.id,
+        title: selectedPrompt.title,
+        category: selectedPrompt.category
+      });
 
       // Get current user
+      console.log('🔍 Getting current user...');
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
+        console.error('🔍 Auth error:', authError);
         throw new Error('User not authenticated');
       }
+      console.log('🔍 User authenticated:', user.id);
 
       // Check if user has access (subscription or credits)
+      console.log('🔍 Checking user access...');
       const hasAccess = await checkUserAccess();
       if (!hasAccess) {
+        console.error('🔍 User does not have access');
         throw new Error('You need an active subscription or credits to perform premium analysis. Please upgrade your plan or purchase credits.');
       }
+      console.log('🔍 User has access confirmed');
 
       // Deduct credits for premium analysis (5 credits)
+      console.log('🔍 Attempting to deduct 5 credits...');
       const creditsDeducted = await deductAnalysisCredits(5, `Premium analysis: ${selectedPrompt.category}`);
       if (!creditsDeducted) {
+        console.error('🔍 Failed to deduct credits');
         throw new Error('Unable to deduct credits for premium analysis. Please check your credit balance.');
       }
+      console.log('🔍 Credits deducted successfully');
 
       try {
         // Build comprehensive prompt based on selected premium prompt and user data
+        console.log('🔍 Building context prompt...');
         const contextPrompt = buildContextPrompt(stepData, selectedPrompt);
+        console.log('🔍 Context prompt length:', contextPrompt.length);
 
         // Call Claude AI function with premium analysis context
+        console.log('🔍 Calling Claude AI function...');
         const { data: claudeResponse, error: claudeError } = await supabase.functions.invoke('claude-ai', {
           body: {
             message: contextPrompt,
@@ -57,11 +79,18 @@ export const usePremiumAnalysisSubmission = () => {
         });
 
         if (claudeError) {
-          console.error('Claude AI error:', claudeError);
+          console.error('🔍 Claude AI error:', claudeError);
           throw new Error(`Premium analysis failed: ${claudeError.message}`);
         }
 
+        console.log('🔍 Claude AI response received:', {
+          hasResponse: !!claudeResponse,
+          hasAnalysis: !!(claudeResponse?.analysis || claudeResponse?.response),
+          responseLength: (claudeResponse?.analysis || claudeResponse?.response || '').length
+        });
+
         // Properly serialize the analysis results to ensure JSON compatibility
+        console.log('🔍 Preparing analysis results for database...');
         const analysisResults = {
           response: claudeResponse.analysis || claudeResponse.response,
           premium_analysis_data: JSON.parse(JSON.stringify(stepData)), // Ensure proper JSON serialization
@@ -79,6 +108,7 @@ export const usePremiumAnalysisSubmission = () => {
         };
 
         // Save the premium analysis to chat history with proper labeling
+        console.log('🔍 Saving analysis to chat history...');
         const { data: savedAnalysis, error: saveError } = await supabase
           .from('chat_analysis_history')
           .insert({
@@ -93,32 +123,45 @@ export const usePremiumAnalysisSubmission = () => {
           .single();
 
         if (saveError) {
-          console.error('Error saving premium analysis:', saveError);
+          console.error('🔍 Error saving premium analysis:', saveError);
           throw saveError;
         }
 
-        console.log('Premium analysis saved to chat history with ID:', savedAnalysis.id);
+        console.log('🔍 Premium analysis saved successfully with ID:', savedAnalysis.id);
 
-        return {
+        const finalResult = {
           analysis: claudeResponse.analysis || claudeResponse.response,
           savedAnalysisId: savedAnalysis.id,
           debugInfo: claudeResponse.debugInfo
         };
+
+        console.log('🔍 Returning final result:', {
+          hasAnalysis: !!finalResult.analysis,
+          analysisLength: finalResult.analysis?.length || 0,
+          savedAnalysisId: finalResult.savedAnalysisId
+        });
+
+        return finalResult;
       } catch (error) {
+        console.error('🔍 Error in analysis processing:', error);
         // If analysis fails after credits are deducted, we let the failed analysis consume the credits
         // This is consistent with how most SaaS products handle failed requests
         throw error;
       }
     },
     onError: (error) => {
-      console.error('Premium analysis submission failed:', error);
+      console.error('🔍 Premium analysis submission failed:', error);
       toast({
         title: "Analysis Failed",
         description: error.message || "An error occurred during premium analysis",
         variant: "destructive"
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('🔍 Premium analysis completed successfully:', {
+        analysisLength: data.analysis?.length || 0,
+        savedAnalysisId: data.savedAnalysisId
+      });
       toast({
         title: "Premium Analysis Complete",
         description: "Your premium analysis has been generated and saved successfully.",
@@ -128,6 +171,8 @@ export const usePremiumAnalysisSubmission = () => {
 };
 
 function buildContextPrompt(stepData: StepData, selectedPrompt: any): string {
+  console.log('🔍 Building context prompt...');
+  
   let prompt = `Premium Analysis Request - ${selectedPrompt.title}\n\n`;
   
   prompt += `Project: ${stepData.projectName}\n`;
@@ -176,5 +221,6 @@ function buildContextPrompt(stepData: StepData, selectedPrompt: any): string {
   prompt += `\nPlease provide a comprehensive ${selectedPrompt.category} analysis based on the above context and the following prompt template:\n\n`;
   prompt += selectedPrompt.original_prompt;
   
+  console.log('🔍 Context prompt built successfully, length:', prompt.length);
   return prompt;
 }
