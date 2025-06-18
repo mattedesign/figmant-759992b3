@@ -6,6 +6,7 @@ import { InsightsSection } from './dashboard/InsightsSection';
 import { PatternAnalysisSection } from './dashboard/PatternAnalysisSection';
 import { DashboardMetricsSection } from './dashboard/DashboardMetricsSection';
 import { DashboardAnalyticsTabsSection } from './dashboard/DashboardAnalyticsTabsSection';
+import { DashboardRevenueSection } from './dashboard/DashboardRevenueSection';
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
 import { useToast } from '@/hooks/use-toast';
@@ -79,6 +80,12 @@ export const DashboardPage: React.FC = () => {
         {/* Key Metrics Section */}
         <DashboardMetricsSection
           dataStats={memoizedDataStats}
+        />
+
+        {/* Revenue Impact Tracker Section */}
+        <DashboardRevenueSection
+          analysisData={memoizedAnalysisData}
+          className="mb-8"
         />
 
         {/* Analytics Dashboard Section */}
