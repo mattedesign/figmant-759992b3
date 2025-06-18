@@ -41,7 +41,7 @@ export const useMessageHandler = ({
     setIsAnalyzing(true);
 
     try {
-      // Add user message
+      // Add user message first
       const userMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'user',
@@ -52,7 +52,7 @@ export const useMessageHandler = ({
 
       setMessages([...messages, userMessage]);
 
-      // Call Figmant Chat Analysis with basic parameters
+      // Call Figmant Chat Analysis
       const result = await figmantChat.mutateAsync({
         message,
         attachments
@@ -77,7 +77,7 @@ export const useMessageHandler = ({
         });
       }
 
-      // Clear input and attachments
+      // Clear input and attachments only on success
       setMessage('');
       setAttachments([]);
 
@@ -88,11 +88,24 @@ export const useMessageHandler = ({
 
     } catch (error: any) {
       console.error('Analysis failed:', error);
-      toast({
-        title: "Analysis Failed",
-        description: error.message || "There was an error generating your analysis. Please try again.",
-        variant: "destructive"
-      });
+      
+      // Check if it's a credit-related error
+      if (error.message?.includes('credits') || error.message?.includes('subscription')) {
+        toast({
+          title: "Insufficient Credits",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Analysis Failed",
+          description: error.message || "There was an error generating your analysis. Please try again.",
+          variant: "destructive"
+        });
+      }
+      
+      // Remove the user message that was added if analysis fails
+      setMessages(messages);
     } finally {
       setIsAnalyzing(false);
     }

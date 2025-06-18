@@ -39,36 +39,32 @@ export const useCreditAccess = () => {
 
       console.log('🔍 User subscription found:', subscription);
 
-      // FEATURE PARITY: Give subscribers same access as owners
+      // Active subscribers get unlimited access
       if (subscription?.status === 'active') {
-        console.log('🔍 User has active subscription - full access granted (same as owner)');
+        console.log('🔍 User has active subscription - unlimited access');
         return true;
       }
 
-      // For inactive subscriptions, still check credits
-      if (subscription && subscription.status === 'inactive') {
-        const { data: userCredits } = await supabase
-          .from('user_credits')
-          .select('current_balance')
-          .eq('user_id', user.id)
-          .single();
+      // For inactive subscriptions, check credits
+      const { data: userCredits } = await supabase
+        .from('user_credits')
+        .select('current_balance')
+        .eq('user_id', user.id)
+        .single();
 
-        console.log('🔍 User credits found:', userCredits);
+      console.log('🔍 User credits found:', userCredits);
 
-        const hasCredits = (userCredits?.current_balance || 0) > 0;
-        console.log('🔍 User has credits result:', hasCredits);
-        
-        return hasCredits;
-      }
-
-      return false;
+      const hasCredits = (userCredits?.current_balance || 0) > 0;
+      console.log('🔍 User has credits result:', hasCredits);
+      
+      return hasCredits;
     } catch (error) {
       console.error('🔍 Error checking user access:', error);
       return false;
     }
   };
 
-  // Deduct credits for analysis - now always processes transactions for tracking
+  // Deduct credits for analysis - now properly handles all user types
   const deductAnalysisCredits = async (creditsToDeduct: number = 1, description: string = 'Design analysis'): Promise<boolean> => {
     if (!user?.id) {
       console.error('🔍 No user ID for credit deduction');
@@ -106,7 +102,7 @@ export const useCreditAccess = () => {
       const { data: subscription } = await supabase
         .from('subscriptions')
         .select('status')
-        .eq('user_id', user.id)
+        .eq('id', user.id)
         .single();
 
       const isOwner = profile?.role === 'owner';
@@ -114,9 +110,9 @@ export const useCreditAccess = () => {
 
       console.log('🔍 User permissions:', { isOwner, hasActiveSubscription });
 
-      // FEATURE PARITY: Both owners and active subscribers get unlimited access
-      if (isOwner || hasActiveSubscription) {
-        console.log('🔍 Creating tracking transaction for', isOwner ? 'owner' : 'active subscriber', '- unlimited access');
+      // Only owners get truly unlimited access - active subscribers now get charged
+      if (isOwner) {
+        console.log('🔍 Creating tracking transaction for owner - unlimited access');
         // Create a usage transaction for tracking without actually deducting from balance
         const { error: transactionError } = await supabase
           .from('credit_transactions')
@@ -124,20 +120,20 @@ export const useCreditAccess = () => {
             user_id: user.id,
             transaction_type: 'usage',
             amount: creditsToDeduct,
-            description: `${description} (${isOwner ? 'Owner' : 'Active Subscriber'} - unlimited access)`,
+            description: `${description} (Owner - unlimited access)`,
             created_by: user.id
           });
 
         if (transactionError) {
           console.error('🔍 Error creating tracking transaction:', transactionError);
         } else {
-          console.log('🔍 Usage tracked for', isOwner ? 'owner' : 'active subscriber', '- no credits deducted');
+          console.log('🔍 Usage tracked for owner - no credits deducted');
         }
 
         return true;
       }
 
-      // For inactive subscribers, check and deduct actual credits
+      // For everyone else (including active subscribers), check and deduct actual credits
       console.log('🔍 User needs to use actual credits, fetching current balance...');
       const { data: currentCredits, error: fetchError } = await supabase
         .from('user_credits')
@@ -158,7 +154,9 @@ export const useCreditAccess = () => {
         toast({
           variant: "destructive",
           title: "Insufficient Credits",
-          description: "You don't have enough credits for this analysis. Please purchase more credits or activate your subscription for unlimited access.",
+          description: hasActiveSubscription 
+            ? "You don't have enough credits for this analysis. Please purchase more credits."
+            : "You don't have enough credits for this analysis. Please purchase more credits or activate your subscription for better rates.",
         });
         return false;
       }
@@ -189,7 +187,7 @@ export const useCreditAccess = () => {
           user_id: user.id,
           transaction_type: 'usage',
           amount: creditsToDeduct,
-          description,
+          description: hasActiveSubscription ? `${description} (Active Subscriber)` : description,
           created_by: user.id
         });
 
