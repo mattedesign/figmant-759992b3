@@ -55,19 +55,21 @@ export const PremiumAnalysisWizard: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Scrollable content area */}
+    <div className="h-full flex flex-col max-h-screen">
+      {/* Scrollable content area with explicit height constraints */}
       <div className="flex-1 min-h-0 overflow-hidden">
-        <ScrollArea className="h-full">
-          <div className="p-6">
-            <StepRenderer 
-              stepData={stepData} 
-              setStepData={setStepData} 
-              currentStep={currentStep} 
-              totalSteps={totalSteps} 
-              onNextStep={handleNextStep} 
-              onPreviousStep={handlePreviousStep} 
-            />
+        <ScrollArea className="h-full w-full">
+          <div className="p-6 min-h-full">
+            <div className="h-full">
+              <StepRenderer 
+                stepData={stepData} 
+                setStepData={setStepData} 
+                currentStep={currentStep} 
+                totalSteps={totalSteps} 
+                onNextStep={handleNextStep} 
+                onPreviousStep={handlePreviousStep} 
+              />
+            </div>
           </div>
         </ScrollArea>
       </div>

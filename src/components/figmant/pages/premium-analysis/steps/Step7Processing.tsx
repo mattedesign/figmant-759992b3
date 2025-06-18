@@ -151,40 +151,44 @@ export const Step7Processing: React.FC<StepProps> = ({
   };
 
   return (
-    <div className="space-y-6 h-full">
-      <StepHeader 
-        title={getTitle()}
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-      />
+    <div className="h-full flex flex-col">
+      <div className="flex-shrink-0">
+        <StepHeader 
+          title={getTitle()}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+        />
+      </div>
 
-      <div className="max-w-4xl mx-auto h-full flex flex-col">
-        {processingStatus === 'processing' && (
-          <ProcessingState
-            selectedTemplateTitle={selectedTemplate?.title}
-            debugLogs={debugLogs}
-          />
-        )}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="h-full flex flex-col p-4">
+          {processingStatus === 'processing' && (
+            <ProcessingState
+              selectedTemplateTitle={selectedTemplate?.title}
+              debugLogs={debugLogs}
+            />
+          )}
 
-        {processingStatus === 'complete' && (
-          <CompleteState
-            selectedTemplateTitle={selectedTemplate?.title}
-            analysisResult={analysisResult}
-            onViewInAnalysis={handleViewInAnalysis}
-            onBackToAnalysis={handleBackToAnalysis}
-          />
-        )}
+          {processingStatus === 'complete' && (
+            <CompleteState
+              selectedTemplateTitle={selectedTemplate?.title}
+              analysisResult={analysisResult}
+              onViewInAnalysis={handleViewInAnalysis}
+              onBackToAnalysis={handleBackToAnalysis}
+            />
+          )}
 
-        {processingStatus === 'error' && (
-          <ErrorState
-            errorMessage={premiumAnalysis.error?.message}
-            selectedType={stepData.selectedType}
-            hasSelectedTemplate={!!selectedTemplate}
-            debugLogs={debugLogs}
-            onRetry={handleRetry}
-            onBackToAnalysis={handleBackToAnalysis}
-          />
-        )}
+          {processingStatus === 'error' && (
+            <ErrorState
+              errorMessage={premiumAnalysis.error?.message}
+              selectedType={stepData.selectedType}
+              hasSelectedTemplate={!!selectedTemplate}
+              debugLogs={debugLogs}
+              onRetry={handleRetry}
+              onBackToAnalysis={handleBackToAnalysis}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

@@ -18,8 +18,8 @@ export const CompleteState: React.FC<CompleteStateProps> = ({
   onBackToAnalysis
 }) => {
   return (
-    <div className="space-y-6 flex-1 flex flex-col">
-      <div className="text-center">
+    <div className="h-full flex flex-col space-y-6">
+      <div className="flex-shrink-0 text-center">
         <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
         <div className="space-y-2">
           <h3 className="text-lg font-medium text-green-600">Premium Analysis Complete!</h3>
@@ -30,18 +30,20 @@ export const CompleteState: React.FC<CompleteStateProps> = ({
       </div>
       
       {/* Scrollable Analysis Results */}
-      <div className="bg-gray-50 border rounded-lg flex-1 flex flex-col min-h-0">
-        <div className="p-4 border-b bg-white rounded-t-lg">
+      <div className="flex-1 min-h-0 bg-gray-50 border rounded-lg flex flex-col">
+        <div className="flex-shrink-0 p-4 border-b bg-white rounded-t-lg">
           <h4 className="font-medium">Analysis Results:</h4>
         </div>
-        <ScrollArea className="flex-1 p-4">
-          <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-            {analysisResult}
-          </div>
-        </ScrollArea>
+        <div className="flex-1 min-h-0">
+          <ScrollArea className="h-full">
+            <div className="p-4 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+              {analysisResult}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
 
-      <div className="flex gap-4 justify-center pt-4">
+      <div className="flex-shrink-0 flex gap-4 justify-center pt-4">
         <Button onClick={onViewInAnalysis} className="bg-blue-600 hover:bg-blue-700">
           View in Analysis Panel
         </Button>
