@@ -90,8 +90,7 @@ export class ScreenshotOneProvider implements ScreenshotProvider {
   private async validateApiEndpoint(screenshotUrl: string): Promise<void> {
     try {
       const response = await fetch(screenshotUrl, { 
-        method: 'HEAD',
-        timeout: 10000 // 10 second timeout
+        method: 'HEAD'
       });
       
       if (!response.ok) {

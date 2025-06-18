@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -337,42 +338,4 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
       </CardContent>
     </Card>
   );
-};
-
-const getStatusIcon = (status: CompetitorAnalysisData['status']) => {
-  switch (status) {
-    case 'pending':
-      return <Globe className="h-4 w-4 text-gray-400" />;
-    case 'validating':
-      return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
-    case 'capturing':
-      return <Camera className="h-4 w-4 text-yellow-500" />;
-    case 'completed':
-      return <CheckCircle className="h-4 w-4 text-green-500" />;
-    case 'failed':
-      return <XCircle className="h-4 w-4 text-red-500" />;
-  }
-};
-
-const getStatusText = (status: CompetitorAnalysisData['status']) => {
-  switch (status) {
-    case 'pending':
-      return 'Pending';
-    case 'validating':
-      return 'Validating URL...';
-    case 'capturing':
-      return 'Capturing Screenshots...';
-    case 'completed':
-      return 'Analysis Complete';
-    case 'failed':
-      return 'Analysis Failed';
-  }
-};
-
-const calculateProgress = () => {
-  if (analysisData.length === 0) return 0;
-  const completed = analysisData.filter(item => 
-    item.status === 'completed' || item.status === 'failed'
-  ).length;
-  return (completed / analysisData.length) * 100;
 };
