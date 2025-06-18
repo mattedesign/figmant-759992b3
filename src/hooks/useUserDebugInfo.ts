@@ -72,7 +72,10 @@ export const useUserDebugInfo = () => {
           transactions: [],
           hasAccess: false,
           rawQueries: {
-            profileQuery: { data: profiles, error: profilesError }
+            profileQuery: { data: profiles, error: profilesError },
+            subscriptionQuery: { data: null, error: null },
+            creditsQuery: { data: null, error: null },
+            transactionsQuery: { data: null, error: null }
           },
           errors: {
             profileError: null,
@@ -93,14 +96,14 @@ export const useUserDebugInfo = () => {
 
           console.log('🔍 Subscription query result:', { subscription, subscriptionError });
 
+          debugData.rawQueries.subscriptionQuery = { data: subscription, error: subscriptionError };
+
           if (subscriptionError) {
             console.log('🔍 Subscription error:', subscriptionError);
             debugData.errors.subscriptionError = subscriptionError;
-            debugData.rawQueries.subscriptionQuery = { data: null, error: subscriptionError };
           } else {
             console.log('🔍 Subscription data found:', subscription);
             debugData.subscription = subscription && subscription.length > 0 ? subscription[0] : null;
-            debugData.rawQueries.subscriptionQuery = { data: subscription, error: null };
           }
         } catch (error) {
           console.log('🔍 Subscription fetch exception:', error);
@@ -118,14 +121,14 @@ export const useUserDebugInfo = () => {
 
           console.log('🔍 Credits query result:', { credits, creditsError });
 
+          debugData.rawQueries.creditsQuery = { data: credits, error: creditsError };
+
           if (creditsError) {
             console.log('🔍 Credits error:', creditsError);
             debugData.errors.creditsError = creditsError;
-            debugData.rawQueries.creditsQuery = { data: null, error: creditsError };
           } else {
             console.log('🔍 Credits data found:', credits);
             debugData.credits = credits && credits.length > 0 ? credits[0] : null;
-            debugData.rawQueries.creditsQuery = { data: credits, error: null };
           }
         } catch (error) {
           console.log('🔍 Credits fetch exception:', error);
@@ -145,14 +148,14 @@ export const useUserDebugInfo = () => {
 
           console.log('🔍 Transactions query result:', { transactions, transactionsError });
 
+          debugData.rawQueries.transactionsQuery = { data: transactions, error: transactionsError };
+
           if (transactionsError) {
             console.log('🔍 Transactions error:', transactionsError);
             debugData.errors.transactionsError = transactionsError;
-            debugData.rawQueries.transactionsQuery = { data: null, error: transactionsError };
           } else {
             console.log('🔍 Transactions found:', transactions?.length || 0);
             debugData.transactions = transactions || [];
-            debugData.rawQueries.transactionsQuery = { data: transactions, error: null };
           }
         } catch (error) {
           console.log('🔍 Transactions fetch exception:', error);
