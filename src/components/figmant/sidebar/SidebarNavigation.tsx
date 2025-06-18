@@ -36,6 +36,11 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     { id: 'search', label: 'Search', icon: Search },
   ];
 
+  // Filter out Premium Analysis and Templates (Prompt Templates)
+  const visibleSections = mainSections.filter(section => 
+    section.id !== 'premium-analysis' && section.id !== 'templates'
+  );
+
   const handleToggle = () => {
     onToggleCollapse?.(!isCollapsed);
   };
@@ -44,7 +49,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     return (
       <div className="flex-1 overflow-y-auto flex flex-col py-6">
         <div className="p-2 space-y-2 flex-1">
-          {mainSections.map((section) => (
+          {visibleSections.map((section) => (
             <Button
               key={section.id}
               variant="ghost"
@@ -90,7 +95,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
         <div>
           <div className="text-sm font-medium text-gray-500 mb-3">Pages</div>
           <div className="space-y-1">
-            {mainSections.map((section) => (
+            {visibleSections.map((section) => (
               <Button
                 key={section.id}
                 variant="ghost"
