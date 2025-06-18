@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { EnhancedImpactSummary } from '../EnhancedImpactSummary';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface AnalysisResultsProps {
   lastAnalysisResult: any;
@@ -39,8 +40,8 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
       )}
 
       {/* Analysis Results */}
-      <Card>
-        <CardHeader>
+      <Card className="flex flex-col h-full">
+        <CardHeader className="flex-shrink-0">
           <CardTitle className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-500" />
             Analysis Results
@@ -49,75 +50,90 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
             AI-powered design analysis insights
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1 min-h-0">
           {hasImpactSummary ? (
-            <Tabs defaultValue="analysis" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+            <Tabs defaultValue="analysis" className="w-full h-full flex flex-col">
+              <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
                 <TabsTrigger value="analysis">Analysis</TabsTrigger>
                 <TabsTrigger value="details">Details</TabsTrigger>
                 <TabsTrigger value="debug">Debug</TabsTrigger>
               </TabsList>
-              <TabsContent value="analysis" className="space-y-4">
-                <div className="prose max-w-none">
-                  <div className="whitespace-pre-wrap text-sm leading-relaxed bg-muted/30 p-4 rounded-lg">
-                    {lastAnalysisResult.analysis || lastAnalysisResult.response || 'No analysis available'}
-                  </div>
-                </div>
-              </TabsContent>
-              <TabsContent value="details" className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-sm">
-                      Response Time: {lastAnalysisResult.debugInfo?.responseTimeMs || 0}ms
-                    </span>
-                  </div>
-                  
-                  {lastAnalysisResult.debugInfo?.tokensUsed && (
-                    <div className="text-sm">
-                      <Badge variant="secondary">
-                        {lastAnalysisResult.debugInfo.tokensUsed} tokens used
-                      </Badge>
-                    </div>
-                  )}
-                  
-                  {lastAnalysisResult.debugInfo?.model && (
-                    <div className="text-sm">
-                      Model: <Badge variant="outline">{lastAnalysisResult.debugInfo.model}</Badge>
-                    </div>
-                  )}
-                  
-                  {uploadIds.length > 0 && (
-                    <div className="text-sm">
-                      <span className="font-medium">Upload IDs:</span>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {uploadIds.map((id) => (
-                          <Badge key={id} variant="outline" className="text-xs">
-                            {id.slice(-8)}
-                          </Badge>
-                        ))}
+              
+              <TabsContent value="analysis" className="flex-1 min-h-0 mt-4">
+                <div className="h-full">
+                  <ScrollArea className="h-[400px] w-full">
+                    <div className="prose max-w-none">
+                      <div className="whitespace-pre-wrap text-sm leading-relaxed bg-muted/30 p-4 rounded-lg">
+                        {lastAnalysisResult.analysis || lastAnalysisResult.response || 'No analysis available'}
                       </div>
                     </div>
-                  )}
+                  </ScrollArea>
                 </div>
               </TabsContent>
-              <TabsContent value="debug" className="space-y-4">
-                <div className="bg-muted/30 p-4 rounded-lg">
-                  <pre className="text-xs overflow-auto">
-                    {JSON.stringify(lastAnalysisResult.debugInfo, null, 2)}
-                  </pre>
-                </div>
+              
+              <TabsContent value="details" className="flex-1 min-h-0 mt-4">
+                <ScrollArea className="h-[400px] w-full">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      <span className="text-sm">
+                        Response Time: {lastAnalysisResult.debugInfo?.responseTimeMs || 0}ms
+                      </span>
+                    </div>
+                    
+                    {lastAnalysisResult.debugInfo?.tokensUsed && (
+                      <div className="text-sm">
+                        <Badge variant="secondary">
+                          {lastAnalysisResult.debugInfo.tokensUsed} tokens used
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    {lastAnalysisResult.debugInfo?.model && (
+                      <div className="text-sm">
+                        Model: <Badge variant="outline">{lastAnalysisResult.debugInfo.model}</Badge>
+                      </div>
+                    )}
+                    
+                    {uploadIds.length > 0 && (
+                      <div className="text-sm">
+                        <span className="font-medium">Upload IDs:</span>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {uploadIds.map((id) => (
+                            <Badge key={id} variant="outline" className="text-xs">
+                              {id.slice(-8)}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+              
+              <TabsContent value="debug" className="flex-1 min-h-0 mt-4">
+                <ScrollArea className="h-[400px] w-full">
+                  <div className="bg-muted/30 p-4 rounded-lg">
+                    <pre className="text-xs overflow-auto">
+                      {JSON.stringify(lastAnalysisResult.debugInfo, null, 2)}
+                    </pre>
+                  </div>
+                </ScrollArea>
               </TabsContent>
             </Tabs>
           ) : (
-            <div className="space-y-4">
-              <div className="prose max-w-none">
-                <div className="whitespace-pre-wrap text-sm leading-relaxed bg-muted/30 p-4 rounded-lg">
-                  {lastAnalysisResult.analysis || lastAnalysisResult.response || 'No analysis available'}
-                </div>
+            <div className="h-full flex flex-col space-y-4">
+              <div className="flex-1 min-h-0">
+                <ScrollArea className="h-[400px] w-full">
+                  <div className="prose max-w-none">
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed bg-muted/30 p-4 rounded-lg">
+                      {lastAnalysisResult.analysis || lastAnalysisResult.response || 'No analysis available'}
+                    </div>
+                  </div>
+                </ScrollArea>
               </div>
               
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-4 text-sm text-muted-foreground flex-shrink-0">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4" />
                   <span>Response Time: {lastAnalysisResult.debugInfo?.responseTimeMs || 0}ms</span>
