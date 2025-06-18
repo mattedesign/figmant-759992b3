@@ -32,7 +32,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
 
   return (
     <div 
-      className={`border-r border-gray-200/30 flex flex-col min-h-screen transition-all duration-300 ${
+      className={`h-screen flex flex-col transition-all duration-300 overflow-hidden ${
         isCollapsed ? 'w-16' : 'w-72'
       }`}
       style={{ 
@@ -46,31 +46,37 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
         isCollapsed={isCollapsed}
       />
       
-      <SidebarNavigation 
-        activeSection={activeSection}
-        onSectionChange={onSectionChange}
-        isOwner={isOwner}
-        isCollapsed={isCollapsed}
-        onToggleCollapse={handleToggleCollapse}
-      />
+      <div className="flex-1 overflow-y-auto">
+        <SidebarNavigation 
+          activeSection={activeSection}
+          onSectionChange={onSectionChange}
+          isOwner={isOwner}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={handleToggleCollapse}
+        />
+      </div>
 
       {/* Credits Section - Only show for non-owners and when not collapsed */}
       {!isOwner && !isCollapsed && (
-        <SidebarCredits 
-          currentBalance={currentBalance}
-          totalPurchased={totalPurchased}
-          creditsLoading={creditsLoading}
-        />
+        <div className="flex-shrink-0">
+          <SidebarCredits 
+            currentBalance={currentBalance}
+            totalPurchased={totalPurchased}
+            creditsLoading={creditsLoading}
+          />
+        </div>
       )}
 
-      <SidebarUserProfile 
-        isOwner={isOwner}
-        profile={profile}
-        user={user}
-        subscription={subscription}
-        signOut={signOut}
-        isCollapsed={isCollapsed}
-      />
+      <div className="flex-shrink-0">
+        <SidebarUserProfile 
+          isOwner={isOwner}
+          profile={profile}
+          user={user}
+          subscription={subscription}
+          signOut={signOut}
+          isCollapsed={isCollapsed}
+        />
+      </div>
     </div>
   );
 };

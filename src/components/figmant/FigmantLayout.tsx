@@ -51,22 +51,26 @@ export const FigmantLayout: React.FC = () => {
     );
   }
 
-  // Both tablet and desktop use the same collapsible sidebar layout with 16px gap
+  // Desktop layout with fixed sidebar and scrollable main content
   return (
-    <div className="min-h-screen flex w-full gap-4" style={{ background: 'transparent' }}>
-      <FigmantSidebar 
-        activeSection={activeSection}
-        onSectionChange={setActiveSection}
-        onCollapsedChange={handleSidebarCollapsedChange}
-      />
-      <FigmantMainContent
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-        selectedAnalysis={selectedAnalysis}
-        onBackToList={handleBackToList}
-        onRightSidebarModeChange={handleRightSidebarModeChange}
-        isSidebarCollapsed={isSidebarCollapsed}
-      />
+    <div className="min-h-screen h-screen flex w-full gap-4 overflow-hidden" style={{ background: 'transparent' }}>
+      <div className="flex-shrink-0">
+        <FigmantSidebar 
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+          onCollapsedChange={handleSidebarCollapsedChange}
+        />
+      </div>
+      <div className="flex-1 min-w-0 overflow-hidden">
+        <FigmantMainContent
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+          selectedAnalysis={selectedAnalysis}
+          onBackToList={handleBackToList}
+          onRightSidebarModeChange={handleRightSidebarModeChange}
+          isSidebarCollapsed={isSidebarCollapsed}
+        />
+      </div>
     </div>
   );
 };

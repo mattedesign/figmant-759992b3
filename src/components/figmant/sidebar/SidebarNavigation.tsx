@@ -92,26 +92,32 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto flex flex-col py-6">
-      <SidebarUserSection 
-        profileName={profile?.full_name}
-      />
+    <div className="flex flex-col py-6 h-full overflow-hidden">
+      <div className="flex-shrink-0">
+        <SidebarUserSection 
+          profileName={profile?.full_name}
+        />
+      </div>
 
-      <SidebarTabsInterface
-        mainMenuSections={mainMenuSections}
-        supportSection={supportSection}
-        adminSections={adminSections}
-        analysisHistory={analysisHistory}
-        activeSection={activeSection}
-        onSectionChange={onSectionChange}
-      />
+      <div className="flex-1 overflow-y-auto">
+        <SidebarTabsInterface
+          mainMenuSections={mainMenuSections}
+          supportSection={supportSection}
+          adminSections={adminSections}
+          analysisHistory={analysisHistory}
+          activeSection={activeSection}
+          onSectionChange={onSectionChange}
+        />
+      </div>
 
-      <SidebarSearchBar />
-
-      <SidebarCollapseToggle
-        isCollapsed={isCollapsed}
-        onToggleCollapse={onToggleCollapse!}
-      />
+      <div className="flex-shrink-0">
+        <SidebarSearchBar />
+        
+        <SidebarCollapseToggle
+          isCollapsed={isCollapsed}
+          onToggleCollapse={onToggleCollapse!}
+        />
+      </div>
     </div>
   );
 };
