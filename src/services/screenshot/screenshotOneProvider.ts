@@ -7,8 +7,10 @@ export class ScreenshotOneProvider implements ScreenshotProvider {
 
   async captureScreenshot(url: string, options: ScreenshotCaptureOptions): Promise<ScreenshotResult> {
     try {
+      console.log('🔑 Using ScreenshotOne API for:', url);
       const screenshotData = await this.captureWithScreenshotOne(url, options);
       
+      console.log('✅ ScreenshotOne capture successful for:', url);
       return {
         success: true,
         url,
@@ -24,6 +26,7 @@ export class ScreenshotOneProvider implements ScreenshotProvider {
         }
       };
     } catch (error) {
+      console.error('❌ ScreenshotOne capture failed for:', url, error);
       return {
         success: false,
         url,
@@ -45,6 +48,8 @@ export class ScreenshotOneProvider implements ScreenshotProvider {
     thumbnailParams.set('viewport_height', THUMBNAIL_VIEWPORT.height.toString());
     const thumbnailUrl = `${SCREENSHOTONE_API_URL}?${thumbnailParams.toString()}`;
 
+    console.log('📸 ScreenshotOne API request for:', url);
+    
     // Test the API by making a HEAD request
     await this.validateApiEndpoint(screenshotUrl);
 
@@ -84,13 +89,19 @@ export class ScreenshotOneProvider implements ScreenshotProvider {
 
   private async validateApiEndpoint(screenshotUrl: string): Promise<void> {
     try {
-      const response = await fetch(screenshotUrl, { method: 'HEAD' });
+      const response = await fetch(screenshotUrl, { 
+        method: 'HEAD',
+        timeout: 10000 // 10 second timeout
+      });
+      
       if (!response.ok) {
         throw new Error(`ScreenshotOne API error: ${response.status} ${response.statusText}`);
       }
+      
+      console.log('✅ ScreenshotOne API validation successful');
     } catch (error) {
-      console.warn('ScreenshotOne API test failed:', error);
-      throw error;
+      console.error('❌ ScreenshotOne API validation failed:', error);
+      throw new Error(`Failed to connect to ScreenshotOne API: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }

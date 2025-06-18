@@ -16,11 +16,13 @@ import {
   Monitor,
   Smartphone,
   AlertTriangle,
-  Settings
+  Settings,
+  TestTube
 } from 'lucide-react';
 import { useCompetitorAnalysis, CompetitorAnalysisData } from '@/hooks/useCompetitorAnalysis';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScreenshotOneConfig } from './ScreenshotOneConfig';
+import { ScreenshotOneTest } from './ScreenshotOneTest';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface CompetitorAnalysisPanelProps {
@@ -33,6 +35,7 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
   const [urlInput, setUrlInput] = useState('');
   const [urlList, setUrlList] = useState<string[]>([]);
   const [showConfig, setShowConfig] = useState(false);
+  const [showTest, setShowTest] = useState(false);
   
   const {
     analysisData,
@@ -103,6 +106,8 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
     return (completed / analysisData.length) * 100;
   };
 
+  const apiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -111,13 +116,24 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
             <Target className="h-5 w-5 text-blue-600" />
             Competitor Analysis - Market Positioning
           </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowConfig(!showConfig)}
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            {apiKey && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTest(!showTest)}
+              >
+                <TestTube className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowConfig(!showConfig)}
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -128,6 +144,15 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
             <ScreenshotOneConfig className="mb-4" />
           </CollapsibleContent>
         </Collapsible>
+
+        {/* Test Section */}
+        {apiKey && (
+          <Collapsible open={showTest} onOpenChange={setShowTest}>
+            <CollapsibleContent>
+              <ScreenshotOneTest />
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
         {/* URL Input Section */}
         <div className="space-y-4">
@@ -312,4 +337,42 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
       </CardContent>
     </Card>
   );
+};
+
+const getStatusIcon = (status: CompetitorAnalysisData['status']) => {
+  switch (status) {
+    case 'pending':
+      return <Globe className="h-4 w-4 text-gray-400" />;
+    case 'validating':
+      return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
+    case 'capturing':
+      return <Camera className="h-4 w-4 text-yellow-500" />;
+    case 'completed':
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
+    case 'failed':
+      return <XCircle className="h-4 w-4 text-red-500" />;
+  }
+};
+
+const getStatusText = (status: CompetitorAnalysisData['status']) => {
+  switch (status) {
+    case 'pending':
+      return 'Pending';
+    case 'validating':
+      return 'Validating URL...';
+    case 'capturing':
+      return 'Capturing Screenshots...';
+    case 'completed':
+      return 'Analysis Complete';
+    case 'failed':
+      return 'Analysis Failed';
+  }
+};
+
+const calculateProgress = () => {
+  if (analysisData.length === 0) return 0;
+  const completed = analysisData.filter(item => 
+    item.status === 'completed' || item.status === 'failed'
+  ).length;
+  return (completed / analysisData.length) * 100;
 };
