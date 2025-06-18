@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from 'lucide-react';
@@ -125,12 +126,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <h1 className="text-[24px] text-gray-900">
               <span className="font-normal">{getGreeting()}</span>, <span className="font-bold">{firstName}</span>
             </h1>
-          )}
-          {lastUpdated && (
-            <Badge variant="outline" className="flex items-center gap-1 mt-2">
-              <Calendar className="h-3 w-3" />
-              Updated {format(lastUpdated, 'MMM dd, HH:mm')}
-            </Badge>
           )}
         </div>
       </div>
