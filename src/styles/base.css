@@ -1,4 +1,5 @@
 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -97,19 +98,25 @@
     @apply border-border;
   }
 
-  html, body {
+  html {
     @apply text-foreground font-sans;
     background-color: #E9EFF6 !important;
     font-feature-settings: "rlig" 1, "calt" 1, "kern" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh !important;
-  }
-
-  /* Ensure mobile viewport handling */
-  html {
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply text-foreground font-sans;
+    background-color: #E9EFF6 !important;
+    font-feature-settings: "rlig" 1, "calt" 1, "kern" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh !important;
+    padding: 12px !important;
   }
 
   /* Force background color on all containers that might override */
@@ -118,3 +125,4 @@
     background-color: transparent !important;
   }
 }
+
