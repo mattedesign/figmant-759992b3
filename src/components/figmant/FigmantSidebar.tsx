@@ -35,7 +35,12 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
       className={`border-r border-gray-200/30 flex flex-col min-h-screen transition-all duration-300 ${
         isCollapsed ? 'w-16' : 'w-72'
       }`}
-      style={{ background: 'transparent' }}
+      style={{ 
+        background: 'transparent',
+        borderRadius: '20px',
+        border: '1px solid var(--Stroke-01, #ECECEC)',
+        backgroundColor: 'var(--Surface-01, #FCFCFC)'
+      }}
     >
       <SidebarHeader 
         isCollapsed={isCollapsed}
