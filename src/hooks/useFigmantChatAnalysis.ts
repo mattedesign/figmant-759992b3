@@ -44,18 +44,18 @@ export const useFigmantChatAnalysis = () => {
       const hasAccess = await checkUserAccess();
       if (!hasAccess) {
         console.error('🔍 FIGMANT CHAT - User does not have access');
-        throw new Error('You need an active subscription or credits to perform analysis. Please upgrade your plan or purchase credits.');
+        throw new Error('You need credits to perform analysis. Please purchase credits to continue.');
       }
       console.log('🔍 FIGMANT CHAT - User has access confirmed');
 
-      // FEATURE PARITY: Process credits (1 credit for regular chat analysis)
-      // Active subscribers and owners get unlimited access (tracked but not charged)
-      // Inactive users with credits get charged
+      // Process credits (1 credit for regular chat analysis)
+      // Owners get unlimited access (tracked but not charged)
+      // All other users get charged 1 credit
       console.log('🔍 FIGMANT CHAT - Processing credits...');
       const creditsProcessed = await deductAnalysisCredits(1, 'Figmant chat analysis');
       if (!creditsProcessed) {
         console.error('🔍 FIGMANT CHAT - Failed to process credits');
-        throw new Error('Unable to process chat analysis. Please check your subscription status or credit balance.');
+        throw new Error('Unable to process chat analysis. Please check your credit balance.');
       }
       console.log('🔍 FIGMANT CHAT - Credits processed successfully');
 

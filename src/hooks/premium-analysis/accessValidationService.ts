@@ -1,5 +1,5 @@
 
-import { useUserCredits } from '@/hooks/useUserCredits';
+import { useCreditAccess } from '@/hooks/credits/useCreditAccess';
 
 export class AccessValidationService {
   constructor(
@@ -12,25 +12,25 @@ export class AccessValidationService {
     const hasAccess = await this.checkUserAccess();
     if (!hasAccess) {
       console.error('🔍 PREMIUM ANALYSIS - User does not have access');
-      throw new Error('You need an active subscription or credits to perform premium analysis. Please upgrade your plan or purchase credits.');
+      throw new Error('You need credits to perform premium analysis. Please purchase credits to continue.');
     }
     console.log('🔍 PREMIUM ANALYSIS - User has access confirmed');
 
-    // FEATURE PARITY: Deduct credits for premium analysis
-    // Active subscribers and owners get unlimited access (tracked but not charged)
-    // Inactive users with credits get charged
+    // Deduct credits for premium analysis (5 credits for premium analysis)
+    // Owners get unlimited access (tracked but not charged)
+    // All other users get charged 5 credits
     console.log('🔍 PREMIUM ANALYSIS - Attempting to deduct credits...');
     const creditsDeducted = await this.deductAnalysisCredits(5, `Premium analysis: ${selectedPrompt.category}`);
     if (!creditsDeducted) {
       console.error('🔍 PREMIUM ANALYSIS - Failed to process credits');
-      throw new Error('Unable to process premium analysis. Please check your subscription status or credit balance.');
+      throw new Error('Unable to process premium analysis. Please check your credit balance.');
     }
     console.log('🔍 PREMIUM ANALYSIS - Credits processed successfully');
   }
 }
 
 export const useAccessValidationService = () => {
-  const { checkUserAccess, deductAnalysisCredits } = useUserCredits();
+  const { checkUserAccess, deductAnalysisCredits } = useCreditAccess();
   
   return new AccessValidationService(checkUserAccess, deductAnalysisCredits);
 };

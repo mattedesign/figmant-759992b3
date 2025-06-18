@@ -7,7 +7,7 @@ export const useCreditAccess = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Check if user has access (subscription or credits)
+  // Check if user has access (owners get unlimited, everyone else needs credits)
   const checkUserAccess = async (): Promise<boolean> => {
     if (!user?.id) {
       console.log('🔍 No user ID found for access check');
@@ -17,7 +17,7 @@ export const useCreditAccess = () => {
     try {
       console.log('🔍 Checking access for user:', user.id);
       
-      // Check user role, subscription, and credits directly
+      // Check user role first
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
@@ -27,25 +27,11 @@ export const useCreditAccess = () => {
       console.log('🔍 User profile found:', profile);
 
       if (profile?.role === 'owner') {
-        console.log('🔍 User is owner - has access');
+        console.log('🔍 User is owner - unlimited access');
         return true;
       }
 
-      const { data: subscription } = await supabase
-        .from('subscriptions')
-        .select('status')
-        .eq('user_id', user.id)
-        .single();
-
-      console.log('🔍 User subscription found:', subscription);
-
-      // Active subscribers get unlimited access
-      if (subscription?.status === 'active') {
-        console.log('🔍 User has active subscription - unlimited access');
-        return true;
-      }
-
-      // For inactive subscriptions, check credits
+      // For all non-owners, check credits
       const { data: userCredits } = await supabase
         .from('user_credits')
         .select('current_balance')
@@ -64,7 +50,7 @@ export const useCreditAccess = () => {
     }
   };
 
-  // Deduct credits for analysis - now properly handles all user types
+  // Deduct credits for analysis - pure credit-based system
   const deductAnalysisCredits = async (creditsToDeduct: number = 1, description: string = 'Design analysis'): Promise<boolean> => {
     if (!user?.id) {
       console.error('🔍 No user ID for credit deduction');
@@ -85,35 +71,26 @@ export const useCreditAccess = () => {
         toast({
           variant: "destructive",
           title: "Access Denied",
-          description: "You need an active subscription or credits to perform this action.",
+          description: "You need credits to perform this action. Please purchase credits to continue.",
         });
         return false;
       }
 
       console.log('🔍 Access check passed, proceeding with credit deduction...');
 
-      // Check if user is owner or has active subscription
+      // Check if user is owner (unlimited access)
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single();
 
-      const { data: subscription } = await supabase
-        .from('subscriptions')
-        .select('status')
-        .eq('id', user.id)
-        .single();
-
       const isOwner = profile?.role === 'owner';
-      const hasActiveSubscription = subscription?.status === 'active';
+      console.log('🔍 User permissions:', { isOwner });
 
-      console.log('🔍 User permissions:', { isOwner, hasActiveSubscription });
-
-      // Only owners get truly unlimited access - active subscribers now get charged
+      // Owners get unlimited access - just track usage without deducting
       if (isOwner) {
         console.log('🔍 Creating tracking transaction for owner - unlimited access');
-        // Create a usage transaction for tracking without actually deducting from balance
         const { error: transactionError } = await supabase
           .from('credit_transactions')
           .insert({
@@ -133,7 +110,7 @@ export const useCreditAccess = () => {
         return true;
       }
 
-      // For everyone else (including active subscribers), check and deduct actual credits
+      // For all other users, check and deduct actual credits
       console.log('🔍 User needs to use actual credits, fetching current balance...');
       const { data: currentCredits, error: fetchError } = await supabase
         .from('user_credits')
@@ -154,9 +131,7 @@ export const useCreditAccess = () => {
         toast({
           variant: "destructive",
           title: "Insufficient Credits",
-          description: hasActiveSubscription 
-            ? "You don't have enough credits for this analysis. Please purchase more credits."
-            : "You don't have enough credits for this analysis. Please purchase more credits or activate your subscription for better rates.",
+          description: "You don't have enough credits for this analysis. Please purchase more credits to continue.",
         });
         return false;
       }
@@ -187,7 +162,7 @@ export const useCreditAccess = () => {
           user_id: user.id,
           transaction_type: 'usage',
           amount: creditsToDeduct,
-          description: hasActiveSubscription ? `${description} (Active Subscriber)` : description,
+          description: description,
           created_by: user.id
         });
 

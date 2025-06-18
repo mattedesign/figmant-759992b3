@@ -54,14 +54,7 @@ export const CreditStatusChecker: React.FC<CreditStatusCheckerProps> = ({ childr
           return;
         }
 
-        // Check subscription status
-        const { data: subscription } = await supabase
-          .from('subscriptions')
-          .select('status')
-          .eq('user_id', user.id)
-          .single();
-
-        // If user has active subscription, they still need credits but get better rates
+        // For all other users, check credits only
         const hasAccess = await checkUserAccess();
         
         if (!hasAccess) {

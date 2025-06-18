@@ -4,22 +4,22 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DesignUseCase } from '@/types/design';
 import { triggerAnalysis, retryFailedAnalysis } from './designAnalysisHelpers';
-import { useUserCredits } from './useUserCredits';
+import { useCreditAccess } from './credits/useCreditAccess';
 
 export const useAnalyzeDesign = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { deductAnalysisCredits, checkUserAccess } = useUserCredits();
+  const { deductAnalysisCredits, checkUserAccess } = useCreditAccess();
 
   return useMutation({
     mutationFn: async ({ uploadId, useCase }: { uploadId: string; useCase: DesignUseCase }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Check if user has access (subscription or credits)
+      // Check if user has access (owners get unlimited, others need credits)
       const hasAccess = await checkUserAccess();
       if (!hasAccess) {
-        throw new Error('You need an active subscription or credits to perform analysis. Please upgrade your plan or purchase credits.');
+        throw new Error('You need credits to perform analysis. Please purchase credits to continue.');
       }
 
       // Deduct credits before analysis (1 credit per analysis)
@@ -62,14 +62,14 @@ export const useAnalyzeDesign = () => {
 export const useRetryAnalysis = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { deductAnalysisCredits, checkUserAccess } = useUserCredits();
+  const { deductAnalysisCredits, checkUserAccess } = useCreditAccess();
 
   return useMutation({
     mutationFn: async (uploadId: string) => {
       // Check if user has access before retry
       const hasAccess = await checkUserAccess();
       if (!hasAccess) {
-        throw new Error('You need an active subscription or credits to retry analysis. Please upgrade your plan or purchase credits.');
+        throw new Error('You need credits to retry analysis. Please purchase credits to continue.');
       }
 
       // Deduct credits for retry (1 credit per retry)
