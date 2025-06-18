@@ -52,6 +52,29 @@ export const UserDebugPanel: React.FC = () => {
     );
   }
 
+  // Check if this is an error response
+  if ('error' in debugInfo) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-red-600">
+            <XCircle className="h-5 w-5" />
+            Authentication Error
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-red-600 mb-2">{debugInfo.error}</p>
+          {debugInfo.authError && (
+            <p className="text-sm text-gray-600">Auth Error: {debugInfo.authError}</p>
+          )}
+          <Button onClick={() => refetch()} className="mt-2">
+            Retry
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const getStatusIcon = (hasData: boolean, hasError: boolean) => {
     if (hasError) return <XCircle className="h-4 w-4 text-red-500" />;
     if (hasData) return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -219,7 +242,7 @@ export const UserDebugPanel: React.FC = () => {
       </Card>
 
       {/* Error Details */}
-      {Object.values(debugInfo.errors).some(error => error) && (
+      {debugInfo.errors && Object.values(debugInfo.errors).some(error => error) && (
         <Card>
           <CardHeader>
             <CardTitle className="text-red-600">Error Details</CardTitle>
@@ -254,7 +277,7 @@ export const UserDebugPanel: React.FC = () => {
             <span>Email:</span>
             <span>{debugInfo.user?.email || 'Not available'}</span>
             <span>Current Route:</span>
-            <span>/auth</span>
+            <span>/figmant</span>
           </div>
         </CardContent>
       </Card>
