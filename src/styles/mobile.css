@@ -1,0 +1,40 @@
+
+/* Mobile-specific optimizations */
+@layer base {
+  /* Mobile-specific optimizations */
+  @media (max-width: 640px) {
+    html, body {
+      font-size: 16px; /* Prevent iOS zoom on form inputs */
+    }
+  }
+}
+
+@layer components {
+  /* Improved mobile touch targets */
+  @media (max-width: 640px) {
+    .modern-input, .modern-button {
+      min-height: 48px;
+      @apply text-base;
+    }
+    
+    /* Better touch targets for mobile */
+    button, .button, input[type="button"], input[type="submit"] {
+      min-height: 44px;
+    }
+    
+    /* Ensure clickable areas are large enough */
+    a, button, .clickable {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* Mobile-optimized text sizes */
+  @media (max-width: 375px) {
+    .text-xs { font-size: 0.75rem; }
+    .text-sm { font-size: 0.875rem; }
+    .text-base { font-size: 1rem; }
+    .text-lg { font-size: 1.125rem; }
+    .text-xl { font-size: 1.25rem; }
+  }
+}
