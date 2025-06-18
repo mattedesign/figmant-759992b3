@@ -65,6 +65,8 @@ export const Step7Processing: React.FC<StepProps> = ({
     }
     
     addDebugLog(`Template not found in either source`);
+    addDebugLog(`Available figmant template IDs: ${figmantPromptTemplates.map(t => t.id).join(', ')}`);
+    addDebugLog(`Available premium prompt IDs: ${(premiumPrompts || []).map(p => p.id).join(', ')}`);
     return null;
   }, [stepData.selectedType, premiumPrompts]);
 
@@ -83,14 +85,19 @@ export const Step7Processing: React.FC<StepProps> = ({
     addDebugLog(`Figmant templates available: ${figmantPromptTemplates.length}`);
     addDebugLog(`Selected template found: ${!!selectedTemplate}`);
 
+    // Start analysis if template is found and we're in processing state
     if (selectedTemplate && processingStatus === 'processing') {
       addDebugLog('Starting analysis submission...');
       handleAnalysisSubmission();
-    } else if (!selectedTemplate && (premiumPrompts?.length > 0 || figmantPromptTemplates.length > 0)) {
-      addDebugLog('ERROR: Selected template not found in any source');
-      setProcessingStatus('error');
+    } else if (!selectedTemplate && processingStatus === 'processing') {
+      // Only show error if we've finished loading premium prompts
+      // (premiumPrompts being undefined means still loading, null/empty array means loaded but empty)
+      if (premiumPrompts !== undefined) {
+        addDebugLog('ERROR: Selected template not found in any source');
+        setProcessingStatus('error');
+      }
     }
-  }, [selectedTemplate, premiumPrompts]);
+  }, [selectedTemplate, premiumPrompts, processingStatus]);
 
   // Monitor mutation state changes
   useEffect(() => {
@@ -157,7 +164,14 @@ export const Step7Processing: React.FC<StepProps> = ({
     setAnalysisResult('');
     setSavedAnalysisId(null);
     setDebugLogs(prev => [...prev, '--- RETRY ATTEMPT ---']);
-    handleAnalysisSubmission();
+    
+    // Re-run the template finding logic and submission
+    if (selectedTemplate) {
+      handleAnalysisSubmission();
+    } else {
+      addDebugLog('ERROR: Still no selected template found for retry');
+      setProcessingStatus('error');
+    }
   };
 
   const handleViewInAnalysis = () => {
@@ -256,6 +270,11 @@ export const Step7Processing: React.FC<StepProps> = ({
                 {premiumAnalysis.error && (
                   <p className="text-sm text-red-500 mt-2">
                     Error: {premiumAnalysis.error.message}
+                  </p>
+                )}
+                {!selectedTemplate && (
+                  <p className="text-sm text-red-500 mt-2">
+                    Template with ID "{stepData.selectedType}" not found
                   </p>
                 )}
               </div>
