@@ -1,4 +1,3 @@
-
 import { LucideIcon } from 'lucide-react';
 
 export interface Stakeholder {
@@ -18,6 +17,37 @@ export interface StepData {
   referenceLinks: string[];
   uploadedFiles?: File[];
   customPrompt: string;
+  
+  // Dynamic fields based on prompt type
+  targetMarket?: string;
+  competitorUrls?: string;
+  marketPosition?: string;
+  competitiveAdvantage?: string;
+  currentConversionRate?: string;
+  averageOrderValue?: string;
+  revenueGoal?: string;
+  customerSegments?: string;
+  testHypothesis?: string;
+  successMetrics?: string;
+  testDuration?: string;
+  trafficVolume?: string;
+  primaryGoal?: string;
+  keyElements?: string;
+  userFlow?: string;
+  brandGuidelines?: string;
+  targetAudience?: string;
+  keyMessage?: string;
+  toneOfVoice?: string;
+  callToAction?: string;
+  complianceLevel?: string;
+  userNeeds?: string;
+  assistiveTech?: string;
+  currentIssues?: string;
+  timeline?: string;
+  constraints?: string;
+  
+  // Keep legacy fields for backward compatibility
+  [key: string]: any;
 }
 
 export interface StepProps {

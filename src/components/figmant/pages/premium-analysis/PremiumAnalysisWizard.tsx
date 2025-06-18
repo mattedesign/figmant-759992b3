@@ -44,7 +44,15 @@ export const PremiumAnalysisWizard: React.FC = () => {
       case 3:
         return stepData.analysisGoals.trim() !== '';
       case 4:
-        return stepData.desiredOutcome.trim() !== '';
+        // Check if at least one dynamic field has content or if desiredOutcome is filled
+        const hasAnyDynamicField = Object.keys(stepData).some(key => {
+          if (!['selectedType', 'projectName', 'analysisGoals', 'stakeholders', 'referenceLinks', 'uploadedFiles', 'customPrompt'].includes(key)) {
+            const value = stepData[key];
+            return typeof value === 'string' && value.trim() !== '';
+          }
+          return false;
+        });
+        return hasAnyDynamicField || stepData.desiredOutcome?.trim() !== '';
       case 5:
         return true; // Optional step
       case 6:
