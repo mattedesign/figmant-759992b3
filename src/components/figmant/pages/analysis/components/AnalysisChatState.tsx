@@ -1,119 +1,137 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { useMessageHandler } from '../useMessageHandler';
 import { useAnalysisChatState } from '../hooks/useAnalysisChatState';
+import { useMessageHandler } from '../useMessageHandler';
+import { useFileUploadHandler } from '../useFileUploadHandler';
 
 interface AnalysisChatStateProps {
+  children: (props: AnalysisChatStateRenderProps) => React.ReactNode;
   selectedPromptTemplate?: any;
   onAnalysisComplete?: (result: any) => void;
-  children?: (stateProps: any) => React.ReactElement;
+}
+
+interface AnalysisChatStateRenderProps {
+  // State
+  messages: ChatMessage[];
+  setMessages: (messages: ChatMessage[]) => void;
+  message: string;
+  setMessage: (message: string) => void;
+  attachments: ChatAttachment[];
+  setAttachments: (attachments: ChatAttachment[]) => void;
+  
+  // Tab management
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  
+  // Template management
+  figmantTemplates: any[];
+  getCurrentTemplate: () => any;
+  handleTemplateSelect: (templateId: string) => void;
+  handleViewTemplate: (template: any) => void;
+  showTemplateModal: boolean;
+  modalTemplate: any;
+  handleTemplateModalClose: () => void;
+  
+  // Message handling
+  isAnalyzing: boolean;
+  canSend: boolean;
+  handleSendMessage: () => void;
+  handleKeyPress: (e: React.KeyboardEvent) => void;
+  
+  // File handling
+  handleFileUpload: (file: File) => void;
+  addUrlAttachment: (url: string) => void;
+  removeAttachment: (id: string) => void;
 }
 
 export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
+  children,
   selectedPromptTemplate,
-  onAnalysisComplete,
-  children
+  onAnalysisComplete
 }) => {
-  // Chat state
+  // Basic state management
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
 
-  // Template state
-  const {
-    figmantTemplates,
-    selectedTemplate,
-    showTemplateModal,
-    modalTemplate,
-    getCurrentTemplate,
-    handleTemplateSelect,
-    handleViewTemplate,
-    setShowTemplateModal,
-    setModalTemplate
-  } = useAnalysisChatState({
+  // Analysis chat state hook
+  const analysisState = useAnalysisChatState({
     selectedPromptTemplate,
     onAnalysisComplete
   });
 
   // Message handler
-  const {
-    isAnalyzing,
-    canSend,
-    handleSendMessage,
-    handleKeyPress
-  } = useMessageHandler({
+  const messageHandler = useMessageHandler({
     message,
     setMessage,
     attachments,
     setAttachments,
     messages,
     setMessages,
-    selectedPromptTemplate: getCurrentTemplate(),
-    selectedPromptCategory: getCurrentTemplate()?.category,
-    promptTemplates: figmantTemplates,
+    selectedPromptTemplate: analysisState.getCurrentTemplate(),
+    selectedPromptCategory: analysisState.getCurrentTemplate()?.category,
+    promptTemplates: analysisState.figmantTemplates,
     onAnalysisComplete
   });
 
-  const handleTemplateModalClose = useCallback(() => {
-    setShowTemplateModal(false);
-    setModalTemplate(null);
-  }, [setShowTemplateModal, setModalTemplate]);
+  // File upload handler
+  const fileUploadHandler = useFileUploadHandler({
+    attachments,
+    setAttachments
+  });
 
-  // If children prop is provided, use render props pattern
-  if (children) {
-    return children({
-      messages,
-      setMessages,
-      message,
-      setMessage,
-      attachments,
-      setAttachments,
-      isAnalyzing,
-      canSend,
-      handleSendMessage,
-      handleKeyPress,
-      figmantTemplates,
-      selectedTemplate,
-      showTemplateModal,
-      modalTemplate,
-      getCurrentTemplate,
-      handleTemplateSelect,
-      handleViewTemplate,
-      setShowTemplateModal,
-      setModalTemplate,
-      handleTemplateModalClose
-    });
-  }
+  const addUrlAttachment = (url: string) => {
+    if (!url.trim()) return;
+    
+    const urlAttachment: ChatAttachment = {
+      id: crypto.randomUUID(),
+      type: 'url',
+      name: url,
+      url: url,
+      status: 'uploaded'
+    };
+    
+    setAttachments(prev => [...prev, urlAttachment]);
+  };
 
-  // Default render when no children provided
-  return (
-    <div className="flex flex-col h-full">
-      {/* Template Selection Header */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-medium">Analysis Template</h3>
-            <p className="text-sm text-gray-600">
-              {getCurrentTemplate()?.display_name || 'Master UX Analysis'}
-            </p>
-          </div>
-          <button
-            onClick={() => handleViewTemplate(getCurrentTemplate())}
-            className="text-blue-600 hover:text-blue-800 text-sm"
-          >
-            Change Template
-          </button>
-        </div>
-      </div>
+  const removeAttachment = (id: string) => {
+    setAttachments(prev => prev.filter(att => att.id !== id));
+  };
 
-      {/* Chat Interface */}
-      <div className="flex-1">
-        {/* This would need to be implemented based on the actual chat interface structure */}
-        <div className="p-4">
-          <p>Chat interface would go here</p>
-        </div>
-      </div>
-    </div>
-  );
+  const renderProps: AnalysisChatStateRenderProps = {
+    // State
+    messages,
+    setMessages,
+    message,
+    setMessage,
+    attachments,
+    setAttachments,
+    
+    // Tab management
+    activeTab: analysisState.activeTab,
+    setActiveTab: analysisState.setActiveTab,
+    
+    // Template management
+    figmantTemplates: analysisState.figmantTemplates,
+    getCurrentTemplate: analysisState.getCurrentTemplate,
+    handleTemplateSelect: analysisState.handleTemplateSelect,
+    handleViewTemplate: analysisState.handleViewTemplate,
+    showTemplateModal: analysisState.showTemplateModal,
+    modalTemplate: analysisState.modalTemplate,
+    handleTemplateModalClose: analysisState.handleTemplateModalClose,
+    
+    // Message handling
+    isAnalyzing: messageHandler.isAnalyzing,
+    canSend: messageHandler.canSend,
+    handleSendMessage: messageHandler.handleSendMessage,
+    handleKeyPress: messageHandler.handleKeyPress,
+    
+    // File handling
+    handleFileUpload: fileUploadHandler.handleFileUpload,
+    addUrlAttachment,
+    removeAttachment
+  };
+
+  return <>{children(renderProps)}</>;
 };
