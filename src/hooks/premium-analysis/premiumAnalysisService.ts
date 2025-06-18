@@ -110,6 +110,9 @@ export class PremiumAnalysisService {
       credits_used: 5
     };
 
+    // Convert AnalysisResults to a plain object that Supabase can accept as Json
+    const analysisResultsJson = JSON.parse(JSON.stringify(analysisResults));
+
     // Save the premium analysis to chat history with proper labeling
     console.log('🔍 Saving analysis to chat history...');
     const { data: savedAnalysis, error: saveError } = await supabase
@@ -118,7 +121,7 @@ export class PremiumAnalysisService {
         user_id: userId,
         prompt_used: contextPrompt,
         prompt_template_used: selectedPrompt.original_prompt,
-        analysis_results: analysisResults,
+        analysis_results: analysisResultsJson,
         confidence_score: claudeResponse.confidence_score || 0.9,
         analysis_type: 'premium_analysis' // Clear labeling for premium analysis
       })
