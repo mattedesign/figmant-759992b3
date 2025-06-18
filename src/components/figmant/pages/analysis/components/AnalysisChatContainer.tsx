@@ -52,26 +52,46 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   attachments,
   onRemoveAttachment
 }) => {
+  const getCategoryColor = (category: string) => {
+    const colors = {
+      master: 'bg-purple-100 text-purple-800',
+      competitor: 'bg-blue-100 text-blue-800',
+      revenue: 'bg-green-100 text-green-800',
+      testing: 'bg-orange-100 text-orange-800',
+      messaging: 'bg-pink-100 text-pink-800',
+      hierarchy: 'bg-indigo-100 text-indigo-800',
+      seasonal: 'bg-yellow-100 text-yellow-800',
+      mobile: 'bg-teal-100 text-teal-800',
+      accessibility: 'bg-gray-100 text-gray-800',
+      design_system: 'bg-red-100 text-red-800'
+    };
+    return colors[category] || 'bg-gray-100 text-gray-800';
+  };
+
   return (
     <CreditStatusChecker>
       <div className="h-full flex flex-col min-h-0 bg-white">
         {/* Selected Template Display */}
         <div className="flex-shrink-0 px-6 pt-4">
           <SelectedTemplateCard
-            template={getCurrentTemplate()}
-            onTemplateSelect={onTemplateSelect}
-            availableTemplates={availableTemplates}
-            onViewTemplate={onViewTemplate}
+            currentTemplate={getCurrentTemplate()}
+            showTemplateDetails={true}
+            onToggleDetails={() => {}}
+            onClearSelection={() => {}}
+            getCategoryColor={getCategoryColor}
           />
         </div>
 
         {/* Attachments Preview */}
         {attachments.length > 0 && (
-          <div className="flex-shrink-0 px-6 py-2">
-            <AttachmentPreview
-              attachments={attachments}
-              onRemoveAttachment={onRemoveAttachment}
-            />
+          <div className="flex-shrink-0 px-6 py-2 space-y-2">
+            {attachments.map((attachment) => (
+              <AttachmentPreview
+                key={attachment.id}
+                attachment={attachment}
+                onRemove={onRemoveAttachment}
+              />
+            ))}
           </div>
         )}
 
@@ -87,18 +107,13 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         <div className="flex-shrink-0 p-6 border-t border-gray-200">
           <MessageInputSection
             message={message}
-            setMessage={setMessage}
+            onMessageChange={setMessage}
             onSendMessage={onSendMessage}
             onKeyPress={onKeyPress}
-            canSend={canSend}
             onFileUpload={onFileUpload}
             onToggleUrlInput={onToggleUrlInput}
-            showUrlInput={showUrlInput}
-            urlInput={urlInput}
-            setUrlInput={setUrlInput}
-            onAddUrl={onAddUrl}
-            onCancelUrl={onCancelUrl}
             isAnalyzing={isAnalyzing}
+            canSend={canSend}
           />
         </div>
       </div>
