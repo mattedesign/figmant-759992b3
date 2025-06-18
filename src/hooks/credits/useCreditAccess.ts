@@ -9,9 +9,14 @@ export const useCreditAccess = () => {
 
   // Check if user has access (subscription or credits)
   const checkUserAccess = async (): Promise<boolean> => {
-    if (!user?.id) return false;
+    if (!user?.id) {
+      console.log('🔍 No user ID found for access check');
+      return false;
+    }
     
     try {
+      console.log('🔍 Checking access for user:', user.id);
+      
       // Check user role, subscription, and credits directly
       const { data: profile } = await supabase
         .from('profiles')
@@ -19,7 +24,10 @@ export const useCreditAccess = () => {
         .eq('id', user.id)
         .single();
 
+      console.log('🔍 User profile found:', profile);
+
       if (profile?.role === 'owner') {
+        console.log('🔍 User is owner - has access');
         return true;
       }
 
@@ -29,7 +37,10 @@ export const useCreditAccess = () => {
         .eq('user_id', user.id)
         .single();
 
+      console.log('🔍 User subscription found:', subscription);
+
       if (subscription?.status === 'active') {
+        console.log('🔍 User has active subscription - has access');
         return true;
       }
 
@@ -39,9 +50,14 @@ export const useCreditAccess = () => {
         .eq('user_id', user.id)
         .single();
 
-      return (userCredits?.current_balance || 0) > 0;
+      console.log('🔍 User credits found:', userCredits);
+
+      const hasCredits = (userCredits?.current_balance || 0) > 0;
+      console.log('🔍 User has credits result:', hasCredits);
+      
+      return hasCredits;
     } catch (error) {
-      console.error('Error checking user access:', error);
+      console.error('🔍 Error checking user access:', error);
       return false;
     }
   };
@@ -49,13 +65,21 @@ export const useCreditAccess = () => {
   // Deduct credits for analysis - now always processes transactions for tracking
   const deductAnalysisCredits = async (creditsToDeduct: number = 1, description: string = 'Design analysis'): Promise<boolean> => {
     if (!user?.id) {
+      console.error('🔍 No user ID for credit deduction');
       throw new Error('User not authenticated');
     }
+
+    console.log('🔍 Starting credit deduction process...', { 
+      userId: user.id, 
+      creditsToDeduct, 
+      description 
+    });
 
     try {
       // Check access first
       const hasAccess = await checkUserAccess();
       if (!hasAccess) {
+        console.error('🔍 User does not have access');
         toast({
           variant: "destructive",
           title: "Access Denied",
@@ -63,6 +87,8 @@ export const useCreditAccess = () => {
         });
         return false;
       }
+
+      console.log('🔍 Access check passed, proceeding with credit deduction...');
 
       // Check if user is owner or has active subscription
       const { data: profile } = await supabase
@@ -80,9 +106,12 @@ export const useCreditAccess = () => {
       const isOwner = profile?.role === 'owner';
       const hasActiveSubscription = subscription?.status === 'active';
 
+      console.log('🔍 User permissions:', { isOwner, hasActiveSubscription });
+
       // Always create a transaction record for tracking purposes
       // This allows owners and subscribers to see their usage patterns
       if (isOwner || hasActiveSubscription) {
+        console.log('🔍 Creating tracking transaction for owner/subscriber...');
         // Create a usage transaction for tracking without actually deducting from balance
         const { error: transactionError } = await supabase
           .from('credit_transactions')
@@ -95,23 +124,32 @@ export const useCreditAccess = () => {
           });
 
         if (transactionError) {
-          console.error('Error creating tracking transaction:', transactionError);
+          console.error('🔍 Error creating tracking transaction:', transactionError);
         } else {
-          console.log('Credit usage tracked for', isOwner ? 'owner' : 'subscriber');
+          console.log('🔍 Credit usage tracked for', isOwner ? 'owner' : 'subscriber');
         }
 
         return true;
       }
 
       // For non-subscribers, check and deduct actual credits
-      const { data: currentCredits } = await supabase
+      console.log('🔍 User needs to use actual credits, fetching current balance...');
+      const { data: currentCredits, error: fetchError } = await supabase
         .from('user_credits')
         .select('current_balance, total_used')
         .eq('user_id', user.id)
         .single();
 
+      if (fetchError) {
+        console.error('🔍 Error fetching current credits:', fetchError);
+        throw new Error('Unable to fetch credit balance');
+      }
+
       const balance = currentCredits?.current_balance || 0;
+      console.log('🔍 Current credit balance:', balance);
+      
       if (balance < creditsToDeduct) {
+        console.error('🔍 Insufficient credits:', { balance, needed: creditsToDeduct });
         toast({
           variant: "destructive",
           title: "Insufficient Credits",
@@ -119,6 +157,8 @@ export const useCreditAccess = () => {
         });
         return false;
       }
+
+      console.log('🔍 Sufficient credits available, deducting...');
 
       // Deduct actual credits and create transaction
       const { error: updateError } = await supabase
@@ -131,9 +171,11 @@ export const useCreditAccess = () => {
         .eq('user_id', user.id);
 
       if (updateError) {
-        console.error('Error updating credits:', updateError);
-        return false;
+        console.error('🔍 Error updating credits:', updateError);
+        throw new Error('Failed to deduct credits');
       }
+
+      console.log('🔍 Credits deducted successfully');
 
       // Create transaction record
       const { error: transactionError } = await supabase
@@ -147,12 +189,20 @@ export const useCreditAccess = () => {
         });
 
       if (transactionError) {
-        console.error('Error creating transaction:', transactionError);
+        console.error('🔍 Error creating transaction:', transactionError);
+      } else {
+        console.log('🔍 Transaction record created successfully');
       }
 
+      console.log('🔍 Credit deduction completed successfully');
       return true;
     } catch (error) {
-      console.error('Error deducting credits:', error);
+      console.error('🔍 Error deducting credits:', error);
+      toast({
+        variant: "destructive",
+        title: "Credit Deduction Failed",
+        description: error.message || "Unable to process credit deduction.",
+      });
       return false;
     }
   };
