@@ -3,17 +3,17 @@ import React, { useState, useCallback } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useMessageHandler } from '../useMessageHandler';
 import { useAnalysisChatState } from '../hooks/useAnalysisChatState';
-import { DesignChatInterface } from '@/components/design/DesignChatInterface';
-import { PromptTemplateModal } from '../PromptTemplateModal';
 
 interface AnalysisChatStateProps {
   selectedPromptTemplate?: any;
   onAnalysisComplete?: (result: any) => void;
+  children?: (stateProps: any) => React.ReactElement;
 }
 
 export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
   selectedPromptTemplate,
-  onAnalysisComplete
+  onAnalysisComplete,
+  children
 }) => {
   // Chat state
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -60,6 +60,33 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
     setModalTemplate(null);
   }, [setShowTemplateModal, setModalTemplate]);
 
+  // If children prop is provided, use render props pattern
+  if (children) {
+    return children({
+      messages,
+      setMessages,
+      message,
+      setMessage,
+      attachments,
+      setAttachments,
+      isAnalyzing,
+      canSend,
+      handleSendMessage,
+      handleKeyPress,
+      figmantTemplates,
+      selectedTemplate,
+      showTemplateModal,
+      modalTemplate,
+      getCurrentTemplate,
+      handleTemplateSelect,
+      handleViewTemplate,
+      setShowTemplateModal,
+      setModalTemplate,
+      handleTemplateModalClose
+    });
+  }
+
+  // Default render when no children provided
   return (
     <div className="flex flex-col h-full">
       {/* Template Selection Header */}
@@ -82,16 +109,11 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
 
       {/* Chat Interface */}
       <div className="flex-1">
-        <DesignChatInterface />
+        {/* This would need to be implemented based on the actual chat interface structure */}
+        <div className="p-4">
+          <p>Chat interface would go here</p>
+        </div>
       </div>
-
-      {/* Template Modal */}
-      <PromptTemplateModal
-        template={modalTemplate}
-        isOpen={showTemplateModal}
-        onClose={handleTemplateModalClose}
-        onTemplateSelect={handleTemplateSelect}
-      />
     </div>
   );
 };
