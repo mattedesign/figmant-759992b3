@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 
 interface SidebarCreditsProps {
   currentBalance: number;
@@ -22,13 +23,22 @@ export const SidebarCredits: React.FC<SidebarCreditsProps> = ({
     navigate('/subscription');
   };
 
+  console.log('SidebarCredits props:', { currentBalance, totalPurchased, creditsLoading });
+
   return (
     <div className="p-4 border-t border-gray-200/30">
       <div className="bg-gray-50/80 rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-900">Credits</span>
           <span className="text-sm font-medium text-gray-900">
-            {creditsLoading ? '...' : `${currentBalance}/${totalPurchased}`}
+            {creditsLoading ? (
+              <div className="flex items-center gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                <span>...</span>
+              </div>
+            ) : (
+              `${currentBalance || 0}/${totalPurchased || 0}`
+            )}
           </span>
         </div>
         

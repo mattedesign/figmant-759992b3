@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +16,7 @@ export const useAuthState = () => {
 
   const updateUserData = async (userId: string) => {
     try {
+      console.log('Updating user data for:', userId);
       const { profile: profileData, subscription: subscriptionData } = await authService.fetchUserProfile(userId);
       
       console.log('Fetched user data:', { profileData, subscriptionData });
@@ -82,6 +84,7 @@ export const useAuthState = () => {
 
   const refetchUserData = async () => {
     if (user?.id) {
+      console.log('Refetching user data for:', user.id);
       await updateUserData(user.id);
     }
   };
@@ -95,10 +98,10 @@ export const useAuthState = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user profile data when user is authenticated
+          // Add a small delay to ensure database triggers have completed
           setTimeout(() => {
             updateUserData(session.user.id);
-          }, 0);
+          }, 1000);
         } else {
           setProfile(null);
           setSubscription(null);
@@ -115,7 +118,10 @@ export const useAuthState = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        updateUserData(session.user.id);
+        // Add a delay here too for initial load
+        setTimeout(() => {
+          updateUserData(session.user.id);
+        }, 1000);
       }
       
       setLoading(false);
