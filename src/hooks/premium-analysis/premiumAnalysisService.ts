@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { PremiumAnalysisRequest, PremiumAnalysisResult, AnalysisResults } from './types';
 import { buildContextPrompt } from './contextPromptBuilder';
+import { FileUploadService } from './fileUploadService';
 
 export class PremiumAnalysisService {
   async executeAnalysis(request: PremiumAnalysisRequest): Promise<PremiumAnalysisResult> {
@@ -28,6 +29,19 @@ export class PremiumAnalysisService {
     }
     console.log('🔍 User authenticated:', user.id);
 
+    // Upload files if any exist
+    let uploadedFileAttachments: any[] = [];
+    if (stepData.uploadedFiles && stepData.uploadedFiles.length > 0) {
+      console.log('🔍 Uploading files to storage...');
+      try {
+        uploadedFileAttachments = await FileUploadService.uploadMultipleFiles(stepData.uploadedFiles);
+        console.log('🔍 Files uploaded successfully:', uploadedFileAttachments.length);
+      } catch (error) {
+        console.error('🔍 File upload error:', error);
+        throw new Error(`Failed to upload files: ${error.message}`);
+      }
+    }
+
     // Build comprehensive prompt based on selected premium prompt and user data
     console.log('🔍 Building context prompt...');
     const contextPrompt = buildContextPrompt(stepData, selectedPrompt);
@@ -41,12 +55,13 @@ export class PremiumAnalysisService {
         requestType: 'premium_analysis',
         analysisType: selectedPrompt.category,
         promptTemplate: selectedPrompt.original_prompt,
-        // Include uploaded files if any
-        attachments: stepData.uploadedFiles ? stepData.uploadedFiles.map(file => ({
+        // Include uploaded files with their storage paths
+        attachments: uploadedFileAttachments.map(file => ({
           name: file.name,
           type: file.type,
+          path: file.path,
           size: file.size
-        })) : []
+        }))
       }
     });
 
@@ -67,7 +82,8 @@ export class PremiumAnalysisService {
       contextPrompt,
       selectedPrompt,
       stepData,
-      claudeResponse
+      claudeResponse,
+      uploadedFileAttachments
     );
 
     const finalResult: PremiumAnalysisResult = {
@@ -90,7 +106,8 @@ export class PremiumAnalysisService {
     contextPrompt: string,
     selectedPrompt: any,
     stepData: any,
-    claudeResponse: any
+    claudeResponse: any,
+    uploadedFiles: any[]
   ): Promise<string> {
     console.log('🔍 Preparing analysis results for database...');
     
@@ -102,8 +119,9 @@ export class PremiumAnalysisService {
       project_name: stepData.projectName,
       analysis_goals: stepData.analysisGoals,
       desired_outcome: stepData.desiredOutcome,
-      files_uploaded: stepData.uploadedFiles?.length || 0,
+      files_uploaded: uploadedFiles.length,
       reference_links: stepData.referenceLinks.filter(link => link.trim()).length,
+      uploaded_file_paths: uploadedFiles.map(f => f.path), // Include actual file paths
       // Store premium analysis metadata within analysis_results instead of separate metadata column
       is_premium: true,
       premium_type: selectedPrompt.category,

@@ -76,10 +76,7 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
   });
 
   // File upload handler
-  const fileUploadHandler = useFileUploadHandler({
-    attachments,
-    setAttachments
-  });
+  const fileUploadHandler = useFileUploadHandler(setAttachments);
 
   const addUrlAttachment = (url: string) => {
     if (!url.trim()) return;
