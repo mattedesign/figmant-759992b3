@@ -4,10 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useUserDebugInfo } from '@/hooks/useUserDebugInfo';
-import { AlertTriangle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, CheckCircle, XCircle, RefreshCw, Eye, EyeOff } from 'lucide-react';
 
 export const UserDebugPanel: React.FC = () => {
   const { data: debugInfo, isLoading, error, refetch } = useUserDebugInfo();
+  const [showRawData, setShowRawData] = React.useState(false);
 
   if (isLoading) {
     return (
@@ -33,6 +34,9 @@ export const UserDebugPanel: React.FC = () => {
         </CardHeader>
         <CardContent>
           <p className="text-red-600">{error.message}</p>
+          <Button onClick={() => refetch()} className="mt-2">
+            Retry
+          </Button>
         </CardContent>
       </Card>
     );
@@ -60,22 +64,65 @@ export const UserDebugPanel: React.FC = () => {
     return <Badge variant="secondary">Missing</Badge>;
   };
 
+  // Calculate overall access status
+  const hasCredits = debugInfo.credits?.current_balance > 0;
+  const hasActiveSubscription = debugInfo.subscription?.status === 'active';
+  const isOwner = debugInfo.profile?.role === 'owner';
+  const shouldHaveAccess = isOwner || hasActiveSubscription || hasCredits;
+
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             User Debug Information
-            <Button onClick={() => refetch()} size="sm" variant="outline">
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowRawData(!showRawData)} 
+                size="sm" 
+                variant="ghost"
+              >
+                {showRawData ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showRawData ? 'Hide' : 'Show'} Raw
+              </Button>
+              <Button onClick={() => refetch()} size="sm" variant="outline">
+                <RefreshCw className="h-4 w-4" />
+                Refresh
+              </Button>
+            </div>
           </CardTitle>
           <CardDescription>
             Debugging information for user: {debugInfo.user?.email}
+            <br />
+            <span className={`font-bold ${shouldHaveAccess ? 'text-green-600' : 'text-red-600'}`}>
+              Expected Access: {shouldHaveAccess ? 'YES' : 'NO'}
+            </span>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Access Summary */}
+          <div className="p-3 border rounded bg-gray-50">
+            <h4 className="font-semibold mb-2">Access Analysis</h4>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <span>Is Owner:</span>
+              <span className={isOwner ? 'text-green-600' : 'text-red-600'}>
+                {isOwner ? 'YES' : 'NO'}
+              </span>
+              <span>Has Active Subscription:</span>
+              <span className={hasActiveSubscription ? 'text-green-600' : 'text-red-600'}>
+                {hasActiveSubscription ? 'YES' : 'NO'}
+              </span>
+              <span>Has Credits:</span>
+              <span className={hasCredits ? 'text-green-600' : 'text-red-600'}>
+                {hasCredits ? 'YES' : 'NO'}
+              </span>
+              <span>Database Access Check:</span>
+              <span className={debugInfo.hasAccess ? 'text-green-600' : 'text-red-600'}>
+                {debugInfo.hasAccess ? 'ALLOWED' : 'DENIED'}
+              </span>
+            </div>
+          </div>
+
           {/* User Profile */}
           <div className="flex items-center justify-between p-3 border rounded">
             <div className="flex items-center gap-2">
@@ -158,6 +205,16 @@ export const UserDebugPanel: React.FC = () => {
               <p className="text-sm text-gray-500">No transactions found</p>
             )}
           </div>
+
+          {/* Raw Data Toggle */}
+          {showRawData && (
+            <div className="p-3 border rounded bg-gray-50">
+              <h4 className="font-semibold mb-2">Raw Debug Data</h4>
+              <pre className="text-xs overflow-auto max-h-60 bg-white p-2 rounded border">
+                {JSON.stringify(debugInfo, null, 2)}
+              </pre>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -173,12 +230,34 @@ export const UserDebugPanel: React.FC = () => {
                 <div key={key} className="p-2 bg-red-50 border border-red-200 rounded">
                   <p className="font-medium text-red-800">{key}:</p>
                   <p className="text-red-600 text-sm">{error.message}</p>
+                  {error.details && (
+                    <pre className="text-xs text-red-500 mt-1 overflow-auto">
+                      {JSON.stringify(error.details, null, 2)}
+                    </pre>
+                  )}
                 </div>
               )
             )}
           </CardContent>
         </Card>
       )}
+
+      {/* Authentication Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Authentication Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <span>User ID:</span>
+            <span className="font-mono text-xs">{debugInfo.user?.id || 'Not available'}</span>
+            <span>Email:</span>
+            <span>{debugInfo.user?.email || 'Not available'}</span>
+            <span>Current Route:</span>
+            <span>/auth</span>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
