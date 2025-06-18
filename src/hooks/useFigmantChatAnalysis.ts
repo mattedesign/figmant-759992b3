@@ -1,5 +1,4 @@
-
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -20,6 +19,32 @@ interface FigmantChatAnalysisResponse {
     [key: string]: any;
   };
 }
+
+// Add the missing hook for fetching figmant prompt templates
+export const useFigmantPromptTemplates = () => {
+  return useQuery({
+    queryKey: ['figmant-prompt-templates'],
+    queryFn: async () => {
+      console.log('Fetching figmant prompt templates...');
+      
+      const { data, error } = await supabase
+        .from('prompt_templates')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_name');
+      
+      if (error) {
+        console.error('Error fetching figmant prompt templates:', error);
+        throw error;
+      }
+      
+      console.log('Figmant prompt templates fetched:', data?.length || 0);
+      return data || [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+};
 
 const analyzeWithFigmantChat = async (request: FigmantChatAnalysisRequest): Promise<FigmantChatAnalysisResponse> => {
   console.log('=== FIGMANT CHAT ANALYSIS START ===');
