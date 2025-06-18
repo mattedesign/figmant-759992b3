@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { PanelLeftOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MenuItem {
@@ -56,7 +57,7 @@ export const SidebarCollapsedView: React.FC<SidebarCollapsedViewProps> = ({
           onClick={() => onToggleCollapse(false)}
           className="w-10 h-10 p-0 text-gray-500 hover:text-gray-700 hover:bg-transparent active:bg-transparent"
         >
-          <item.icon className="h-9 w-9" />
+          <PanelLeftOpen className="h-9 w-9" />
         </Button>
       </div>
     </div>
