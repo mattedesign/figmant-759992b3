@@ -1,7 +1,7 @@
-
 import { useState, useCallback } from 'react';
 import { URLValidationService, URLValidationResult } from '@/services/urlValidationService';
-import { ScreenshotCaptureService, ScreenshotResult, ScreenshotCaptureOptions } from '@/services/screenshotCaptureService';
+import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
+import { ScreenshotResult, ScreenshotCaptureOptions } from '@/services/screenshot/types';
 import { useToast } from '@/hooks/use-toast';
 
 export interface CompetitorAnalysisData {
