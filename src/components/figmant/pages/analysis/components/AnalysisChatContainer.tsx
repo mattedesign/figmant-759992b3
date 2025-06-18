@@ -6,6 +6,7 @@ import { MessageInputSection } from '../MessageInputSection';
 import { SelectedTemplateCard } from '../SelectedTemplateCard';
 import { AttachmentPreview } from '../AttachmentPreview';
 import { CreditStatusChecker } from './CreditStatusChecker';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface AnalysisChatContainerProps {
   messages: ChatMessage[];
@@ -70,51 +71,60 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
 
   return (
     <CreditStatusChecker>
-      <div className="h-full flex flex-col min-h-0 bg-white">
-        {/* Selected Template Display */}
-        <div className="flex-shrink-0 px-6 pt-4">
-          <SelectedTemplateCard
-            currentTemplate={getCurrentTemplate()}
-            showTemplateDetails={true}
-            onToggleDetails={() => {}}
-            onClearSelection={() => {}}
-            getCategoryColor={getCategoryColor}
-          />
-        </div>
-
-        {/* Attachments Preview */}
-        {attachments.length > 0 && (
-          <div className="flex-shrink-0 px-6 py-2 space-y-2">
-            {attachments.map((attachment) => (
-              <AttachmentPreview
-                key={attachment.id}
-                attachment={attachment}
-                onRemove={onRemoveAttachment}
-              />
-            ))}
+      <div className="h-full flex flex-col bg-white">
+        {/* Fixed Header Content - Selected Template and Attachments */}
+        <div className="flex-shrink-0 border-b border-gray-100">
+          {/* Selected Template Display */}
+          <div className="px-6 pt-4 pb-2">
+            <SelectedTemplateCard
+              currentTemplate={getCurrentTemplate()}
+              showTemplateDetails={true}
+              onToggleDetails={() => {}}
+              onClearSelection={() => {}}
+              getCategoryColor={getCategoryColor}
+            />
           </div>
-        )}
 
-        {/* Messages Area */}
-        <div className="flex-1 min-h-0 px-6">
-          <ChatMessages
-            messages={messages}
-            isAnalyzing={isAnalyzing}
-          />
+          {/* Attachments Preview */}
+          {attachments.length > 0 && (
+            <div className="px-6 pb-4 space-y-2">
+              {attachments.map((attachment) => (
+                <AttachmentPreview
+                  key={attachment.id}
+                  attachment={attachment}
+                  onRemove={onRemoveAttachment}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Message Input */}
-        <div className="flex-shrink-0 p-6 border-t border-gray-200">
-          <MessageInputSection
-            message={message}
-            onMessageChange={setMessage}
-            onSendMessage={onSendMessage}
-            onKeyPress={onKeyPress}
-            onFileUpload={onFileUpload}
-            onToggleUrlInput={onToggleUrlInput}
-            isAnalyzing={isAnalyzing}
-            canSend={canSend}
-          />
+        {/* Scrollable Messages Area */}
+        <div className="flex-1 min-h-0">
+          <ScrollArea className="h-full">
+            <div className="px-6 py-4">
+              <ChatMessages
+                messages={messages}
+                isAnalyzing={isAnalyzing}
+              />
+            </div>
+          </ScrollArea>
+        </div>
+
+        {/* Fixed Message Input */}
+        <div className="flex-shrink-0 border-t border-gray-200 bg-white">
+          <div className="p-6">
+            <MessageInputSection
+              message={message}
+              onMessageChange={setMessage}
+              onSendMessage={onSendMessage}
+              onKeyPress={onKeyPress}
+              onFileUpload={onFileUpload}
+              onToggleUrlInput={onToggleUrlInput}
+              isAnalyzing={isAnalyzing}
+              canSend={canSend}
+            />
+          </div>
         </div>
       </div>
     </CreditStatusChecker>
