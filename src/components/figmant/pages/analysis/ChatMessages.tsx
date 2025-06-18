@@ -4,7 +4,7 @@ import { Brain, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useAuthState } from '@/hooks/useAuthState';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { AnalysisResults } from '@/components/design/chat/AnalysisResults';
 
 interface ChatMessage {
   id: string;
@@ -13,6 +13,8 @@ interface ChatMessage {
   timestamp: Date;
   attachments?: ChatAttachment[];
   promptUsed?: string;
+  analysisResult?: any;
+  uploadIds?: string[];
 }
 
 interface ChatMessagesProps {
@@ -37,46 +39,57 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {messages.map((msg) => (
-        <div key={msg.id} className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
-          {msg.role === 'assistant' && (
-            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <Brain className="h-4 w-4 text-gray-600" />
-            </div>
-          )}
-          
-          <div className={`flex-1 max-w-2xl ${msg.role === 'user' ? 'max-w-md' : ''}`}>
-            <div className={`rounded-lg p-3 ${
-              msg.role === 'user' 
-                ? 'bg-blue-600 text-white ml-auto' 
-                : 'bg-gray-50'
-            }`}>
-              <div className="max-h-96 overflow-y-auto">
+        <div key={msg.id} className="space-y-4">
+          <div className={`flex items-start gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+            {msg.role === 'assistant' && (
+              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Brain className="h-4 w-4 text-gray-600" />
+              </div>
+            )}
+            
+            <div className={`flex-1 max-w-2xl ${msg.role === 'user' ? 'max-w-md' : ''}`}>
+              <div className={`rounded-lg p-3 ${
+                msg.role === 'user' 
+                  ? 'bg-blue-600 text-white ml-auto' 
+                  : 'bg-gray-50'
+              }`}>
                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                
+                {msg.attachments && msg.attachments.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {msg.attachments.map(att => (
+                      <div key={att.id} className="text-xs opacity-75">
+                        📎 {att.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               
-              {msg.attachments && msg.attachments.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {msg.attachments.map(att => (
-                    <div key={att.id} className="text-xs opacity-75">
-                      📎 {att.name}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="text-xs text-gray-500 mt-1">
+                {msg.timestamp.toLocaleTimeString()}
+              </div>
             </div>
-            
-            <div className="text-xs text-gray-500 mt-1">
-              {msg.timestamp.toLocaleTimeString()}
-            </div>
+
+            {msg.role === 'user' && (
+              <Avatar className="w-8 h-8 flex-shrink-0">
+                <AvatarImage src={user?.user_metadata?.avatar_url} />
+                <AvatarFallback />
+              </Avatar>
+            )}
           </div>
 
-          {msg.role === 'user' && (
-            <Avatar className="w-8 h-8 flex-shrink-0">
-              <AvatarImage src={user?.user_metadata?.avatar_url} />
-              <AvatarFallback />
-            </Avatar>
+          {/* Analysis Results - shown after assistant messages */}
+          {msg.role === 'assistant' && msg.analysisResult && (
+            <div className="ml-11">
+              <AnalysisResults 
+                lastAnalysisResult={msg.analysisResult}
+                uploadIds={msg.uploadIds}
+                showEnhancedSummary={true}
+              />
+            </div>
           )}
         </div>
       ))}

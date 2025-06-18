@@ -55,23 +55,21 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   const hasMessages = messages.length > 0;
 
   return (
-    <div className="h-full flex flex-col min-h-0">
-      {/* Main scrollable content area - This is the div that should scroll */}
-      <div className="flex-1 min-h-0">
-        <ScrollArea className="h-full w-full">
-          <div className="bg-[#F9FAFB]">
-            {hasMessages ? (
-              <div className="p-6">
-                <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
-              </div>
-            ) : (
-              <div className="h-full flex flex-col">
-                <AnalysisChatPlaceholder />
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-      </div>
+    <div className="h-full flex flex-col">
+      {/* Single scrollable content area */}
+      <ScrollArea className="flex-1 w-full">
+        <div className="min-h-full">
+          {hasMessages ? (
+            <div className="p-6 bg-[#F9FAFB]">
+              <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
+            </div>
+          ) : (
+            <div className="h-full bg-[#F9FAFB]">
+              <AnalysisChatPlaceholder />
+            </div>
+          )}
+        </div>
+      </ScrollArea>
 
       {/* URL Input - Fixed at bottom */}
       {showUrlInput && (
