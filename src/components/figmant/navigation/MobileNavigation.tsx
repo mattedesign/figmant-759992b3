@@ -145,7 +145,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
             {/* User Info */}
             <div className="flex items-center gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
               <Avatar className="w-10 h-10">
-                <AvatarImage src={profile?.avatar_url} />
+                <AvatarImage src={user?.user_metadata?.avatar_url} />
                 <AvatarFallback className="bg-gray-100">
                   <User className="h-5 w-5 text-gray-500" />
                 </AvatarFallback>
