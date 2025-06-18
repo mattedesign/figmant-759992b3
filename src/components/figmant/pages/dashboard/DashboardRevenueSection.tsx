@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { RevenueImpactTracker } from './widgets/RevenueImpactTracker';
+import { RevenueImpactTracker } from './widgets';
 
 interface DashboardRevenueSectionProps {
   analysisData: Array<{

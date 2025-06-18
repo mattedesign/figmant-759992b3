@@ -13,7 +13,7 @@ import {
   BusinessMetrics,
   SuccessMetric,
   RevenueAnalysisData
-} from './revenue-tracker';
+} from './index';
 
 interface RevenueImpactTrackerProps {
   analysisData: RevenueAnalysisData[];
