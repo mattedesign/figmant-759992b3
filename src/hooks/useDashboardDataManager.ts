@@ -1,163 +1,205 @@
 
-import { useState, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { 
-  useDashboardAnalyses, 
-  useDashboardInsights, 
-  useDashboardPrompts, 
-  useDashboardNotes 
-} from '@/hooks/useDashboardData';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useDashboardDataProcessor } from './useDashboardDataProcessor';
-
-interface DashboardDataState {
-  isLoading: boolean;
-  isRefreshing: boolean;
-  error: Error | null;
-  lastUpdated: Date | null;
-}
+import { useAnalysisDataProcessor } from './useAnalysisDataProcessor';
+import { useCallback } from 'react';
 
 export const useDashboardDataManager = () => {
-  const { user } = useAuth();
-  const [state, setState] = useState<DashboardDataState>({
-    isLoading: false,
-    isRefreshing: false,
-    error: null,
-    lastUpdated: null
+  // Fetch design uploads with analysis data
+  const { 
+    data: designUploads = [], 
+    isLoading: isAnalysesLoading,
+    error: analysesError,
+    refetch: refetchAnalyses
+  } = useQuery({
+    queryKey: ['dashboard-design-uploads'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('design_uploads')
+        .select(`
+          *,
+          design_analysis(*)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Fetch data with enhanced error handling
+  // Fetch activity logs for insights
   const { 
-    data: rawAnalysisData = [], 
-    isLoading: analysisLoading, 
-    error: analysisError,
-    refetch: refetchAnalysis 
-  } = useDashboardAnalyses();
-  
-  const { 
-    data: rawInsightsData = [], 
-    isLoading: insightsLoading, 
+    data: activityLogs = [], 
+    isLoading: isInsightsLoading,
     error: insightsError,
-    refetch: refetchInsights 
-  } = useDashboardInsights();
-  
-  const { 
-    data: rawPromptsData = [], 
-    isLoading: promptsLoading, 
-    error: promptsError,
-    refetch: refetchPrompts 
-  } = useDashboardPrompts();
-  
-  const { 
-    data: rawNotesData = [], 
-    isLoading: notesLoading, 
-    error: notesError,
-    refetch: refetchNotes 
-  } = useDashboardNotes();
+    refetch: refetchInsights
+  } = useQuery({
+    queryKey: ['dashboard-activity-logs'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
 
-  // Process the data
-  const processedData = useDashboardDataProcessor(
-    rawAnalysisData,
-    rawInsightsData,
-    rawPromptsData,
-    rawNotesData,
+      const { data, error } = await supabase
+        .from('user_activity_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch chat analysis history for prompts
+  const { 
+    data: chatHistory = [], 
+    isLoading: isPromptsLoading,
+    error: promptsError,
+    refetch: refetchPrompts
+  } = useQuery({
+    queryKey: ['dashboard-chat-history'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('chat_analysis_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch user credits
+  const { 
+    data: userCredits,
+    isLoading: isCreditsLoading
+  } = useQuery({
+    queryKey: ['dashboard-user-credits'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('user_credits')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch user profile for processing
+  const { data: user } = useQuery({
+    queryKey: ['dashboard-user-profile'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+
+  // Process grouped analyses for better organization
+  const { allAnalyses } = useAnalysisDataProcessor([]);
+
+  // Process dashboard data using the processor
+  const {
+    analysisData,
+    insightsData,
+    promptsData,
+    notesData,
+    hasAnyData,
+    dataStats
+  } = useDashboardDataProcessor(
+    designUploads,
+    activityLogs,
+    chatHistory,
+    [], // notes placeholder
     user
   );
 
-  // Aggregate loading and error states
-  const isLoading = analysisLoading || insightsLoading || promptsLoading || notesLoading;
-  const error = analysisError || insightsError || promptsError || notesError;
-
-  // Enhanced refresh function
+  // Enhanced refresh functions
   const refreshAllData = useCallback(async () => {
-    setState(prev => ({ ...prev, isRefreshing: true, error: null }));
-    
-    try {
-      await Promise.all([
-        refetchAnalysis(),
-        refetchInsights(),
-        refetchPrompts(),
-        refetchNotes()
-      ]);
-      
-      setState(prev => ({ 
-        ...prev, 
-        isRefreshing: false, 
-        lastUpdated: new Date(),
-        error: null
-      }));
-    } catch (err) {
-      setState(prev => ({ 
-        ...prev, 
-        isRefreshing: false,
-        error: err as Error
-      }));
-    }
-  }, [refetchAnalysis, refetchInsights, refetchPrompts, refetchNotes]);
+    await Promise.all([
+      refetchAnalyses(),
+      refetchInsights(),
+      refetchPrompts()
+    ]);
+  }, [refetchAnalyses, refetchInsights, refetchPrompts]);
 
-  // Section-specific refresh functions
-  const refreshAnalyses = useCallback(async () => {
-    try {
-      await refetchAnalysis();
-    } catch (err) {
-      console.error('Failed to refresh analyses:', err);
-    }
-  }, [refetchAnalysis]);
+  // Calculate loading states
+  const isLoading = isAnalysesLoading || isInsightsLoading || isPromptsLoading || isCreditsLoading;
+  const isRefreshing = false; // Can be enhanced with mutation state
+  
+  const loadingStates = {
+    analyses: isAnalysesLoading,
+    insights: isInsightsLoading,
+    prompts: isPromptsLoading,
+    credits: isCreditsLoading
+  };
 
-  const refreshInsights = useCallback(async () => {
-    try {
-      await refetchInsights();
-    } catch (err) {
-      console.error('Failed to refresh insights:', err);
-    }
-  }, [refetchInsights]);
+  const errorStates = {
+    analyses: analysesError,
+    insights: insightsError,
+    prompts: promptsError
+  };
 
-  const refreshPrompts = useCallback(async () => {
-    try {
-      await refetchPrompts();
-    } catch (err) {
-      console.error('Failed to refresh prompts:', err);
-    }
-  }, [refetchPrompts]);
-
-  const refreshNotes = useCallback(async () => {
-    try {
-      await refetchNotes();
-    } catch (err) {
-      console.error('Failed to refresh notes:', err);
-    }
-  }, [refetchNotes]);
+  const error = analysesError || insightsError || promptsError;
+  const lastUpdated = new Date().toISOString();
 
   return {
     // Processed data
-    ...processedData,
+    analysisData,
+    insightsData,
+    promptsData,
+    notesData,
+    dataStats,
+    hasAnyData,
+    
+    // Raw data for widgets
+    rawAnalysisData: designUploads,
+    userCredits,
     
     // State management
-    isLoading: isLoading || state.isLoading,
-    isRefreshing: state.isRefreshing,
-    error: error || state.error,
-    lastUpdated: state.lastUpdated,
+    isLoading,
+    isRefreshing,
+    error,
+    lastUpdated,
     
-    // Refresh functions
+    // Enhanced actions
     refreshAllData,
-    refreshAnalyses,
-    refreshInsights,
-    refreshPrompts,
-    refreshNotes,
+    refreshAnalyses: refetchAnalyses,
+    refreshInsights: refetchInsights,
+    refreshPrompts: refetchPrompts,
     
-    // Individual loading states for granular control
-    loadingStates: {
-      analyses: analysisLoading,
-      insights: insightsLoading,
-      prompts: promptsLoading,
-      notes: notesLoading
-    },
-    
-    // Individual error states
-    errorStates: {
-      analyses: analysisError,
-      insights: insightsError,
-      prompts: promptsError,
-      notes: notesError
-    }
+    // Loading and error states
+    loadingStates,
+    errorStates
   };
 };

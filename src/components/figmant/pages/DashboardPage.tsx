@@ -39,7 +39,11 @@ export const DashboardPage: React.FC = () => {
     
     // Computed properties
     isDataEmpty,
-    hasRecentActivity
+    hasRecentActivity,
+    
+    // Raw data access for widgets
+    rawAnalysisData,
+    userCredits
   } = useDashboardOptimized();
 
   const { toast } = useToast();
@@ -87,16 +91,13 @@ export const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <DashboardCompetitorSection
-              analysisData={memoizedAnalysisData}
-              userCredits={{
-                current_balance: 12, // This should come from your credits system
-                total_used: 18
-              }}
+              analysisData={rawAnalysisData || []}
+              userCredits={userCredits}
             />
           </div>
           <div className="lg:col-span-1">
             <DashboardRevenueSection
-              analysisData={memoizedAnalysisData}
+              analysisData={rawAnalysisData || []}
             />
           </div>
         </div>

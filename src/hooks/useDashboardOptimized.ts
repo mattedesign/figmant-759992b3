@@ -103,6 +103,10 @@ export const useDashboardOptimized = () => {
     handleSearch,
     handleFilter,
     
+    // Raw data for widgets (expose the raw analysis data from dashboardData)
+    rawAnalysisData: dashboardData.rawAnalysisData,
+    userCredits: dashboardData.userCredits,
+    
     // Additional computed properties
     isDataEmpty: memoizedData.memoizedAnalysisData.length === 0 &&
                  memoizedData.memoizedInsightsData.length === 0 &&
