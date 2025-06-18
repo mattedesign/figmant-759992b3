@@ -39,23 +39,29 @@ export const useCreditAccess = () => {
 
       console.log('🔍 User subscription found:', subscription);
 
+      // FEATURE PARITY: Give subscribers same access as owners
       if (subscription?.status === 'active') {
-        console.log('🔍 User has active subscription - has access');
+        console.log('🔍 User has active subscription - full access granted (same as owner)');
         return true;
       }
 
-      const { data: userCredits } = await supabase
-        .from('user_credits')
-        .select('current_balance')
-        .eq('user_id', user.id)
-        .single();
+      // For inactive subscriptions, still check credits
+      if (subscription && subscription.status === 'inactive') {
+        const { data: userCredits } = await supabase
+          .from('user_credits')
+          .select('current_balance')
+          .eq('user_id', user.id)
+          .single();
 
-      console.log('🔍 User credits found:', userCredits);
+        console.log('🔍 User credits found:', userCredits);
 
-      const hasCredits = (userCredits?.current_balance || 0) > 0;
-      console.log('🔍 User has credits result:', hasCredits);
-      
-      return hasCredits;
+        const hasCredits = (userCredits?.current_balance || 0) > 0;
+        console.log('🔍 User has credits result:', hasCredits);
+        
+        return hasCredits;
+      }
+
+      return false;
     } catch (error) {
       console.error('🔍 Error checking user access:', error);
       return false;
@@ -108,10 +114,9 @@ export const useCreditAccess = () => {
 
       console.log('🔍 User permissions:', { isOwner, hasActiveSubscription });
 
-      // Always create a transaction record for tracking purposes
-      // This allows owners and subscribers to see their usage patterns
+      // FEATURE PARITY: Both owners and active subscribers get unlimited access
       if (isOwner || hasActiveSubscription) {
-        console.log('🔍 Creating tracking transaction for owner/subscriber...');
+        console.log('🔍 Creating tracking transaction for', isOwner ? 'owner' : 'active subscriber', '- unlimited access');
         // Create a usage transaction for tracking without actually deducting from balance
         const { error: transactionError } = await supabase
           .from('credit_transactions')
@@ -119,20 +124,20 @@ export const useCreditAccess = () => {
             user_id: user.id,
             transaction_type: 'usage',
             amount: creditsToDeduct,
-            description: `${description} (${isOwner ? 'Owner' : 'Subscription'} - tracking only)`,
+            description: `${description} (${isOwner ? 'Owner' : 'Active Subscriber'} - unlimited access)`,
             created_by: user.id
           });
 
         if (transactionError) {
           console.error('🔍 Error creating tracking transaction:', transactionError);
         } else {
-          console.log('🔍 Credit usage tracked for', isOwner ? 'owner' : 'subscriber');
+          console.log('🔍 Usage tracked for', isOwner ? 'owner' : 'active subscriber', '- no credits deducted');
         }
 
         return true;
       }
 
-      // For non-subscribers, check and deduct actual credits
+      // For inactive subscribers, check and deduct actual credits
       console.log('🔍 User needs to use actual credits, fetching current balance...');
       const { data: currentCredits, error: fetchError } = await supabase
         .from('user_credits')
@@ -153,7 +158,7 @@ export const useCreditAccess = () => {
         toast({
           variant: "destructive",
           title: "Insufficient Credits",
-          description: "You don't have enough credits for this analysis. Please purchase more credits or upgrade your subscription.",
+          description: "You don't have enough credits for this analysis. Please purchase more credits or activate your subscription for unlimited access.",
         });
         return false;
       }

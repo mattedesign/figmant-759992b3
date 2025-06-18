@@ -33,29 +33,31 @@ export const useFigmantChatAnalysis = () => {
         throw new Error('User not authenticated');
       }
 
-      console.log('🔍 Starting Figmant chat analysis...', {
+      console.log('🔍 FIGMANT CHAT - Starting analysis...', {
         userId: user.id,
         messageLength: message.length,
         attachmentCount: attachments?.length || 0
       });
 
-      // Check user access and credits first
-      console.log('🔍 Checking user access...');
+      // Check user access and process credits
+      console.log('🔍 FIGMANT CHAT - Checking user access...');
       const hasAccess = await checkUserAccess();
       if (!hasAccess) {
-        console.error('🔍 User does not have access');
+        console.error('🔍 FIGMANT CHAT - User does not have access');
         throw new Error('You need an active subscription or credits to perform analysis. Please upgrade your plan or purchase credits.');
       }
-      console.log('🔍 User has access confirmed');
+      console.log('🔍 FIGMANT CHAT - User has access confirmed');
 
-      // Deduct credits for analysis (1 credit for regular chat analysis)
-      console.log('🔍 Attempting to deduct 1 credit...');
-      const creditsDeducted = await deductAnalysisCredits(1, 'Figmant chat analysis');
-      if (!creditsDeducted) {
-        console.error('🔍 Failed to deduct credits');
-        throw new Error('Insufficient credits for analysis');
+      // FEATURE PARITY: Process credits (1 credit for regular chat analysis)
+      // Active subscribers and owners get unlimited access (tracked but not charged)
+      // Inactive users with credits get charged
+      console.log('🔍 FIGMANT CHAT - Processing credits...');
+      const creditsProcessed = await deductAnalysisCredits(1, 'Figmant chat analysis');
+      if (!creditsProcessed) {
+        console.error('🔍 FIGMANT CHAT - Failed to process credits');
+        throw new Error('Unable to process chat analysis. Please check your subscription status or credit balance.');
       }
-      console.log('🔍 Credits deducted successfully');
+      console.log('🔍 FIGMANT CHAT - Credits processed successfully');
 
       // Process attachments if any
       const processedAttachments = attachments?.map(attachment => ({
@@ -65,7 +67,7 @@ export const useFigmantChatAnalysis = () => {
         url: attachment.url
       })) || [];
 
-      console.log('🔍 Calling Claude AI function...');
+      console.log('🔍 FIGMANT CHAT - Calling Claude AI function...');
       
       // Call Claude AI function
       const { data: claudeResponse, error: claudeError } = await supabase.functions.invoke('claude-ai', {
@@ -78,15 +80,15 @@ export const useFigmantChatAnalysis = () => {
       });
 
       if (claudeError) {
-        console.error('🔍 Claude AI error:', claudeError);
+        console.error('🔍 FIGMANT CHAT - Claude AI error:', claudeError);
         throw new Error(`Analysis failed: ${claudeError.message}`);
       }
 
-      console.log('🔍 Claude AI response received successfully');
+      console.log('🔍 FIGMANT CHAT - Claude AI response received successfully');
 
       // Save to chat history
       try {
-        console.log('🔍 Saving to chat history...');
+        console.log('🔍 FIGMANT CHAT - Saving to chat history...');
         const { error: saveError } = await supabase
           .from('chat_analysis_history')
           .insert({
@@ -102,17 +104,17 @@ export const useFigmantChatAnalysis = () => {
           });
 
         if (saveError) {
-          console.error('🔍 Error saving to chat history:', saveError);
+          console.error('🔍 FIGMANT CHAT - Error saving to chat history:', saveError);
           // Don't throw here - the analysis succeeded, just logging failed
         } else {
-          console.log('🔍 Analysis saved to chat history successfully');
+          console.log('🔍 FIGMANT CHAT - Analysis saved to chat history successfully');
         }
       } catch (saveError) {
-        console.error('🔍 Error saving analysis:', saveError);
+        console.error('🔍 FIGMANT CHAT - Error saving analysis:', saveError);
         // Don't throw here - the analysis succeeded
       }
 
-      console.log('🔍 Analysis completed successfully');
+      console.log('🔍 FIGMANT CHAT - Analysis completed successfully');
       
       return {
         analysis: claudeResponse.response || claudeResponse.analysis,
@@ -122,11 +124,11 @@ export const useFigmantChatAnalysis = () => {
     },
 
     onSuccess: (data) => {
-      console.log('🔍 Figmant chat analysis completed successfully');
+      console.log('🔍 FIGMANT CHAT - Analysis completed successfully');
     },
 
     onError: (error: any) => {
-      console.error('🔍 Figmant chat analysis mutation error:', error);
+      console.error('🔍 FIGMANT CHAT - Analysis mutation error:', error);
     }
   });
 };
