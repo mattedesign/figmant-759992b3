@@ -1,3 +1,4 @@
+
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
@@ -28,7 +29,7 @@ export const useFigmantPromptTemplates = () => {
       console.log('Fetching figmant prompt templates...');
       
       const { data, error } = await supabase
-        .from('prompt_templates')
+        .from('claude_prompt_examples')
         .select('*')
         .eq('is_active', true)
         .order('display_name');
