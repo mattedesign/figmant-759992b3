@@ -65,32 +65,36 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
     <div className="h-full flex flex-col min-h-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col min-h-0">
         <TabsContent value="chat" className="flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col">
-          <AnalysisChatContainer
-            messages={messages}
-            isAnalyzing={isAnalyzing}
-            message={message}
-            setMessage={setMessage}
-            onSendMessage={handleSendMessage}
-            onKeyPress={handleKeyPress}
-            getCurrentTemplate={getCurrentTemplate}
-            canSend={canSend}
-            onFileUpload={handleFileUploadFromInput}
-            onToggleUrlInput={handleToggleUrlInput}
-            showUrlInput={showUrlInput}
-            urlInput={urlInput}
-            setUrlInput={setUrlInput}
-            onAddUrl={handleAddUrlWithInput}
-            onCancelUrl={handleCancelUrl}
-            onTemplateSelect={handleTemplateSelect}
-            availableTemplates={figmantTemplates}
-            onViewTemplate={handleViewTemplate}
-            attachments={attachments}
-            onRemoveAttachment={removeAttachment}
-          />
+          <div className="h-full flex flex-col min-h-0">
+            <AnalysisChatContainer
+              messages={messages}
+              isAnalyzing={isAnalyzing}
+              message={message}
+              setMessage={setMessage}
+              onSendMessage={handleSendMessage}
+              onKeyPress={handleKeyPress}
+              getCurrentTemplate={getCurrentTemplate}
+              canSend={canSend}
+              onFileUpload={handleFileUploadFromInput}
+              onToggleUrlInput={handleToggleUrlInput}
+              showUrlInput={showUrlInput}
+              urlInput={urlInput}
+              setUrlInput={setUrlInput}
+              onAddUrl={handleAddUrlWithInput}
+              onCancelUrl={handleCancelUrl}
+              onTemplateSelect={handleTemplateSelect}
+              availableTemplates={figmantTemplates}
+              onViewTemplate={handleViewTemplate}
+              attachments={attachments}
+              onRemoveAttachment={removeAttachment}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="wizard" className="flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col">
-          <PremiumAnalysisWizard />
+          <div className="h-full flex flex-col min-h-0">
+            <PremiumAnalysisWizard />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

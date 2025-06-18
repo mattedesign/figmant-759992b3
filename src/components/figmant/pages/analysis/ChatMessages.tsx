@@ -4,6 +4,7 @@ import { Brain, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useAuthState } from '@/hooks/useAuthState';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ChatMessage {
   id: string;
@@ -51,7 +52,9 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
                 ? 'bg-blue-600 text-white ml-auto' 
                 : 'bg-gray-50'
             }`}>
-              <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+              <div className="max-h-96 overflow-y-auto">
+                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+              </div>
               
               {msg.attachments && msg.attachments.length > 0 && (
                 <div className="mt-2 space-y-1">

@@ -54,9 +54,9 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   const hasMessages = messages.length > 0;
 
   return (
-    <>
-      {/* Messages Area or Placeholder */}
-      <div className="flex-1 overflow-y-auto bg-[#F9FAFB]">
+    <div className="h-full flex flex-col min-h-0">
+      {/* Messages Area or Placeholder - This needs to be the main scrollable area */}
+      <div className="flex-1 overflow-y-auto bg-[#F9FAFB] min-h-0">
         {hasMessages ? (
           <div className="p-6">
             <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
@@ -68,33 +68,37 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         )}
       </div>
 
-      {/* URL Input */}
+      {/* URL Input - Fixed at bottom */}
       {showUrlInput && (
-        <URLInputSection 
-          urlInput={urlInput} 
-          setUrlInput={setUrlInput} 
-          onAddUrl={onAddUrl} 
-          onCancel={onCancelUrl} 
-        />
+        <div className="flex-shrink-0">
+          <URLInputSection 
+            urlInput={urlInput} 
+            setUrlInput={setUrlInput} 
+            onAddUrl={onAddUrl} 
+            onCancel={onCancelUrl} 
+          />
+        </div>
       )}
 
-      {/* Chat Input */}
-      <AnalysisChatInput 
-        message={message} 
-        setMessage={setMessage} 
-        onSendMessage={onSendMessage} 
-        onKeyPress={onKeyPress} 
-        selectedPromptTemplate={getCurrentTemplate()} 
-        canSend={canSend} 
-        isAnalyzing={isAnalyzing} 
-        onFileUpload={onFileUpload} 
-        onToggleUrlInput={onToggleUrlInput}
-        onTemplateSelect={onTemplateSelect}
-        availableTemplates={availableTemplates}
-        onViewTemplate={onViewTemplate}
-        attachments={attachments}
-        onRemoveAttachment={onRemoveAttachment}
-      />
-    </>
+      {/* Chat Input - Fixed at bottom */}
+      <div className="flex-shrink-0">
+        <AnalysisChatInput 
+          message={message} 
+          setMessage={setMessage} 
+          onSendMessage={onSendMessage} 
+          onKeyPress={onKeyPress} 
+          selectedPromptTemplate={getCurrentTemplate()} 
+          canSend={canSend} 
+          isAnalyzing={isAnalyzing} 
+          onFileUpload={onFileUpload} 
+          onToggleUrlInput={onToggleUrlInput}
+          onTemplateSelect={onTemplateSelect}
+          availableTemplates={availableTemplates}
+          onViewTemplate={onViewTemplate}
+          attachments={attachments}
+          onRemoveAttachment={onRemoveAttachment}
+        />
+      </div>
+    </div>
   );
 };
