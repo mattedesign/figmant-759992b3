@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { WelcomePrompt } from '@/components/onboarding/WelcomePrompt';
 import { CreditDepletionPrompt } from '@/components/onboarding/CreditDepletionPrompt';
+import { CreditPurchaseModal } from '@/components/modals/CreditPurchaseModal';
 
 export const CreditStatus = () => {
   const { credits, creditsLoading } = useUserCredits();
@@ -21,6 +21,7 @@ export const CreditStatus = () => {
   const navigate = useNavigate();
   const [showWelcomePrompt, setShowWelcomePrompt] = useState(false);
   const [showCreditDepletionPrompt, setShowCreditDepletionPrompt] = useState(false);
+  const [showCreditModal, setShowCreditModal] = useState(false);
 
   const isOwner = profile?.role === 'owner';
   const hasActiveSubscription = subscription?.status === 'active' || subscriptionStatus.subscribed;
@@ -55,6 +56,10 @@ export const CreditStatus = () => {
   const handleCreditDepletionPromptClose = () => {
     setShowCreditDepletionPrompt(false);
     markCreditDepletionPromptSeen();
+  };
+
+  const handleViewSubscription = () => {
+    setShowCreditModal(true);
   };
 
   if (creditsLoading || subscriptionStatus.loading) {
@@ -173,7 +178,7 @@ export const CreditStatus = () => {
               
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button 
-                  onClick={() => navigate('/subscription')}
+                  onClick={handleViewSubscription}
                   className="flex items-center space-x-2"
                 >
                   <CreditCard className="h-4 w-4" />
@@ -223,6 +228,11 @@ export const CreditStatus = () => {
         isOpen={showCreditDepletionPrompt}
         onClose={handleCreditDepletionPromptClose}
         remainingCredits={currentBalance}
+      />
+
+      <CreditPurchaseModal 
+        isOpen={showCreditModal}
+        onClose={() => setShowCreditModal(false)}
       />
     </>
   );
