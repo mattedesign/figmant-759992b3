@@ -5,6 +5,7 @@ import { ChatMessages } from '../ChatMessages';
 import { AnalysisChatPlaceholder } from '../AnalysisChatPlaceholder';
 import { AnalysisChatInput } from '../AnalysisChatInput';
 import { URLInputSection } from '../URLInputSection';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface AnalysisChatContainerProps {
   messages: ChatMessage[];
@@ -55,17 +56,21 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
 
   return (
     <div className="h-full flex flex-col min-h-0">
-      {/* Messages Area or Placeholder - This needs to be the main scrollable area */}
-      <div className="flex-1 overflow-y-auto bg-[#F9FAFB] min-h-0">
-        {hasMessages ? (
-          <div className="p-6">
-            <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
+      {/* Main scrollable content area - This is the div that should scroll */}
+      <div className="flex-1 min-h-0">
+        <ScrollArea className="h-full w-full">
+          <div className="bg-[#F9FAFB]">
+            {hasMessages ? (
+              <div className="p-6">
+                <ChatMessages messages={messages} isAnalyzing={isAnalyzing} />
+              </div>
+            ) : (
+              <div className="h-full flex flex-col">
+                <AnalysisChatPlaceholder />
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="h-full flex flex-col">
-            <AnalysisChatPlaceholder />
-          </div>
-        )}
+        </ScrollArea>
       </div>
 
       {/* URL Input - Fixed at bottom */}
