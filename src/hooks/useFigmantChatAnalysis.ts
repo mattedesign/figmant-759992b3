@@ -123,19 +123,10 @@ export const useFigmantChatAnalysis = () => {
 
     onSuccess: (data) => {
       console.log('🔍 Figmant chat analysis completed successfully');
-      toast({
-        title: "Analysis Complete",
-        description: "Your design analysis has been completed successfully.",
-      });
     },
 
     onError: (error: any) => {
       console.error('🔍 Figmant chat analysis mutation error:', error);
-      toast({
-        variant: "destructive",
-        title: "Analysis Failed",
-        description: error.message || "Failed to analyze your design. Please try again.",
-      });
     }
   });
 };

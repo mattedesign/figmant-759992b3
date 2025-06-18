@@ -86,11 +86,11 @@ export const useMessageHandler = ({
         description: "Your design analysis has been generated successfully.",
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Analysis failed:', error);
       toast({
         title: "Analysis Failed",
-        description: "There was an error generating your analysis. Please try again.",
+        description: error.message || "There was an error generating your analysis. Please try again.",
         variant: "destructive"
       });
     } finally {

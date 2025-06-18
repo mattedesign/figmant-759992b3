@@ -1,69 +1,26 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { useAnalysisChatState } from '../hooks/useAnalysisChatState';
-import { useAttachmentHandlers } from '@/components/design/chat/hooks/useAttachmentHandlers';
-import { useFileUploadHandler } from '../useFileUploadHandler';
 import { useMessageHandler } from '../useMessageHandler';
+import { useAnalysisChatState } from '../hooks/useAnalysisChatState';
+import { DesignChatInterface } from '@/components/design/DesignChatInterface';
+import { PromptTemplateModal } from '../PromptTemplateModal';
 
 interface AnalysisChatStateProps {
-  message: string;
-  setMessage: (message: string) => void;
-  messages: ChatMessage[];
-  setMessages: (messages: ChatMessage[]) => void;
-  attachments: ChatAttachment[];
-  setAttachments: (attachments: ChatAttachment[]) => void;
-  urlInput: string;
-  setUrlInput: (url: string) => void;
-  showUrlInput: boolean;
-  setShowUrlInput: (show: boolean) => void;
   selectedPromptTemplate?: any;
-  selectedPromptCategory?: string;
-  promptTemplates?: any[];
   onAnalysisComplete?: (result: any) => void;
-  children: (props: AnalysisChatStateRenderProps) => React.ReactNode;
-}
-
-export interface AnalysisChatStateRenderProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-  figmantTemplates: any[];
-  selectedTemplate: any;
-  showTemplateModal: boolean;
-  modalTemplate: any;
-  getCurrentTemplate: () => any;
-  handleTemplateSelect: (templateId: string) => void;
-  handleViewTemplate: (template: any) => void;
-  setShowTemplateModal: (show: boolean) => void;
-  setModalTemplate: (template: any) => void;
-  addUrlAttachment: (urlInput: string) => void;
-  removeAttachment: (id: string) => void;
-  handleFileUpload: (file: File) => void;
-  isAnalyzing: boolean;
-  canSend: boolean;
-  handleSendMessage: () => void;
-  handleKeyPress: (e: React.KeyboardEvent) => void;
 }
 
 export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
-  message,
-  setMessage,
-  messages,
-  setMessages,
-  attachments,
-  setAttachments,
-  urlInput,
-  setUrlInput,
-  showUrlInput,
-  setShowUrlInput,
   selectedPromptTemplate,
-  selectedPromptCategory,
-  promptTemplates,
-  onAnalysisComplete,
-  children
+  onAnalysisComplete
 }) => {
-  const [activeTab, setActiveTab] = useState("chat");
-  
+  // Chat state
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [message, setMessage] = useState('');
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
+
+  // Template state
   const {
     figmantTemplates,
     selectedTemplate,
@@ -74,17 +31,12 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
     handleViewTemplate,
     setShowTemplateModal,
     setModalTemplate
-  } = useAnalysisChatState({ selectedPromptTemplate, onAnalysisComplete });
+  } = useAnalysisChatState({
+    selectedPromptTemplate,
+    onAnalysisComplete
+  });
 
-  const {
-    addUrlAttachment: originalAddUrlAttachment,
-    removeAttachment
-  } = useAttachmentHandlers(attachments, setAttachments, setUrlInput, setShowUrlInput);
-
-  const {
-    handleFileUpload
-  } = useFileUploadHandler(setAttachments);
-
+  // Message handler
   const {
     isAnalyzing,
     canSend,
@@ -98,34 +50,48 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
     messages,
     setMessages,
     selectedPromptTemplate: getCurrentTemplate(),
-    selectedPromptCategory,
-    promptTemplates,
+    selectedPromptCategory: getCurrentTemplate()?.category,
+    promptTemplates: figmantTemplates,
     onAnalysisComplete
   });
 
-  // Wrapper function to match the expected signature
-  const addUrlAttachment = (urlInput: string) => {
-    originalAddUrlAttachment(urlInput);
-  };
+  const handleTemplateModalClose = useCallback(() => {
+    setShowTemplateModal(false);
+    setModalTemplate(null);
+  }, [setShowTemplateModal, setModalTemplate]);
 
-  return children({
-    activeTab,
-    setActiveTab,
-    figmantTemplates,
-    selectedTemplate,
-    showTemplateModal,
-    modalTemplate,
-    getCurrentTemplate,
-    handleTemplateSelect,
-    handleViewTemplate,
-    setShowTemplateModal,
-    setModalTemplate,
-    addUrlAttachment,
-    removeAttachment,
-    handleFileUpload,
-    isAnalyzing,
-    canSend,
-    handleSendMessage,
-    handleKeyPress
-  });
+  return (
+    <div className="flex flex-col h-full">
+      {/* Template Selection Header */}
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-medium">Analysis Template</h3>
+            <p className="text-sm text-gray-600">
+              {getCurrentTemplate()?.display_name || 'Master UX Analysis'}
+            </p>
+          </div>
+          <button
+            onClick={() => handleViewTemplate(getCurrentTemplate())}
+            className="text-blue-600 hover:text-blue-800 text-sm"
+          >
+            Change Template
+          </button>
+        </div>
+      </div>
+
+      {/* Chat Interface */}
+      <div className="flex-1">
+        <DesignChatInterface />
+      </div>
+
+      {/* Template Modal */}
+      <PromptTemplateModal
+        template={modalTemplate}
+        isOpen={showTemplateModal}
+        onClose={handleTemplateModalClose}
+        onTemplateSelect={handleTemplateSelect}
+      />
+    </div>
+  );
 };
