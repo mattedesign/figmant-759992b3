@@ -58,18 +58,18 @@ export class ScreenshotCaptureService {
         return this.simulateScreenshotCapture(url, opts);
       }
 
-      const screenshotResult = await this.captureWithScreenshotOne(url, opts, apiKey);
+      const screenshotData = await this.captureWithScreenshotOne(url, opts, apiKey);
       
       return {
         success: true,
         url,
-        screenshotUrl: screenshotResult.screenshotUrl,
-        thumbnailUrl: screenshotResult.thumbnailUrl,
+        screenshotUrl: screenshotData.screenshotUrl,
+        thumbnailUrl: screenshotData.thumbnailUrl,
         metadata: {
           width: opts.width!,
           height: opts.height!,
           format: opts.format!,
-          size: screenshotResult.size,
+          size: screenshotData.size,
           capturedAt: new Date().toISOString(),
           deviceType: opts.mobile ? 'mobile' : 'desktop'
         }
@@ -141,7 +141,7 @@ export class ScreenshotCaptureService {
   private static async simulateScreenshotCapture(
     url: string, 
     options: ScreenshotCaptureOptions
-  ): Promise<{ screenshotUrl: string; thumbnailUrl: string; size: number }> {
+  ): Promise<ScreenshotResult> {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, options.delay || 2000));
     
@@ -153,9 +153,18 @@ export class ScreenshotCaptureService {
     const thumbnailUrl = `https://screenshots.figmant.ai/${hostname}/thumb-${timestamp}.${options.format}`;
     
     return {
+      success: true,
+      url,
       screenshotUrl,
       thumbnailUrl,
-      size: Math.floor(Math.random() * 500000) + 100000 // Mock file size
+      metadata: {
+        width: options.width!,
+        height: options.height!,
+        format: options.format!,
+        size: Math.floor(Math.random() * 500000) + 100000,
+        capturedAt: new Date().toISOString(),
+        deviceType: options.mobile ? 'mobile' : 'desktop'
+      }
     };
   }
 
