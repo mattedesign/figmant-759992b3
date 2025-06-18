@@ -6,30 +6,46 @@ export const useUserDebugInfo = () => {
   return useQuery({
     queryKey: ['user-debug-info'],
     queryFn: async () => {
-      console.log('🔍 Starting comprehensive user debug check...');
+      console.log('🔍 Starting comprehensive user debug check for Mbrown@tfin.com...');
       
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError || !user) {
-        console.log('🔍 No authenticated user found:', { authError });
+      // First, let's find the user by email
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', 'Mbrown@tfin.com');
+
+      if (profilesError) {
+        console.log('🔍 Error fetching profile by email:', profilesError);
         return { 
-          error: 'No authenticated user', 
+          error: 'Error fetching user profile', 
           user: null, 
-          authError: authError?.message 
+          profilesError: profilesError.message 
         };
       }
 
-      console.log('🔍 Debug: Checking user state for:', user.email);
-      console.log('🔍 User ID:', user.id);
+      if (!profiles || profiles.length === 0) {
+        console.log('🔍 No profile found for Mbrown@tfin.com');
+        return { 
+          error: 'No profile found for Mbrown@tfin.com', 
+          user: null,
+          profilesError: 'User not found in profiles table'
+        };
+      }
+
+      const targetProfile = profiles[0];
+      const targetUserId = targetProfile.id;
+
+      console.log('🔍 Debug: Found user profile for Mbrown@tfin.com:', targetProfile);
+      console.log('🔍 User ID:', targetUserId);
 
       const debugData = {
         user: {
-          id: user.id,
-          email: user.email,
-          created_at: user.created_at,
-          updated_at: user.updated_at
+          id: targetUserId,
+          email: targetProfile.email,
+          created_at: targetProfile.created_at,
+          updated_at: targetProfile.updated_at
         },
-        profile: null,
+        profile: targetProfile,
         subscription: null,
         credits: null,
         transactions: [],
@@ -43,34 +59,13 @@ export const useUserDebugInfo = () => {
         }
       };
 
-      // Check user profile
-      try {
-        console.log('🔍 Fetching user profile...');
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError) {
-          console.log('🔍 Profile error:', profileError);
-          debugData.errors.profileError = profileError;
-        } else {
-          console.log('🔍 Profile found:', profile);
-          debugData.profile = profile;
-        }
-      } catch (error) {
-        console.log('🔍 Profile fetch exception:', error);
-        debugData.errors.profileError = error;
-      }
-
       // Check user subscription
       try {
         console.log('🔍 Fetching user subscription...');
         const { data: subscription, error: subscriptionError } = await supabase
           .from('subscriptions')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', targetUserId)
           .single();
 
         if (subscriptionError) {
@@ -91,7 +86,7 @@ export const useUserDebugInfo = () => {
         const { data: credits, error: creditsError } = await supabase
           .from('user_credits')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', targetUserId)
           .single();
 
         if (creditsError) {
@@ -112,7 +107,7 @@ export const useUserDebugInfo = () => {
         const { data: transactions, error: transactionsError } = await supabase
           .from('credit_transactions')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', targetUserId)
           .order('created_at', { ascending: false })
           .limit(10);
 
@@ -132,7 +127,7 @@ export const useUserDebugInfo = () => {
       try {
         console.log('🔍 Testing user access function...');
         const { data: hasAccess, error: accessError } = await supabase
-          .rpc('user_has_access', { user_id: user.id });
+          .rpc('user_has_access', { user_id: targetUserId });
 
         if (accessError) {
           console.log('🔍 Access check error:', accessError);
@@ -146,7 +141,7 @@ export const useUserDebugInfo = () => {
         debugData.errors.accessError = error;
       }
 
-      console.log('🔍 Complete debug data:', debugData);
+      console.log('🔍 Complete debug data for Mbrown@tfin.com:', debugData);
       return debugData;
     },
     enabled: true,

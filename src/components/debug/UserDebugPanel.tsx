@@ -16,7 +16,7 @@ export const UserDebugPanel: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <RefreshCw className="h-5 w-5 animate-spin" />
-            Loading Debug Info...
+            Loading Debug Info for Mbrown@tfin.com...
           </CardTitle>
         </CardHeader>
       </Card>
@@ -59,13 +59,13 @@ export const UserDebugPanel: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-red-600">
             <XCircle className="h-5 w-5" />
-            Authentication Error
+            User Lookup Error
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-red-600 mb-2">{debugInfo.error}</p>
-          {debugInfo.authError && (
-            <p className="text-sm text-gray-600">Auth Error: {debugInfo.authError}</p>
+          {debugInfo.profilesError && (
+            <p className="text-sm text-gray-600">Profile Error: {debugInfo.profilesError}</p>
           )}
           <Button onClick={() => refetch()} className="mt-2">
             Retry
@@ -98,7 +98,7 @@ export const UserDebugPanel: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            User Debug Information
+            Debug Info: Mbrown@tfin.com
             <div className="flex gap-2">
               <Button 
                 onClick={() => setShowRawData(!showRawData)} 
@@ -265,10 +265,10 @@ export const UserDebugPanel: React.FC = () => {
         </Card>
       )}
 
-      {/* Authentication Status */}
+      {/* User Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Authentication Status</CardTitle>
+          <CardTitle>User Information</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-2 text-sm">
@@ -276,8 +276,8 @@ export const UserDebugPanel: React.FC = () => {
             <span className="font-mono text-xs">{debugInfo.user?.id || 'Not available'}</span>
             <span>Email:</span>
             <span>{debugInfo.user?.email || 'Not available'}</span>
-            <span>Current Route:</span>
-            <span>/figmant</span>
+            <span>Target User:</span>
+            <span>Mbrown@tfin.com</span>
           </div>
         </CardContent>
       </Card>
