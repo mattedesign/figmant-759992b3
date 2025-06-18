@@ -44,19 +44,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   return (
     <div className="h-full flex flex-col bg-[#F9FAFB] min-h-0">
       <AnalysisChatState
-        message={message}
-        setMessage={setMessage}
-        messages={messages}
-        setMessages={setMessages}
-        attachments={attachments}
-        setAttachments={setAttachments}
-        urlInput={urlInput}
-        setUrlInput={setUrlInput}
-        showUrlInput={showUrlInput}
-        setShowUrlInput={setShowUrlInput}
         selectedPromptTemplate={selectedPromptTemplate}
-        selectedPromptCategory={selectedPromptCategory}
-        promptTemplates={promptTemplates}
         onAnalysisComplete={onAnalysisComplete}
       >
         {(stateProps) => (
@@ -64,8 +52,8 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
             urlInput={urlInput}
             setUrlInput={setUrlInput}
             setShowUrlInput={setShowUrlInput}
-            attachments={attachments}
-            setAttachments={setAttachments}
+            attachments={stateProps.attachments}
+            setAttachments={stateProps.setAttachments}
           >
             {(handleAddUrl) => (
               <div className="h-full flex flex-col min-h-0">
@@ -82,10 +70,10 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
                   <AnalysisTabContent
                     activeTab={stateProps.activeTab}
                     setActiveTab={stateProps.setActiveTab}
-                    messages={messages}
+                    messages={stateProps.messages}
                     isAnalyzing={stateProps.isAnalyzing}
-                    message={message}
-                    setMessage={setMessage}
+                    message={stateProps.message}
+                    setMessage={stateProps.setMessage}
                     handleSendMessage={stateProps.handleSendMessage}
                     handleKeyPress={stateProps.handleKeyPress}
                     getCurrentTemplate={stateProps.getCurrentTemplate}
@@ -99,7 +87,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
                     handleTemplateSelect={stateProps.handleTemplateSelect}
                     figmantTemplates={stateProps.figmantTemplates}
                     handleViewTemplate={stateProps.handleViewTemplate}
-                    attachments={attachments}
+                    attachments={stateProps.attachments}
                     removeAttachment={stateProps.removeAttachment}
                   />
                 </div>
@@ -120,7 +108,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
                 <PromptTemplateModal 
                   template={stateProps.modalTemplate}
                   isOpen={stateProps.showTemplateModal}
-                  onClose={() => stateProps.setShowTemplateModal(false)}
+                  onClose={stateProps.handleTemplateModalClose}
                   onTemplateSelect={stateProps.handleTemplateSelect}
                 />
               </div>
