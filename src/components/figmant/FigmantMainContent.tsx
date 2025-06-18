@@ -81,7 +81,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   if (isMobile) {
     return (
       <div className="flex-1 h-full overflow-hidden">
-        <div className={`h-full bg-[#F9FAFB] ${needsScrolling ? 'overflow-y-auto' : 'overflow-hidden'}`}>
+        <div className={`h-full ${needsScrolling ? 'overflow-y-auto' : 'overflow-hidden'}`}>
           {renderContent()}
         </div>
       </div>
@@ -91,12 +91,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   return (
     <div style={{ background: 'transparent' }} className="">
       <div 
-        className={`h-full bg-[#F9FAFB] ${needsScrolling ? 'overflow-y-auto' : 'overflow-hidden'}`} 
-        style={{
-          borderRadius: '24px',
-          border: '1px solid rgba(10, 12, 17, 0.10)',
-          boxShadow: '0px 0px 0px 1px rgba(255, 255, 255, 0.18), 0px 13.5px 27px 0px rgba(18, 18, 23, 0.015), 0px 6px 10.5px 0px rgba(18, 18, 23, 0.0225), 0px 3px 4.5px 0px rgba(18, 18, 23, 0.0225), 0px 1.5px 2.25px 0px rgba(18, 18, 23, 0.0225)'
-        }}
+        className={`h-full ${needsScrolling ? 'overflow-y-auto' : 'overflow-hidden'}`}
       >
         {renderContent()}
       </div>
