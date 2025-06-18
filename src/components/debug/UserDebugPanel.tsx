@@ -92,6 +92,47 @@ export const UserDebugPanel: React.FC = () => {
     );
   }
 
+  // Type guard to ensure we have the full debug data
+  const hasFullDebugData = (data: any): data is {
+    user: any;
+    profile: any;
+    subscription: any;
+    credits: any;
+    hasAccess: boolean;
+    errors: any;
+    transactions: any[];
+  } => {
+    return data && 'profile' in data && 'subscription' in data && 'credits' in data && 'hasAccess' in data;
+  };
+
+  if (!hasFullDebugData(debugInfo)) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-yellow-600">
+            <AlertTriangle className="h-5 w-5" />
+            Incomplete Debug Data
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-yellow-600">Debug data is incomplete. This might indicate authentication or permission issues.</p>
+          <Button onClick={() => refetch()} className="mt-2">
+            Retry
+          </Button>
+          
+          {showRawData && (
+            <div className="mt-4 p-3 border rounded bg-gray-50">
+              <h4 className="font-semibold mb-2">Raw Debug Data</h4>
+              <pre className="text-xs overflow-auto max-h-60 bg-white p-2 rounded border whitespace-pre-wrap">
+                {JSON.stringify(debugInfo, null, 2)}
+              </pre>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
   const getStatusIcon = (hasData: boolean, hasError: boolean) => {
     if (hasError) return <XCircle className="h-4 w-4 text-red-500" />;
     if (hasData) return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -176,11 +217,11 @@ export const UserDebugPanel: React.FC = () => {
             {/* User Profile */}
             <div className="flex items-center justify-between p-3 border rounded">
               <div className="flex items-center gap-2">
-                {getStatusIcon(!!debugInfo.profile, !!debugInfo.errors.profileError)}
+                {getStatusIcon(!!debugInfo.profile, !!debugInfo.errors?.profileError)}
                 <span className="font-medium">Profile</span>
               </div>
               <div className="flex items-center gap-2">
-                {getStatusBadge(!!debugInfo.profile, !!debugInfo.errors.profileError)}
+                {getStatusBadge(!!debugInfo.profile, !!debugInfo.errors?.profileError)}
                 {debugInfo.profile && (
                   <span className="text-sm text-gray-600">
                     Role: {debugInfo.profile.role}
@@ -192,11 +233,11 @@ export const UserDebugPanel: React.FC = () => {
             {/* Subscription */}
             <div className="flex items-center justify-between p-3 border rounded">
               <div className="flex items-center gap-2">
-                {getStatusIcon(!!debugInfo.subscription, !!debugInfo.errors.subscriptionError)}
+                {getStatusIcon(!!debugInfo.subscription, !!debugInfo.errors?.subscriptionError)}
                 <span className="font-medium">Subscription</span>
               </div>
               <div className="flex items-center gap-2">
-                {getStatusBadge(!!debugInfo.subscription, !!debugInfo.errors.subscriptionError)}
+                {getStatusBadge(!!debugInfo.subscription, !!debugInfo.errors?.subscriptionError)}
                 {debugInfo.subscription && (
                   <span className="text-sm text-gray-600">
                     Status: {debugInfo.subscription.status}
@@ -208,12 +249,12 @@ export const UserDebugPanel: React.FC = () => {
             {/* Credits */}
             <div className="flex items-center justify-between p-3 border rounded">
               <div className="flex items-center gap-2">
-                {getStatusIcon(!!debugInfo.credits, !!debugInfo.errors.creditsError)}
+                {getStatusIcon(!!debugInfo.credits, !!debugInfo.errors?.creditsError)}
                 <CreditCard className="h-4 w-4" />
                 <span className="font-medium">Credits</span>
               </div>
               <div className="flex items-center gap-2">
-                {getStatusBadge(!!debugInfo.credits, !!debugInfo.errors.creditsError)}
+                {getStatusBadge(!!debugInfo.credits, !!debugInfo.errors?.creditsError)}
                 {debugInfo.credits && (
                   <span className="text-sm text-gray-600">
                     Balance: {debugInfo.credits.current_balance}/{debugInfo.credits.total_purchased}
@@ -225,11 +266,11 @@ export const UserDebugPanel: React.FC = () => {
             {/* Access Check */}
             <div className="flex items-center justify-between p-3 border rounded">
               <div className="flex items-center gap-2">
-                {getStatusIcon(debugInfo.hasAccess === true, !!debugInfo.errors.accessError)}
+                {getStatusIcon(debugInfo.hasAccess === true, !!debugInfo.errors?.accessError)}
                 <span className="font-medium">Access Permission</span>
               </div>
               <div className="flex items-center gap-2">
-                {getStatusBadge(debugInfo.hasAccess === true, !!debugInfo.errors.accessError)}
+                {getStatusBadge(debugInfo.hasAccess === true, !!debugInfo.errors?.accessError)}
                 <span className="text-sm text-gray-600">
                   {debugInfo.hasAccess ? 'Allowed' : 'Denied'}
                 </span>
@@ -240,7 +281,7 @@ export const UserDebugPanel: React.FC = () => {
           {/* Recent Transactions */}
           <div className="p-3 border rounded">
             <div className="flex items-center gap-2 mb-2">
-              {getStatusIcon(!!debugInfo.transactions?.length, !!debugInfo.errors.transactionsError)}
+              {getStatusIcon(!!debugInfo.transactions?.length, !!debugInfo.errors?.transactionsError)}
               <span className="font-medium">Recent Transactions</span>
               <Badge variant="outline">{debugInfo.transactions?.length || 0}</Badge>
             </div>
