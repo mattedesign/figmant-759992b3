@@ -52,25 +52,10 @@ export const useMessageHandler = ({
 
       setMessages([...messages, userMessage]);
 
-      // Determine prompt to use
-      let promptToUse = '';
-      if (selectedPromptTemplate) {
-        promptToUse = selectedPromptTemplate.original_prompt;
-      } else if (selectedPromptCategory && promptTemplates) {
-        const categoryTemplate = promptTemplates.find(
-          t => t.category === selectedPromptCategory
-        );
-        if (categoryTemplate) {
-          promptToUse = categoryTemplate.original_prompt;
-        }
-      }
-
-      // Call Figmant Chat Analysis
+      // Call Figmant Chat Analysis with basic parameters
       const result = await figmantChat.mutateAsync({
         message,
-        attachments,
-        promptTemplate: promptToUse,
-        analysisType: selectedPromptCategory || 'general'
+        attachments
       });
 
       // Add assistant response
@@ -78,8 +63,7 @@ export const useMessageHandler = ({
         id: crypto.randomUUID(),
         role: 'assistant',
         content: result.analysis,
-        timestamp: new Date(),
-        uploadIds: result.uploadIds
+        timestamp: new Date()
       };
 
       setMessages([...messages, userMessage, assistantMessage]);
@@ -88,7 +72,6 @@ export const useMessageHandler = ({
       if (onAnalysisComplete) {
         onAnalysisComplete({
           analysis: result.analysis,
-          uploadIds: result.uploadIds,
           debugInfo: result.debugInfo,
           response: result.analysis
         });

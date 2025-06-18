@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, X } from 'lucide-react';
-import { useFigmantPromptTemplates } from '@/hooks/useFigmantChatAnalysis';
+import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
 
 interface PromptTemplateModalProps {
   template?: any;
@@ -19,7 +19,7 @@ export const PromptTemplateModal: React.FC<PromptTemplateModalProps> = ({
   onClose,
   onTemplateSelect
 }) => {
-  const { data: figmantTemplates = [] } = useFigmantPromptTemplates();
+  const { data: figmantTemplates = [] } = useClaudePromptExamples();
 
   if (!template) return null;
 

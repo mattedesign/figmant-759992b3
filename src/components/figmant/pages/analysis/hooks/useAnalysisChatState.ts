@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { useFigmantPromptTemplates } from '@/hooks/useFigmantChatAnalysis';
+import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
 
 interface UseAnalysisChatStateProps {
   selectedPromptTemplate?: any;
@@ -12,7 +12,7 @@ export const useAnalysisChatState = ({
   selectedPromptTemplate,
   onAnalysisComplete
 }: UseAnalysisChatStateProps = {}) => {
-  const { data: figmantTemplates = [] } = useFigmantPromptTemplates();
+  const { data: figmantTemplates = [] } = useClaudePromptExamples();
   
   // Default to Master UX Analysis template
   const masterTemplate = figmantTemplates.find(t => t.category === 'master') || figmantTemplates[0];
