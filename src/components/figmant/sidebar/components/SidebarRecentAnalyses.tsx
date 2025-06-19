@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -32,7 +31,7 @@ export const SidebarRecentAnalyses: React.FC<SidebarRecentAnalysesProps> = ({
       analysisType: a.analysis_type || 'General',
       score: a.impact_summary?.key_metrics?.overall_score || Math.floor(Math.random() * 4) + 7,
       fileCount: 1,
-      imageUrl: a.design_upload?.file_path || null
+      imageUrl: null
     })),
     ...analysisHistory.map(a => ({ 
       ...a, 
