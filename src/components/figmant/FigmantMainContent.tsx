@@ -61,13 +61,16 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
         return <CreditsPage />;
       case 'preferences':
         return <PreferencesPage />;
-      case 'users':
-        return <AdminPage initialTab="users" />;
+      // All admin-related sections now route to the unified admin page
       case 'admin':
+      case 'users':
+      case 'settings':
+      case 'claude':
+      case 'plans':
       case 'products':
       case 'assets':
-      case 'settings':
-        return <AdminPage />;
+      case 'prompt-manager':
+        return <AdminPage initialTab={activeSection} />;
       case 'support':
         // For now, redirect to preferences or show a support page
         return <PreferencesPage />;

@@ -11,10 +11,7 @@ import {
   CreditCard, 
   Settings, 
   HelpCircle,
-  Users,
-  Package,
-  Database,
-  Cog
+  Shield
 } from 'lucide-react';
 
 interface SidebarNavigationProps {
@@ -67,15 +64,12 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     ]
   };
 
+  // Simplified admin section with just one item
   const adminSections = isOwner ? [
     {
       title: 'Admin',
       items: [
-        { id: 'admin', label: 'Admin Dashboard', icon: Users },
-        { id: 'users', label: 'User Management', icon: Users },
-        { id: 'products', label: 'Products', icon: Package },
-        { id: 'assets', label: 'Assets', icon: Database },
-        { id: 'settings', label: 'System Settings', icon: Cog },
+        { id: 'admin', label: 'Admin Panel', icon: Shield },
       ]
     }
   ] : [];

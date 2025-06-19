@@ -1,183 +1,166 @@
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { ClaudeFormData } from '@/types/claude';
-import { DEFAULT_SYSTEM_PROMPT, DEFAULT_MODEL, validateApiKey } from '@/constants/claude';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Bot, TestTube } from 'lucide-react';
 import { useClaudeSettings } from '@/hooks/useClaudeSettings';
-import { useClaudeUsageStats } from '@/hooks/useClaudeUsageStats';
 import { useClaudeMutations } from '@/hooks/useClaudeMutations';
-import { getConnectionStatus } from '@/utils/claudeStatus';
-import { ClaudeHeader } from './claude/ClaudeHeader';
-import { ClaudeConfigurationForm } from './claude/ClaudeConfigurationForm';
-import { ClaudeActionButtons } from './claude/ClaudeActionButtons';
-import { ClaudeUsageStatsCard } from './claude/ClaudeUsageStatsCard';
-import { ClaudeLoadingState } from './claude/ClaudeLoadingState';
-import { ClaudePromptManager } from './claude/ClaudePromptManager';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState } from 'react';
+import { CLAUDE_MODELS } from '@/constants/claude';
 
 export const ClaudeSettings = () => {
-  const { toast } = useToast();
-  const [isEditing, setIsEditing] = useState(false);
-  const [isTestingConnection, setIsTestingConnection] = useState(false);
-  const [formData, setFormData] = useState<ClaudeFormData>({
-    enabled: false,
-    apiKey: '',
-    model: DEFAULT_MODEL,
-    systemPrompt: DEFAULT_SYSTEM_PROMPT
+  const { data: settings, isLoading } = useClaudeSettings();
+  const { updateSettingMutation, testConnectionMutation } = useClaudeMutations();
+  const [formData, setFormData] = useState({
+    enabled: settings?.claude_ai_enabled || false,
+    apiKey: settings?.claude_api_key || '',
+    model: settings?.claude_model || CLAUDE_MODELS[0].id,
+    systemPrompt: settings?.claude_system_prompt || ''
   });
 
-  const { data: claudeSettings, isLoading } = useClaudeSettings();
-  const { data: usageStats } = useClaudeUsageStats(!!claudeSettings?.claude_ai_enabled);
-  const { updateSettingMutation, testConnectionMutation } = useClaudeMutations();
-
-  useEffect(() => {
-    if (claudeSettings) {
+  // Update form data when settings change
+  React.useEffect(() => {
+    if (settings) {
       setFormData({
-        enabled: claudeSettings.claude_ai_enabled === true,
-        apiKey: claudeSettings.claude_api_key || '',
-        model: claudeSettings.claude_model || DEFAULT_MODEL,
-        systemPrompt: claudeSettings.claude_system_prompt || DEFAULT_SYSTEM_PROMPT
+        enabled: settings.claude_ai_enabled || false,
+        apiKey: settings.claude_api_key || '',
+        model: settings.claude_model || CLAUDE_MODELS[0].id,
+        systemPrompt: settings.claude_system_prompt || ''
       });
     }
-  }, [claudeSettings]);
+  }, [settings]);
 
   const handleSave = async () => {
     try {
-      if (formData.enabled && !validateApiKey(formData.apiKey)) {
-        toast({
-          variant: "destructive",
-          title: "Invalid API Key",
-          description: "API key must start with 'sk-ant-' and be at least 20 characters long.",
-        });
-        return;
-      }
+      await updateSettingMutation.mutateAsync({
+        key: 'claude_ai_enabled',
+        value: formData.enabled,
+        description: 'Enable or disable Claude AI integration'
+      });
 
-      if (formData.systemPrompt.length > 2000) {
-        toast({
-          variant: "destructive", 
-          title: "System Prompt Too Long",
-          description: "Please keep the system prompt under 2000 characters.",
-        });
-        return;
-      }
-
-      await Promise.all([
-        updateSettingMutation.mutateAsync({ 
-          key: 'claude_ai_enabled', 
-          value: formData.enabled,
-          description: 'Enable Claude AI integration features'
-        }),
-        updateSettingMutation.mutateAsync({ 
-          key: 'claude_api_key', 
+      if (formData.apiKey) {
+        await updateSettingMutation.mutateAsync({
+          key: 'claude_api_key',
           value: formData.apiKey,
-          description: 'Anthropic API key for Claude access'
-        }),
-        updateSettingMutation.mutateAsync({ 
-          key: 'claude_model', 
-          value: formData.model,
-          description: 'Claude model version to use'
-        }),
-        updateSettingMutation.mutateAsync({ 
-          key: 'claude_system_prompt', 
+          description: 'Claude API key for authentication'
+        });
+      }
+
+      await updateSettingMutation.mutateAsync({
+        key: 'claude_model',
+        value: formData.model,
+        description: 'Claude model to use for analysis'
+      });
+
+      if (formData.systemPrompt) {
+        await updateSettingMutation.mutateAsync({
+          key: 'claude_system_prompt',
           value: formData.systemPrompt,
-          description: 'System prompt for Claude AI interactions'
-        })
-      ]);
-
-      setIsEditing(false);
+          description: 'System prompt for Claude AI'
+        });
+      }
     } catch (error) {
-      console.error('Failed to save settings:', error);
+      console.error('Failed to save Claude settings:', error);
     }
   };
 
-  const testConnection = async () => {
-    if (!formData.enabled) {
-      toast({
-        variant: "destructive",
-        title: "Claude AI Disabled",
-        description: "Please enable Claude AI before testing the connection.",
-      });
-      return;
-    }
-
-    if (!validateApiKey(formData.apiKey)) {
-      toast({
-        variant: "destructive", 
-        title: "Invalid API Key",
-        description: "Please enter a valid API key before testing.",
-      });
-      return;
-    }
-
-    setIsTestingConnection(true);
-    try {
-      await testConnectionMutation.mutateAsync();
-    } finally {
-      setIsTestingConnection(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    if (claudeSettings) {
-      setFormData({
-        enabled: claudeSettings.claude_ai_enabled === true,
-        apiKey: claudeSettings.claude_api_key || '',
-        model: claudeSettings.claude_model || DEFAULT_MODEL,
-        systemPrompt: claudeSettings.claude_system_prompt || DEFAULT_SYSTEM_PROMPT
-      });
-    }
+  const handleTestConnection = () => {
+    testConnectionMutation.mutate();
   };
 
   if (isLoading) {
-    return <ClaudeLoadingState />;
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
-
-  const connectionStatus = getConnectionStatus(formData.enabled, formData.apiKey);
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="settings" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-          <TabsTrigger value="prompts">Prompt Manager</TabsTrigger>
-        </TabsList>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Bot className="h-5 w-5" />
+            <span>Claude AI Configuration</span>
+          </CardTitle>
+          <CardDescription>
+            Configure Claude AI integration for design analysis
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="claude-enabled"
+              checked={formData.enabled}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, enabled: checked }))}
+            />
+            <Label htmlFor="claude-enabled">Enable Claude AI</Label>
+          </div>
 
-        <TabsContent value="settings" className="space-y-6">
-          <Card>
-            <ClaudeHeader connectionStatus={connectionStatus} />
-            <CardContent>
-              <ClaudeConfigurationForm
-                formData={formData}
-                isEditing={isEditing}
-                onFormDataChange={setFormData}
-              />
-              
-              <div className="mt-6">
-                <ClaudeActionButtons
-                  isEditing={isEditing}
-                  formData={formData}
-                  isTestingConnection={isTestingConnection}
-                  isSaving={updateSettingMutation.isPending}
-                  onEditClick={() => setIsEditing(true)}
-                  onTestConnection={testConnection}
-                  onSave={handleSave}
-                  onCancel={handleCancel}
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-2">
+            <Label htmlFor="api-key">API Key</Label>
+            <Input
+              id="api-key"
+              type="password"
+              placeholder="sk-ant-..."
+              value={formData.apiKey}
+              onChange={(e) => setFormData(prev => ({ ...prev, apiKey: e.target.value }))}
+            />
+          </div>
 
-          {usageStats && formData.enabled && (
-            <ClaudeUsageStatsCard usageStats={usageStats} />
-          )}
-        </TabsContent>
+          <div className="space-y-2">
+            <Label htmlFor="model">Model</Label>
+            <Select
+              value={formData.model}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Claude model" />
+              </SelectTrigger>
+              <SelectContent>
+                {CLAUDE_MODELS.map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    {model.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <TabsContent value="prompts">
-          <ClaudePromptManager />
-        </TabsContent>
-      </Tabs>
+          <div className="space-y-2">
+            <Label htmlFor="system-prompt">System Prompt</Label>
+            <Textarea
+              id="system-prompt"
+              placeholder="Enter system prompt for Claude AI..."
+              value={formData.systemPrompt}
+              onChange={(e) => setFormData(prev => ({ ...prev, systemPrompt: e.target.value }))}
+              rows={4}
+            />
+          </div>
+
+          <div className="flex space-x-2">
+            <Button 
+              onClick={handleSave}
+              disabled={updateSettingMutation.isPending}
+            >
+              {updateSettingMutation.isPending ? 'Saving...' : 'Save Settings'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleTestConnection}
+              disabled={testConnectionMutation.isPending || !formData.enabled}
+            >
+              <TestTube className="h-4 w-4 mr-2" />
+              {testConnectionMutation.isPending ? 'Testing...' : 'Test Connection'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
