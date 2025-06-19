@@ -61,8 +61,9 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
         return <CreditsPage />;
       case 'preferences':
         return <PreferencesPage />;
-      case 'admin':
       case 'users':
+        return <AdminPage initialTab="users" />;
+      case 'admin':
       case 'products':
       case 'assets':
       case 'settings':

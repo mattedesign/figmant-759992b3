@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,9 +7,22 @@ import { AlertTriangle } from 'lucide-react';
 import { ClaudePromptManager } from '@/components/owner/claude/ClaudePromptManager';
 import { UserManagement } from '@/components/owner/UserManagement';
 
-export const AdminPage: React.FC = () => {
+interface AdminPageProps {
+  initialTab?: string;
+}
+
+export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
   const { isOwner, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('prompts');
+
+  // Set initial tab based on the active section
+  useEffect(() => {
+    if (initialTab === 'users') {
+      setActiveTab('users');
+    } else {
+      setActiveTab('prompts');
+    }
+  }, [initialTab]);
 
   if (loading) {
     return (
