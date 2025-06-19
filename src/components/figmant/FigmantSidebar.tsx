@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -51,7 +52,20 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
         <div className="flex-shrink-0 px-6 py-4">
           <div className="flex items-center justify-between cursor-pointer group">
             <div className="flex-1">
-              <h2 className="text-xl font-semibold text-gray-900 mb-1">
+              <h2 
+                style={{
+                  overflow: 'hidden',
+                  color: 'var(--Text-Primary, #121212)',
+                  textOverflow: 'ellipsis',
+                  fontFamily: '"Instrument Sans"',
+                  fontSize: '15px',
+                  fontStyle: 'normal',
+                  fontWeight: 600,
+                  lineHeight: '24px',
+                  letterSpacing: '-0.3px',
+                  marginBottom: '4px'
+                }}
+              >
                 {profile?.full_name || user?.email?.split('@')[0] || 'Matthew Brown'}
               </h2>
               <p className="text-sm text-gray-500">
