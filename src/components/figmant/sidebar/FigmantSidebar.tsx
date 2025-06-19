@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { SidebarHeader } from './SidebarHeader';
@@ -21,6 +22,29 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   const { isOwner, profile, user, subscription, signOut } = useAuth();
   const { credits, creditsLoading } = useUserCredits();
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Sync with parent layout's responsive behavior
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      
+      // Auto-collapse for tablet screens (768px - 1023px)
+      if (width >= 768 && width < 1024) {
+        setIsCollapsed(true);
+        onCollapsedChange?.(true);
+      } else if (width >= 1024) {
+        // Auto-expand for desktop
+        setIsCollapsed(false);
+        onCollapsedChange?.(false);
+      }
+    };
+
+    // Set initial state
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [onCollapsedChange]);
 
   const currentBalance = credits?.current_balance || 0;
   const totalPurchased = credits?.total_purchased || 0;

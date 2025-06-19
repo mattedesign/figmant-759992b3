@@ -12,6 +12,34 @@ export const FigmantLayout: React.FC = () => {
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
 
+  // Auto-collapse sidebar for tablet screens (768px - 1023px)
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      
+      // Only auto-collapse for tablet range (768px - 1023px)
+      // Mobile (< 768px) and Desktop (>= 1024px) maintain their own behavior
+      if (width >= 768 && width < 1024) {
+        setIsSidebarCollapsed(true);
+      } else if (width >= 1024) {
+        // Auto-expand for desktop unless user manually collapsed it
+        // We'll track manual collapse state separately if needed
+        setIsSidebarCollapsed(false);
+      }
+      // Don't change state for mobile (< 768px) as it uses different navigation
+    };
+
+    // Set initial state based on screen size
+    handleResize();
+
+    // Listen for window resize
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   const handleBackToList = () => {
     setSelectedAnalysis(null);
   };
@@ -27,7 +55,10 @@ export const FigmantLayout: React.FC = () => {
   console.log('🔧 FIGMANT LAYOUT - Current state:', {
     activeSection,
     selectedAnalysis,
-    isSidebarCollapsed
+    isSidebarCollapsed,
+    screenWidth: typeof window !== 'undefined' ? window.innerWidth : 0,
+    isMobile,
+    isTablet
   });
 
   if (isMobile) {
@@ -57,7 +88,7 @@ export const FigmantLayout: React.FC = () => {
     );
   }
 
-  // Desktop layout with fixed sidebar and main content (no separate analysis assets panel)
+  // Desktop layout with responsive sidebar behavior
   return (
     <div className="min-h-screen h-screen flex w-full gap-4 overflow-hidden" style={{ background: 'transparent' }}>
       <div className="flex-shrink-0">
