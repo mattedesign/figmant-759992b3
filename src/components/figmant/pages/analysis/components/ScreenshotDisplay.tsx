@@ -33,8 +33,8 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
   }
 
   const { desktop, mobile } = attachment.metadata.screenshots;
-  const hasDesktop = desktop?.success && desktop.url;
-  const hasMobile = mobile?.success && mobile.url;
+  const hasDesktop = desktop?.success && desktop.screenshotUrl;
+  const hasMobile = mobile?.success && mobile.screenshotUrl;
 
   if (!hasDesktop && !hasMobile) {
     return (
@@ -49,7 +49,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
   }
 
   const currentScreenshot = activeView === 'desktop' ? desktop : mobile;
-  const currentScreenshotUrl = activeView === 'desktop' ? desktop?.url : mobile?.url;
+  const currentScreenshotUrl = activeView === 'desktop' ? desktop?.screenshotUrl : mobile?.screenshotUrl;
 
   return (
     <div className="space-y-2">
@@ -89,6 +89,10 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
                 style={{ aspectRatio: activeView === 'desktop' ? '16/10' : '9/16' }}
                 onError={(e) => {
                   console.error('Screenshot image failed to load:', currentScreenshotUrl);
+                  console.error('Current screenshot data:', currentScreenshot);
+                }}
+                onLoad={() => {
+                  console.log('Screenshot image loaded successfully:', currentScreenshotUrl);
                 }}
               />
               
