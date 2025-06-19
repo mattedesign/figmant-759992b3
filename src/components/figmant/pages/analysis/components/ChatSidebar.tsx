@@ -44,21 +44,19 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   return (
     <div className="w-80 h-full bg-background border-l border-border flex flex-col">
       <AnalysisNavigationHeader 
+        onTabChange={setActiveTab}
+      />
+
+      <AnalysisNavigationTabs 
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
 
       <ScrollArea className="flex-1">
         <div className="p-4">
-          {/* Tabs positioned above content */}
-          <AnalysisNavigationTabs 
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-          />
-          
           {/* Tab Content */}
           {activeTab === 'details' && (
-            <div className="space-y-6 mt-4">
+            <div className="space-y-6">
               {/* File Management Section */}
               {fileAttachments.length > 0 && (
                 <Card>
@@ -178,7 +176,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           )}
           
           {activeTab === 'suggestions' && (
-            <div className="mt-4">
+            <div>
               <SuggestionsTabContent suggestions={extractedSuggestions} />
             </div>
           )}

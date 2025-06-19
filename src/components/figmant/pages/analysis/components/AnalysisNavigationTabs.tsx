@@ -12,7 +12,7 @@ export const AnalysisNavigationTabs: React.FC<AnalysisNavigationTabsProps> = ({
   onTabChange
 }) => {
   return (
-    <div className="px-4 pb-3">
+    <div className="px-4 pb-3 border-b border-border">
       <Tabs value={activeTab} onValueChange={onTabChange}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="details" className="text-sm">

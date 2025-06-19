@@ -5,14 +5,10 @@ import { PanelRightClose } from 'lucide-react';
 
 interface AnalysisNavigationHeaderProps {
   onToggleCollapse?: () => void;
-  activeTab?: string;
-  onTabChange?: (tab: string) => void;
 }
 
 export const AnalysisNavigationHeader: React.FC<AnalysisNavigationHeaderProps> = ({
-  onToggleCollapse,
-  activeTab = 'details',
-  onTabChange
+  onToggleCollapse
 }) => {
   return (
     <div className="flex-none border-b border-border">
