@@ -19,7 +19,6 @@ export const useTemplateSelection = (selectedType: string) => {
         title: figmantTemplate.displayName,
         category: figmantTemplate.category,
         original_prompt: figmantTemplate.prompt_template,
-        pricing_tier: figmantTemplate.pricing_tier || 'basic',
         credit_cost: getAnalysisCost(figmantTemplate.id),
         is_premium: isPremiumAnalysis(figmantTemplate.id),
         best_for: figmantTemplate.best_for,
@@ -37,7 +36,6 @@ export const useTemplateSelection = (selectedType: string) => {
           title: premiumTemplate.title,
           category: premiumTemplate.category,
           original_prompt: premiumTemplate.original_prompt,
-          pricing_tier: 'premium',
           credit_cost: getAnalysisCost(premiumTemplate.id),
           is_premium: isPremiumAnalysis(premiumTemplate.id)
         };
