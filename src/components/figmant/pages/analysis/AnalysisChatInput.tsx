@@ -106,7 +106,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
       />
 
       {/* ACTIONS BAR */}
-      <div className="flex items-center gap-3 self-stretch sm:flex-col sm:gap-3 sm:items-stretch">
+      <div className="flex items-center gap-3 self-stretch">
         
         {/* LEFT SIDE CONTROLS - Plus Button and Template Dropdown */}
         <div className="flex items-center gap-3">
