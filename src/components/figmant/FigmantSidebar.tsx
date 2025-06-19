@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -68,7 +67,19 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
               >
                 {profile?.full_name || user?.email?.split('@')[0] || 'Matthew Brown'}
               </h2>
-              <p className="text-sm text-gray-500">
+              <p 
+                style={{
+                  overflow: 'hidden',
+                  color: 'var(--Text-Secondary, #7B7B7B)',
+                  textOverflow: 'ellipsis',
+                  fontFamily: '"Instrument Sans"',
+                  fontSize: '12px',
+                  fontStyle: 'normal',
+                  fontWeight: 500,
+                  lineHeight: '16px',
+                  letterSpacing: '-0.12px'
+                }}
+              >
                 Personal Account
               </p>
             </div>
