@@ -6,10 +6,6 @@ import {
   LayoutDashboard, 
   MessageSquare, 
   Wand2, 
-  BarChart3, 
-  Sparkles, 
-  FileText, 
-  Search, 
   CreditCard, 
   Settings, 
   HelpCircle,
@@ -40,10 +36,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'chat', label: 'Chat Analysis', icon: MessageSquare },
         { id: 'wizard', label: 'Analysis Wizard', icon: Wand2 },
-        { id: 'analysis', label: 'Quick Analysis', icon: BarChart3 },
-        { id: 'premium-analysis', label: 'Premium Analysis', icon: Sparkles },
-        { id: 'templates', label: 'Templates', icon: FileText },
-        { id: 'search', label: 'Search', icon: Search },
       ]
     }
   ];
