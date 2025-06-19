@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
+import { ChevronDown } from 'lucide-react';
 import { SidebarHeader } from './sidebar/SidebarHeader';
 import { SidebarNavigation } from './sidebar/SidebarNavigation';
 import { SidebarCredits } from './sidebar/SidebarCredits';
@@ -47,28 +48,17 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
       
       {/* User Profile Section - Positioned after header when NOT collapsed */}
       {!isCollapsed && (
-        <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200/30">
-          <div 
-            className="flex items-center gap-3 p-2 rounded-lg"
-            style={{
-              borderRadius: '11px',
-              border: '1px solid rgba(10, 12, 17, 0.10)',
-              background: '#FFF'
-            }}
-          >
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-              <span className="text-sm font-medium text-gray-600">
-                {profile?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
-              </span>
+        <div className="flex-shrink-0 px-6 py-4">
+          <div className="flex items-center justify-between cursor-pointer group">
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold text-gray-900 mb-1">
+                {profile?.full_name || user?.email?.split('@')[0] || 'Matthew Brown'}
+              </h2>
+              <p className="text-sm text-gray-500">
+                Personal Account
+              </p>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900 truncate">
-                {profile?.full_name || user?.email?.split('@')[0] || 'User'}
-              </div>
-              <div className="text-xs text-gray-500 truncate">
-                {profile?.email || user?.email || 'user@example.com'}
-              </div>
-            </div>
+            <ChevronDown className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0 ml-3" />
           </div>
         </div>
       )}
