@@ -32,7 +32,7 @@ export const UnifiedChatContainer: React.FC = () => {
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('details');
 
-  const { templates } = useFigmantPromptTemplates();
+  const { data: templates = [] } = useFigmantPromptTemplates();
   const { toast } = useToast();
 
   // File upload handlers
