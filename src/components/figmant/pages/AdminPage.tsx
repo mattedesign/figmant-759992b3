@@ -46,14 +46,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-[#E9EFF6]">
+    <div className="h-full overflow-y-auto">
       <div className="max-w-7xl mx-auto p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
           <p className="text-gray-600 mt-1">Manage prompt templates, users, and system settings</p>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-transparent">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="prompts">Prompt Templates</TabsTrigger>

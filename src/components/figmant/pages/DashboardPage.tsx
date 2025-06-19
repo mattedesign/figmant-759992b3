@@ -13,6 +13,7 @@ import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkelet
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
 import { useToast } from '@/hooks/use-toast';
 import { transformForCompetitorWidget, transformForRevenueWidget, transformForPerformanceWidget } from './dashboard/utils/widgetDataTransformers';
+
 export const DashboardPage: React.FC = () => {
   const {
     // Optimized data
@@ -72,9 +73,16 @@ export const DashboardPage: React.FC = () => {
   const competitorWidgetData = transformForCompetitorWidget(rawAnalysisData || []);
   const revenueWidgetData = transformForRevenueWidget(rawAnalysisData || []);
   const performanceWidgetData = transformForPerformanceWidget(rawAnalysisData || []);
-  return <div className="h-full overflow-y-auto">
+
+  return (
+    <div className="h-full overflow-y-auto">
       <div className="container mx-auto space-y-8 2xl:max-w-none 2xl:px-8 px-0 py-0">
-        <DashboardHeader dataStats={memoizedDataStats} lastUpdated={lastUpdated ? new Date(lastUpdated) : null} onRefresh={refreshAllData} isRefreshing={isRefreshing} />
+        <DashboardHeader 
+          dataStats={memoizedDataStats} 
+          lastUpdated={lastUpdated ? new Date(lastUpdated) : null} 
+          onRefresh={refreshAllData} 
+          isRefreshing={isRefreshing} 
+        />
 
         {/* Key Metrics Section */}
         <DashboardMetricsSection dataStats={memoizedDataStats} />
@@ -100,7 +108,12 @@ export const DashboardPage: React.FC = () => {
         
         {/* Main Content - Single Column Layout */}
         <div className="space-y-8">
-          <RecentAnalysisSection analysisData={memoizedAnalysisData} isLoading={loadingStates.analyses} error={errorStates.analyses} onRetry={refreshAnalyses} />
+          <RecentAnalysisSection 
+            analysisData={memoizedAnalysisData} 
+            isLoading={loadingStates.analyses} 
+            error={errorStates.analyses} 
+            onRetry={refreshAnalyses} 
+          />
           
           {/* Pattern Analysis (1/3) and Insights (2/3) Side by Side */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -109,10 +122,16 @@ export const DashboardPage: React.FC = () => {
             </div>
             
             <div className="lg:col-span-2">
-              <InsightsSection insightsData={memoizedInsightsData} isLoading={loadingStates.insights} error={errorStates.insights} onRetry={refreshInsights} />
+              <InsightsSection 
+                insightsData={memoizedInsightsData} 
+                isLoading={loadingStates.insights} 
+                error={errorStates.insights} 
+                onRetry={refreshInsights} 
+              />
             </div>
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };

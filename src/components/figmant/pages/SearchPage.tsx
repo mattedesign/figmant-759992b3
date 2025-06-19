@@ -23,10 +23,10 @@ export const SearchPage: React.FC = () => {
             placeholder="Search analyses, templates, or ask questions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-transparent"
           />
         </div>
-        <Button variant="outline">
+        <Button variant="outline" className="bg-transparent">
           <Filter className="h-4 w-4 mr-2" />
           Filters
         </Button>

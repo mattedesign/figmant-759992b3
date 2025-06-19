@@ -28,7 +28,7 @@ export const AnalysisDetailView: React.FC<AnalysisDetailViewProps> = ({
             ← Back to Analysis
           </button>
         </div>
-        <div className="bg-white rounded-lg border p-6">
+        <div className="bg-transparent rounded-lg border-0 p-6">
           <h2 className="text-xl font-semibold mb-4">Analysis Details</h2>
           <div className="space-y-4">
             <div>
