@@ -43,9 +43,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
   const getSendButtonContent = () => {
     if (isLoading) {
-      return <Loader2 className="h-5 w-5 animate-spin" />;
+      return <Loader2 className="h-4 w-4 animate-spin" />;
     }
-    return <ArrowUp className="h-5 w-5" />;
+    return <ArrowUp className="h-4 w-4" />;
   };
 
   const handleUploadFile = () => {
@@ -59,7 +59,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   return (
-    <div className="p-6 bg-background">
+    <div className="p-4 bg-background">
       <div
         {...restRootProps}
         className={`relative bg-white rounded-2xl border transition-colors ${
@@ -71,12 +71,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         <input {...inputProps} />
         
         {/* Main input area */}
-        <div className="p-6">
+        <div className="p-4">
           <Textarea
             value={message}
             onChange={(e) => onMessageChange(e.target.value)}
             placeholder={isDragActive ? "Drop files to attach" : "How can I help..."}
-            className="w-full resize-none border-0 shadow-none focus-visible:ring-0 p-0 bg-transparent text-base placeholder:text-gray-400 min-h-[80px]"
+            className="w-full resize-none border-0 shadow-none focus-visible:ring-0 p-0 bg-transparent text-base placeholder:text-gray-400 min-h-[60px]"
             disabled={isLoading}
             onKeyPress={(e) => {
               if (e.key === 'Enter' && !e.shiftKey && !isDisabled) {
@@ -87,19 +87,19 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           />
         </div>
 
-        {/* Controls row */}
-        <div className="flex items-center justify-between px-6 pb-6 gap-3">
-          <div className="flex items-center gap-3">
+        {/* Controls row - with improved spacing */}
+        <div className="flex items-center justify-between px-4 pb-4 gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             {/* Add attachment button */}
             <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-12 w-12 rounded-2xl border-gray-200 bg-white"
+                  className="h-10 w-10 rounded-xl border-gray-200 bg-white flex-shrink-0"
                   disabled={isLoading}
                 >
-                  <Plus className="h-5 w-5" />
+                  <Plus className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-48 p-2 bg-white border border-gray-200 shadow-lg z-50" align="start">
@@ -123,12 +123,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({
               </PopoverContent>
             </Popover>
 
-            {/* Prompt Template selector */}
+            {/* Prompt Template selector - responsive width */}
             <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-              <SelectTrigger className="w-60 h-12 rounded-2xl border-gray-200 bg-white">
-                <div className="flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-green-500" />
-                  <SelectValue placeholder="Prompt Template" />
+              <SelectTrigger className="h-10 rounded-xl border-gray-200 bg-white min-w-0 flex-1 max-w-[200px]">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Zap className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  <SelectValue placeholder="Prompt Template" className="truncate" />
                 </div>
               </SelectTrigger>
               <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
@@ -140,9 +140,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
               </SelectContent>
             </Select>
 
-            {/* Model selector */}
+            {/* Model selector - responsive width */}
             <Select value={selectedModel} onValueChange={setSelectedModel}>
-              <SelectTrigger className="w-48 h-12 rounded-2xl border-gray-200 bg-white">
+              <SelectTrigger className="h-10 rounded-xl border-gray-200 bg-white min-w-0 w-32 flex-shrink-0">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
@@ -153,15 +153,15 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             </Select>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {/* Microphone button */}
             <Button
               variant="outline"
               size="icon"
-              className="h-12 w-12 rounded-2xl border-gray-200 bg-white"
+              className="h-10 w-10 rounded-xl border-gray-200 bg-white"
               disabled={isLoading}
             >
-              <Mic className="h-5 w-5" />
+              <Mic className="h-4 w-4" />
             </Button>
 
             {/* Send button */}
@@ -169,7 +169,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
               onClick={onSendMessage}
               disabled={isDisabled}
               size="icon"
-              className="h-12 w-12 rounded-2xl bg-gray-200 hover:bg-gray-300 text-gray-600"
+              className="h-10 w-10 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-600"
             >
               {getSendButtonContent()}
             </Button>
@@ -178,7 +178,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
         {/* Loading stage indicator */}
         {isLoading && loadingStage && (
-          <div className="px-6 pb-2">
+          <div className="px-4 pb-2">
             <div className="text-center text-xs text-muted-foreground">
               {loadingStage}
             </div>

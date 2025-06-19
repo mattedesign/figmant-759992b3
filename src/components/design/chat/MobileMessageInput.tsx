@@ -43,13 +43,13 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
 
   const getSendButtonContent = () => {
     if (isLoading) {
-      return <Loader2 className="h-5 w-5 animate-spin" />;
+      return <Loader2 className="h-4 w-4 animate-spin" />;
     }
-    return <ArrowUp className="h-5 w-5" />;
+    return <ArrowUp className="h-4 w-4" />;
   };
 
   return (
-    <div className="bg-background border-t p-4 safe-bottom">
+    <div className="bg-background border-t p-3 safe-bottom">
       {/* Main input container */}
       <div
         {...restRootProps}
@@ -60,13 +60,13 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
         <input {...inputProps} />
         
         {/* Text input area */}
-        <div className="p-4">
+        <div className="p-3">
           <Textarea
             value={message}
             onChange={(e) => onMessageChange(e.target.value)}
             placeholder={isDragActive ? "Drop files..." : "How can I help..."}
             className={`w-full resize-none border-0 shadow-none focus-visible:ring-0 bg-transparent placeholder:text-gray-400 ${
-              isSmallMobile ? 'min-h-[60px] text-base' : 'min-h-[50px] text-sm'
+              isSmallMobile ? 'min-h-[50px] text-sm' : 'min-h-[45px] text-sm'
             }`}
             disabled={isLoading}
             onKeyPress={(e) => {
@@ -79,15 +79,15 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
           />
         </div>
 
-        {/* Mobile controls row - bottom */}
-        <div className="flex items-center gap-2 px-4 pb-4">
+        {/* Mobile controls row - optimized for space */}
+        <div className="flex items-center gap-1.5 px-3 pb-3">
           {/* Add attachment button */}
           <Drawer>
             <DrawerTrigger asChild>
               <Button 
                 variant="outline" 
                 size="icon" 
-                className={`rounded-2xl border-gray-200 bg-white ${isSmallMobile ? 'h-12 w-12' : 'h-10 w-10'}`} 
+                className="h-9 w-9 rounded-xl border-gray-200 bg-white flex-shrink-0" 
                 disabled={isLoading}
               >
                 <Plus className="h-4 w-4" />
@@ -123,12 +123,12 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
             </DrawerContent>
           </Drawer>
 
-          {/* Prompt Template selector */}
+          {/* Prompt Template selector - flexible width */}
           <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-            <SelectTrigger className={`flex-1 rounded-2xl border-gray-200 bg-white ${isSmallMobile ? 'h-12' : 'h-10'}`}>
-              <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-green-500" />
-                <SelectValue placeholder="Template" />
+            <SelectTrigger className="h-9 rounded-xl border-gray-200 bg-white flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Zap className="h-3 w-3 text-green-500 flex-shrink-0" />
+                <SelectValue placeholder="Template" className="truncate text-sm" />
               </div>
             </SelectTrigger>
             <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
@@ -140,10 +140,10 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
             </SelectContent>
           </Select>
 
-          {/* Model selector */}
+          {/* Model selector - compact */}
           <Select value={selectedModel} onValueChange={setSelectedModel}>
-            <SelectTrigger className={`w-32 rounded-2xl border-gray-200 bg-white ${isSmallMobile ? 'h-12' : 'h-10'}`}>
-              <SelectValue />
+            <SelectTrigger className="h-9 w-20 rounded-xl border-gray-200 bg-white flex-shrink-0">
+              <SelectValue className="text-xs" />
             </SelectTrigger>
             <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
               <SelectItem value="claude-sonnet">Sonnet</SelectItem>
@@ -156,7 +156,7 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
           <Button
             variant="outline"
             size="icon"
-            className={`rounded-2xl border-gray-200 bg-white ${isSmallMobile ? 'h-12 w-12' : 'h-10 w-10'}`}
+            className="h-9 w-9 rounded-xl border-gray-200 bg-white flex-shrink-0"
             disabled={isLoading}
           >
             <Mic className="h-4 w-4" />
@@ -167,7 +167,7 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
             onClick={onSendMessage}
             disabled={isDisabled}
             size="icon"
-            className={`rounded-2xl bg-gray-200 hover:bg-gray-300 text-gray-600 ${isSmallMobile ? 'h-12 w-12' : 'h-10 w-10'}`}
+            className="h-9 w-9 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-600 flex-shrink-0"
           >
             {getSendButtonContent()}
           </Button>
@@ -175,7 +175,7 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
 
         {/* Loading stage indicator */}
         {isLoading && loadingStage && (
-          <div className="px-4 pb-2">
+          <div className="px-3 pb-2">
             <div className="text-center text-xs text-muted-foreground">
               {loadingStage}
             </div>
