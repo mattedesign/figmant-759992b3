@@ -49,7 +49,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
         display: 'flex',
         height: '40px',
         padding: '4px 12px 4px 4px',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         alignItems: 'center',
         alignSelf: 'stretch',
         borderRadius: '12px',
@@ -85,6 +85,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
       </div>
       <span 
         className={cn(
+          "flex-1 text-left",
           activeSection === item.id ? "text-[#3D4A5C] font-semibold" : "text-[#455468] font-medium"
         )}
         style={{
@@ -96,7 +97,8 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           fontStyle: 'normal',
           fontWeight: 500,
           lineHeight: '16px',
-          letterSpacing: '-0.12px'
+          letterSpacing: '-0.12px',
+          textAlign: 'left'
         }}
       >
         {item.label}
