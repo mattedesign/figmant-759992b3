@@ -3,6 +3,7 @@ import { ScreenshotCaptureOptions, ScreenshotResult } from './types';
 import { DEFAULT_OPTIONS } from './config';
 import { ScreenshotOneProvider } from './screenshotOneProvider';
 import { MockScreenshotProvider } from './mockProvider';
+import { supabase } from '@/integrations/supabase/client';
 
 export class ScreenshotCaptureService {
   static async captureScreenshot(
@@ -87,18 +88,58 @@ export class ScreenshotCaptureService {
     // Try to get the API key from Supabase edge function first
     try {
       console.log('📸 SCREENSHOT SERVICE - Checking for API key from Supabase secrets...');
-      const response = await fetch('/api/screenshot-config');
+      
+      // Get the current session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token;
+      
+      console.log('📸 SCREENSHOT SERVICE - Auth token available:', !!authToken);
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Add Authorization header if we have a token
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+        console.log('📸 SCREENSHOT SERVICE - Added Authorization header');
+      }
+      
+      const response = await fetch('/api/screenshot-config', { headers });
+      
+      console.log('📸 SCREENSHOT SERVICE - API response status:', response.status);
+      console.log('📸 SCREENSHOT SERVICE - API response headers:', Object.fromEntries(response.headers.entries()));
       
       if (response.ok) {
-        const { apiKey } = await response.json();
-        if (apiKey) {
-          console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with Supabase secrets');
-          return new ScreenshotOneProvider(apiKey);
+        let responseData;
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          responseData = await response.json();
+          console.log('📸 SCREENSHOT SERVICE - Parsed JSON response:', responseData);
+        } else {
+          const textResponse = await response.text();
+          console.log('📸 SCREENSHOT SERVICE - Non-JSON response:', textResponse);
+          throw new Error('Invalid response format from screenshot-config endpoint');
         }
+        
+        if (responseData && responseData.apiKey) {
+          console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with Supabase secrets');
+          return new ScreenshotOneProvider(responseData.apiKey);
+        } else {
+          console.log('⚠️ SCREENSHOT SERVICE - No API key in response data:', responseData);
+        }
+      } else {
+        const errorText = await response.text();
+        console.log('⚠️ SCREENSHOT SERVICE - API error response:', errorText);
+        console.log('⚠️ SCREENSHOT SERVICE - No API key from Supabase secrets, response status:', response.status);
       }
-      console.log('⚠️ SCREENSHOT SERVICE - No API key from Supabase secrets, response status:', response.status);
     } catch (error) {
       console.warn('⚠️ SCREENSHOT SERVICE - Failed to fetch API key from Supabase:', error);
+      console.warn('⚠️ SCREENSHOT SERVICE - Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
     }
 
     // Fallback to environment variable (for development)
@@ -113,33 +154,87 @@ export class ScreenshotCaptureService {
   }
 
   // Method to test the service connectivity
-  static async testService(): Promise<{ isWorking: boolean; provider: string; error?: string }> {
+  static async testService(): Promise<{ 
+    isWorking: boolean; 
+    provider: string; 
+    error?: string;
+    details?: {
+      authTokenAvailable: boolean;
+      supabaseResponseStatus?: number;
+      supabaseError?: string;
+      envKeyAvailable: boolean;
+    }
+  }> {
     try {
       console.log('🧪 SCREENSHOT SERVICE - Testing service...');
+      
+      const testDetails = {
+        authTokenAvailable: false,
+        supabaseResponseStatus: undefined as number | undefined,
+        supabaseError: undefined as string | undefined,
+        envKeyAvailable: !!import.meta.env.VITE_SCREENSHOTONE_API_KEY
+      };
+      
+      // Check auth token availability
+      const { data: { session } } = await supabase.auth.getSession();
+      testDetails.authTokenAvailable = !!session?.access_token;
+      
+      // Test Supabase endpoint
+      try {
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json'
+        };
+        
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+        
+        const response = await fetch('/api/screenshot-config', { headers });
+        testDetails.supabaseResponseStatus = response.status;
+        
+        if (!response.ok) {
+          testDetails.supabaseError = await response.text();
+        }
+      } catch (supabaseError) {
+        testDetails.supabaseError = supabaseError instanceof Error ? supabaseError.message : 'Unknown Supabase error';
+      }
+      
       const provider = await this.getProvider();
       
       if (provider instanceof MockScreenshotProvider) {
-        return { isWorking: true, provider: 'mock' };
+        return { 
+          isWorking: true, 
+          provider: 'mock',
+          details: testDetails
+        };
       }
       
       // Test with a simple URL
+      console.log('🧪 SCREENSHOT SERVICE - Testing with google.com...');
       const testResult = await provider.captureScreenshot('https://google.com', {
         width: 800,
         height: 600,
         mobile: false
       });
       
+      console.log('🧪 SCREENSHOT SERVICE - Test result:', testResult);
+      
       return { 
         isWorking: testResult.success, 
         provider: 'screenshotone',
-        error: testResult.success ? undefined : testResult.error
+        error: testResult.success ? undefined : testResult.error,
+        details: testDetails
       };
     } catch (error) {
       console.error('🧪 SCREENSHOT SERVICE - Test failed:', error);
       return { 
         isWorking: false, 
         provider: 'unknown',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: {
+          authTokenAvailable: false,
+          envKeyAvailable: !!import.meta.env.VITE_SCREENSHOTONE_API_KEY
+        }
       };
     }
   }
