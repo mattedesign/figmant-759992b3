@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
@@ -24,6 +25,7 @@ export const useUnifiedChatAnalysis = () => {
 
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlInput, setUrlInput] = useState('');
+  const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
 
   const getCurrentTemplate = useCallback(() => {
     return templates.find(t => t.id === selectedTemplateId) || null;
@@ -63,6 +65,17 @@ export const useUnifiedChatAnalysis = () => {
       setAttachments(prev => prev.filter(att => att.id !== id));
     }
   }, [setAttachments]);
+
+  const handleTemplateSelect = useCallback((templateId: string) => {
+    if (setSelectedTemplateId) {
+      setSelectedTemplateId(templateId);
+    }
+  }, [setSelectedTemplateId]);
+
+  const handleViewTemplate = useCallback((template: any) => {
+    console.log('🎯 UNIFIED CHAT - View template:', template);
+    // This would open a modal or details view
+  }, []);
 
   const handleSendMessage = useCallback(async () => {
     if (!message.trim() && attachments.length === 0) {
@@ -114,6 +127,9 @@ export const useUnifiedChatAnalysis = () => {
         setMessages(prev => [...prev, assistantMessage]);
       }
 
+      // Store the analysis result
+      setLastAnalysisResult(result);
+
       // Clear attachments after successful analysis
       if (setAttachments) {
         setAttachments([]);
@@ -161,6 +177,7 @@ export const useUnifiedChatAnalysis = () => {
     selectedTemplateId,
     setSelectedTemplateId,
     getCurrentTemplate,
+    figmantTemplates: templates,
     
     // Handlers
     handleFileUpload,
@@ -168,9 +185,12 @@ export const useUnifiedChatAnalysis = () => {
     handleSendMessage,
     handleKeyPress,
     removeAttachment,
+    handleTemplateSelect,
+    handleViewTemplate,
     
     // Status
     isAnalyzing,
-    canSend
+    canSend,
+    lastAnalysisResult
   };
 };
