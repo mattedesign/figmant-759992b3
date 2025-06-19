@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export const syncAllAuthUsers = async () => {
@@ -12,18 +13,18 @@ export const syncAllAuthUsers = async () => {
       throw authError;
     }
 
-    // Get all existing profiles with explicit typing
+    // Get all existing profiles
     const { data: existingProfiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id') as { data: Array<{ id: string }> | null, error: any };
+      .select('id');
     
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError);
       throw profilesError;
     }
 
-    // Handle the profiles data with proper type checking and explicit typing
-    const profilesArray = existingProfiles || [];
+    // Handle the profiles data with proper type checking
+    const profilesArray: Array<{ id: string }> = existingProfiles || [];
     const existingProfileIds = new Set(
       profilesArray.map((profile) => profile.id)
     );
