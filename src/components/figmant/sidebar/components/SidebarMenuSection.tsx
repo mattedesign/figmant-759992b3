@@ -48,7 +48,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
       style={{
         display: 'flex',
         height: '40px',
-        padding: '4px 12px 4px 4px',
+        padding: '4px 8px 4px 4px',
         justifyContent: 'flex-start',
         alignItems: 'center',
         alignSelf: 'stretch',
