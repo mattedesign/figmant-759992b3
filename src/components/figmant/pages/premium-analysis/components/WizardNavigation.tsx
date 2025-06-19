@@ -30,6 +30,15 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
     return 'Continue';
   };
 
+  const handleNextClick = () => {
+    console.log('🎯 Next button clicked - currentStep:', currentStep, 'canProceed:', canProceed);
+    if (canProceed) {
+      onNextStep();
+    } else {
+      console.log('🎯 Cannot proceed - button should be disabled');
+    }
+  };
+
   return (
     <div className="flex-shrink-0 p-6 bg-white border-t border-gray-200">
       <div className="flex justify-between">
@@ -44,9 +53,9 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
         </Button>
 
         <Button 
-          onClick={onNextStep} 
+          onClick={handleNextClick} 
           disabled={!canProceed} 
-          className="bg-gray-900 hover:bg-gray-800 text-white"
+          className="bg-gray-900 hover:bg-gray-800 text-white disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {getButtonText()}
         </Button>

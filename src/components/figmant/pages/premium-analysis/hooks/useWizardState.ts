@@ -29,8 +29,10 @@ export const useWizardState = () => {
     console.log('🎯 handleNextStep called - currentStep:', currentStep, 'totalSteps:', totalSteps);
     
     if (currentStep < totalSteps) {
+      console.log('🎯 Moving to next step:', currentStep + 1);
       setCurrentStep(prev => prev + 1);
     } else {
+      console.log('🎯 Starting analysis - final step reached');
       // Save the completed wizard analysis
       try {
         await saveWizardAnalysis({
@@ -68,22 +70,33 @@ export const useWizardState = () => {
       desiredOutcome: stepData.desiredOutcome?.length
     });
 
+    let canProceed = false;
+    
     switch (currentStep) {
       case 1:
-        return stepData.selectedType && stepData.selectedType.length > 0;
+        canProceed = stepData.selectedType && stepData.selectedType.length > 0;
+        break;
       case 2:
-        return stepData.projectName && stepData.projectName.trim().length > 0;
+        canProceed = stepData.projectName && stepData.projectName.trim().length > 0;
+        break;
       case 3:
-        return stepData.analysisGoals && stepData.analysisGoals.trim().length > 0;
+        canProceed = stepData.analysisGoals && stepData.analysisGoals.trim().length > 0;
+        break;
       case 4:
-        return stepData.desiredOutcome && stepData.desiredOutcome.trim().length > 0;
+        canProceed = stepData.desiredOutcome && stepData.desiredOutcome.trim().length > 0;
+        break;
       case 5:
-        return true; // File upload step is optional, always allow proceed
+        canProceed = true; // File upload step is optional, always allow proceed
+        break;
       case 6:
-        return true; // Custom prompt step is optional, always allow proceed
+        canProceed = true; // Custom prompt step is optional, always allow proceed
+        break;
       default:
-        return true;
+        canProceed = true;
     }
+    
+    console.log('🎯 canProceedToNextStep result for step', currentStep, ':', canProceed);
+    return canProceed;
   }, [currentStep, stepData]);
 
   return {
