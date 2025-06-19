@@ -31,7 +31,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
       </button>
       
       {showModeMenu && (
-        <div className="absolute bottom-full right-0 mb-2 flex flex-col gap-1 p-2 rounded-xl border border-[#E2E2E2] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13)] backdrop-blur-md z-50">
+        <div className="absolute bottom-full right-0 mb-2 flex flex-col gap-1 p-2 rounded-xl border border-[#E2E2E2] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13)] backdrop-blur-md z-50 w-64">
           <button 
             onClick={() => { setChatMode('chat'); setShowModeMenu(false); }}
             className="px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
