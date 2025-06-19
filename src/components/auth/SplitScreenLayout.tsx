@@ -3,12 +3,14 @@ import React from 'react';
 
 interface SplitScreenLayoutProps {
   children: React.ReactNode;
-  backgroundImage: string;
+  backgroundVideo?: string;
+  backgroundImage?: string;
   imageAlt: string;
 }
 
 export const SplitScreenLayout: React.FC<SplitScreenLayoutProps> = ({
   children,
+  backgroundVideo,
   backgroundImage,
   imageAlt
 }) => {
@@ -21,13 +23,24 @@ export const SplitScreenLayout: React.FC<SplitScreenLayoutProps> = ({
         </div>
       </div>
       
-      {/* Right side - Background Image */}
+      {/* Right side - Background Video or Image */}
       <div className="hidden lg:block relative flex-1">
-        <img
-          className="absolute inset-0 h-full w-full object-cover"
-          src={backgroundImage}
-          alt={imageAlt}
-        />
+        {backgroundVideo ? (
+          <video
+            className="absolute inset-0 h-full w-full object-cover"
+            src={backgroundVideo}
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        ) : (
+          <img
+            className="absolute inset-0 h-full w-full object-cover"
+            src={backgroundImage}
+            alt={imageAlt}
+          />
+        )}
         <div className="absolute inset-0 bg-black bg-opacity-20" />
       </div>
     </div>

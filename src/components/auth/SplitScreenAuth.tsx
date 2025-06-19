@@ -20,18 +20,12 @@ export const SplitScreenAuth: React.FC = () => {
     setView('signin');
   };
 
-  const getBackgroundImage = () => {
-    if (view === 'signup') {
-      return 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3';
-    }
-    return 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3';
+  const getBackgroundVideo = () => {
+    return 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/video/2025-06-17/clrcpd7ij_Brand.mp4';
   };
 
   const getImageAlt = () => {
-    if (view === 'signup') {
-      return 'Desert landscape with geometric architecture';
-    }
-    return 'Ethereal figure with horse in desert landscape';
+    return 'Brand video background';
   };
 
   const renderForm = () => {
@@ -75,7 +69,7 @@ export const SplitScreenAuth: React.FC = () => {
 
   return (
     <SplitScreenLayout
-      backgroundImage={getBackgroundImage()}
+      backgroundVideo={getBackgroundVideo()}
       imageAlt={getImageAlt()}
     >
       {renderForm()}
