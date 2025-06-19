@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Plus, Camera, Globe, Video } from 'lucide-react';
 
@@ -19,7 +18,7 @@ export const AttachmentMenu: React.FC<AttachmentMenuProps> = ({
     <div className="relative">
       <button 
         onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
-        className="flex w-10 h-10 justify-center items-center rounded-xl border border-[#E2E2E2] hover:bg-gray-50 transition-colors"
+        className="flex w-11 h-11 justify-center items-center rounded-xl border border-[#E2E2E2] hover:bg-gray-50 transition-colors"
         disabled={isAnalyzing}
       >
         <Plus className="w-4 h-4" />
