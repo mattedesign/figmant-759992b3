@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
@@ -23,7 +22,7 @@ export const UserManagementContainer = () => {
   const { data: users, isLoading, refetch, error } = useQuery({
     queryKey: ['all-users'],
     queryFn: async () => {
-      console.log('Fetching all users...');
+      console.log('Fetching all registered users...');
       
       // First, let's check what users exist in auth.users
       const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
@@ -46,7 +45,7 @@ export const UserManagementContainer = () => {
         throw error;
       }
       
-      console.log('Profiles fetched:', data?.length);
+      console.log('All registered users fetched:', data?.length);
       console.log('Profile data sample:', data?.slice(0, 2));
       
       // Transform the data to match the UserManagementProfile type
@@ -64,7 +63,7 @@ export const UserManagementContainer = () => {
   // Add effect to log when users data changes
   useEffect(() => {
     if (users) {
-      console.log(`User management: ${users.length} users loaded`);
+      console.log(`User management: ${users.length} total registered users loaded`);
       console.log('Users by role:', {
         owners: users.filter(u => u.role === 'owner').length,
         subscribers: users.filter(u => u.role === 'subscriber').length

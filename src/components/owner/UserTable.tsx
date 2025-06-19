@@ -122,7 +122,7 @@ export const UserTable = ({
         {userList?.length === 0 && (
           <TableRow>
             <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-              No {userType === 'owner' ? 'owners' : 'subscribers'} found
+              No {userType === 'owner' ? 'owners' : 'users'} found
             </TableCell>
           </TableRow>
         )}

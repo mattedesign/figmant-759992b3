@@ -31,7 +31,7 @@ export const UserManagementContent: React.FC<UserManagementContentProps> = ({
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="subscribers">
-            Subscribers ({subscriberUsers.length})
+            All Users ({subscriberUsers.length})
           </TabsTrigger>
           <TabsTrigger value="owners">
             Owners ({ownerUsers.length})
@@ -39,6 +39,11 @@ export const UserManagementContent: React.FC<UserManagementContentProps> = ({
         </TabsList>
 
         <TabsContent value="subscribers" className="mt-6">
+          <div className="mb-4">
+            <p className="text-sm text-muted-foreground">
+              All registered users regardless of subscription status
+            </p>
+          </div>
           <UserTable
             userList={subscriberUsers}
             userType="subscriber"
@@ -50,6 +55,11 @@ export const UserManagementContent: React.FC<UserManagementContentProps> = ({
         </TabsContent>
 
         <TabsContent value="owners" className="mt-6">
+          <div className="mb-4">
+            <p className="text-sm text-muted-foreground">
+              Users with owner privileges and admin access
+            </p>
+          </div>
           <UserTable
             userList={ownerUsers}
             userType="owner"
