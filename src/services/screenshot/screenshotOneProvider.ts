@@ -48,16 +48,30 @@ export class ScreenshotOneProvider implements ScreenshotProvider {
     thumbnailParams.set('viewport_height', THUMBNAIL_VIEWPORT.height.toString());
     const thumbnailUrl = `${SCREENSHOTONE_API_URL}?${thumbnailParams.toString()}`;
 
-    console.log('📸 ScreenshotOne API request for:', url);
+    console.log('📸 ScreenshotOne API request URL:', screenshotUrl);
+    console.log('📸 ScreenshotOne API thumbnail URL:', thumbnailUrl);
     
-    // Test the API by making a HEAD request
-    await this.validateApiEndpoint(screenshotUrl);
-
-    return {
-      screenshotUrl,
-      thumbnailUrl,
-      size: Math.floor(Math.random() * 500000) + 100000 // Estimated size
-    };
+    // Actually test the API endpoint with a HEAD request to verify it works
+    try {
+      const response = await fetch(screenshotUrl, { 
+        method: 'HEAD'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`ScreenshotOne API error: ${response.status} ${response.statusText}`);
+      }
+      
+      console.log('✅ ScreenshotOne API response successful');
+      
+      return {
+        screenshotUrl,
+        thumbnailUrl,
+        size: parseInt(response.headers.get('content-length') || '0') || 100000
+      };
+    } catch (error) {
+      console.error('❌ ScreenshotOne API request failed:', error);
+      throw new Error(`Failed to capture screenshot: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   private buildScreenshotParams(url: string, options: ScreenshotCaptureOptions): URLSearchParams {
@@ -84,23 +98,7 @@ export class ScreenshotOneProvider implements ScreenshotProvider {
       params.set('user_agent', MOBILE_VIEWPORT.userAgent);
     }
 
+    console.log('📸 ScreenshotOne API params:', Object.fromEntries(params.entries()));
     return params;
-  }
-
-  private async validateApiEndpoint(screenshotUrl: string): Promise<void> {
-    try {
-      const response = await fetch(screenshotUrl, { 
-        method: 'HEAD'
-      });
-      
-      if (!response.ok) {
-        throw new Error(`ScreenshotOne API error: ${response.status} ${response.statusText}`);
-      }
-      
-      console.log('✅ ScreenshotOne API validation successful');
-    } catch (error) {
-      console.error('❌ ScreenshotOne API validation failed:', error);
-      throw new Error(`Failed to connect to ScreenshotOne API: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
   }
 }
