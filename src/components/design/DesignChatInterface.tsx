@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,11 @@ import {
   Loader2, 
   AlertCircle,
   Globe,
-  Plus
+  Plus,
+  Camera,
+  Video,
+  Mic,
+  ChevronDown
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,6 +75,7 @@ export interface ChatMessage {
   timestamp: Date;
   batchId?: string;
   uploadIds?: string[];
+  mode?: 'chat' | 'analyze';
 }
 
 interface DesignChatInterfaceProps {
@@ -78,14 +84,39 @@ interface DesignChatInterfaceProps {
   isProcessing?: boolean;
   placeholder?: string;
   className?: string;
+  // New props for the modern interface
+  showAttachmentMenu?: boolean;
+  setShowAttachmentMenu?: (show: boolean) => void;
+  showTemplateMenu?: boolean;
+  setShowTemplateMenu?: (show: boolean) => void;
+  showModeMenu?: boolean;
+  setShowModeMenu?: (show: boolean) => void;
+  chatMode?: 'chat' | 'analyze';
+  setChatMode?: (mode: 'chat' | 'analyze') => void;
+  figmantTemplates?: any[];
+  getCurrentTemplate?: () => any;
+  handleTemplateSelect?: (templateId: string) => void;
+  onToggleUrlInput?: () => void;
 }
 
 export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
   onSendMessage,
   messages,
   isProcessing = false,
-  placeholder = "Describe your design or ask for analysis...",
-  className = ""
+  placeholder = "How can I help...",
+  className = "",
+  showAttachmentMenu = false,
+  setShowAttachmentMenu = () => {},
+  showTemplateMenu = false,
+  setShowTemplateMenu = () => {},
+  showModeMenu = false,
+  setShowModeMenu = () => {},
+  chatMode = 'chat',
+  setChatMode = () => {},
+  figmantTemplates = [],
+  getCurrentTemplate = () => null,
+  handleTemplateSelect = () => {},
+  onToggleUrlInput = () => {}
 }) => {
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
@@ -245,7 +276,25 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
     }
   });
 
-  const canSend = (message.trim().length > 0 || attachments.length > 0) && !isProcessing;
+  const canSendMessage = (message.trim().length > 0 || attachments.length > 0) && !isProcessing;
+
+  const handleAttachmentAction = (type: 'screenshot' | 'link' | 'camera') => {
+    setShowAttachmentMenu(false);
+    switch (type) {
+      case 'screenshot':
+        // Trigger existing screenshot functionality
+        document.getElementById('file-upload')?.click();
+        break;
+      case 'link':
+        onToggleUrlInput();
+        setShowUrlInput(true);
+        break;
+      case 'camera':
+        // Trigger camera functionality
+        document.getElementById('file-upload')?.click();
+        break;
+    }
+  };
 
   return (
     <div className={`flex flex-col h-full ${className}`} {...getRootProps()}>
@@ -398,64 +447,175 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
         </div>
       )}
 
-      {/* Input Area */}
-      <div className="border-t bg-white p-4">
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={placeholder}
-              className="resize-none min-h-[60px]"
-              disabled={isProcessing}
-            />
+      {/* Modern Chat Interface Container */}
+      <div className="flex flex-col items-start gap-6 p-3 rounded-3xl border border-[#ECECEC] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13),0px_2px_0px_0px_#FFF_inset,0px_8px_16px_-12px_rgba(0,0,0,0.08)] backdrop-blur-md lg:gap-6 md:gap-4 sm:gap-3 sm:p-2">
+        
+        {/* TEXT INPUT AREA */}
+        <div className="flex p-2 items-start gap-2 self-stretch">
+          <textarea
+            className="flex-1 overflow-hidden text-[#121212] text-ellipsis font-['Instrument_Sans'] text-[15px] font-normal leading-6 tracking-[-0.3px] border-none outline-none bg-transparent resize-none"
+            style={{
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: 8,
+            }}
+            placeholder={placeholder}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            disabled={isProcessing}
+          />
+        </div>
+
+        {/* ACTIONS BAR */}
+        <div className="flex justify-between items-center self-stretch sm:flex-col sm:gap-3 sm:items-stretch">
+          
+          {/* LEFT SIDE CONTROLS */}
+          <div className="flex items-center gap-3 sm:justify-between sm:w-full">
+            
+            {/* EXPANDABLE PLUS BUTTON */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
+                className="flex h-10 px-[10px] py-1 items-center gap-3 rounded-xl border border-[#E2E2E2] hover:bg-gray-50 transition-colors sm:h-12 sm:px-3"
+                disabled={isProcessing}
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+              
+              {showAttachmentMenu && (
+                <div className="absolute bottom-full left-0 mb-2 flex flex-col gap-1 p-2 rounded-xl border border-[#E2E2E2] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13)] backdrop-blur-md z-20">
+                  <button 
+                    onClick={() => handleAttachmentAction('screenshot')}
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">Add Screenshots</span>
+                  </button>
+                  <button 
+                    onClick={() => handleAttachmentAction('link')}
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <Globe className="w-4 h-4" />
+                    <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">Add A Link</span>
+                  </button>
+                  <button 
+                    onClick={() => handleAttachmentAction('camera')}
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <Video className="w-4 h-4" />
+                    <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">Use Camera</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* TEMPLATE DROPDOWN */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowTemplateMenu(!showTemplateMenu)}
+                className="flex h-10 px-[10px] py-1 items-center gap-3 rounded-xl border border-[#E2E2E2] hover:bg-gray-50 transition-colors sm:h-12 sm:px-3"
+                disabled={isProcessing}
+              >
+                <div className="flex p-[2px] items-center gap-2 w-4 h-4">
+                  <span className="text-lg">⚡</span>
+                </div>
+                <span className="text-[#121212] font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px]">
+                  {getCurrentTemplate()?.displayName || 'Template Name'}
+                </span>
+                <ChevronDown className="w-3 h-3" />
+              </button>
+              
+              {showTemplateMenu && (
+                <div className="absolute top-full left-0 mt-2 min-w-[200px] flex flex-col gap-1 p-2 rounded-xl border border-[#E2E2E2] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13)] backdrop-blur-md z-20">
+                  {figmantTemplates.map((template) => (
+                    <button 
+                      key={template.id}
+                      onClick={() => {
+                        handleTemplateSelect(template.id);
+                        setShowTemplateMenu(false);
+                      }}
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                    >
+                      <span className="text-lg">⚡</span>
+                      <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">
+                        {template.displayName || template.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* MODE SELECTOR */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowModeMenu(!showModeMenu)}
+                className="flex px-3 py-[10px] items-center gap-3 rounded-xl hover:bg-gray-50 transition-colors"
+                disabled={isProcessing}
+              >
+                <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">
+                  {chatMode === 'chat' ? 'Chat' : 'Analyse'}
+                </span>
+                <ChevronDown className="w-3 h-3" />
+              </button>
+              
+              {showModeMenu && (
+                <div className="absolute top-full right-0 mt-2 flex flex-col gap-1 p-2 rounded-xl border border-[#E2E2E2] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13)] backdrop-blur-md z-20">
+                  <button 
+                    onClick={() => { setChatMode('chat'); setShowModeMenu(false); }}
+                    className="px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <span className="font-['Instrument_Sans'] text-[14px] font-medium">Chat</span>
+                    <p className="font-['Instrument_Sans'] text-[12px] text-gray-600">Ask questions or interact without getting an analysis</p>
+                  </button>
+                  <button 
+                    onClick={() => { setChatMode('analyze'); setShowModeMenu(false); }}
+                    className="px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <span className="font-['Instrument_Sans'] text-[14px] font-medium">Analyse</span>
+                    <p className="font-['Instrument_Sans'] text-[12px] text-gray-600">Get analysis on your files or content provided</p>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
           
-          <div className="flex flex-col gap-2">
-            <input
-              type="file"
-              multiple
-              onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
-              className="hidden"
-              id="file-upload"
-              accept="image/*,.pdf,.txt,.md"
-            />
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => document.getElementById('file-upload')?.click()}
+          {/* RIGHT SIDE CONTROLS */}
+          <div className="flex items-center gap-3 sm:justify-center">
+            {/* MICROPHONE BUTTON */}
+            <button 
+              className="flex h-10 px-[10px] py-1 items-center gap-3 rounded-xl hover:bg-gray-50 transition-colors sm:h-12 sm:px-3"
               disabled={isProcessing}
-              className="h-9 w-9 p-0"
             >
-              <Paperclip className="w-4 h-4" />
-            </Button>
+              <Mic className="w-5 h-5 text-[#7B7B7B]" />
+            </button>
             
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowUrlInput(true)}
-              disabled={isProcessing}
-              className="h-9 w-9 p-0"
-            >
-              <Globe className="w-4 h-4" />
-            </Button>
-            
-            <Button
+            {/* SUBMIT BUTTON */}
+            <button 
               onClick={handleSendMessage}
-              disabled={!canSend}
-              className="h-9 w-9 p-0"
+              disabled={!canSendMessage}
+              className="flex w-10 h-10 px-8 py-3 justify-center items-center gap-2 rounded-xl bg-gradient-to-b from-[#E5E5E5] to-[#E2E2E2] shadow-[0px_3px_4px_-1px_rgba(0,0,0,0.15),0px_1px_0px_0px_rgba(255,255,255,0.33)_inset,0px_0px_0px_1px_#D4D4D4] hover:from-[#E0E0E0] hover:to-[#DDDDDD] transition-all disabled:opacity-50 sm:w-12 sm:h-12"
             >
               {isProcessing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-5 h-5 text-[#121212] flex-shrink-0 animate-spin" />
               ) : (
-                <Send className="w-4 h-4" />
+                <Send className="w-5 h-5 text-[#121212] flex-shrink-0" />
               )}
-            </Button>
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Hidden file input */}
+      <input
+        type="file"
+        multiple
+        onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+        className="hidden"
+        id="file-upload"
+        accept="image/*,.pdf,.txt,.md"
+      />
     </div>
   );
 };

@@ -15,6 +15,7 @@ interface UseMessageHandlerProps {
   selectedPromptCategory?: string;
   promptTemplates?: any[];
   onAnalysisComplete?: (analysisResult: any) => void;
+  chatMode?: 'chat' | 'analyze';
 }
 
 export const useMessageHandler = ({
@@ -27,7 +28,8 @@ export const useMessageHandler = ({
   selectedPromptTemplate,
   selectedPromptCategory,
   promptTemplates,
-  onAnalysisComplete
+  onAnalysisComplete,
+  chatMode = 'chat'
 }: UseMessageHandlerProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
@@ -47,16 +49,21 @@ export const useMessageHandler = ({
         role: 'user',
         content: message,
         attachments: [...attachments],
-        timestamp: new Date()
+        timestamp: new Date(),
+        mode: chatMode
       };
 
       setMessages([...messages, userMessage]);
 
-      // Call Figmant Chat Analysis
-      const result = await figmantChat.mutateAsync({
+      // Modify analysis call based on mode
+      const analysisParams = {
         message,
-        attachments
-      });
+        attachments,
+        mode: chatMode,
+        template: chatMode === 'analyze' ? selectedPromptTemplate : null
+      };
+
+      const result = await figmantChat.mutateAsync(analysisParams);
 
       // Add assistant response
       const assistantMessage: ChatMessage = {
@@ -82,8 +89,10 @@ export const useMessageHandler = ({
       setAttachments([]);
 
       toast({
-        title: "Analysis Complete",
-        description: "Your design analysis has been generated successfully.",
+        title: chatMode === 'analyze' ? "Analysis Complete" : "Response Generated",
+        description: chatMode === 'analyze' 
+          ? "Your design analysis has been generated successfully."
+          : "Chat response has been generated successfully.",
       });
 
     } catch (error: any) {
@@ -98,8 +107,8 @@ export const useMessageHandler = ({
         });
       } else {
         toast({
-          title: "Analysis Failed",
-          description: error.message || "There was an error generating your analysis. Please try again.",
+          title: chatMode === 'analyze' ? "Analysis Failed" : "Chat Failed",
+          description: error.message || "There was an error generating your response. Please try again.",
           variant: "destructive"
         });
       }
