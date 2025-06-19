@@ -12,12 +12,14 @@ interface AnalysisResultsProps {
   };
   uploadIds?: string[];
   extractedSuggestions?: ExtractedSuggestion[];
+  showEnhancedSummary?: boolean;
 }
 
 export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
   lastAnalysisResult,
   uploadIds,
-  extractedSuggestions = []
+  extractedSuggestions = [],
+  showEnhancedSummary = true
 }) => {
   if (!lastAnalysisResult) {
     return null;
