@@ -35,6 +35,21 @@ export const FigmantLayout: React.FC = () => {
   // Show Analysis Assets panel only on chat page
   const showAnalysisAssetsPanel = activeSection === 'chat';
 
+  // Debug the chat state connection
+  console.log('🔧 FIGMANT LAYOUT - Debug chat state:', {
+    activeSection,
+    showAnalysisAssetsPanel,
+    chatStateExists: !!chatState,
+    messages: chatState.messages?.length || 0,
+    attachments: chatState.attachments?.length || 0,
+    attachmentDetails: chatState.attachments?.map(att => ({ 
+      id: att.id, 
+      type: att.type, 
+      name: att.name, 
+      status: att.status 
+    })) || []
+  });
+
   if (isMobile) {
     return (
       <div className="min-h-screen flex flex-col w-full overflow-hidden" style={{ background: 'transparent' }}>
@@ -91,8 +106,15 @@ export const FigmantLayout: React.FC = () => {
             messages={chatState.messages || []}
             attachments={chatState.attachments || []}
             onRemoveAttachment={chatState.setAttachments ? (id) => {
-              chatState.setAttachments(prev => prev.filter(att => att.id !== id));
-            } : () => {}}
+              console.log('🗑️ FIGMANT LAYOUT - Removing attachment:', id);
+              chatState.setAttachments(prev => {
+                const updated = prev.filter(att => att.id !== id);
+                console.log('🗑️ FIGMANT LAYOUT - Updated attachments after removal:', updated.length);
+                return updated;
+              });
+            } : () => {
+              console.warn('🗑️ FIGMANT LAYOUT - setAttachments not available');
+            }}
             onViewAttachment={handleViewAttachment}
             lastAnalysisResult={null}
             isCollapsed={false}

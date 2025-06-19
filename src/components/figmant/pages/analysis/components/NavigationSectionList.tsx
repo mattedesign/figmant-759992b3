@@ -34,7 +34,9 @@ export const NavigationSectionList: React.FC<NavigationSectionListProps> = ({
     urlAttachmentsCount: urlAttachments.length,
     analysisMessagesCount: analysisMessages.length,
     hasLastAnalysisResult: !!lastAnalysisResult,
-    activeTab
+    activeTab,
+    fileAttachmentDetails: fileAttachments.map(att => ({ id: att.id, name: att.name, status: att.status })),
+    urlAttachmentDetails: urlAttachments.map(att => ({ id: att.id, name: att.name, url: att.url, status: att.status }))
   });
 
   return (

@@ -35,6 +35,23 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
   // Get analysis messages from conversation
   const analysisMessages = messages.filter(msg => msg.role === 'assistant');
 
+  console.log('🎯 ANALYSIS NAVIGATION SIDEBAR - Rendering with:', {
+    totalAttachments: attachments.length,
+    fileAttachmentsCount: fileAttachments.length,
+    urlAttachmentsCount: urlAttachments.length,
+    analysisMessagesCount: analysisMessages.length,
+    hasLastAnalysisResult: !!lastAnalysisResult,
+    activeTab,
+    isCollapsed,
+    attachmentDetails: attachments.map(att => ({ 
+      id: att.id, 
+      type: att.type, 
+      name: att.name, 
+      status: att.status,
+      url: att.url 
+    }))
+  });
+
   return (
     <div 
       className={`${isCollapsed ? 'w-16' : 'w-80'} h-full transition-all duration-300 flex flex-col overflow-hidden`}
