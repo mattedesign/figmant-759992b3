@@ -113,18 +113,16 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
 
         {/* Fixed Message Input */}
         <div className="flex-shrink-0 border-t border-gray-200 bg-transparent">
-          <div className="p-6">
-            <MessageInputSection
-              message={message}
-              onMessageChange={setMessage}
-              onSendMessage={onSendMessage}
-              onKeyPress={onKeyPress}
-              onFileUpload={onFileUpload}
-              onToggleUrlInput={onToggleUrlInput}
-              isAnalyzing={isAnalyzing}
-              canSend={canSend}
-            />
-          </div>
+          <MessageInputSection
+            message={message}
+            onMessageChange={setMessage}
+            onSendMessage={onSendMessage}
+            onKeyPress={onKeyPress}
+            onFileUpload={onFileUpload}
+            onToggleUrlInput={onToggleUrlInput}
+            isAnalyzing={isAnalyzing}
+            canSend={canSend}
+          />
         </div>
       </div>
     </CreditStatusChecker>
