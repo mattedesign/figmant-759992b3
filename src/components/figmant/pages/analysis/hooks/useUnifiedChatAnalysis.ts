@@ -5,6 +5,7 @@ import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
 import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
 
 export const useUnifiedChatAnalysis = () => {
   // Core chat state
@@ -97,8 +98,8 @@ export const useUnifiedChatAnalysis = () => {
     }
   }, [toast]);
 
-  // URL handler
-  const handleAddUrl = useCallback(() => {
+  // Enhanced URL handler with screenshot capture
+  const handleAddUrl = useCallback(async () => {
     if (!urlInput.trim()) {
       toast({
         variant: "destructive",
@@ -117,12 +118,14 @@ export const useUnifiedChatAnalysis = () => {
       const urlObj = new URL(formattedUrl);
       const hostname = urlObj.hostname;
 
+      // Create initial attachment with processing status
+      const attachmentId = crypto.randomUUID();
       const newAttachment: ChatAttachment = {
-        id: crypto.randomUUID(),
+        id: attachmentId,
         type: 'url',
         name: hostname,
         url: formattedUrl,
-        status: 'uploaded'
+        status: 'processing'
       };
 
       setAttachments(prev => [...prev, newAttachment]);
@@ -131,8 +134,72 @@ export const useUnifiedChatAnalysis = () => {
       
       toast({
         title: "URL Added",
-        description: `${hostname} added for analysis`,
+        description: `${hostname} added, capturing screenshot...`,
       });
+
+      // Capture screenshot for competitor analysis
+      const currentTemplate = getCurrentTemplate();
+      const isCompetitorAnalysis = currentTemplate?.category === 'competitor' || 
+                                  currentTemplate?.title?.toLowerCase().includes('competitor');
+      
+      if (isCompetitorAnalysis) {
+        console.log('📸 Capturing screenshot for competitor analysis...');
+        
+        try {
+          // Capture both desktop and mobile screenshots
+          const screenshotResults = await ScreenshotCaptureService.captureCompetitorSet(
+            [formattedUrl], 
+            true, // include desktop
+            true  // include mobile
+          );
+
+          console.log('📸 Screenshot results:', screenshotResults);
+
+          // Update attachment with screenshot data
+          setAttachments(prev => prev.map(att => 
+            att.id === attachmentId 
+              ? { 
+                  ...att, 
+                  status: 'uploaded',
+                  metadata: {
+                    screenshots: {
+                      desktop: screenshotResults.desktop?.[0],
+                      mobile: screenshotResults.mobile?.[0]
+                    }
+                  }
+                }
+              : att
+          ));
+
+          toast({
+            title: "Screenshot Captured",
+            description: `Screenshots captured for ${hostname}`,
+          });
+        } catch (screenshotError) {
+          console.error('Screenshot capture failed:', screenshotError);
+          
+          // Still mark as uploaded but without screenshots
+          setAttachments(prev => prev.map(att => 
+            att.id === attachmentId 
+              ? { ...att, status: 'uploaded' }
+              : att
+          ));
+
+          toast({
+            title: "URL Added",
+            description: `${hostname} added (screenshot capture failed)`,
+            variant: "default"
+          });
+        }
+      } else {
+        // For non-competitor analysis, just mark as uploaded
+        setAttachments(prev => prev.map(att => 
+          att.id === attachmentId 
+            ? { ...att, status: 'uploaded' }
+            : att
+        ));
+      }
+
     } catch (error) {
       toast({
         variant: "destructive",
@@ -140,7 +207,7 @@ export const useUnifiedChatAnalysis = () => {
         description: "Please enter a valid website URL.",
       });
     }
-  }, [urlInput, toast]);
+  }, [urlInput, toast, getCurrentTemplate]);
 
   // Send message handler
   const handleSendMessage = useCallback(async () => {
