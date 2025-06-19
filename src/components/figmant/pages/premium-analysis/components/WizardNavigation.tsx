@@ -39,6 +39,9 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
     }
   };
 
+  const isDisabled = !canProceed;
+  console.log('🎯 Button disabled state:', isDisabled);
+
   return (
     <div className="flex-shrink-0 p-6 bg-white border-t border-gray-200">
       <div className="flex justify-between">
@@ -54,8 +57,9 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
 
         <Button 
           onClick={handleNextClick} 
-          disabled={!canProceed} 
-          className="bg-gray-900 hover:bg-gray-800 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isDisabled}
+          variant="default"
+          className={`${isDisabled ? 'opacity-50 cursor-not-allowed' : 'bg-gray-900 hover:bg-gray-800'} text-white`}
         >
           {getButtonText()}
         </Button>
