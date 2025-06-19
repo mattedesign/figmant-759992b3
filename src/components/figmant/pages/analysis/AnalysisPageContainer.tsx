@@ -2,7 +2,6 @@
 import React from 'react';
 import { useChatState } from './ChatStateManager';
 import { AnalysisChatPanel } from './AnalysisChatPanel';
-import { AnalysisListSidebar } from './AnalysisListSidebar';
 import { AnalysisDynamicRightPanel } from './AnalysisDynamicRightPanel';
 import { PromptTemplateSelector } from './PromptTemplateSelector';
 import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
@@ -35,17 +34,11 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
 
   const { data: claudePromptTemplates, isLoading: promptsLoading } = useClaudePromptExamples();
   const [lastAnalysisResult, setLastAnalysisResult] = React.useState<any>(null);
-  const [selectedAnalysis, setSelectedAnalysis] = React.useState<any>(null);
-  const [isHistorySidebarCollapsed, setIsHistorySidebarCollapsed] = React.useState(false);
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = React.useState(false);
 
   const handleAnalysisComplete = (result: any) => {
     setLastAnalysisResult(result);
     console.log('Analysis completed:', result);
-  };
-
-  const handleAnalysisSelect = (analysis: any) => {
-    setSelectedAnalysis(analysis);
   };
 
   const handleRemoveAttachment = (id: string) => {
@@ -64,17 +57,6 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
 
   return (
     <div className="flex h-full">
-      {/* Left Panel - History Sidebar */}
-      <div className={`bg-white flex-shrink-0 transition-all duration-300 ${
-        isHistorySidebarCollapsed ? 'w-16' : 'w-80'
-      }`}>
-        <AnalysisListSidebar
-          selectedAnalysis={selectedAnalysis}
-          onAnalysisSelect={handleAnalysisSelect}
-          onCollapseChange={setIsHistorySidebarCollapsed}
-        />
-      </div>
-
       {/* Center Panel - Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Prompt Template Selector - Hidden */}
@@ -119,7 +101,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ se
           promptTemplates={claudePromptTemplates}
           selectedPromptTemplate={selectedPromptTemplate}
           onPromptTemplateSelect={setSelectedPromptTemplate}
-          currentAnalysis={selectedAnalysis}
+          currentAnalysis={null}
           attachments={attachments}
           onCollapseChange={setIsRightPanelCollapsed}
           onRemoveAttachment={handleRemoveAttachment}
