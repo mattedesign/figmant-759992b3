@@ -24,8 +24,9 @@ export const syncAllAuthUsers = async () => {
     }
 
     // Handle the profiles data with proper type checking and explicit typing
+    const profilesArray: Array<{ id: string }> = existingProfiles || [];
     const existingProfileIds = new Set(
-      (existingProfiles as Array<{ id: string }> || []).map((profile) => profile.id)
+      profilesArray.map((profile) => profile.id)
     );
     const usersNeedingProfiles = authUsers.users.filter(user => !existingProfileIds.has(user.id));
 
