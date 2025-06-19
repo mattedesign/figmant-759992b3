@@ -8,7 +8,7 @@ export const DEFAULT_OPTIONS: ScreenshotCaptureOptions = {
   quality: 90,
   format: 'png',
   mobile: false,
-  delay: 2000,
+  delay: 3,
   blockAds: true,
   blockCookieBanners: true
 };
