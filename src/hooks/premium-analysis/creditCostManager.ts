@@ -9,7 +9,7 @@ export interface PremiumAnalysisCosts {
 export const ANALYSIS_CREDIT_COSTS: Record<string, PremiumAnalysisCosts> = {
   'basic-analysis': {
     templateId: 'basic-analysis',
-    creditCost: 1,
+    creditCost: 3,
     pricingTier: 'basic',
     estimatedValue: '$197'
   },
@@ -21,13 +21,13 @@ export const ANALYSIS_CREDIT_COSTS: Record<string, PremiumAnalysisCosts> = {
   },
   'design-review': {
     templateId: 'design-review',
-    creditCost: 1,
+    creditCost: 3,
     pricingTier: 'basic',
     estimatedValue: '$197'
   },
   'conversion-optimization': {
     templateId: 'conversion-optimization',
-    creditCost: 2,
+    creditCost: 3,
     pricingTier: 'premium',
     estimatedValue: '$297'
   }
@@ -40,7 +40,7 @@ export const isPremiumAnalysis = (templateId: string): boolean => {
 
 export const getAnalysisCost = (templateId: string): number => {
   const template = ANALYSIS_CREDIT_COSTS[templateId];
-  return template?.creditCost || 1;
+  return template?.creditCost || 3;
 };
 
 export const getAnalysisValue = (templateId: string): string => {
