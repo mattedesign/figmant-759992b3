@@ -8,7 +8,7 @@ import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 export const FigmantLayout: React.FC = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
 
@@ -17,11 +17,15 @@ export const FigmantLayout: React.FC = () => {
     const handleResize = () => {
       const width = window.innerWidth;
       
+      console.log('🔧 FIGMANT LAYOUT - Resize detected:', { width, isTablet });
+      
       // Only auto-collapse for tablet range (768px - 1023px)
       // Mobile (< 768px) and Desktop (>= 1024px) maintain their own behavior
       if (width >= 768 && width < 1024) {
+        console.log('🔧 FIGMANT LAYOUT - Setting collapsed for tablet');
         setIsSidebarCollapsed(true);
       } else if (width >= 1024) {
+        console.log('🔧 FIGMANT LAYOUT - Setting expanded for desktop');
         // Auto-expand for desktop unless user manually collapsed it
         // We'll track manual collapse state separately if needed
         setIsSidebarCollapsed(false);
@@ -38,7 +42,7 @@ export const FigmantLayout: React.FC = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [isTablet]);
 
   const handleBackToList = () => {
     setSelectedAnalysis(null);
@@ -49,6 +53,7 @@ export const FigmantLayout: React.FC = () => {
   };
 
   const handleSidebarCollapsedChange = (collapsed: boolean) => {
+    console.log('🔧 FIGMANT LAYOUT - Manual collapse change:', collapsed);
     setIsSidebarCollapsed(collapsed);
   };
 

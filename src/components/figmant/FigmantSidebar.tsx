@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { ChevronDown } from 'lucide-react';
@@ -42,6 +41,29 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Sync with parent layout's responsive behavior but don't override it
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      
+      // Only set initial collapsed state if we're in tablet range
+      // Let the parent layout control the state for responsive behavior
+      if (width >= 768 && width < 1024) {
+        // Don't force collapsed here - let parent layout handle it
+        // This is just for detecting tablet range
+        console.log('🔧 FIGMANT SIDEBAR - Detected tablet range:', width);
+      } else if (width >= 1024) {
+        console.log('🔧 FIGMANT SIDEBAR - Detected desktop range:', width);
+      }
+    };
+
+    // Set initial state
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const currentBalance = credits?.current_balance || 0;
   const totalPurchased = credits?.total_purchased || 0;

@@ -23,19 +23,25 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   const { credits, creditsLoading } = useUserCredits();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // Sync with parent layout's responsive behavior
+  // Listen for parent layout's responsive state changes
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
       
-      // Auto-collapse for tablet screens (768px - 1023px)
+      // Let the parent layout control responsive behavior
+      // This component just syncs with whatever the parent decides
       if (width >= 768 && width < 1024) {
-        setIsCollapsed(true);
-        onCollapsedChange?.(true);
+        // Tablet range - should be collapsed
+        if (!isCollapsed) {
+          setIsCollapsed(true);
+          onCollapsedChange?.(true);
+        }
       } else if (width >= 1024) {
-        // Auto-expand for desktop
-        setIsCollapsed(false);
-        onCollapsedChange?.(false);
+        // Desktop range - should be expanded
+        if (isCollapsed) {
+          setIsCollapsed(false);
+          onCollapsedChange?.(false);
+        }
       }
     };
 
@@ -44,7 +50,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [onCollapsedChange]);
+  }, [isCollapsed, onCollapsedChange]);
 
   const currentBalance = credits?.current_balance || 0;
   const totalPurchased = credits?.total_purchased || 0;
