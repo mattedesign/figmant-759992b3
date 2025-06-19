@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown } from 'lucide-react';
@@ -41,29 +40,34 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
       key={item.id}
       variant="ghost"
       className={cn(
-        "w-full justify-start h-12 text-left",
+        "w-full justify-start text-left",
         activeSection === item.id 
           ? "bg-white text-[#3D4A5C] rounded-[12px] shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
           : "hover:bg-white hover:text-[#3D4A5C] hover:rounded-[12px] hover:shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
       )}
-      style={
-        activeSection === item.id 
+      style={{
+        display: 'flex',
+        height: '40px',
+        padding: '4px 12px 4px 4px',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        alignSelf: 'stretch',
+        borderRadius: '12px',
+        background: 'var(--Surface-01, #FCFCFC)',
+        ...(activeSection === item.id 
           ? {
-              borderRadius: '12px',
               background: 'var(--Surface-03, #F1F1F1)'
             }
-          : {}
-      }
+          : {})
+      }}
       onMouseEnter={(e) => {
         if (activeSection !== item.id) {
-          e.currentTarget.style.borderRadius = '12px';
           e.currentTarget.style.background = 'var(--Surface-03, #F1F1F1)';
         }
       }}
       onMouseLeave={(e) => {
         if (activeSection !== item.id) {
-          e.currentTarget.style.borderRadius = '';
-          e.currentTarget.style.background = '';
+          e.currentTarget.style.background = 'var(--Surface-01, #FCFCFC)';
         }
       }}
       onClick={() => onSectionChange(item.id)}
