@@ -47,7 +47,7 @@ export const SidebarTabsInterface: React.FC<SidebarTabsInterfaceProps> = ({
         <div className="flex-shrink-0 px-4 mb-4">
           <TabsList className="grid w-full grid-cols-2 bg-gray-100">
             <TabsTrigger value="analysis" className="data-[state=active]:bg-white">
-              menu
+              Menu
             </TabsTrigger>
             <TabsTrigger value="recent" className="data-[state=active]:bg-white">
               Recent
