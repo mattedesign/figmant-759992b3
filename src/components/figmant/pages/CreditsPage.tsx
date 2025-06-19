@@ -128,10 +128,7 @@ export const CreditsPage: React.FC = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Buy More Credits</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Choose a credit pack that fits your analysis needs
-          </p>
+          <CardTitle></CardTitle>
         </CardHeader>
         <CardContent>
           {creditPlans.length > 0 ? (
