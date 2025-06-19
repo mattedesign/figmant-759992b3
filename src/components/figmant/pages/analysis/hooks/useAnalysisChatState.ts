@@ -14,46 +14,44 @@ export const useAnalysisChatState = ({
 }: UseAnalysisChatStateProps = {}) => {
   const { data: figmantTemplates = [] } = useClaudePromptExamples();
   
-  // Default to Master UX Analysis template
+  // Default to Master UX Analysis template or first available template
   const masterTemplate = figmantTemplates.find(t => t.category === 'master') || figmantTemplates[0];
-  const [selectedTemplate, setSelectedTemplate] = useState(selectedPromptTemplate?.id || masterTemplate?.id || 'master');
+  const [selectedTemplate, setSelectedTemplate] = useState(selectedPromptTemplate?.id || masterTemplate?.id || '');
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [modalTemplate, setModalTemplate] = useState<any>(null);
   
   // FEATURE PARITY: Add tab management for both chat and wizard
   const [activeTab, setActiveTab] = useState<string>('chat');
 
-  // File upload handler for feature parity
-  const handleFileUpload = (file: File) => {
-    console.log('🔍 ANALYSIS STATE - File upload requested:', file.name);
-    // This would be implemented by the parent component
-  };
-
-  // URL attachment handler
-  const addUrlAttachment = (url: string) => {
-    console.log('🔍 ANALYSIS STATE - URL attachment requested:', url);
-    // This would be implemented by the parent component
-  };
-
-  // Attachment removal handler
-  const removeAttachment = (id: string) => {
-    console.log('🔍 ANALYSIS STATE - Remove attachment requested:', id);
-    // This would be implemented by the parent component
-  };
+  // Update selected template when templates load or prop changes
+  useEffect(() => {
+    if (selectedPromptTemplate?.id) {
+      setSelectedTemplate(selectedPromptTemplate.id);
+    } else if (!selectedTemplate && masterTemplate?.id) {
+      setSelectedTemplate(masterTemplate.id);
+    }
+  }, [selectedPromptTemplate?.id, masterTemplate?.id, selectedTemplate]);
 
   // Get the current template object
   const getCurrentTemplate = () => {
-    return figmantTemplates.find(t => t.id === selectedTemplate) || 
-           masterTemplate ||
-           figmantTemplates[0];
+    const template = figmantTemplates.find(t => t.id === selectedTemplate);
+    if (template) {
+      console.log('🎯 ANALYSIS STATE - Current template found:', template.title || template.display_name);
+      return template;
+    }
+    
+    console.log('🎯 ANALYSIS STATE - Template not found, using master or first available');
+    return masterTemplate || figmantTemplates[0];
   };
 
   const handleTemplateSelect = (templateId: string) => {
+    console.log('🎯 ANALYSIS STATE - Template selected:', templateId);
     setSelectedTemplate(templateId);
     setShowTemplateModal(false);
   };
 
   const handleViewTemplate = (template: any) => {
+    console.log('🎯 ANALYSIS STATE - View template:', template);
     setModalTemplate(template);
     setShowTemplateModal(true);
   };
@@ -75,9 +73,6 @@ export const useAnalysisChatState = ({
     handleViewTemplate,
     setShowTemplateModal,
     setModalTemplate,
-    handleTemplateModalClose,
-    handleFileUpload,
-    addUrlAttachment,
-    removeAttachment
+    handleTemplateModalClose
   };
 };

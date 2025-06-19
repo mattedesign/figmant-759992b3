@@ -17,26 +17,34 @@ export const SimpleTemplateSelector: React.FC<SimpleTemplateSelectorProps> = ({
   availableTemplates,
   onViewTemplate
 }) => {
-  const currentTemplate = selectedTemplate || availableTemplates[0];
+  console.log('🎯 SIMPLE TEMPLATE SELECTOR - Rendering with:', {
+    selectedTemplateId: selectedTemplate?.id,
+    availableTemplatesCount: availableTemplates.length,
+    selectedTemplate
+  });
 
   return (
-    <div className="flex items-center gap-2 flex-1">
-      <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 flex-1 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100">
-        <Sparkles className="h-4 w-4 text-blue-600 flex-shrink-0" />
+    <div className="flex items-center gap-2">
+      <div className="flex-1">
         <Select 
-          value={currentTemplate?.id || ''} 
+          value={selectedTemplate?.id || ''} 
           onValueChange={onTemplateSelect}
         >
-          <SelectTrigger className="border-0 bg-transparent p-0 h-auto shadow-none focus:ring-0 focus:shadow-none focus-visible:ring-0 focus-visible:shadow-none flex-1">
-            <SelectValue placeholder="Select analysis template" />
+          <SelectTrigger className="h-10">
+            <div className="flex items-center gap-2 min-w-0">
+              <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
+              <SelectValue placeholder="Select analysis template" className="truncate" />
+            </div>
           </SelectTrigger>
-          <SelectContent className="w-full min-w-[300px]">
+          <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
             {availableTemplates.map((template) => (
-              <SelectItem key={template.id} value={template.id} className="w-full">
-                <div className="w-full text-left">
-                  <div className="font-medium text-left">{template.display_name || template.displayName}</div>
-                  <div className="text-xs text-muted-foreground text-left whitespace-normal">
-                    {template.description}
+              <SelectItem key={template.id} value={template.id}>
+                <div className="flex items-center justify-between w-full">
+                  <div>
+                    <div className="font-medium">{template.title || template.display_name}</div>
+                    <div className="text-xs text-muted-foreground truncate max-w-60">
+                      {template.description}
+                    </div>
                   </div>
                 </div>
               </SelectItem>
@@ -45,13 +53,13 @@ export const SimpleTemplateSelector: React.FC<SimpleTemplateSelectorProps> = ({
         </Select>
       </div>
       
-      {currentTemplate && (
+      {selectedTemplate && (
         <Button 
           variant="outline" 
           size="icon" 
-          onClick={() => onViewTemplate(currentTemplate)}
+          onClick={() => onViewTemplate(selectedTemplate)}
           title="View template details"
-          className="shadow-none hover:shadow-none focus:shadow-none focus-visible:shadow-none"
+          className="h-10 w-10"
         >
           <Info className="h-4 w-4" />
         </Button>

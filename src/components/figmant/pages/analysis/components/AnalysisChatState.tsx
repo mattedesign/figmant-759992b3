@@ -26,6 +26,8 @@ interface AnalysisChatStateRenderProps {
   
   // Template management
   figmantTemplates: any[];
+  selectedTemplate: string;
+  setSelectedTemplate: (templateId: string) => void;
   getCurrentTemplate: () => any;
   handleTemplateSelect: (templateId: string) => void;
   handleViewTemplate: (template: any) => void;
@@ -111,6 +113,8 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
     
     // Template management
     figmantTemplates: analysisState.figmantTemplates,
+    selectedTemplate: analysisState.selectedTemplate,
+    setSelectedTemplate: analysisState.handleTemplateSelect,
     getCurrentTemplate: analysisState.getCurrentTemplate,
     handleTemplateSelect: analysisState.handleTemplateSelect,
     handleViewTemplate: analysisState.handleViewTemplate,
