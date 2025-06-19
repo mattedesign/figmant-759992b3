@@ -115,19 +115,6 @@ export const NavigationSectionList: React.FC<NavigationSectionListProps> = ({
               )}
             </div>
 
-            {/* Analysis Insights Section - Only show if there are insights */}
-            {(lastAnalysisResult || analysisMessages.length > 0) && (
-              <div>
-                <div className="px-3 py-2 border-b border-gray-100">
-                  <h3 className="text-sm font-medium text-gray-900">Analysis Insights</h3>
-                </div>
-                <AnalysisInsightsSection
-                  lastAnalysisResult={lastAnalysisResult}
-                  analysisMessages={analysisMessages}
-                />
-              </div>
-            )}
-
             {/* Show overall empty state only if no content at all */}
             {!hasAnyContent && (
               <div className="px-3">
@@ -139,7 +126,10 @@ export const NavigationSectionList: React.FC<NavigationSectionListProps> = ({
 
         <TabsContent value="suggestions" className="mt-0">
           <div className="px-3">
-            <SuggestionsTabContent />
+            <SuggestionsTabContent 
+              lastAnalysisResult={lastAnalysisResult}
+              analysisMessages={analysisMessages}
+            />
           </div>
         </TabsContent>
       </Tabs>
