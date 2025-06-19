@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -60,8 +61,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
   }
 
   return (
-    <div className="h-full overflow-hidden flex flex-col">
-      <div className="flex-shrink-0 max-w-7xl mx-auto p-6">
+    <div className="h-full flex flex-col">
+      <div className="flex-shrink-0 max-w-7xl mx-auto w-full p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
           <p className="text-gray-600 mt-1">Manage your application settings, users, and system configuration</p>
@@ -79,37 +80,35 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
         </Tabs>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="bg-transparent">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsContent value="dashboard" className="space-y-6">
-                <AdminSettings />
-              </TabsContent>
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="max-w-7xl mx-auto w-full px-6 pb-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsContent value="dashboard" className="space-y-6">
+              <AdminSettings />
+            </TabsContent>
 
-              <TabsContent value="users" className="space-y-6">
-                <UserManagement />
-                <RegistrationDebugPanel />
-                <SpecificUserDebugPanel />
-              </TabsContent>
+            <TabsContent value="users" className="space-y-6">
+              <UserManagement />
+              <RegistrationDebugPanel />
+              <SpecificUserDebugPanel />
+            </TabsContent>
 
-              <TabsContent value="prompts" className="space-y-6">
-                <ClaudePromptManager />
-              </TabsContent>
+            <TabsContent value="prompts" className="space-y-6">
+              <ClaudePromptManager />
+            </TabsContent>
 
-              <TabsContent value="claude" className="space-y-6">
-                <ClaudeSettings />
-              </TabsContent>
+            <TabsContent value="claude" className="space-y-6">
+              <ClaudeSettings />
+            </TabsContent>
 
-              <TabsContent value="plans" className="space-y-6">
-                <SubscriptionPlansManager />
-              </TabsContent>
+            <TabsContent value="plans" className="space-y-6">
+              <SubscriptionPlansManager />
+            </TabsContent>
 
-              <TabsContent value="assets" className="space-y-6">
-                <AdminAssetDashboard />
-              </TabsContent>
-            </Tabs>
-          </div>
+            <TabsContent value="assets" className="space-y-6">
+              <AdminAssetDashboard />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
