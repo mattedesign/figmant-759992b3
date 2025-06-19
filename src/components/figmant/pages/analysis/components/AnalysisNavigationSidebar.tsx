@@ -69,7 +69,7 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
 
   return (
     <div 
-      className={`${isCollapsed ? 'w-16' : 'w-80 max-w-[286px]'} h-full transition-all duration-300 flex flex-col overflow-hidden`}
+      className={`${isCollapsed ? 'w-16' : 'w-80 max-w-[286px]'} h-full transition-all duration-300 flex flex-col overflow-hidden mb-3`}
       style={{
         borderRadius: '20px',
         border: '1px solid var(--Stroke-01, #ECECEC)',
