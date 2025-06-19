@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -47,12 +48,27 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
   onNextStep
 }) => {
   const handleTypeSelection = (templateId: string) => {
-    setStepData({ ...stepData, selectedType: templateId });
-    // Automatically proceed to next step after selection
-    if (onNextStep) {
-      onNextStep();
+    console.log('🎯 Step1 - Template selected:', templateId);
+    
+    // Update the step data using the key-value interface
+    if (typeof setStepData === 'function') {
+      setStepData('selectedType', templateId);
     }
+    
+    // Automatically proceed to next step after selection
+    setTimeout(() => {
+      if (onNextStep) {
+        console.log('🎯 Step1 - Proceeding to next step');
+        onNextStep();
+      }
+    }, 100);
   };
+
+  console.log('🎯 Step1 - Current state:', {
+    selectedType: stepData.selectedType,
+    hasOnNextStep: !!onNextStep,
+    hasSetStepData: !!setStepData
+  });
 
   return (
     <div className="space-y-6 pb-8">
@@ -70,11 +86,12 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
           return (
             <Card 
               key={template.id} 
-              className={`transition-all hover:shadow-md group ${
+              className={`transition-all hover:shadow-md group cursor-pointer ${
                 isSelected
                   ? 'ring-2 ring-primary shadow-md'
                   : ''
               }`}
+              onClick={() => handleTypeSelection(template.id)}
             >
               <CardHeader>
                 <div className="flex items-start justify-between mb-3">
@@ -141,7 +158,10 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
 
                   <div className="pt-3 border-t">
                     <Button 
-                      onClick={() => handleTypeSelection(template.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleTypeSelection(template.id);
+                      }}
                       className={`w-full flex items-center justify-center gap-2 ${
                         isSelected 
                           ? 'bg-primary text-primary-foreground' 

@@ -73,9 +73,18 @@ export const useWizardState = () => {
     }
   }, [currentStep, stepData, isProcessing]);
 
-  // Update the function signature to match the expected interface
-  const updateStepData = useCallback((newData: StepData) => {
-    setStepData(newData);
+  // Provide both interfaces - the new one for full updates and the old one for key-value updates
+  const updateStepData = useCallback((newDataOrKey: StepData | string, value?: any) => {
+    if (typeof newDataOrKey === 'string') {
+      // Old interface - key-value update
+      setStepData(prev => ({
+        ...prev,
+        [newDataOrKey]: value
+      }));
+    } else {
+      // New interface - full object update
+      setStepData(newDataOrKey);
+    }
   }, []);
 
   const resetWizard = useCallback(() => {

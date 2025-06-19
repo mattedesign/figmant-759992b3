@@ -10,26 +10,32 @@ import { Step6CustomPrompt } from './steps/Step6CustomPrompt';
 import { Step7Processing } from './steps/Step7Processing';
 
 export const StepRenderer: React.FC<StepProps> = (props) => {
-  const { currentStep } = props;
+  const { currentStep, onNextStep, onPreviousStep } = props;
+
+  const stepProps = {
+    ...props,
+    onNextStep,
+    onPreviousStep
+  };
 
   return (
     <div className="h-full flex flex-col">
       {(() => {
         switch (currentStep) {
           case 1:
-            return <Step1SelectAnalysisType {...props} />;
+            return <Step1SelectAnalysisType {...stepProps} />;
           case 2:
-            return <Step2ProjectName {...props} />;
+            return <Step2ProjectName {...stepProps} />;
           case 3:
-            return <Step3AnalysisGoals {...props} />;
+            return <Step3AnalysisGoals {...stepProps} />;
           case 4:
-            return <Step4ProjectDetails {...props} />;
+            return <Step4ProjectDetails {...stepProps} />;
           case 5:
-            return <Step5UploadFiles {...props} />;
+            return <Step5UploadFiles {...stepProps} />;
           case 6:
-            return <Step6CustomPrompt {...props} />;
+            return <Step6CustomPrompt {...stepProps} />;
           case 7:
-            return <Step7Processing {...props} />;
+            return <Step7Processing {...stepProps} />;
           default:
             return (
               <div className="text-center py-12">
