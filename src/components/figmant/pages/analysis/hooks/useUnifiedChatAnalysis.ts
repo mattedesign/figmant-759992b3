@@ -46,7 +46,11 @@ export const useUnifiedChatAnalysis = () => {
     }
     
     if (setAttachments) {
-      setAttachments(prev => [...prev, ...newAttachments]);
+      setAttachments(prev => {
+        const updated = [...prev, ...newAttachments];
+        console.log('📎 File attachments updated:', updated.length);
+        return updated;
+      });
     }
     
     toast({
@@ -103,9 +107,15 @@ export const useUnifiedChatAnalysis = () => {
         }
       };
 
-      console.log('Creating new URL attachment with screenshot capture:', newAttachment);
+      console.log('🔗 Creating new URL attachment:', newAttachment);
+      
+      // Update attachments state immediately
       if (setAttachments) {
-        setAttachments(prev => [...prev, newAttachment]);
+        setAttachments(prev => {
+          const updated = [...prev, newAttachment];
+          console.log('🔗 URL attachments updated, new count:', updated.length);
+          return updated;
+        });
       }
       
       setUrlInput('');
@@ -132,9 +142,9 @@ export const useUnifiedChatAnalysis = () => {
         if (setAttachments) {
           setAttachments(prev => prev.map(att => {
             if (att.id === newAttachment.id) {
-              return {
+              const updatedAtt = {
                 ...att,
-                status: 'uploaded',
+                status: 'uploaded' as const,
                 metadata: {
                   ...att.metadata,
                   screenshots: {
@@ -143,6 +153,8 @@ export const useUnifiedChatAnalysis = () => {
                   }
                 }
               };
+              console.log('📸 Updated attachment with screenshots:', updatedAtt);
+              return updatedAtt;
             }
             return att;
           }));
@@ -173,7 +185,7 @@ export const useUnifiedChatAnalysis = () => {
             if (att.id === newAttachment.id) {
               return {
                 ...att,
-                status: 'uploaded', // Still functional for analysis
+                status: 'uploaded' as const,
                 metadata: {
                   ...att.metadata,
                   screenshots: {
@@ -206,7 +218,11 @@ export const useUnifiedChatAnalysis = () => {
 
   const removeAttachment = useCallback((id: string) => {
     if (setAttachments) {
-      setAttachments(prev => prev.filter(att => att.id !== id));
+      setAttachments(prev => {
+        const updated = prev.filter(att => att.id !== id);
+        console.log('🗑️ Attachment removed, new count:', updated.length);
+        return updated;
+      });
     }
   }, [setAttachments]);
 
@@ -303,6 +319,13 @@ export const useUnifiedChatAnalysis = () => {
   }, [handleSendMessage]);
 
   const canSend = !isAnalyzing && (message.trim().length > 0 || attachments.length > 0);
+
+  console.log('🔄 UNIFIED CHAT ANALYSIS - Current state:', {
+    messagesCount: messages.length,
+    attachmentsCount: attachments.length,
+    urlInput,
+    showUrlInput
+  });
 
   return {
     // State

@@ -40,7 +40,10 @@ export const UnifiedChatContainer: React.FC = () => {
   console.log('🔄 UNIFIED CHAT CONTAINER - Current state:', {
     messagesCount: messages.length,
     attachmentsCount: attachments.length,
-    lastAnalysisResult: !!lastAnalysisResult
+    attachmentDetails: attachments.map(att => ({ id: att.id, type: att.type, name: att.name, status: att.status })),
+    lastAnalysisResult: !!lastAnalysisResult,
+    showUrlInput,
+    urlInput
   });
 
   return (
