@@ -127,8 +127,8 @@ export const UnifiedChatContainer: React.FC = () => {
             status: 'uploaded',
             metadata: {
               screenshots: {
-                desktop: { success: false },
-                mobile: { success: false }
+                desktop: { success: false, url: uploadId },
+                mobile: { success: false, url: uploadId }
               }
             }
           });
