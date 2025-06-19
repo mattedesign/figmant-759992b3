@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { FigmantMainContent } from './FigmantMainContent';
-import { FigmantSidebar } from './FigmantSidebar';
+import { FigmantSidebar } from './sidebar/FigmantSidebarContainer';
 import { MobileNavigation } from './navigation/MobileNavigation';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 
