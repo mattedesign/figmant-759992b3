@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, FileText, Clock, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import { Clock, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 import { SavedChatAnalysis } from '@/hooks/useChatAnalysisHistory';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { formatDistanceToNow } from 'date-fns';
@@ -31,7 +31,8 @@ export const SidebarRecentAnalyses: React.FC<SidebarRecentAnalysesProps> = ({
       title: a.analysis_results?.title || 'Design Analysis',
       analysisType: a.analysis_type || 'General',
       score: a.impact_summary?.key_metrics?.overall_score || Math.floor(Math.random() * 4) + 7,
-      fileCount: 1
+      fileCount: 1,
+      imageUrl: a.design_upload?.file_path || null
     })),
     ...analysisHistory.map(a => ({ 
       ...a, 
@@ -39,13 +40,15 @@ export const SidebarRecentAnalyses: React.FC<SidebarRecentAnalysesProps> = ({
       title: getAnalysisDisplayName(a.analysis_type),
       analysisType: getAnalysisDisplayName(a.analysis_type),
       score: Math.floor((a.confidence_score || 0.8) * 10),
-      fileCount: a.analysis_results?.attachments_processed || 1
+      fileCount: a.analysis_results?.attachments_processed || 1,
+      imageUrl: a.analysis_results?.upload_ids?.[0] || null
     }))
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const recentAnalyses = allAnalyses.slice(0, 20);
 
-  const toggleExpanded = (analysisId: string) => {
+  const toggleExpanded = (analysisId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
     const newExpanded = new Set(expandedItems);
     if (newExpanded.has(analysisId)) {
       newExpanded.delete(analysisId);
@@ -91,6 +94,22 @@ export const SidebarRecentAnalyses: React.FC<SidebarRecentAnalysesProps> = ({
     return truncateText(analysis.analysis_results?.analysis || 'Design analysis');
   };
 
+  const getAnalysisImage = (analysis: any) => {
+    // For design analyses, try to get the uploaded design image
+    if (analysis.type === 'design' && analysis.imageUrl) {
+      return analysis.imageUrl;
+    }
+    
+    // For chat analyses, you might want to use a screenshot or uploaded image
+    // This is a placeholder - you'd need to implement proper image retrieval
+    if (analysis.type === 'chat' && analysis.imageUrl) {
+      return analysis.imageUrl;
+    }
+    
+    // Default placeholder image
+    return 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop';
+  };
+
   return (
     <ScrollArea className="flex-1">
       <div className="space-y-2 p-1">
@@ -100,7 +119,7 @@ export const SidebarRecentAnalyses: React.FC<SidebarRecentAnalysesProps> = ({
           </div>
         ) : recentAnalyses.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <div className="h-8 w-8 mx-auto mb-2 opacity-50 bg-gray-200 rounded"></div>
             <p className="text-sm">No recent analyses</p>
           </div>
         ) : (
@@ -111,46 +130,55 @@ export const SidebarRecentAnalyses: React.FC<SidebarRecentAnalysesProps> = ({
             return (
               <div
                 key={analysisId}
-                className="border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors"
+                className="border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors overflow-hidden"
               >
-                {/* Analysis Header */}
-                <div className="p-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3 flex-1 min-w-0">
-                      <div className={`w-8 h-8 rounded flex items-center justify-center flex-shrink-0 ${
-                        analysis.type === 'chat' ? 'bg-blue-100' : 'bg-green-100'
-                      }`}>
-                        {analysis.type === 'chat' ? (
-                          <MessageSquare className={`h-4 w-4 ${
-                            analysis.type === 'chat' ? 'text-blue-500' : 'text-green-500'
-                          }`} />
-                        ) : (
-                          <FileText className="h-4 w-4 text-green-500" />
-                        )}
+                {/* Analysis Header - Fully Clickable */}
+                <div 
+                  className="p-3 cursor-pointer"
+                  onClick={() => handleAnalysisClick(analysis)}
+                >
+                  <div className="flex items-start gap-3">
+                    {/* Analysis Image */}
+                    <div className="w-12 h-9 rounded overflow-hidden flex-shrink-0 bg-gray-100">
+                      <img 
+                        src={getAnalysisImage(analysis)}
+                        alt={analysis.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback to a placeholder if image fails to load
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop';
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Analysis Info */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-gray-900 truncate">
+                        {analysis.title}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs">
+                          {analysis.analysisType}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          Score: {analysis.score}/10
+                        </Badge>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-medium text-gray-900 truncate">
-                          {analysis.title}
-                        </h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-xs">
-                            {analysis.analysisType}
-                          </Badge>
-                          <Badge variant="secondary" className="text-xs">
-                            Score: {analysis.score}/10
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-                          <Clock className="h-3 w-3" />
-                          {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
-                        </div>
+                      <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                        <Clock className="h-3 w-3" />
+                        {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
                       </div>
                     </div>
+
+                    {/* Chevron Button - Not Clickable for Navigation */}
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleAnalysisClick(analysis)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAnalysisClick(analysis);
+                        }}
                         className="h-6 w-6 p-0"
                         title={analysis.type === 'chat' ? 'Continue in Chat' : 'Open in Wizard'}
                       >
@@ -159,7 +187,7 @@ export const SidebarRecentAnalyses: React.FC<SidebarRecentAnalysesProps> = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => toggleExpanded(analysisId)}
+                        onClick={(e) => toggleExpanded(analysisId, e)}
                         className="h-6 w-6 p-0"
                       >
                         {isExpanded ? (
@@ -188,7 +216,10 @@ export const SidebarRecentAnalyses: React.FC<SidebarRecentAnalysesProps> = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleAnalysisClick(analysis)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAnalysisClick(analysis);
+                        }}
                         className="h-6 text-xs px-2"
                       >
                         {analysis.type === 'chat' ? 'Continue Chat' : 'Open Wizard'}
