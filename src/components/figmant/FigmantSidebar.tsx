@@ -44,6 +44,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
     >
       <SidebarHeader 
         isCollapsed={isCollapsed}
+        onToggleCollapse={handleToggleCollapse}
       />
       
       <div className="flex-1 overflow-y-auto">
