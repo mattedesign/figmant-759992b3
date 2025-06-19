@@ -83,7 +83,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
             onClick={() => onSectionChange(section.id)}
           >
             <section.icon className={cn(
-              "h-5 w-5 mr-3",
+              "h-5 w-5 mr-1",
               activeSection === section.id && "text-[#3D4A5C]"
             )} />
             <span className={cn(

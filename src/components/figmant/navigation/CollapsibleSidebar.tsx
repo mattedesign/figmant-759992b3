@@ -148,7 +148,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
                 }}
                 disabled={item.disabled}
               >
-                <item.icon className={cn("h-4 w-4", isCollapsed ? "" : "mr-3")} />
+                <item.icon className={cn("h-4 w-4", isCollapsed ? "" : "mr-1")} />
                 {!isCollapsed && (
                   <>
                     <span className="flex-1 text-left">{item.label}</span>

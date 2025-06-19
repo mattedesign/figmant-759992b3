@@ -68,7 +68,7 @@ export const NavigationSidebar = ({
                   )}
                   disabled={item.disabled}
                 >
-                  <item.icon className="h-4 w-4 mr-3" />
+                  <item.icon className="h-4 w-4 mr-1" />
                   <span className="flex-1 text-left">{item.label}</span>
                   {item.badge && (
                     <Badge variant="secondary" className="ml-2 text-xs">
