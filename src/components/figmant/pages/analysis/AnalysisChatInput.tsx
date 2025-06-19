@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowUp } from 'lucide-react';
@@ -131,7 +130,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
         </div>
         
         {/* RIGHT SIDE CONTROLS - Mode Selector and Submit Button */}
-        <div className="flex items-center gap-3 flex-1 justify-end">
+        <div className="flex items-center gap-3">
           
           {/* MODE SELECTOR */}
           <ModeSelector
