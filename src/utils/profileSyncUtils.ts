@@ -13,20 +13,20 @@ export const syncAllAuthUsers = async () => {
       throw authError;
     }
 
-    // Get all existing profiles
+    // Get all existing profiles with proper typing
     const { data: existingProfiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id');
+      .select('id')
+      .returns<Array<{ id: string }>>();
     
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError);
       throw profilesError;
     }
 
-    // Handle the profiles data with proper type checking
-    const profilesArray: Array<{ id: string }> = existingProfiles || [];
+    // Handle the profiles data - existingProfiles is now properly typed
     const existingProfileIds = new Set(
-      profilesArray.map((profile) => profile.id)
+      (existingProfiles || []).map((profile) => profile.id)
     );
     const usersNeedingProfiles = authUsers.users.filter(user => !existingProfileIds.has(user.id));
 
