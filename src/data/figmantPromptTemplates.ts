@@ -723,8 +723,6 @@ Focus on improving system consistency while enhancing user experience and develo
     description: 'Comprehensive competitor analysis combining design insights with market positioning strategy for business growth',
     category: 'competitor',
     requires_context: true,
-    pricing_tier: 'premium',
-    credit_cost: 3,
     best_for: [
       'Market positioning strategy', 
       'Competitive differentiation', 
@@ -906,7 +904,7 @@ Rate each recommendation based on:
 - Implementation feasibility
 
 Focus on actionable insights that directly impact business metrics: trial signups, conversion rates, average order value, customer lifetime value, and market positioning strength.`
-  },
+  }
 ];
 
 export const getFigmantTemplate = (id: string): FigmantPromptTemplate | undefined => {
