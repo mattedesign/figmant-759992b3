@@ -27,12 +27,10 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
       <button 
         onClick={onSendMessage}
         disabled={!canSend || isAnalyzing}
-        className="flex w-10 h-10 px-8 py-3 justify-center items-center gap-2 rounded-xl bg-gradient-to-b from-[#E5E5E5] to-[#E2E2E2] shadow-[0px_3px_4px_-1px_rgba(0,0,0,0.15),0px_1px_0px_0px_rgba(255,255,255,0.33)_inset,0px_0px_0px_1px_#D4D4D4] hover:from-[#E0E0E0] hover:to-[#DDDDDD] transition-all disabled:opacity-50 sm:w-12 sm:h-12"
+        className="flex w-10 h-10 justify-center items-center gap-2 rounded-xl bg-gradient-to-b from-[#E5E5E5] to-[#E2E2E2] shadow-[0px_3px_4px_-1px_rgba(0,0,0,0.15),0px_1px_0px_0px_rgba(255,255,255,0.33)_inset,0px_0px_0px_1px_#D4D4D4] hover:from-[#E0E0E0] hover:to-[#DDDDDD] transition-all disabled:opacity-50"
         style={{
           width: '40px',
-          height: '40px',
-          padding: '12px 32px',
-          borderRadius: '12px'
+          height: '40px'
         }}
       >
         {isAnalyzing ? (
