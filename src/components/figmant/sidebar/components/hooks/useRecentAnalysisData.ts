@@ -8,7 +8,7 @@ export const useRecentAnalysisData = (analysisHistory: SavedChatAnalysis[]) => {
   const { data: designAnalyses = [], isLoading } = useDesignAnalyses();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-  // Enhanced data mapping with attachment restoration
+  // Combine both types of analyses and sort by date
   const allAnalyses = [
     ...designAnalyses.map(a => ({ 
       ...a, 
@@ -17,15 +17,7 @@ export const useRecentAnalysisData = (analysisHistory: SavedChatAnalysis[]) => {
       analysisType: a.analysis_type || 'General',
       score: a.impact_summary?.key_metrics?.overall_score || Math.floor(Math.random() * 4) + 7,
       fileCount: 1,
-      imageUrl: null,
-      impact_summary: a.impact_summary,
-      analysis_content: a.analysis_results,
-      // Add attachment metadata for restoration
-      attachmentInfo: {
-        hasDesignFile: true,
-        designFileName: a.analysis_results?.title || 'Design File',
-        attachmentCount: 1
-      }
+      imageUrl: null
     })),
     ...analysisHistory.map(a => ({ 
       ...a, 
@@ -33,22 +25,8 @@ export const useRecentAnalysisData = (analysisHistory: SavedChatAnalysis[]) => {
       title: getAnalysisDisplayName(a.analysis_type),
       analysisType: getAnalysisDisplayName(a.analysis_type),
       score: Math.floor((a.confidence_score || 0.8) * 10),
-      fileCount: a.analysis_results?.attachments_processed || (a.analysis_results?.upload_ids?.length || 0),
-      imageUrl: null,
-      attachments: a.analysis_results?.upload_ids || [],
-      prompt_preview: a.prompt_used?.substring(0, 100) + (a.prompt_used?.length > 100 ? '...' : ''),
-      analysis_content: a.analysis_results,
-      // Add attachment metadata for restoration
-      attachmentInfo: {
-        hasAttachments: !!(a.analysis_results?.upload_ids?.length > 0),
-        attachmentCount: a.analysis_results?.upload_ids?.length || 0,
-        urlAttachments: a.analysis_results?.upload_ids?.filter((id: string) => 
-          id.startsWith('http://') || id.startsWith('https://')
-        ) || [],
-        fileAttachments: a.analysis_results?.upload_ids?.filter((id: string) => 
-          !id.startsWith('http://') && !id.startsWith('https://')
-        ) || []
-      }
+      fileCount: a.analysis_results?.attachments_processed || 1,
+      imageUrl: a.analysis_results?.upload_ids?.[0] || null
     }))
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
