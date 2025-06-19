@@ -2,6 +2,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+interface AuthUser {
+  id: string;
+  email?: string;
+  created_at: string;
+  [key: string]: any;
+}
+
 export const useSpecificUserDebug = (email: string) => {
   return useQuery({
     queryKey: ['user-debug', email],
@@ -28,12 +35,12 @@ export const useSpecificUserDebug = (email: string) => {
         console.log(`🔍 Case-insensitive profile search for ${email}:`, { profileSearchCI, profileErrorCI });
 
         // Check if user exists in auth.users (requires service role, will fail with regular user)
-        let authUserExists = null;
-        let authUsersError = null;
+        let authUserExists: AuthUser | null = null;
+        let authUsersError: string | null = null;
         try {
           const { data: authUsersData, error: authError } = await supabase.auth.admin.listUsers();
-          if (!authError && authUsersData?.users) {
-            authUserExists = authUsersData.users.find(user => user.email === email) || null;
+          if (!authError && authUsersData?.users && Array.isArray(authUsersData.users)) {
+            authUserExists = authUsersData.users.find((user: AuthUser) => user.email === email) || null;
             console.log(`🔍 Auth user check for ${email}:`, authUserExists ? 'Found' : 'Not found');
           } else {
             authUsersError = authError?.message || 'Cannot access auth.users - requires admin privileges';
