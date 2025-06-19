@@ -2,13 +2,36 @@
 import { useState } from 'react';
 import { SavedChatAnalysis } from '@/hooks/useChatAnalysisHistory';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { getAnalysisDisplayName } from '@/utils/analysisDisplayNames';
 
 export const useRecentAnalysisData = (analysisHistory: SavedChatAnalysis[]) => {
-  const { data: designAnalyses = [], isLoading } = useDesignAnalyses();
+  const { data: designAnalyses = [], isLoading: designLoading } = useDesignAnalyses();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-  // Combine both types of analyses and sort by date
+  // Fetch wizard analyses from a dedicated table or use chat_analysis_history with wizard type
+  const { data: wizardAnalyses = [], isLoading: wizardLoading } = useQuery({
+    queryKey: ['wizard-analyses'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('chat_analysis_history')
+        .select('*')
+        .eq('analysis_type', 'wizard')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching wizard analyses:', error);
+        return [];
+      }
+      
+      return data || [];
+    }
+  });
+
+  const isLoading = designLoading || wizardLoading;
+
+  // Combine all types of analyses and sort by date
   const allAnalyses = [
     ...designAnalyses.map(a => ({ 
       ...a, 
@@ -24,6 +47,15 @@ export const useRecentAnalysisData = (analysisHistory: SavedChatAnalysis[]) => {
       type: 'chat', 
       title: getAnalysisDisplayName(a.analysis_type),
       analysisType: getAnalysisDisplayName(a.analysis_type),
+      score: Math.floor((a.confidence_score || 0.8) * 10),
+      fileCount: a.analysis_results?.attachments_processed || 1,
+      imageUrl: a.analysis_results?.upload_ids?.[0] || null
+    })),
+    ...wizardAnalyses.map(a => ({ 
+      ...a, 
+      type: 'wizard', 
+      title: 'Wizard Analysis',
+      analysisType: 'Premium Wizard',
       score: Math.floor((a.confidence_score || 0.8) * 10),
       fileCount: a.analysis_results?.attachments_processed || 1,
       imageUrl: a.analysis_results?.upload_ids?.[0] || null

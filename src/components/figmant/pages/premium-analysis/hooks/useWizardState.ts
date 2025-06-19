@@ -1,152 +1,84 @@
 
-import { useState, useCallback, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { StepData, Stakeholder } from '../types';
+import { useState, useCallback } from 'react';
+import { useWizardAnalysisSave } from './useWizardAnalysisSave';
+import { useToast } from '@/hooks/use-toast';
+
+export interface WizardStepData {
+  step1?: any;
+  step2?: any;
+  step3?: any;
+  step4?: any;
+  step5?: any;
+  attachments?: any[];
+  analysisResults?: any;
+}
 
 export const useWizardState = () => {
-  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
-  const [stepData, setStepData] = useState<StepData>({
-    selectedType: '',
-    projectName: '',
-    analysisGoals: '',
-    desiredOutcome: '',
-    improvementMetric: '',
-    deadline: '',
-    date: '',
-    stakeholders: [],
-    referenceLinks: [''],
-    customPrompt: ''
-  });
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [analysisResults, setAnalysisResults] = useState<any>(null);
-  
-  const totalSteps = 7;
+  const [stepData, setStepData] = useState<WizardStepData>({});
+  const { mutateAsync: saveWizardAnalysis } = useWizardAnalysisSave();
+  const { toast } = useToast();
 
-  // Load any existing context from route state
-  useEffect(() => {
-    if (location.state?.wizardData) {
-      setStepData(prev => ({
-        ...prev,
-        ...location.state.wizardData
-      }));
-    }
-  }, [location.state]);
-  
-  const handleNextStep = useCallback(() => {
-    console.log('🎯 WIZARD STATE - handleNextStep called', { currentStep, totalSteps, canProceed: canProceedToNextStep() });
-    
-    if (currentStep < totalSteps && canProceedToNextStep()) {
-      const nextStep = currentStep + 1;
-      console.log('🎯 WIZARD STATE - Moving to step', nextStep);
-      setCurrentStep(nextStep);
+  const totalSteps = 5;
+
+  const handleNextStep = useCallback(async () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(prev => prev + 1);
     } else {
-      console.log('🎯 WIZARD STATE - Cannot proceed', { 
-        currentStep, 
-        totalSteps, 
-        canProceed: canProceedToNextStep(),
-        stepData 
-      });
+      // Save the completed wizard analysis
+      try {
+        await saveWizardAnalysis({
+          stepData,
+          analysisResults: stepData.analysisResults,
+          confidenceScore: 0.85
+        });
+
+        toast({
+          title: "Wizard Analysis Saved",
+          description: "Your premium analysis has been saved and will appear in recent analyses.",
+        });
+      } catch (error) {
+        console.error('Error saving wizard analysis:', error);
+        toast({
+          variant: "destructive",
+          title: "Save Failed",
+          description: "Could not save your wizard analysis.",
+        });
+      }
     }
-  }, [currentStep, totalSteps, stepData]);
-  
+  }, [currentStep, totalSteps, stepData, saveWizardAnalysis, toast]);
+
   const handlePreviousStep = useCallback(() => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      setCurrentStep(prev => prev - 1);
     }
   }, [currentStep]);
-  
+
   const canProceedToNextStep = useCallback(() => {
-    console.log('🎯 WIZARD STATE - canProceedToNextStep check', { currentStep, stepData: stepData.selectedType });
-    
+    // Add validation logic based on current step
     switch (currentStep) {
       case 1:
-        const canProceedStep1 = stepData.selectedType !== '';
-        console.log('🎯 WIZARD STATE - Step 1 can proceed:', canProceedStep1, 'selectedType:', stepData.selectedType);
-        return canProceedStep1;
+        return stepData.step1 && Object.keys(stepData.step1).length > 0;
       case 2:
-        return stepData.projectName.trim() !== '';
+        return stepData.step2 && Object.keys(stepData.step2).length > 0;
       case 3:
-        return stepData.analysisGoals.trim() !== '';
+        return stepData.step3 && Object.keys(stepData.step3).length > 0;
       case 4:
-        const hasAnyDynamicField = Object.keys(stepData).some(key => {
-          if (!['selectedType', 'projectName', 'analysisGoals', 'stakeholders', 'referenceLinks', 'uploadedFiles', 'customPrompt'].includes(key)) {
-            const value = stepData[key];
-            return typeof value === 'string' && value.trim() !== '';
-          }
-          return false;
-        });
-        return hasAnyDynamicField || stepData.desiredOutcome?.trim() !== '';
+        return stepData.step4 && Object.keys(stepData.step4).length > 0;
       case 5:
-        return true; // File upload is optional
-      case 6:
-        return true; // Custom prompt is optional  
-      case 7:
-        return !isProcessing; // Can proceed once processing is complete
+        return stepData.step5 && Object.keys(stepData.step5).length > 0;
       default:
-        return false;
+        return true;
     }
-  }, [currentStep, stepData, isProcessing]);
-
-  // Provide both interfaces - the new one for full updates and the old one for key-value updates
-  const updateStepData = useCallback((newDataOrKey: StepData | string, value?: any) => {
-    console.log('🎯 WIZARD STATE - updateStepData called', { newDataOrKey, value });
-    
-    if (typeof newDataOrKey === 'string') {
-      // Old interface - key-value update
-      setStepData(prev => {
-        const updated = { ...prev, [newDataOrKey]: value };
-        console.log('🎯 WIZARD STATE - Updated stepData (key-value):', updated);
-        return updated;
-      });
-    } else {
-      // New interface - full object update
-      setStepData(newDataOrKey);
-      console.log('🎯 WIZARD STATE - Updated stepData (full object):', newDataOrKey);
-    }
-  }, []);
-
-  const resetWizard = useCallback(() => {
-    setCurrentStep(1);
-    setStepData({
-      selectedType: '',
-      projectName: '',
-      analysisGoals: '',
-      desiredOutcome: '',
-      improvementMetric: '',
-      deadline: '',
-      date: '',
-      stakeholders: [],
-      referenceLinks: [''],
-      customPrompt: ''
-    });
-    setIsProcessing(false);
-    setAnalysisResults(null);
-  }, []);
-
-  const startAnalysis = useCallback(() => {
-    setIsProcessing(true);
-    setCurrentStep(7); // Move to processing step
-  }, []);
-
-  const completeAnalysis = useCallback((results: any) => {
-    setIsProcessing(false);
-    setAnalysisResults(results);
-  }, []);
+  }, [currentStep, stepData]);
 
   return {
     currentStep,
-    setCurrentStep,
     stepData,
-    setStepData: updateStepData,
+    setStepData,
     totalSteps,
     handleNextStep,
     handlePreviousStep,
-    canProceedToNextStep,
-    isProcessing,
-    analysisResults,
-    startAnalysis,
-    completeAnalysis,
-    resetWizard
+    canProceedToNextStep
   };
 };

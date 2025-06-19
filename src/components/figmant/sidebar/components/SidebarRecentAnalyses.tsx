@@ -35,8 +35,18 @@ export const SidebarRecentAnalyses: React.FC<SidebarRecentAnalysesProps> = ({
         } 
       });
       onSectionChange('chat');
+    } else if (analysis.type === 'wizard') {
+      // Navigate to wizard page with historical analysis
+      navigate('/figmant', { 
+        state: { 
+          activeSection: 'wizard',
+          loadHistoricalAnalysis: analysis.id,
+          historicalData: analysis
+        } 
+      });
+      onSectionChange('wizard');
     } else {
-      // Navigate to wizard with historical context
+      // Navigate to wizard with historical context for design analyses
       navigate('/figmant', { 
         state: { 
           activeSection: 'wizard',
