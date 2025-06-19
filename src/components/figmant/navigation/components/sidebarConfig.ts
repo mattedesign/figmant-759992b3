@@ -1,12 +1,13 @@
 
 import { 
-  LayoutDashboard,
-  FileText,
-  Star,
-  CreditCard,
-  FileSearch,
-  Settings,
-  Search,
+  LayoutDashboard, 
+  MessageSquare, 
+  Wand2, 
+  CreditCard, 
+  Settings, 
+  HelpCircle,
+  Shield,
+  Grid
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -18,40 +19,15 @@ export interface SidebarItem {
 }
 
 export const sidebarItems: SidebarItem[] = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: LayoutDashboard,
-  },
-  {
-    id: 'analysis',
-    label: 'Analysis',
-    icon: FileText,
-    badge: 'New'
-  },
-  {
-    id: 'premium-analysis',
-    label: 'Premium Analysis',
-    icon: Star,
-  },
-  {
-    id: 'templates',
-    label: 'Templates',
-    icon: FileSearch,
-  },
-  {
-    id: 'search',
-    label: 'Search',
-    icon: Search,
-  },
-  {
-    id: 'credits',
-    label: 'Credits',
-    icon: CreditCard,
-  },
-  {
-    id: 'preferences',
-    label: 'Preferences',
-    icon: Settings,
-  },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'chat', label: 'Chat Analysis', icon: MessageSquare },
+  { id: 'wizard', label: 'Analysis Wizard', icon: Wand2 },
+  { id: 'all-analyses', label: 'All Analyses', icon: Grid },
+  { id: 'credits', label: 'Credits', icon: CreditCard },
+  { id: 'preferences', label: 'Preferences', icon: Settings },
+  { id: 'support', label: 'Help & Support', icon: HelpCircle },
+];
+
+export const adminSidebarItems: SidebarItem[] = [
+  { id: 'admin', label: 'Admin Panel', icon: Shield },
 ];
