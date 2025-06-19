@@ -1,12 +1,7 @@
 
 import React from 'react';
-import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { ChatMessages } from '../ChatMessages';
-import { MessageInputSection } from '../MessageInputSection';
-import { SelectedTemplateCard } from '../SelectedTemplateCard';
-import { AttachmentPreview } from '../AttachmentPreview';
-import { CreditStatusChecker } from './CreditStatusChecker';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { AnalysisChatInput } from '../AnalysisChatInput';
+import { ChatMessage } from '@/components/design/DesignChatInterface';
 
 interface AnalysisChatContainerProps {
   messages: ChatMessage[];
@@ -21,13 +16,13 @@ interface AnalysisChatContainerProps {
   onToggleUrlInput: () => void;
   showUrlInput: boolean;
   urlInput: string;
-  setUrlInput: (url: string) => void;
+  setUrlInput: (value: string) => void;
   onAddUrl: () => void;
   onCancelUrl: () => void;
   onTemplateSelect: (templateId: string) => void;
   availableTemplates: any[];
   onViewTemplate: (template: any) => void;
-  attachments: ChatAttachment[];
+  attachments: any[];
   onRemoveAttachment: (id: string) => void;
 }
 
@@ -53,78 +48,67 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   attachments,
   onRemoveAttachment
 }) => {
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      master: 'bg-purple-100 text-purple-800',
-      competitor: 'bg-blue-100 text-blue-800',
-      revenue: 'bg-green-100 text-green-800',
-      testing: 'bg-orange-100 text-orange-800',
-      messaging: 'bg-pink-100 text-pink-800',
-      hierarchy: 'bg-indigo-100 text-indigo-800',
-      seasonal: 'bg-yellow-100 text-yellow-800',
-      mobile: 'bg-teal-100 text-teal-800',
-      accessibility: 'bg-gray-100 text-gray-800',
-      design_system: 'bg-red-100 text-red-800'
-    };
-    return colors[category] || 'bg-gray-100 text-gray-800';
-  };
+  console.log('📋 ANALYSIS CHAT CONTAINER - Rendering with:', {
+    messagesCount: messages.length,
+    attachmentsCount: attachments.length,
+    showUrlInput,
+    urlInput,
+    isAnalyzing
+  });
 
   return (
-    <CreditStatusChecker>
-      <div className="h-full flex flex-col bg-transparent">
-        {/* Fixed Header Content - Selected Template and Attachments */}
-        <div className="flex-shrink-0 border-b border-gray-100">
-          {/* Selected Template Display */}
-          <div className="px-6 pt-4 pb-2">
-            <SelectedTemplateCard
-              currentTemplate={getCurrentTemplate()}
-              showTemplateDetails={true}
-              onToggleDetails={() => {}}
-              onClearSelection={() => {}}
-              getCategoryColor={getCategoryColor}
-            />
+    <div className="flex flex-col h-full">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 ? (
+          <div className="text-center text-muted-foreground">
+            <h3 className="text-lg font-medium mb-2">Start your analysis</h3>
+            <p>Upload files or add URLs to get started with your design analysis.</p>
           </div>
-
-          {/* Attachments Preview */}
-          {attachments.length > 0 && (
-            <div className="px-6 pb-4 space-y-2">
-              {attachments.map((attachment) => (
-                <AttachmentPreview
-                  key={attachment.id}
-                  attachment={attachment}
-                  onRemove={onRemoveAttachment}
-                />
-              ))}
+        ) : (
+          messages.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] p-3 rounded-lg ${
+                msg.role === 'user' 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-muted'
+              }`}>
+                <p className="whitespace-pre-wrap">{msg.content}</p>
+                {msg.attachments && msg.attachments.length > 0 && (
+                  <div className="mt-2 text-xs opacity-75">
+                    {msg.attachments.length} attachment(s)
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
-
-        {/* Scrollable Messages Area */}
-        <div className="flex-1 min-h-0">
-          <ScrollArea className="h-full">
-            <div className="px-6 py-4">
-              <ChatMessages
-                messages={messages}
-                isAnalyzing={isAnalyzing}
-              />
-            </div>
-          </ScrollArea>
-        </div>
-
-        {/* Fixed Message Input */}
-        <div className="flex-shrink-0 border-t border-gray-200 bg-transparent">
-          <MessageInputSection
-            message={message}
-            onMessageChange={setMessage}
-            onSendMessage={onSendMessage}
-            onKeyPress={onKeyPress}
-            onFileUpload={onFileUpload}
-            onToggleUrlInput={onToggleUrlInput}
-            isAnalyzing={isAnalyzing}
-            canSend={canSend}
-          />
-        </div>
+          ))
+        )}
       </div>
-    </CreditStatusChecker>
+
+      {/* Input Area */}
+      <div className="border-t">
+        <AnalysisChatInput
+          message={message}
+          setMessage={setMessage}
+          onSendMessage={onSendMessage}
+          onKeyPress={onKeyPress}
+          selectedPromptTemplate={getCurrentTemplate()}
+          canSend={canSend}
+          isAnalyzing={isAnalyzing}
+          onFileUpload={onFileUpload}
+          onToggleUrlInput={onToggleUrlInput}
+          onTemplateSelect={onTemplateSelect}
+          availableTemplates={availableTemplates}
+          onViewTemplate={onViewTemplate}
+          attachments={attachments}
+          onRemoveAttachment={onRemoveAttachment}
+          showUrlInput={showUrlInput}
+          urlInput={urlInput}
+          setUrlInput={setUrlInput}
+          onAddUrl={onAddUrl}
+          onCancelUrl={onCancelUrl}
+        />
+      </div>
+    </div>
   );
 };
