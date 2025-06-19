@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PanelRightClose, PanelRightOpen } from 'lucide-react';
@@ -55,6 +56,15 @@ export const UnifiedChatContainer: React.FC = () => {
       }))
     });
   }, [attachments]);
+
+  // Debug logging for URL input changes
+  useEffect(() => {
+    console.log('🔗 UNIFIED CHAT - URL input state changed:', {
+      showUrlInput,
+      urlInput,
+      urlInputLength: urlInput.length
+    });
+  }, [showUrlInput, urlInput]);
 
   const getCurrentTemplate = () => {
     return templates.find(t => t.id === selectedTemplateId) || null;
@@ -115,6 +125,12 @@ export const UnifiedChatContainer: React.FC = () => {
   };
 
   const handleAddUrl = async () => {
+    console.log('🔗 UNIFIED CHAT - handleAddUrl called with:', {
+      urlInput: urlInput,
+      urlInputTrimmed: urlInput.trim(),
+      hasUrlInput: !!urlInput.trim()
+    });
+
     if (!urlInput.trim()) {
       toast({
         variant: "destructive",
@@ -171,6 +187,7 @@ export const UnifiedChatContainer: React.FC = () => {
         return updated;
       });
       
+      // Clear URL input and hide input section
       setUrlInput('');
       setShowUrlInput(false);
       
@@ -283,6 +300,17 @@ export const UnifiedChatContainer: React.FC = () => {
   const handleViewTemplate = (template: any) => {
     console.log('🎯 UNIFIED CHAT - View template:', template);
     // This would open a modal or details view
+  };
+
+  const handleToggleUrlInput = () => {
+    console.log('🔗 UNIFIED CHAT - Toggle URL input:', !showUrlInput);
+    setShowUrlInput(!showUrlInput);
+  };
+
+  const handleCancelUrl = () => {
+    console.log('🔗 UNIFIED CHAT - Cancel URL input');
+    setShowUrlInput(false);
+    setUrlInput('');
   };
 
   const handleSendMessage = async () => {
@@ -409,12 +437,12 @@ export const UnifiedChatContainer: React.FC = () => {
           getCurrentTemplate={getCurrentTemplate}
           canSend={canSend}
           onFileUpload={handleFileUpload}
-          onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
+          onToggleUrlInput={handleToggleUrlInput}
           showUrlInput={showUrlInput}
           urlInput={urlInput}
           setUrlInput={setUrlInput}
           onAddUrl={handleAddUrl}
-          onCancelUrl={() => setShowUrlInput(false)}
+          onCancelUrl={handleCancelUrl}
           onTemplateSelect={handleTemplateSelect}
           availableTemplates={templates}
           onViewTemplate={handleViewTemplate}
@@ -440,12 +468,12 @@ export const UnifiedChatContainer: React.FC = () => {
           getCurrentTemplate={getCurrentTemplate}
           canSend={canSend}
           onFileUpload={handleFileUpload}
-          onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
+          onToggleUrlInput={handleToggleUrlInput}
           showUrlInput={showUrlInput}
           urlInput={urlInput}
           setUrlInput={setUrlInput}
           onAddUrl={handleAddUrl}
-          onCancelUrl={() => setShowUrlInput(false)}
+          onCancelUrl={handleCancelUrl}
           onTemplateSelect={handleTemplateSelect}
           availableTemplates={templates}
           onViewTemplate={handleViewTemplate}
