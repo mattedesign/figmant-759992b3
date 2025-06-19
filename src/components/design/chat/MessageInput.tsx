@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Paperclip, Upload, Link } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowUp, Loader2, Plus, Mic, Zap } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 interface MessageInputProps {
@@ -33,6 +34,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   isDragActive,
 }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [selectedModel, setSelectedModel] = useState('claude-sonnet');
   
   const isDisabled = !hasContent || isLoading || !canSend;
   const { open: openDropzone, ...restRootProps } = getRootProps();
@@ -40,26 +43,9 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
   const getSendButtonContent = () => {
     if (isLoading) {
-      return (
-        <>
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="ml-1 text-xs">
-            {loadingStage || 'Sending...'}
-          </span>
-        </>
-      );
+      return <Loader2 className="h-5 w-5 animate-spin" />;
     }
-    return <Send className="h-4 w-4" />;
-  };
-
-  const getSendButtonTitle = () => {
-    if (isLoading) {
-      return `Processing: ${loadingStage || 'Sending message...'}`;
-    }
-    if (!canSend) {
-      return "Please wait for uploads to complete";
-    }
-    return "Send message";
+    return <ArrowUp className="h-5 w-5" />;
   };
 
   const handleUploadFile = () => {
@@ -73,78 +59,131 @@ export const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   return (
-    <div
-      {...restRootProps}
-      className={`relative border rounded-lg transition-colors bg-background ${
-        isDragActive
-          ? 'border-primary ring-2 ring-primary ring-offset-2'
-          : 'border-input'
-      } ${isLoading ? 'opacity-70' : ''}`}
-    >
-      <input {...inputProps} />
-      <div className="flex items-start p-2 gap-2">
-        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Attach file or link"
-              disabled={isLoading}
-              className="flex-shrink-0 h-9 w-9 mt-0.5"
-            >
-              <Paperclip className="h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-56 p-1 mb-2">
-            <div className="grid gap-1">
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start h-9" 
-                onClick={handleUploadFile}
-                disabled={isLoading}
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                Upload File
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start h-9" 
-                onClick={handleAddUrl}
-              >
-                <Link className="mr-2 h-4 w-4" />
-                Add URL
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        <Textarea
-          value={message}
-          onChange={(e) => onMessageChange(e.target.value)}
-          placeholder={isDragActive ? "Drop files to attach" : "Ask about your designs, or paste an image..."}
-          className="flex-1 resize-none border-0 shadow-none focus-visible:ring-0 p-0 m-0 min-h-[40px] max-h-48 bg-transparent"
-          style={{lineHeight: '1.5rem', paddingTop: '0.375rem', paddingBottom: '0.375rem'}}
-          disabled={isLoading}
-          onKeyPress={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey && !isDisabled) {
-              e.preventDefault();
-              onSendMessage();
-            }
-          }}
-        />
-        <div className="flex items-end">
-          <Button
-            onClick={onSendMessage}
-            disabled={isDisabled}
-            size={isLoading ? "default" : "icon"}
-            title={getSendButtonTitle()}
-            className={`transition-all duration-200 flex-shrink-0 h-9 ${
-              isLoading ? 'w-auto px-3' : 'w-9'
-            }`}
-          >
-            {getSendButtonContent()}
-          </Button>
+    <div className="p-6 bg-background">
+      <div
+        {...restRootProps}
+        className={`relative bg-white rounded-2xl border transition-colors ${
+          isDragActive
+            ? 'border-primary ring-2 ring-primary ring-offset-2'
+            : 'border-gray-200'
+        } ${isLoading ? 'opacity-70' : ''}`}
+      >
+        <input {...inputProps} />
+        
+        {/* Main input area */}
+        <div className="p-4">
+          <Textarea
+            value={message}
+            onChange={(e) => onMessageChange(e.target.value)}
+            placeholder={isDragActive ? "Drop files to attach" : "How can I help..."}
+            className="w-full resize-none border-0 shadow-none focus-visible:ring-0 p-0 bg-transparent text-base placeholder:text-gray-400 min-h-[60px]"
+            disabled={isLoading}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey && !isDisabled) {
+                e.preventDefault();
+                onSendMessage();
+              }
+            }}
+          />
         </div>
+
+        {/* Controls row */}
+        <div className="flex items-center justify-between px-4 pb-4 gap-3">
+          <div className="flex items-center gap-3">
+            {/* Add attachment button */}
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10 rounded-xl border-gray-200"
+                  disabled={isLoading}
+                >
+                  <Plus className="h-5 w-5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48 p-2" align="start">
+                <div className="space-y-1">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start" 
+                    onClick={handleUploadFile}
+                    disabled={isLoading}
+                  >
+                    Upload File
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start" 
+                    onClick={handleAddUrl}
+                  >
+                    Add URL
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Prompt Template selector */}
+            <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+              <SelectTrigger className="w-40 h-10 rounded-xl border-gray-200 bg-white">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-green-500" />
+                  <SelectValue placeholder="Prompt Template" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="competitor">Competitor Analysis</SelectItem>
+                <SelectItem value="revenue">Revenue Impact</SelectItem>
+                <SelectItem value="testing">A/B Testing</SelectItem>
+                <SelectItem value="messaging">Copy Testing</SelectItem>
+                <SelectItem value="hierarchy">Visual Hierarchy</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Model selector */}
+            <Select value={selectedModel} onValueChange={setSelectedModel}>
+              <SelectTrigger className="w-36 h-10 rounded-xl border-gray-200 bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="claude-sonnet">Claude Sonnet</SelectItem>
+                <SelectItem value="claude-haiku">Claude Haiku</SelectItem>
+                <SelectItem value="claude-opus">Claude Opus</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Microphone button */}
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 rounded-xl border-gray-200"
+              disabled={isLoading}
+            >
+              <Mic className="h-5 w-5" />
+            </Button>
+
+            {/* Send button */}
+            <Button
+              onClick={onSendMessage}
+              disabled={isDisabled}
+              size="icon"
+              className="h-10 w-10 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-600"
+            >
+              {getSendButtonContent()}
+            </Button>
+          </div>
+        </div>
+
+        {/* Loading stage indicator */}
+        {isLoading && loadingStage && (
+          <div className="px-4 pb-2">
+            <div className="text-center text-xs text-muted-foreground">
+              {loadingStage}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
