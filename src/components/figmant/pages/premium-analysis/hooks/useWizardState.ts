@@ -48,7 +48,7 @@ export const useWizardState = () => {
         stepData 
       });
     }
-  }, [currentStep, totalSteps]);
+  }, [currentStep, totalSteps, stepData]);
   
   const handlePreviousStep = useCallback(() => {
     if (currentStep > 1) {
