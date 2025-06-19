@@ -1,22 +1,13 @@
 
 import React from 'react';
 import { UnifiedChatContainer } from './analysis/components/UnifiedChatContainer';
-import { AnalysisNavigationSidebar } from './analysis/components/AnalysisNavigationSidebar';
-import { useChatState } from './analysis/ChatStateManager';
 
 interface ChatPageProps {
   selectedTemplate?: any;
 }
 
 export const ChatPage: React.FC<ChatPageProps> = ({ selectedTemplate }) => {
-  const chatState = useChatState();
-
   console.log('💬 CHAT ANALYSIS PAGE - Rendering chat analysis system');
-
-  const handleViewAttachment = (attachment: any) => {
-    console.log('View attachment:', attachment);
-    // Could open a modal or preview
-  };
 
   return (
     <div className="h-full flex flex-col min-h-0">
@@ -30,27 +21,9 @@ export const ChatPage: React.FC<ChatPageProps> = ({ selectedTemplate }) => {
         </div>
       </div>
 
-      {/* Main Content - Three Column Layout */}
-      <div className="flex-1 min-h-0 flex px-6 gap-4">
-        {/* Main Chat Content - Takes up remaining space */}
-        <div className="flex-1 min-h-0">
-          <UnifiedChatContainer />
-        </div>
-
-        {/* Right Analysis Assets Panel */}
-        <div className="flex-shrink-0">
-          <AnalysisNavigationSidebar
-            messages={chatState.messages || []}
-            attachments={chatState.attachments || []}
-            onRemoveAttachment={chatState.setAttachments ? (id) => {
-              chatState.setAttachments(prev => prev.filter(att => att.id !== id));
-            } : () => {}}
-            onViewAttachment={handleViewAttachment}
-            lastAnalysisResult={null}
-            isCollapsed={false}
-            onToggleCollapse={() => {}}
-          />
-        </div>
+      {/* Main Chat Content - Full width since Analysis Assets panel is now at layout level */}
+      <div className="flex-1 min-h-0 px-6">
+        <UnifiedChatContainer />
       </div>
     </div>
   );

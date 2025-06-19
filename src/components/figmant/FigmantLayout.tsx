@@ -3,12 +3,15 @@ import React, { useState } from 'react';
 import { FigmantMainContent } from './FigmantMainContent';
 import { FigmantSidebar } from './FigmantSidebar';
 import { MobileNavigation } from './navigation/MobileNavigation';
+import { AnalysisNavigationSidebar } from './pages/analysis/components/AnalysisNavigationSidebar';
+import { useChatState } from './pages/analysis/ChatStateManager';
 import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 
 export const FigmantLayout: React.FC = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+  const chatState = useChatState();
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
 
@@ -23,6 +26,14 @@ export const FigmantLayout: React.FC = () => {
   const handleSidebarCollapsedChange = (collapsed: boolean) => {
     setIsSidebarCollapsed(collapsed);
   };
+
+  const handleViewAttachment = (attachment: any) => {
+    console.log('View attachment:', attachment);
+    // Could open a modal or preview
+  };
+
+  // Show Analysis Assets panel only on chat page
+  const showAnalysisAssetsPanel = activeSection === 'chat';
 
   if (isMobile) {
     return (
@@ -51,7 +62,7 @@ export const FigmantLayout: React.FC = () => {
     );
   }
 
-  // Desktop layout with fixed sidebar and scrollable main content
+  // Desktop layout with fixed sidebar, main content, and optional analysis assets panel
   return (
     <div className="min-h-screen h-screen flex w-full gap-4 overflow-hidden" style={{ background: 'transparent' }}>
       <div className="flex-shrink-0">
@@ -61,6 +72,7 @@ export const FigmantLayout: React.FC = () => {
           onCollapsedChange={handleSidebarCollapsedChange}
         />
       </div>
+      
       <div className="flex-1 min-w-0 overflow-hidden">
         <FigmantMainContent
           activeSection={activeSection}
@@ -71,6 +83,23 @@ export const FigmantLayout: React.FC = () => {
           isSidebarCollapsed={isSidebarCollapsed}
         />
       </div>
+
+      {/* Analysis Assets Panel - Only show on chat page */}
+      {showAnalysisAssetsPanel && (
+        <div className="flex-shrink-0">
+          <AnalysisNavigationSidebar
+            messages={chatState.messages || []}
+            attachments={chatState.attachments || []}
+            onRemoveAttachment={chatState.setAttachments ? (id) => {
+              chatState.setAttachments(prev => prev.filter(att => att.id !== id));
+            } : () => {}}
+            onViewAttachment={handleViewAttachment}
+            lastAnalysisResult={null}
+            isCollapsed={false}
+            onToggleCollapse={() => {}}
+          />
+        </div>
+      )}
     </div>
   );
 };
