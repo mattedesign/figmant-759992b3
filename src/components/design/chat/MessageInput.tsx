@@ -102,7 +102,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                   <Plus className="h-5 w-5" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-48 p-2" align="start">
+              <PopoverContent className="w-48 p-2 bg-white border border-gray-200 shadow-lg z-50" align="start">
                 <div className="space-y-1">
                   <Button 
                     variant="ghost" 
@@ -131,7 +131,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                   <SelectValue placeholder="Prompt Template" />
                 </div>
               </SelectTrigger>
-              <SelectContent className="bg-white border border-gray-200 shadow-lg">
+              <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
                 <SelectItem value="competitor">Competitor Analysis</SelectItem>
                 <SelectItem value="revenue">Revenue Impact</SelectItem>
                 <SelectItem value="testing">A/B Testing</SelectItem>
@@ -145,7 +145,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
               <SelectTrigger className="w-48 h-12 rounded-2xl border-gray-200 bg-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-white border border-gray-200 shadow-lg">
+              <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
                 <SelectItem value="claude-sonnet">Claude Sonnet</SelectItem>
                 <SelectItem value="claude-haiku">Claude Haiku</SelectItem>
                 <SelectItem value="claude-opus">Claude Opus</SelectItem>

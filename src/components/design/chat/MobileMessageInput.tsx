@@ -93,7 +93,7 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
                 <Plus className="h-4 w-4" />
               </Button>
             </DrawerTrigger>
-            <DrawerContent>
+            <DrawerContent className="bg-white">
               <div className="mx-auto w-full max-w-sm">
                 <DrawerHeader>
                   <DrawerTitle>Attach Content</DrawerTitle>
@@ -131,7 +131,7 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
                 <SelectValue placeholder="Template" />
               </div>
             </SelectTrigger>
-            <SelectContent className="bg-white border border-gray-200 shadow-lg">
+            <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
               <SelectItem value="competitor">Competitor Analysis</SelectItem>
               <SelectItem value="revenue">Revenue Impact</SelectItem>
               <SelectItem value="testing">A/B Testing</SelectItem>
@@ -145,7 +145,7 @@ export const MobileMessageInput: React.FC<MobileMessageInputProps> = ({
             <SelectTrigger className={`w-32 rounded-2xl border-gray-200 bg-white ${isSmallMobile ? 'h-12' : 'h-10'}`}>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-white border border-gray-200 shadow-lg">
+            <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
               <SelectItem value="claude-sonnet">Sonnet</SelectItem>
               <SelectItem value="claude-haiku">Haiku</SelectItem>
               <SelectItem value="claude-opus">Opus</SelectItem>
