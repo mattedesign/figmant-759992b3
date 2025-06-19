@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown } from 'lucide-react';
@@ -70,7 +71,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
         {item.label}
       </span>
     </Button>;
-  const renderMenuSection = (section: MenuSection, sectionKey: string) => {
+  const renderMenuSection = (section: MenuSection, sectionKey: string, isFirst: boolean) => {
     const isCollapsed = section.title ? collapsedSections[section.title] : false;
     return <div key={sectionKey} className="space-y-2">
         {section.title && <div className="flex items-center justify-between px-[8px]">
@@ -87,7 +88,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
         alignItems: 'center',
         gap: '4px',
         alignSelf: 'stretch',
-        borderTop: '1px solid var(--Stroke-01, #ECECEC)'
+        ...(isFirst ? {} : { borderTop: '1px solid var(--Stroke-01, #ECECEC)' })
       }}>
             {section.items?.map(renderMenuItem)}
           </div>}
@@ -98,6 +99,6 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
     return null;
   }
   return <div className="space-y-6 mb-4 px-[8px]">
-      {sections.map((section, index) => renderMenuSection(section, `section-${index}`))}
+      {sections.map((section, index) => renderMenuSection(section, `section-${index}`, index === 0))}
     </div>;
 };
