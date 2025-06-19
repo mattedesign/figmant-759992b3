@@ -1,0 +1,125 @@
+
+import React, { useState } from 'react';
+import { ChatAttachment } from '@/components/design/DesignChatInterface';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Monitor, Smartphone, ExternalLink, AlertCircle, Loader2 } from 'lucide-react';
+
+interface ScreenshotDisplayProps {
+  attachment: ChatAttachment;
+}
+
+export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment }) => {
+  const [activeView, setActiveView] = useState<'desktop' | 'mobile'>('desktop');
+
+  if (!attachment.metadata?.screenshots) {
+    return (
+      <div className="p-3 bg-muted/50 rounded-lg text-center">
+        <AlertCircle className="w-4 h-4 text-muted-foreground mx-auto mb-2" />
+        <p className="text-xs text-muted-foreground">No screenshots available</p>
+      </div>
+    );
+  }
+
+  const { desktop, mobile } = attachment.metadata.screenshots;
+  const hasDesktop = desktop?.success;
+  const hasMobile = mobile?.success;
+
+  if (!hasDesktop && !hasMobile) {
+    return (
+      <div className="p-3 bg-muted/50 rounded-lg text-center">
+        <AlertCircle className="w-4 h-4 text-muted-foreground mx-auto mb-2" />
+        <p className="text-xs text-muted-foreground">Screenshot capture failed</p>
+        {(desktop?.error || mobile?.error) && (
+          <p className="text-xs text-destructive mt-1">{desktop?.error || mobile?.error}</p>
+        )}
+      </div>
+    );
+  }
+
+  const currentScreenshot = activeView === 'desktop' ? desktop : mobile;
+
+  return (
+    <div className="space-y-2">
+      {/* View Toggle */}
+      {hasDesktop && hasMobile && (
+        <div className="flex items-center gap-1">
+          <Button
+            variant={activeView === 'desktop' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveView('desktop')}
+            className="h-6 px-2 text-xs"
+          >
+            <Monitor className="w-3 h-3 mr-1" />
+            Desktop
+          </Button>
+          <Button
+            variant={activeView === 'mobile' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveView('mobile')}
+            className="h-6 px-2 text-xs"
+          >
+            <Smartphone className="w-3 h-3 mr-1" />
+            Mobile
+          </Button>
+        </div>
+      )}
+
+      {/* Screenshot Display */}
+      {currentScreenshot?.success && currentScreenshot.url ? (
+        <Card className="overflow-hidden">
+          <CardContent className="p-0">
+            <div className="relative group">
+              <img 
+                src={currentScreenshot.url}
+                alt={`${activeView} screenshot of ${attachment.name}`}
+                className="w-full h-auto max-h-48 object-cover"
+                style={{ aspectRatio: activeView === 'desktop' ? '16/10' : '9/16' }}
+              />
+              
+              {/* Overlay with link */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => window.open(attachment.url, '_blank')}
+                  className="h-6 px-2 text-xs"
+                >
+                  <ExternalLink className="w-3 h-3 mr-1" />
+                  Visit
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="p-3 bg-muted/50 rounded-lg text-center">
+          <Loader2 className="w-4 h-4 text-muted-foreground mx-auto mb-2 animate-spin" />
+          <p className="text-xs text-muted-foreground">Capturing screenshot...</p>
+        </div>
+      )}
+
+      {/* Status Badge */}
+      <div className="flex items-center justify-between">
+        <Badge 
+          variant={attachment.status === 'uploaded' ? 'default' : 'secondary'}
+          className="text-xs"
+        >
+          {attachment.status}
+        </Badge>
+        
+        {attachment.url && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => window.open(attachment.url, '_blank')}
+            className="h-5 px-2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <ExternalLink className="w-3 h-3" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
