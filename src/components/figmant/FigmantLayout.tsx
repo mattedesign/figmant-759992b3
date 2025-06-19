@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { FigmantMainContent } from './FigmantMainContent';
 import { FigmantSidebar } from './sidebar/FigmantSidebarContainer';
@@ -67,9 +68,9 @@ export const FigmantLayout: React.FC = () => {
 
   if (isMobile) {
     return (
-      <div className="min-h-screen flex flex-col w-full overflow-hidden" style={{ background: 'transparent' }}>
+      <div className="h-screen flex flex-col w-full overflow-hidden p-3" style={{ background: 'transparent' }}>
         {/* Mobile Header with Navigation */}
-        <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between rounded-t-lg">
           <h1 className="text-xl font-bold text-gray-900">figmant</h1>
           <MobileNavigation 
             activeSection={activeSection}
@@ -94,7 +95,7 @@ export const FigmantLayout: React.FC = () => {
 
   // Desktop layout with responsive sidebar behavior
   return (
-    <div className="min-h-screen h-screen flex w-full gap-4 overflow-hidden" style={{ background: 'transparent' }}>
+    <div className="h-screen flex w-full gap-4 overflow-hidden p-3" style={{ background: 'transparent' }}>
       <div className="flex-shrink-0">
         <FigmantSidebar 
           activeSection={activeSection}
