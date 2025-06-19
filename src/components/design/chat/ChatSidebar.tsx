@@ -5,15 +5,18 @@ import { MobileSuggestedPrompts } from './MobileSuggestedPrompts';
 import { AnalysisResults } from './AnalysisResults';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ChatMessage } from '@/components/design/DesignChatInterface';
+import { ExtractedSuggestion } from '@/utils/suggestionExtractor';
 
 interface ChatSidebarProps {
   messages: ChatMessage[];
   onSelectPrompt: (prompt: string) => void;
+  extractedSuggestions?: ExtractedSuggestion[];
 }
 
 export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   messages,
-  onSelectPrompt
+  onSelectPrompt,
+  extractedSuggestions = []
 }) => {
   const isMobile = useIsMobile();
   
@@ -32,6 +35,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         <AnalysisResults 
           lastAnalysisResult={{ analysis: lastAnalysisResult }}
           uploadIds={messages.slice(-1)[0]?.uploadIds}
+          extractedSuggestions={extractedSuggestions}
         />
       )}
     </div>

@@ -6,6 +6,8 @@ import { useFileHandlers } from '../handlers/useFileHandlers';
 import { useImageProcessingMonitor } from '@/hooks/useImageProcessingMonitor';
 import { useStorageVerification } from './useStorageVerification';
 import { useChatDropzone } from './useChatDropzone';
+import { useState } from 'react';
+import { SuggestionExtractor, ExtractedSuggestion } from '@/utils/suggestionExtractor';
 
 export const useDesignChatLogic = () => {
   const {
@@ -30,6 +32,9 @@ export const useDesignChatLogic = () => {
     showProcessingMonitor,
     setShowProcessingMonitor
   } = useChatInterfaceState();
+
+  // Add state for extracted suggestions
+  const [extractedSuggestions, setExtractedSuggestions] = useState<ExtractedSuggestion[]>([]);
 
   // --- Storage Verification Logic ---
   useStorageVerification({
@@ -69,7 +74,7 @@ export const useDesignChatLogic = () => {
   );
 
   const { 
-    onSendMessage, 
+    onSendMessage: originalOnSendMessage, 
     analyzeWithChat, 
     canSendMessage, 
     loadingState, 
@@ -80,6 +85,18 @@ export const useDesignChatLogic = () => {
     setAttachments,
     setLastAnalysisResult
   );
+
+  // Wrap the original onSendMessage to extract suggestions
+  const onSendMessage = async (messageText: string, attachments: any[]) => {
+    await originalOnSendMessage(messageText, attachments);
+    
+    // Extract suggestions from the last assistant message
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.role === 'assistant' && lastMessage.content) {
+      const suggestions = SuggestionExtractor.extractFromClaudeResponse(lastMessage.content);
+      setExtractedSuggestions(suggestions);
+    }
+  };
 
   // Configure dropzone
   const { getRootProps, getInputProps, isDragActive } = useChatDropzone({
@@ -155,6 +172,7 @@ export const useDesignChatLogic = () => {
     jobs,
     systemHealth,
     loadingState,
+    extractedSuggestions,
     
     // State setters
     setMessage,

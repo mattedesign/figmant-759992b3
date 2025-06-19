@@ -1,140 +1,120 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
-import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
-import { EnhancedImpactSummary } from '../EnhancedImpactSummary';
+import { Brain, Lightbulb, TrendingUp, Target } from 'lucide-react';
+import { ExtractedSuggestion } from '@/utils/suggestionExtractor';
 
 interface AnalysisResultsProps {
-  lastAnalysisResult: any;
+  lastAnalysisResult: {
+    analysis: string;
+  };
   uploadIds?: string[];
-  showEnhancedSummary?: boolean;
+  extractedSuggestions?: ExtractedSuggestion[];
 }
 
-export const AnalysisResults: React.FC<AnalysisResultsProps> = ({ 
-  lastAnalysisResult, 
-  uploadIds = [],
-  showEnhancedSummary = true
+export const AnalysisResults: React.FC<AnalysisResultsProps> = ({
+  lastAnalysisResult,
+  uploadIds,
+  extractedSuggestions = []
 }) => {
-  // Get the latest analysis for the first upload ID if available
-  const { data: analyses } = useDesignAnalyses(uploadIds[0]);
-  const latestAnalysis = analyses?.[0];
-
   if (!lastAnalysisResult) {
     return null;
   }
 
-  const hasImpactSummary = latestAnalysis?.impact_summary;
+  const getImpactColor = (impact: string) => {
+    switch (impact) {
+      case 'High':
+        return 'bg-red-100 text-red-800';
+      case 'Medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Low':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'Conversion':
+        return Target;
+      case 'Performance':
+        return TrendingUp;
+      default:
+        return Lightbulb;
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Enhanced Impact Summary Section */}
-      {showEnhancedSummary && hasImpactSummary && (
-        <div>
-          <EnhancedImpactSummary 
-            impactSummary={latestAnalysis.impact_summary}
-            winnerUploadId={uploadIds[0]}
-          />
-        </div>
-      )}
-
-      {/* Analysis Results Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-500" />
-            Analysis Results
-          </CardTitle>
-          <CardDescription>
-            AI-powered design analysis insights
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          {hasImpactSummary ? (
-            <Tabs defaultValue="analysis" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6">
-                <TabsTrigger value="analysis">Analysis</TabsTrigger>
-                <TabsTrigger value="details">Details</TabsTrigger>
-                <TabsTrigger value="debug">Debug</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="analysis" className="mt-0">
-                <div className="whitespace-pre-wrap text-sm leading-relaxed bg-muted/30 p-4 rounded-lg">
-                  {lastAnalysisResult.analysis || lastAnalysisResult.response || 'No analysis available'}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="details" className="mt-0">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-sm">
-                      Response Time: {lastAnalysisResult.debugInfo?.responseTimeMs || 0}ms
-                    </span>
-                  </div>
-                  
-                  {lastAnalysisResult.debugInfo?.tokensUsed && (
-                    <div className="text-sm">
-                      <Badge variant="secondary">
-                        {lastAnalysisResult.debugInfo.tokensUsed} tokens used
-                      </Badge>
-                    </div>
-                  )}
-                  
-                  {lastAnalysisResult.debugInfo?.model && (
-                    <div className="text-sm">
-                      Model: <Badge variant="outline">{lastAnalysisResult.debugInfo.model}</Badge>
-                    </div>
-                  )}
-                  
-                  {uploadIds.length > 0 && (
-                    <div className="text-sm">
-                      <span className="font-medium">Upload IDs:</span>
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        {uploadIds.map((id) => (
-                          <Badge key={id} variant="outline" className="text-xs">
-                            {id.slice(-8)}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="debug" className="mt-0">
-                <div className="bg-muted/30 p-4 rounded-lg">
-                  <pre className="text-xs overflow-auto whitespace-pre-wrap">
-                    {JSON.stringify(lastAnalysisResult.debugInfo, null, 2)}
-                  </pre>
-                </div>
-              </TabsContent>
-            </Tabs>
-          ) : (
-            <div className="space-y-4">
-              <div className="whitespace-pre-wrap text-sm leading-relaxed bg-muted/30 p-4 rounded-lg">
-                {lastAnalysisResult.analysis || lastAnalysisResult.response || 'No analysis available'}
-              </div>
-              
-              <div className="flex items-center gap-4 text-sm text-muted-foreground pt-4 border-t">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  <span>Response Time: {lastAnalysisResult.debugInfo?.responseTimeMs || 0}ms</span>
-                </div>
-                
-                {lastAnalysisResult.debugInfo?.tokensUsed && (
-                  <Badge variant="secondary">
-                    {lastAnalysisResult.debugInfo.tokensUsed} tokens used
-                  </Badge>
-                )}
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Brain className="h-5 w-5 text-blue-600" />
+          Analysis Results
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="insights" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="insights">Insights</TabsTrigger>
+            <TabsTrigger value="suggestions" className="flex items-center gap-1">
+              <Lightbulb className="h-3 w-3" />
+              Suggestions
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="insights" className="mt-4">
+            <div className="prose prose-sm max-w-none">
+              <div className="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">
+                {lastAnalysisResult.analysis}
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+          </TabsContent>
+          
+          <TabsContent value="suggestions" className="mt-4">
+            {extractedSuggestions.length > 0 ? (
+              <div className="space-y-3">
+                {extractedSuggestions.map((suggestion) => {
+                  const IconComponent = getCategoryIcon(suggestion.category);
+                  return (
+                    <div key={suggestion.id} className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                      <div className="flex items-start gap-3 mb-2">
+                        <div className="w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center flex-shrink-0">
+                          <IconComponent className="h-3 w-3 text-gray-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm text-gray-900 mb-1">
+                            {suggestion.title}
+                          </h4>
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            {suggestion.description}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 ml-9">
+                        <Badge className={`text-xs px-2 py-0.5 ${getImpactColor(suggestion.impact)}`}>
+                          {suggestion.impact} Impact
+                        </Badge>
+                        <Badge variant="outline" className="text-xs px-2 py-0.5">
+                          {suggestion.category}
+                        </Badge>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <Lightbulb className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">No suggestions extracted yet</p>
+                <p className="text-xs text-gray-400">Suggestions will appear after analysis</p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 };

@@ -12,60 +12,15 @@ import {
   Eye,
   ArrowRight
 } from 'lucide-react';
+import { ExtractedSuggestion } from '@/utils/suggestionExtractor';
 
-interface SuggestionItem {
-  id: string;
-  title: string;
-  description: string;
-  impact: 'High' | 'Medium' | 'Low';
-  category: 'Conversion' | 'Usability' | 'Accessibility' | 'Performance';
-  icon: React.ComponentType<{ className?: string }>;
+interface SuggestionsTabContentProps {
+  suggestions?: ExtractedSuggestion[];
 }
 
-const mockSuggestions: SuggestionItem[] = [
-  {
-    id: '1',
-    title: 'Improve CTA Button Contrast',
-    description: 'Increase contrast ratio of primary buttons to meet WCAG AA standards and improve conversion rates.',
-    impact: 'High',
-    category: 'Conversion',
-    icon: Target
-  },
-  {
-    id: '2',
-    title: 'Optimize Mobile Touch Targets',
-    description: 'Increase touch target sizes to minimum 44px for better mobile usability.',
-    impact: 'Medium',
-    category: 'Usability',
-    icon: Users
-  },
-  {
-    id: '3',
-    title: 'Add Visual Hierarchy',
-    description: 'Enhance typography scale and spacing to create clearer information hierarchy.',
-    impact: 'Medium',
-    category: 'Usability',
-    icon: Eye
-  },
-  {
-    id: '4',
-    title: 'Reduce Cognitive Load',
-    description: 'Simplify form fields and reduce the number of steps in the user flow.',
-    impact: 'High',
-    category: 'Conversion',
-    icon: Zap
-  },
-  {
-    id: '5',
-    title: 'Improve Loading States',
-    description: 'Add skeleton screens and progress indicators for better perceived performance.',
-    impact: 'Low',
-    category: 'Performance',
-    icon: TrendingUp
-  }
-];
-
-export const SuggestionsTabContent: React.FC = () => {
+export const SuggestionsTabContent: React.FC<SuggestionsTabContentProps> = ({ 
+  suggestions = [] 
+}) => {
   const getImpactColor = (impact: string) => {
     switch (impact) {
       case 'High':
@@ -94,6 +49,44 @@ export const SuggestionsTabContent: React.FC = () => {
     }
   };
 
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'Conversion':
+        return Target;
+      case 'Usability':
+        return Users;
+      case 'Accessibility':
+        return Eye;
+      case 'Performance':
+        return TrendingUp;
+      default:
+        return Zap;
+    }
+  };
+
+  if (suggestions.length === 0) {
+    return (
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-4">
+          <Lightbulb className="h-4 w-4 text-yellow-600" />
+          <span className="text-sm font-medium text-gray-700">UX Improvement Suggestions</span>
+        </div>
+
+        {/* Empty State */}
+        <div className="text-center py-8">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lightbulb className="w-8 h-8 text-gray-400" />
+          </div>
+          <p className="text-sm font-medium text-gray-500">No suggestions yet</p>
+          <p className="text-xs text-gray-400 mt-1">
+            Start an analysis to see AI-generated suggestions
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -104,8 +97,8 @@ export const SuggestionsTabContent: React.FC = () => {
 
       {/* Suggestions List */}
       <div className="space-y-3">
-        {mockSuggestions.map((suggestion) => {
-          const IconComponent = suggestion.icon;
+        {suggestions.map((suggestion) => {
+          const IconComponent = getCategoryIcon(suggestion.category);
           return (
             <Card key={suggestion.id} className="p-3 hover:shadow-sm transition-shadow">
               <div className="space-y-3">

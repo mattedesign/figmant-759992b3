@@ -59,6 +59,7 @@ export const DesktopDesignChatLayout = () => {
         <ChatSidebar
           messages={chatLogic.messages}
           onSelectPrompt={chatLogic.handleSuggestedPrompt}
+          extractedSuggestions={chatLogic.extractedSuggestions}
         />
       </div>
     </>
