@@ -27,7 +27,7 @@ export const AllAnalysesGridPage: React.FC = () => {
         analysisType: a.analysis_type || 'General',
         score: a.impact_summary?.key_metrics?.overall_score || Math.floor(Math.random() * 4) + 7,
         fileCount: 1,
-        imageUrl: upload?.preview_url || upload?.file_url,
+        imageUrl: upload?.preview_url || upload?.file_url || upload?.file_path,
         fileName: upload?.file_name
       };
     }),

@@ -12,6 +12,8 @@ export interface SavedChatAnalysis {
     attachments_processed?: number;
     upload_ids?: string[];
     debug_info?: any;
+    screenshot_url?: string;
+    website_screenshot?: string;
   };
   confidence_score: number;
   analysis_type: string;

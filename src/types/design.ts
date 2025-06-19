@@ -1,4 +1,3 @@
-
 export interface DesignUpload {
   id: string;
   user_id: string;
@@ -17,6 +16,8 @@ export interface DesignUpload {
   original_batch_id: string | null;
   is_replacement: boolean | null;
   replaced_upload_id: string | null;
+  preview_url?: string | null;
+  file_url?: string | null;
   created_at: string;
   updated_at: string;
 }
