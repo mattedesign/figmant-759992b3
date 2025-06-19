@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown } from 'lucide-react';
@@ -44,14 +43,16 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
       className={cn(
         "w-full justify-start h-12 text-left",
         activeSection === item.id 
-          ? "bg-white text-[#3D4A5C] rounded-[20px]"
-          : "hover:bg-white hover:text-[#3D4A5C] hover:rounded-[20px]"
+          ? "bg-white text-[#3D4A5C] rounded-[8px] shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
+          : "hover:bg-white hover:text-[#3D4A5C] hover:rounded-[8px] hover:shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
       )}
       onClick={() => onSectionChange(item.id)}
     >
       <div className={cn(
         "w-8 h-8 mr-3 rounded-[8px] flex items-center justify-center",
-        activeSection !== item.id && "bg-[var(--Surface-03,#F1F1F1)]"
+        activeSection === item.id 
+          ? "bg-transparent" 
+          : "bg-[var(--Surface-03,#F1F1F1)]"
       )}>
         <item.icon className={cn(
           "h-4 w-4",
@@ -113,4 +114,3 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
     </div>
   );
 };
-
