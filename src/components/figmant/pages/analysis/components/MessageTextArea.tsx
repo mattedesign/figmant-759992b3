@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Textarea } from '@/components/ui/textarea';
 import { FigmantPromptTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
 
 interface MessageTextAreaProps {
@@ -10,6 +9,7 @@ interface MessageTextAreaProps {
   selectedPromptTemplate: FigmantPromptTemplate | null;
   chatMode: 'chat' | 'analyze';
   isAnalyzing: boolean;
+  placeholder: string;
 }
 
 export const MessageTextArea: React.FC<MessageTextAreaProps> = ({
@@ -18,27 +18,36 @@ export const MessageTextArea: React.FC<MessageTextAreaProps> = ({
   onKeyPress,
   selectedPromptTemplate,
   chatMode,
-  isAnalyzing
+  isAnalyzing,
+  placeholder
 }) => {
-  const getPlaceholder = () => {
-    if (chatMode === 'analyze') {
-      return selectedPromptTemplate 
-        ? `Ask about your design using ${selectedPromptTemplate.displayName || selectedPromptTemplate.title}...`
-        : "Ask me anything about your design...";
+  const getContextualPlaceholder = () => {
+    if (chatMode === 'chat') {
+      return placeholder;
     }
-    return "How can I help...";
+    
+    if (selectedPromptTemplate) {
+      return `${selectedPromptTemplate.displayName || selectedPromptTemplate.title}: ${placeholder}`;
+    }
+    
+    return placeholder;
   };
 
   return (
     <div className="flex p-2 items-start gap-2 self-stretch">
-      <Textarea
-        className="flex-1 overflow-hidden text-[#121212] text-ellipsis font-['Instrument_Sans'] text-[15px] font-normal leading-6 tracking-[-0.3px] border-none outline-none bg-transparent resize-none min-h-[24px] max-h-[96px]"
-        placeholder={getPlaceholder()}
+      <textarea
+        className="flex-1 overflow-hidden text-[#121212] text-ellipsis font-['Instrument_Sans'] text-[15px] font-normal leading-6 tracking-[-0.3px] border-none outline-none bg-transparent resize-none min-h-[60px]"
+        style={{
+          display: '-webkit-box',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: 8,
+        }}
+        placeholder={getContextualPlaceholder()}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyPress={onKeyPress}
         disabled={isAnalyzing}
-        rows={1}
+        rows={3}
       />
     </div>
   );

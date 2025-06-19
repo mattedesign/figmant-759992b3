@@ -1,373 +1,258 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { PanelRightClose, PanelRightOpen } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { AnalysisChatContainer } from './AnalysisChatContainer';
-import { AnalysisNavigationSidebar } from './AnalysisNavigationSidebar';
-import { URLInputHandler } from './URLInputHandler';
 import { useChatState } from '../ChatStateManager';
+import { useMessageHandler } from '../useMessageHandler';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
-import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
+import { NavigationSectionList } from './NavigationSectionList';
+import { ChatInputContainer } from './ChatInputContainer';
+import { ChatMessageArea } from './ChatMessageArea';
+import { URLInputSection } from './URLInputSection';
+import { useFileUploadHandlers } from '@/hooks/useFileUploadHandlers';
 import { useToast } from '@/hooks/use-toast';
-import { FileUploadService } from '../utils/fileUploadService';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 export const UnifiedChatContainer: React.FC = () => {
-  const { data: templates = [], isLoading: templatesLoading } = useFigmantPromptTemplates();
-  const { mutateAsync: analyzeWithClaude, isPending: isAnalyzing } = useFigmantChatAnalysis();
-  const { toast } = useToast();
-  const isMobile = useIsMobile();
-  
-  // Use the shared chat state
-  const chatState = useChatState();
-  
-  // Verify we have the chat state functions
-  if (!chatState.setAttachments || !chatState.setMessages || !chatState.setMessage) {
-    console.error('🚨 UNIFIED CHAT - Chat state functions not available!');
-    return <div>Error: Chat state not properly initialized</div>;
-  }
-
   const {
-    messages = [],
+    messages,
     setMessages,
-    message = '',
+    message,
     setMessage,
-    attachments = [],
+    attachments,
     setAttachments,
-    selectedTemplateId,
-    setSelectedTemplateId
-  } = chatState;
+    showUrlInput,
+    setShowUrlInput,
+    urlInput,
+    setUrlInput,
+    selectedPromptTemplate,
+    setSelectedPromptTemplate,
+  } = useChatState();
 
-  const [showUrlInput, setShowUrlInput] = useState(false);
+  // Mode state
+  const [chatMode, setChatMode] = useState<'chat' | 'analyze'>('analyze');
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
-  const [isAssetsPanelVisible, setIsAssetsPanelVisible] = useState(!isMobile);
+  const [activeTab, setActiveTab] = useState('details');
 
-  // Debug logging to track state changes
-  useEffect(() => {
-    console.log('🔄 UNIFIED CHAT - Attachments changed:', {
-      count: attachments.length,
-      details: attachments.map(att => ({ 
-        id: att.id, 
-        type: att.type, 
-        name: att.name, 
-        status: att.status 
-      }))
-    });
-  }, [attachments]);
+  const { templates } = useFigmantPromptTemplates();
+  const { toast } = useToast();
 
-  const getCurrentTemplate = () => {
-    return templates.find(t => t.id === selectedTemplateId) || null;
-  };
-
-  const handleFileUpload = async (files: FileList) => {
-    console.log('📎 UNIFIED CHAT - Starting file upload for', files.length, 'files');
-    
-    const newAttachments: ChatAttachment[] = [];
-    
-    for (const file of Array.from(files)) {
-      const attachment: ChatAttachment = {
+  // File upload handlers
+  const { handleFileUpload } = useFileUploadHandlers({
+    onUploadComplete: (file, uploadPath) => {
+      const newAttachment: ChatAttachment = {
         id: crypto.randomUUID(),
         type: 'file',
         name: file.name,
-        file,
-        status: 'uploading'
+        file: file,
+        uploadPath: uploadPath,
+        status: 'uploaded'
       };
-      newAttachments.push(attachment);
-      console.log('📎 UNIFIED CHAT - Created file attachment:', attachment.id, attachment.name);
+      setAttachments(prev => [...prev, newAttachment]);
+    },
+    onUploadError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
+        description: error
+      });
     }
-    
-    // Add attachments to state immediately so they appear in the UI
-    setAttachments(prev => {
-      const updated = [...prev, ...newAttachments];
-      console.log('📎 UNIFIED CHAT - Updated attachments state, new count:', updated.length);
-      return updated;
-    });
-    
-    toast({
-      title: "Files Added",
-      description: `${newAttachments.length} file(s) added for analysis.`,
-    });
-    
-    // Process file uploads in background
-    for (const attachment of newAttachments) {
-      try {
-        console.log('📤 Starting file upload for:', attachment.name);
-        const uploadPath = await FileUploadService.uploadFile(attachment.file!, attachment.id);
-        
-        setAttachments(prev => prev.map(att => 
-          att.id === attachment.id 
-            ? { ...att, status: 'uploaded', uploadPath }
-            : att
-        ));
-        
-        console.log('📤 File upload completed:', uploadPath);
-        
-      } catch (error) {
-        console.error('📤 File upload failed:', error);
-        setAttachments(prev => prev.map(att => 
-          att.id === attachment.id 
-            ? { ...att, status: 'error' }
-            : att
-        ));
-      }
+  });
+
+  // Message handler with mode support
+  const { isAnalyzing, canSend, handleSendMessage, handleKeyPress } = useMessageHandler({
+    message,
+    setMessage,
+    attachments,
+    setAttachments,
+    messages,
+    setMessages,
+    selectedPromptTemplate: templates.find(t => t.id === selectedPromptTemplate),
+    onAnalysisComplete: (result) => {
+      setLastAnalysisResult(result);
+    },
+    chatMode
+  });
+
+  // Clear attachments when switching to chat mode
+  useEffect(() => {
+    if (chatMode === 'chat' && attachments.length > 0) {
+      setAttachments([]);
     }
-  };
+  }, [chatMode, setAttachments]);
 
-  const handleAttachmentAdd = (attachment: ChatAttachment) => {
-    console.log('🔗 UNIFIED CHAT - Adding attachment:', attachment);
-    setAttachments(prev => {
-      const updated = [...prev, attachment];
-      console.log('🔗 UNIFIED CHAT - Attachments updated, new count:', updated.length);
-      return updated;
-    });
-  };
-
-  const handleAttachmentUpdate = (id: string, updates: Partial<ChatAttachment>) => {
-    console.log('🔗 UNIFIED CHAT - Updating attachment:', id, updates);
-    setAttachments(prev => prev.map(att => 
-      att.id === id ? { ...att, ...updates } : att
-    ));
-  };
-
-  const removeAttachment = (id: string) => {
-    console.log('🗑️ UNIFIED CHAT - Removing attachment:', id);
-    setAttachments(prev => {
-      const updated = prev.filter(att => att.id !== id);
-      console.log('🗑️ UNIFIED CHAT - Attachment removed, new count:', updated.length);
-      return updated;
-    });
-  };
-
-  const handleTemplateSelect = (templateId: string) => {
-    if (setSelectedTemplateId) {
-      setSelectedTemplateId(templateId);
+  const handleModeChange = (newMode: 'chat' | 'analyze') => {
+    setChatMode(newMode);
+    
+    // Clear attachments when switching to chat mode
+    if (newMode === 'chat' && attachments.length > 0) {
+      setAttachments([]);
     }
   };
 
-  const handleViewTemplate = (template: any) => {
-    console.log('🎯 UNIFIED CHAT - View template:', template);
-    // This would open a modal or details view
+  const getPlaceholderText = () => {
+    if (chatMode === 'chat') {
+      return "How can I help...";
+    } else {
+      return "Describe what you'd like me to analyze...";
+    }
+  };
+
+  const getFeatureAvailability = () => {
+    return {
+      fileUpload: chatMode === 'analyze',
+      templates: chatMode === 'analyze',
+      urlInput: chatMode === 'analyze',
+      attachments: chatMode === 'analyze'
+    };
+  };
+
+  const handleFileUploadWrapper = (files: FileList) => {
+    if (chatMode === 'chat') {
+      toast({
+        variant: "destructive",
+        title: "Feature Not Available",
+        description: "File uploads are only available in Analyze mode."
+      });
+      return;
+    }
+    handleFileUpload(files);
   };
 
   const handleToggleUrlInput = () => {
-    console.log('🔗 UNIFIED CHAT - Toggle URL input:', !showUrlInput);
+    if (chatMode === 'chat') {
+      toast({
+        variant: "destructive",
+        title: "Feature Not Available",
+        description: "URL input is only available in Analyze mode."
+      });
+      return;
+    }
     setShowUrlInput(!showUrlInput);
   };
 
-  const handleSendMessage = async () => {
-    if (!message.trim() && attachments.length === 0) {
+  const handleAddUrl = () => {
+    if (!urlInput.trim()) {
       toast({
         variant: "destructive",
-        title: "No content to analyze",
-        description: "Please enter a message or attach files/URLs.",
+        title: "Invalid URL",
+        description: "Please enter a valid URL."
       });
       return;
     }
 
-    console.log('🚀 UNIFIED CHAT - Sending message with attachments:', {
-      messageLength: message.length,
-      attachmentsCount: attachments.length,
-      attachmentDetails: attachments.map(att => ({ 
-        id: att.id, 
-        type: att.type, 
-        name: att.name, 
-        status: att.status,
-        uploadPath: att.uploadPath,
-        url: att.url
-      }))
-    });
-
-    const userMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: 'user',
-      content: message,
-      timestamp: new Date(),
-      attachments: attachments.length > 0 ? attachments : undefined
-    };
-
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
-    setMessage('');
+    let formattedUrl = urlInput.trim();
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      formattedUrl = `https://${formattedUrl}`;
+    }
 
     try {
-      const template = getCurrentTemplate();
-      
-      const analysisAttachments = attachments.map(att => ({
-        id: att.id,
-        type: att.type,
-        name: att.name,
-        uploadPath: att.uploadPath,
-        url: att.url
-      }));
+      const urlObj = new URL(formattedUrl);
+      const hostname = urlObj.hostname;
 
-      const result = await analyzeWithClaude({
-        message,
-        attachments: analysisAttachments,
-        template
+      const newAttachment: ChatAttachment = {
+        id: crypto.randomUUID(),
+        type: 'url',
+        name: hostname,
+        url: formattedUrl,
+        status: 'uploaded'
+      };
+
+      setAttachments(prev => [...prev, newAttachment]);
+      setUrlInput('');
+      setShowUrlInput(false);
+      
+      toast({
+        title: "URL Added",
+        description: `${hostname} has been added to your message`
       });
-
-      const assistantMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: result.analysis,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
-
-      // Store the analysis result
-      setLastAnalysisResult(result);
-
-      // Clear attachments after successful analysis
-      setAttachments([]);
-
     } catch (error) {
-      console.error('Analysis error:', error);
-      
-      const errorMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: `Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
+      toast({
+        variant: "destructive",
+        title: "Invalid URL",
+        description: "Please enter a valid website URL."
+      });
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
+  const handleRemoveAttachment = (id: string) => {
+    setAttachments(prev => prev.filter(att => att.id !== id));
   };
 
-  const canSend = message.trim().length > 0 || attachments.length > 0;
-
-  const handleViewAttachment = (attachment: any) => {
-    console.log('View attachment:', attachment);
-    // Could open a modal or preview
+  const handleViewAttachment = (attachment: ChatAttachment) => {
+    // Implement view attachment logic
+    console.log('Viewing attachment:', attachment);
   };
 
-  console.log('🔄 UNIFIED CHAT CONTAINER - Current state:', {
-    messagesCount: messages.length,
-    attachmentsCount: attachments.length,
-    attachmentDetails: attachments.map(att => ({ id: att.id, type: att.type, name: att.name, status: att.status })),
-    lastAnalysisResult: !!lastAnalysisResult,
-    showUrlInput,
-    isAssetsPanelVisible,
-    hasChatStateFunctions: !!(setAttachments && setMessages && setMessage)
-  });
+  const fileAttachments = attachments.filter(att => att.type === 'file');
+  const urlAttachments = attachments.filter(att => att.type === 'url');
+  const features = getFeatureAvailability();
 
-  if (isMobile) {
-    return (
-      <div className="h-full">
-        <AnalysisChatContainer
-          messages={messages}
-          isAnalyzing={isAnalyzing}
-          message={message}
-          setMessage={setMessage}
-          onSendMessage={handleSendMessage}
-          onKeyPress={handleKeyPress}
-          getCurrentTemplate={getCurrentTemplate}
-          canSend={canSend}
-          onFileUpload={handleFileUpload}
-          onToggleUrlInput={handleToggleUrlInput}
-          showUrlInput={showUrlInput}
-          urlInput=""
-          setUrlInput={() => {}}
-          onAddUrl={() => {}}
-          onCancelUrl={() => setShowUrlInput(false)}
-          onTemplateSelect={handleTemplateSelect}
-          availableTemplates={templates}
-          onViewTemplate={handleViewTemplate}
-          attachments={attachments}
-          onRemoveAttachment={removeAttachment}
-        />
-        
-        {/* URL Input Handler for Mobile */}
-        <URLInputHandler
-          showUrlInput={showUrlInput}
-          onClose={() => setShowUrlInput(false)}
-          attachments={attachments}
-          onAttachmentAdd={handleAttachmentAdd}
-          onAttachmentUpdate={handleAttachmentUpdate}
-        />
-      </div>
-    );
-  }
-
-  // Desktop layout with side-by-side chat and assets panel
   return (
-    <div className="h-full flex gap-4">
-      {/* Main Chat Container */}
-      <div className="flex-1 min-w-0 relative">
-        <AnalysisChatContainer
-          messages={messages}
-          isAnalyzing={isAnalyzing}
-          message={message}
-          setMessage={setMessage}
-          onSendMessage={handleSendMessage}
-          onKeyPress={handleKeyPress}
-          getCurrentTemplate={getCurrentTemplate}
-          canSend={canSend}
-          onFileUpload={handleFileUpload}
-          onToggleUrlInput={handleToggleUrlInput}
-          showUrlInput={false}
-          urlInput=""
-          setUrlInput={() => {}}
-          onAddUrl={() => {}}
-          onCancelUrl={() => {}}
-          onTemplateSelect={handleTemplateSelect}
-          availableTemplates={templates}
-          onViewTemplate={handleViewTemplate}
-          attachments={attachments}
-          onRemoveAttachment={removeAttachment}
+    <div className="h-full flex bg-transparent">
+      {/* Left Navigation Panel */}
+      <div className="w-80 border-r border-gray-200 flex-shrink-0">
+        <NavigationSectionList
+          fileAttachments={fileAttachments}
+          urlAttachments={urlAttachments}
+          analysisMessages={messages}
+          lastAnalysisResult={lastAnalysisResult}
+          onRemoveAttachment={handleRemoveAttachment}
+          onViewAttachment={handleViewAttachment}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
         />
-        
-        {/* URL Input Handler */}
-        {showUrlInput && (
-          <div className="absolute top-0 left-0 right-0 z-10 p-4">
-            <URLInputHandler
-              showUrlInput={showUrlInput}
-              onClose={() => setShowUrlInput(false)}
-              attachments={attachments}
-              onAttachmentAdd={handleAttachmentAdd}
-              onAttachmentUpdate={handleAttachmentUpdate}
-            />
-          </div>
-        )}
       </div>
 
-      {/* Analysis Assets Panel */}
-      {isAssetsPanelVisible && (
-        <div className="flex-shrink-0">
-          <AnalysisNavigationSidebar
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto">
+          <ChatMessageArea 
             messages={messages}
-            attachments={attachments}
-            onRemoveAttachment={removeAttachment}
-            onViewAttachment={handleViewAttachment}
-            lastAnalysisResult={lastAnalysisResult}
-            isCollapsed={false}
-            onToggleCollapse={() => setIsAssetsPanelVisible(!isAssetsPanelVisible)}
+            isAnalyzing={isAnalyzing}
+            chatMode={chatMode}
           />
         </div>
-      )}
 
-      {/* Toggle Button for Assets Panel */}
-      {!isAssetsPanelVisible && (
-        <div className="flex-shrink-0 flex items-start pt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsAssetsPanelVisible(true)}
-            className="h-8 w-8 p-0"
-          >
-            <PanelRightOpen className="h-4 w-4" />
-          </Button>
+        {/* URL Input Section (if active) */}
+        {showUrlInput && features.urlInput && (
+          <URLInputSection
+            showUrlInput={showUrlInput}
+            urlInput={urlInput}
+            setUrlInput={setUrlInput}
+            onAddUrl={handleAddUrl}
+            onCancelUrl={() => setShowUrlInput(false)}
+          />
+        )}
+
+        {/* Chat Input */}
+        <div className="p-4 border-t border-gray-200">
+          <ChatInputContainer
+            message={message}
+            setMessage={setMessage}
+            onSendMessage={handleSendMessage}
+            onKeyPress={handleKeyPress}
+            selectedPromptTemplate={templates.find(t => t.id === selectedPromptTemplate) || null}
+            canSend={canSend}
+            isAnalyzing={isAnalyzing}
+            onFileUpload={handleFileUploadWrapper}
+            onToggleUrlInput={handleToggleUrlInput}
+            onTemplateSelect={setSelectedPromptTemplate}
+            availableTemplates={templates}
+            onViewTemplate={(template) => console.log('View template:', template)}
+            attachments={attachments}
+            onRemoveAttachment={handleRemoveAttachment}
+            showUrlInput={showUrlInput}
+            urlInput={urlInput}
+            setUrlInput={setUrlInput}
+            onAddUrl={handleAddUrl}
+            onCancelUrl={() => setShowUrlInput(false)}
+            chatMode={chatMode}
+            onModeChange={handleModeChange}
+            placeholder={getPlaceholderText()}
+            features={features}
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -23,6 +23,12 @@ interface ChatInputControlsProps {
   onSendMessage: () => void;
   canSend: boolean;
   isAnalyzing: boolean;
+  features: {
+    fileUpload: boolean;
+    templates: boolean;
+    urlInput: boolean;
+    attachments: boolean;
+  };
 }
 
 export const ChatInputControls: React.FC<ChatInputControlsProps> = ({
@@ -40,29 +46,34 @@ export const ChatInputControls: React.FC<ChatInputControlsProps> = ({
   setChatMode,
   onSendMessage,
   canSend,
-  isAnalyzing
+  isAnalyzing,
+  features
 }) => {
   return (
     <div className="flex items-center gap-3 self-stretch">
       {/* LEFT SIDE CONTROLS - Plus Button and Template Dropdown */}
       <div className="flex items-center gap-3 flex-1 justify-start">
-        {/* EXPANDABLE PLUS BUTTON */}
-        <AttachmentMenu
-          showAttachmentMenu={showAttachmentMenu}
-          setShowAttachmentMenu={setShowAttachmentMenu}
-          onAttachmentAction={onAttachmentAction}
-          isAnalyzing={isAnalyzing}
-        />
+        {/* EXPANDABLE PLUS BUTTON - Only show if file upload is available */}
+        {features.fileUpload && (
+          <AttachmentMenu
+            showAttachmentMenu={showAttachmentMenu}
+            setShowAttachmentMenu={setShowAttachmentMenu}
+            onAttachmentAction={onAttachmentAction}
+            isAnalyzing={isAnalyzing}
+          />
+        )}
 
-        {/* TEMPLATE DROPDOWN */}
-        <TemplateDropdown
-          showTemplateMenu={showTemplateMenu}
-          setShowTemplateMenu={setShowTemplateMenu}
-          selectedPromptTemplate={selectedPromptTemplate}
-          availableTemplates={availableTemplates}
-          onTemplateSelect={onTemplateSelect}
-          isAnalyzing={isAnalyzing}
-        />
+        {/* TEMPLATE DROPDOWN - Only show if templates are available */}
+        {features.templates && (
+          <TemplateDropdown
+            showTemplateMenu={showTemplateMenu}
+            setShowTemplateMenu={setShowTemplateMenu}
+            selectedPromptTemplate={selectedPromptTemplate}
+            availableTemplates={availableTemplates}
+            onTemplateSelect={onTemplateSelect}
+            isAnalyzing={isAnalyzing}
+          />
+        )}
       </div>
       
       {/* RIGHT SIDE CONTROLS - Mode Selector and Submit Button */}

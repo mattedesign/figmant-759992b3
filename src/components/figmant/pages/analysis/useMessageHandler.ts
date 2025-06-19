@@ -29,16 +29,28 @@ export const useMessageHandler = ({
   selectedPromptCategory,
   promptTemplates,
   onAnalysisComplete,
-  chatMode = 'chat'
+  chatMode = 'analyze'
 }: UseMessageHandlerProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
   const figmantChat = useFigmantChatAnalysis();
 
-  const canSend = message.trim().length > 0 || attachments.length > 0;
+  // Update canSend logic based on mode
+  const getCanSend = () => {
+    if (chatMode === 'chat') {
+      // Chat mode requires text input only
+      return message.trim().length > 0 && !isAnalyzing;
+    } else {
+      // Analyze mode can use files, URLs, or text
+      const hasContent = message.trim().length > 0 || attachments.length > 0;
+      return hasContent && !isAnalyzing;
+    }
+  };
+
+  const canSend = getCanSend();
 
   const handleSendMessage = async () => {
-    if (!canSend || isAnalyzing) return;
+    if (!canSend) return;
 
     setIsAnalyzing(true);
 
@@ -48,28 +60,28 @@ export const useMessageHandler = ({
         id: crypto.randomUUID(),
         role: 'user',
         content: message,
-        attachments: [...attachments],
+        attachments: chatMode === 'analyze' ? [...attachments] : undefined,
         timestamp: new Date(),
         mode: chatMode
       };
 
       setMessages([...messages, userMessage]);
 
-      // Modify analysis call based on mode
-      const analysisParams = {
-        message,
-        attachments,
-        mode: chatMode,
-        template: chatMode === 'analyze' ? selectedPromptTemplate : null
-      };
-
-      const result = await figmantChat.mutateAsync(analysisParams);
+      // Handle different modes
+      let result;
+      if (chatMode === 'chat') {
+        // Chat mode - lightweight conversational responses
+        result = await handleChatMode();
+      } else {
+        // Analyze mode - full analysis with credit deduction
+        result = await handleAnalysisMode();
+      }
 
       // Add assistant response
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: result.analysis,
+        content: result.analysis || result.response || 'Response generated successfully.',
         timestamp: new Date()
       };
 
@@ -78,15 +90,17 @@ export const useMessageHandler = ({
       // Call analysis complete callback
       if (onAnalysisComplete) {
         onAnalysisComplete({
-          analysis: result.analysis,
+          analysis: result.analysis || result.response,
           debugInfo: result.debugInfo,
-          response: result.analysis
+          response: result.analysis || result.response
         });
       }
 
       // Clear input and attachments only on success
       setMessage('');
-      setAttachments([]);
+      if (chatMode === 'analyze') {
+        setAttachments([]);
+      }
 
       toast({
         title: chatMode === 'analyze' ? "Analysis Complete" : "Response Generated",
@@ -96,7 +110,7 @@ export const useMessageHandler = ({
       });
 
     } catch (error: any) {
-      console.error('Analysis failed:', error);
+      console.error('Message handling failed:', error);
       
       // Check if it's a credit-related error
       if (error.message?.includes('credits') || error.message?.includes('subscription')) {
@@ -118,6 +132,31 @@ export const useMessageHandler = ({
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const handleChatMode = async () => {
+    // For chat mode, we still use the figmant chat analysis but with lighter processing
+    // In the future, this could be a separate lighter endpoint
+    const analysisParams = {
+      message,
+      attachments: [], // Chat mode doesn't use attachments
+      mode: 'chat',
+      template: null // No templates in chat mode
+    };
+
+    return await figmantChat.mutateAsync(analysisParams);
+  };
+
+  const handleAnalysisMode = async () => {
+    // Full analysis mode with credit deduction and template usage
+    const analysisParams = {
+      message,
+      attachments,
+      mode: 'analyze',
+      template: selectedPromptTemplate
+    };
+
+    return await figmantChat.mutateAsync(analysisParams);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
