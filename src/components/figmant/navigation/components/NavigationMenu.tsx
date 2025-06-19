@@ -55,11 +55,31 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
             className={cn(
               "w-full justify-start h-12 text-base",
               activeSection === section.id 
-                ? "bg-white text-[#3D4A5C] rounded-[20px]"
+                ? "rounded-[12px] text-[#3D4A5C]"
                 : section.id === 'admin' 
-                  ? "border border-orange-200 bg-orange-50 text-orange-700 hover:bg-white hover:text-[#3D4A5C] hover:rounded-[20px] hover:border-none"
-                  : "hover:bg-white hover:text-[#3D4A5C] hover:rounded-[20px]"
+                  ? "border border-orange-200 bg-orange-50 text-orange-700 rounded-[12px] hover:text-[#3D4A5C]"
+                  : "hover:text-[#3D4A5C] hover:rounded-[12px]"
             )}
+            style={
+              activeSection === section.id 
+                ? {
+                    borderRadius: '12px',
+                    background: 'var(--Surface-03, #F1F1F1)'
+                  }
+                : {}
+            }
+            onMouseEnter={(e) => {
+              if (activeSection !== section.id && section.id !== 'admin') {
+                e.currentTarget.style.borderRadius = '12px';
+                e.currentTarget.style.background = 'var(--Surface-03, #F1F1F1)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeSection !== section.id && section.id !== 'admin') {
+                e.currentTarget.style.borderRadius = '';
+                e.currentTarget.style.background = '';
+              }
+            }}
             onClick={() => onSectionChange(section.id)}
           >
             <section.icon className={cn(

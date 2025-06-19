@@ -43,9 +43,29 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
       className={cn(
         "w-full justify-start h-12 text-left",
         activeSection === item.id 
-          ? "bg-white text-[#3D4A5C] rounded-[8px] shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
-          : "hover:bg-white hover:text-[#3D4A5C] hover:rounded-[8px] hover:shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
+          ? "bg-white text-[#3D4A5C] rounded-[12px] shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
+          : "hover:bg-white hover:text-[#3D4A5C] hover:rounded-[12px] hover:shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
       )}
+      style={
+        activeSection === item.id 
+          ? {
+              borderRadius: '12px',
+              background: 'var(--Surface-03, #F1F1F1)'
+            }
+          : {}
+      }
+      onMouseEnter={(e) => {
+        if (activeSection !== item.id) {
+          e.currentTarget.style.borderRadius = '12px';
+          e.currentTarget.style.background = 'var(--Surface-03, #F1F1F1)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (activeSection !== item.id) {
+          e.currentTarget.style.borderRadius = '';
+          e.currentTarget.style.background = '';
+        }
+      }}
       onClick={() => onSectionChange(item.id)}
     >
       <div className={cn(

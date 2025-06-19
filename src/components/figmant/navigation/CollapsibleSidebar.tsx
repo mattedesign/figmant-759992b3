@@ -126,6 +126,26 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
                   item.disabled && "opacity-50 cursor-not-allowed",
                   isCollapsed && "px-2"
                 )}
+                style={
+                  isActive 
+                    ? {
+                        borderRadius: '12px',
+                        background: 'var(--Surface-03, #F1F1F1)'
+                      }
+                    : {}
+                }
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.borderRadius = '12px';
+                    e.currentTarget.style.background = 'var(--Surface-03, #F1F1F1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.borderRadius = '';
+                    e.currentTarget.style.background = '';
+                  }
+                }}
                 disabled={item.disabled}
               >
                 <item.icon className={cn("h-4 w-4", isCollapsed ? "" : "mr-3")} />
