@@ -52,8 +52,18 @@ export const NavigationSidebar = ({
           </div>
 
           {/* Navigation Items */}
-          <div className="flex-1 p-2 overflow-y-auto">
-            <div className="space-y-1">
+          <div className="flex-1 overflow-y-auto">
+            <div 
+              style={{
+                display: 'flex',
+                padding: '12px',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                alignSelf: 'stretch',
+                borderTop: '1px solid var(--Stroke-01, #ECECEC)'
+              }}
+            >
               {config.items.map((item) => (
                 <Button
                   key={item.id}
@@ -68,8 +78,23 @@ export const NavigationSidebar = ({
                   )}
                   disabled={item.disabled}
                 >
-                  <item.icon className="h-4 w-4 mr-3" />
-                  <span className="flex-1 text-left">{item.label}</span>
+                  <item.icon className="h-4 w-4 mr-1" />
+                  <span 
+                    className="flex-1 text-left"
+                    style={{
+                      overflow: 'hidden',
+                      color: 'var(--Text-Primary, #121212)',
+                      textOverflow: 'ellipsis',
+                      fontFamily: '"Instrument Sans"',
+                      fontSize: '12px',
+                      fontStyle: 'normal',
+                      fontWeight: 500,
+                      lineHeight: '16px',
+                      letterSpacing: '-0.12px'
+                    }}
+                  >
+                    {item.label}
+                  </span>
                   {item.badge && (
                     <Badge variant="secondary" className="ml-2 text-xs">
                       {item.badge}

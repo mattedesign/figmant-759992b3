@@ -52,8 +52,18 @@ export const NavigationSidebar = ({
           </div>
 
           {/* Navigation Items */}
-          <div className="flex-1 p-2 overflow-y-auto">
-            <div className="space-y-1">
+          <div className="flex-1 overflow-y-auto">
+            <div 
+              style={{
+                display: 'flex',
+                padding: '12px',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                alignSelf: 'stretch',
+                borderTop: '1px solid var(--Stroke-01, #ECECEC)'
+              }}
+            >
               {config.items.map((item) => (
                 <Button
                   key={item.id}
