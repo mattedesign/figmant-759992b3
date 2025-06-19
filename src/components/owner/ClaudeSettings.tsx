@@ -1,4 +1,5 @@
 
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Bot, TestTube } from 'lucide-react';
 import { useClaudeSettings } from '@/hooks/useClaudeSettings';
 import { useClaudeMutations } from '@/hooks/useClaudeMutations';
-import { useState } from 'react';
 import { CLAUDE_MODELS } from '@/constants/claude';
 
 export const ClaudeSettings = () => {
