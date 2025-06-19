@@ -44,7 +44,7 @@ export const SidebarCollapsedView: React.FC<SidebarCollapsedViewProps> = ({
       {/* Header with expand button - now handled by SidebarHeader */}
 
       {/* User Profile Section - Positioned at top like expanded state */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 flex justify-center">
         <SidebarUserProfile 
           isOwner={isOwner}
           profile={profile}
@@ -65,18 +65,18 @@ export const SidebarCollapsedView: React.FC<SidebarCollapsedViewProps> = ({
               variant="ghost"
               size="icon"
               className={cn(
-                "w-11 h-11 p-0",
+                "w-11 h-11 p-0 flex items-center justify-center",
                 activeSection === item.id 
-                  ? "bg-white text-[#3D4A5C]" 
-                  : "hover:bg-white hover:text-[#3D4A5C]"
+                  ? "bg-white text-[#3D4A5C] shadow-sm" 
+                  : "text-[#455468] hover:bg-white/80 hover:text-[#3D4A5C]"
               )}
               onClick={() => onSectionChange(item.id)}
               title={item.label}
             >
               <item.icon className={cn(
-                "h-4 w-4",
+                "h-9 w-9 flex-shrink-0",
                 activeSection === item.id 
-                  ? "text-[#3D4A5C] font-bold stroke-[2.5]" 
+                  ? "text-[#3D4A5C] stroke-[2]" 
                   : "text-[#455468]"
               )} />
             </Button>
@@ -94,18 +94,18 @@ export const SidebarCollapsedView: React.FC<SidebarCollapsedViewProps> = ({
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "w-11 h-11 p-0",
+                    "w-11 h-11 p-0 flex items-center justify-center",
                     activeSection === item.id 
-                      ? "bg-white text-[#3D4A5C]" 
-                      : "hover:bg-white hover:text-[#3D4A5C]"
+                      ? "bg-white text-[#3D4A5C] shadow-sm" 
+                      : "text-[#455468] hover:bg-white/80 hover:text-[#3D4A5C]"
                   )}
                   onClick={() => onSectionChange(item.id)}
                   title={item.label}
                 >
                   <item.icon className={cn(
-                    "h-4 w-4",
+                    "h-9 w-9 flex-shrink-0",
                     activeSection === item.id 
-                      ? "text-[#3D4A5C] font-bold stroke-[2.5]" 
+                      ? "text-[#3D4A5C] stroke-[2]" 
                       : "text-[#455468]"
                   )} />
                 </Button>
@@ -125,18 +125,18 @@ export const SidebarCollapsedView: React.FC<SidebarCollapsedViewProps> = ({
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "w-11 h-11 p-0",
+                    "w-11 h-11 p-0 flex items-center justify-center",
                     activeSection === item.id 
-                      ? "bg-white text-[#3D4A5C]" 
-                      : "hover:bg-white hover:text-[#3D4A5C]"
+                      ? "bg-white text-[#3D4A5C] shadow-sm" 
+                      : "text-[#455468] hover:bg-white/80 hover:text-[#3D4A5C]"
                   )}
                   onClick={() => onSectionChange(item.id)}
                   title={item.label}
                 >
                   <item.icon className={cn(
-                    "h-4 w-4",
+                    "h-9 w-9 flex-shrink-0",
                     activeSection === item.id 
-                      ? "text-[#3D4A5C] font-bold stroke-[2.5]" 
+                      ? "text-[#3D4A5C] stroke-[2]" 
                       : "text-[#455468]"
                   )} />
                 </Button>
@@ -147,8 +147,8 @@ export const SidebarCollapsedView: React.FC<SidebarCollapsedViewProps> = ({
       </div>
 
       {/* Logo at the bottom - only for collapsed view */}
-      <div className="flex-shrink-0 p-4 flex justify-center border-t border-gray-200/30">
-        <Logo size="sm" className="h-5 w-auto" variant="collapsed" />
+      <div className="flex-shrink-0 p-4 pb-6 flex justify-center border-t border-gray-200/30">
+        <Logo size="sm" className="h-9 w-auto" variant="collapsed" />
       </div>
     </div>
   );
