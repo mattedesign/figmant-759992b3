@@ -22,9 +22,18 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface ScreenshotResult {
   success: boolean;
-  url?: string;
+  url: string;
+  screenshotUrl?: string;
   thumbnailUrl?: string;
   error?: string;
+  metadata?: {
+    width: number;
+    height: number;
+    format: string;
+    size: number;
+    capturedAt: string;
+    deviceType: 'desktop' | 'mobile';
+  };
 }
 
 export interface ProcessedImage {
