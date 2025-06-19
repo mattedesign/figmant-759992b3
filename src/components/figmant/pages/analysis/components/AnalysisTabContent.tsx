@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { PremiumAnalysisTabController } from '../../premium-analysis/PremiumAnalysisTabController';
 import { AnalysisChatContainer } from './AnalysisChatContainer';
 
@@ -16,7 +15,7 @@ interface AnalysisTabContentProps {
   handleKeyPress: (e: React.KeyboardEvent) => void;
   getCurrentTemplate: () => any;
   canSend: boolean;
-  handleFileUpload: (files: FileList) => Promise<void>; // Updated to match useFileUploadHandler interface
+  handleFileUpload: (files: FileList) => void;
   showUrlInput: boolean;
   setShowUrlInput: (show: boolean) => void;
   urlInput: string;
@@ -52,10 +51,6 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
   attachments,
   removeAttachment
 }) => {
-  const handleFileUploadFromInput = (files: FileList) => {
-    handleFileUpload(files); // Now correctly passes FileList directly
-  };
-
   const handleToggleUrlInput = () => setShowUrlInput(!showUrlInput);
   const handleCancelUrl = () => setShowUrlInput(false);
   
@@ -75,7 +70,7 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
             onKeyPress={handleKeyPress}
             getCurrentTemplate={getCurrentTemplate}
             canSend={canSend}
-            onFileUpload={handleFileUploadFromInput}
+            onFileUpload={handleFileUpload}
             onToggleUrlInput={handleToggleUrlInput}
             showUrlInput={showUrlInput}
             urlInput={urlInput}

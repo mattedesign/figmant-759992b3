@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useAnalysisChatState } from '../hooks/useAnalysisChatState';
 import { useMessageHandler } from '../useMessageHandler';
-import { useFileUploadHandler } from '../useFileUploadHandler';
+import { useChatAnalysis } from '@/hooks/useChatAnalysis';
+import { useToast } from '@/hooks/use-toast';
 
 interface AnalysisChatStateProps {
   children: (props: AnalysisChatStateRenderProps) => React.ReactNode;
@@ -41,8 +42,8 @@ interface AnalysisChatStateRenderProps {
   handleSendMessage: () => void;
   handleKeyPress: (e: React.KeyboardEvent) => void;
   
-  // File handling - Updated to match useFileUploadHandler interface
-  handleFileUpload: (files: FileList) => Promise<void>;
+  // File handling
+  handleFileUpload: (files: FileList) => void;
   addUrlAttachment: (url: string) => void;
   removeAttachment: (id: string) => void;
 }
@@ -52,6 +53,8 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
   selectedPromptTemplate,
   onAnalysisComplete
 }) => {
+  const { toast } = useToast();
+  
   // Basic state management
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [message, setMessage] = useState('');
@@ -63,22 +66,29 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
     onAnalysisComplete
   });
 
-  // Message handler
-  const messageHandler = useMessageHandler({
-    message,
-    setMessage,
-    attachments,
-    setAttachments,
-    messages,
-    setMessages,
-    selectedPromptTemplate: analysisState.getCurrentTemplate(),
-    selectedPromptCategory: analysisState.getCurrentTemplate()?.category,
-    promptTemplates: analysisState.figmantTemplates,
-    onAnalysisComplete
-  });
+  // Chat analysis hook
+  const { analyzeWithChat } = useChatAnalysis();
 
-  // File upload handler
-  const fileUploadHandler = useFileUploadHandler(setAttachments);
+  // Simple file upload handler
+  const handleFileUpload = (files: FileList) => {
+    console.log('📁 FIGMANT CHAT - Handling file upload for', files.length, 'files');
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const attachmentId = crypto.randomUUID();
+      
+      const newAttachment: ChatAttachment = {
+        id: attachmentId,
+        type: 'file',
+        name: file.name,
+        file: file,
+        status: 'uploaded',
+        url: URL.createObjectURL(file)
+      };
+      
+      setAttachments(prev => [...prev, newAttachment]);
+    }
+  };
 
   const addUrlAttachment = (url: string) => {
     if (!url.trim()) return;
@@ -96,6 +106,82 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
 
   const removeAttachment = (id: string) => {
     setAttachments(prev => prev.filter(att => att.id !== id));
+  };
+
+  // Message handling
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const canSend = message.trim().length > 0 || attachments.length > 0;
+
+  const handleSendMessage = async () => {
+    if (!canSend || isAnalyzing) return;
+
+    setIsAnalyzing(true);
+
+    try {
+      // Add user message
+      const userMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: message,
+        attachments: [...attachments],
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, userMessage]);
+
+      // Call analysis
+      const result = await analyzeWithChat.mutateAsync({
+        message,
+        attachments
+      });
+
+      // Add assistant response
+      const assistantMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: result.analysis,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+
+      // Call analysis complete callback
+      if (onAnalysisComplete) {
+        onAnalysisComplete({
+          analysis: result.analysis,
+          debugInfo: result.debugInfo,
+          response: result.analysis
+        });
+      }
+
+      // Clear input and attachments
+      setMessage('');
+      setAttachments([]);
+
+      toast({
+        title: "Analysis Complete",
+        description: "Your design analysis has been generated successfully.",
+      });
+
+    } catch (error: any) {
+      console.error('Analysis failed:', error);
+      
+      toast({
+        title: "Analysis Failed",
+        description: error.message || "There was an error generating your analysis. Please try again.",
+        variant: "destructive"
+      });
+      
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   const renderProps: AnalysisChatStateRenderProps = {
@@ -123,13 +209,13 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
     handleTemplateModalClose: analysisState.handleTemplateModalClose,
     
     // Message handling
-    isAnalyzing: messageHandler.isAnalyzing,
-    canSend: messageHandler.canSend,
-    handleSendMessage: messageHandler.handleSendMessage,
-    handleKeyPress: messageHandler.handleKeyPress,
+    isAnalyzing,
+    canSend,
+    handleSendMessage,
+    handleKeyPress,
     
-    // File handling - Now correctly matches the useFileUploadHandler interface
-    handleFileUpload: fileUploadHandler.handleFileUpload,
+    // File handling
+    handleFileUpload,
     addUrlAttachment,
     removeAttachment
   };
