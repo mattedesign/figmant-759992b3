@@ -13,7 +13,7 @@ export const syncAllAuthUsers = async () => {
       throw authError;
     }
 
-    // Get all existing profiles with explicit typing
+    // Get all existing profiles - handle the result properly
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
       .select('id');
@@ -23,15 +23,18 @@ export const syncAllAuthUsers = async () => {
       throw profilesError;
     }
 
-    // Create set of existing profile IDs with proper type handling
+    // Create set of existing profile IDs with safe type handling
     const existingProfileIds = new Set<string>();
     
-    // Use type guard and explicit typing to avoid TypeScript inference issues
-    const profiles: Array<{ id: string }> = profilesData as Array<{ id: string }> || [];
-    
-    profiles.forEach(profile => {
-      existingProfileIds.add(profile.id);
-    });
+    // Safely handle the profiles data - check for null/undefined first
+    if (profilesData && Array.isArray(profilesData)) {
+      for (const profile of profilesData) {
+        // Profile will have the correct type here since we're inside the array check
+        if (profile && typeof profile.id === 'string') {
+          existingProfileIds.add(profile.id);
+        }
+      }
+    }
     
     const usersNeedingProfiles = authUsers.users.filter(user => !existingProfileIds.has(user.id));
 
