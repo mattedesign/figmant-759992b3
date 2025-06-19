@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -47,7 +48,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
         onToggleCollapse={handleToggleCollapse}
       />
       
-      {/* User Profile Section - Now positioned at the top after header */}
+      {/* User Profile Section - Positioned right after header when NOT collapsed */}
       {!isCollapsed && (
         <SidebarUserSection
           isOwner={isOwner}

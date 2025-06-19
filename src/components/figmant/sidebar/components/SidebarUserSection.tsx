@@ -55,7 +55,7 @@ export const SidebarUserSection: React.FC<SidebarUserSectionProps> = ({
   const isOnFigmant = location.pathname === '/figmant';
 
   return (
-    <div className="px-4 mb-6">
+    <div className="px-4 py-4 border-b border-gray-200/30">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <div className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50/50 rounded-lg p-2 transition-colors">
