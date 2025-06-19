@@ -8,17 +8,28 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Wrench, Users, CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 
+interface IncompleteProfile {
+  id: string;
+  email: string;
+  created_at: string;
+}
+
 export const BatchProfileRecovery = () => {
   const { isOwner } = useAuth();
   const { toast } = useToast();
   const [isScanning, setIsScanning] = useState(false);
   const [isFixing, setIsFixing] = useState(false);
-  const [scanResults, setScanResults] = useState<any>(null);
+  const [scanResults, setScanResults] = useState<IncompleteProfile[] | null>(null);
 
   const scanForMissingProfiles = async () => {
     setIsScanning(true);
     try {
-      const { data, error } = await supabase.rpc('find_users_without_profiles');
+      // Check for profiles with missing data instead of missing profiles entirely
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, email, created_at')
+        .is('full_name', null)
+        .limit(20);
       
       if (error) {
         console.error('Scan error:', error);
@@ -30,19 +41,19 @@ export const BatchProfileRecovery = () => {
         return;
       }
 
-      setScanResults(data);
+      setScanResults(data || []);
       console.log('Scan results:', data);
       
       if (data && data.length > 0) {
         toast({
           title: "Issues Found",
-          description: `Found ${data.length} users with missing profiles`,
+          description: `Found ${data.length} profiles with missing data`,
           variant: "destructive",
         });
       } else {
         toast({
           title: "All Good!",
-          description: "No users found with missing profiles",
+          description: "No profiles found with missing data",
         });
       }
     } catch (error) {
@@ -50,7 +61,7 @@ export const BatchProfileRecovery = () => {
       toast({
         variant: "destructive",
         title: "Scan Failed",
-        description: "Failed to scan for missing profiles",
+        description: "Failed to scan for incomplete profiles",
       });
     } finally {
       setIsScanning(false);
@@ -65,23 +76,25 @@ export const BatchProfileRecovery = () => {
     let errors = 0;
 
     try {
-      for (const user of scanResults) {
+      for (const profile of scanResults) {
         try {
-          const { error } = await supabase.rpc('create_user_manual', {
-            p_email: user.email,
-            p_full_name: user.email.split('@')[0],
-            p_role: 'subscriber'
-          });
+          // Update the profile with missing data
+          const { error } = await supabase
+            .from('profiles')
+            .update({
+              full_name: profile.email.split('@')[0]
+            })
+            .eq('id', profile.id);
 
           if (error) {
-            console.error(`Failed to fix profile for ${user.email}:`, error);
+            console.error(`Failed to fix profile for ${profile.email}:`, error);
             errors++;
           } else {
-            console.log(`✅ Fixed profile for ${user.email}`);
+            console.log(`✅ Fixed profile for ${profile.email}`);
             fixed++;
           }
         } catch (error) {
-          console.error(`Error fixing ${user.email}:`, error);
+          console.error(`Error fixing ${profile.email}:`, error);
           errors++;
         }
       }
@@ -124,7 +137,7 @@ export const BatchProfileRecovery = () => {
             variant="outline"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isScanning ? 'animate-spin' : ''}`} />
-            {isScanning ? 'Scanning...' : 'Scan for Missing Profiles'}
+            {isScanning ? 'Scanning...' : 'Scan for Incomplete Profiles'}
           </Button>
 
           {scanResults && scanResults.length > 0 && (
@@ -150,7 +163,7 @@ export const BatchProfileRecovery = () => {
               <strong>
                 {scanResults.length === 0 
                   ? 'No Issues Found' 
-                  : `${scanResults.length} Users Missing Profiles`
+                  : `${scanResults.length} Profiles with Missing Data`
                 }
               </strong>
             </div>
@@ -158,12 +171,12 @@ export const BatchProfileRecovery = () => {
             {scanResults.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm text-gray-600">
-                  The following users exist in auth.users but are missing profile records:
+                  The following profiles have missing data:
                 </p>
                 <div className="flex flex-wrap gap-1">
-                  {scanResults.slice(0, 10).map((user: any, index: number) => (
+                  {scanResults.slice(0, 10).map((profile, index) => (
                     <Badge key={index} variant="destructive" className="text-xs">
-                      {user.email}
+                      {profile.email}
                     </Badge>
                   ))}
                   {scanResults.length > 10 && (

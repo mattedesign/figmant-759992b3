@@ -4,6 +4,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+interface UserWithoutProfile {
+  id: string;
+  email: string;
+  created_at: string;
+}
+
 export const useRegistrationMonitor = () => {
   const { user, profile, isOwner } = useAuth();
   const { toast } = useToast();
@@ -13,21 +19,26 @@ export const useRegistrationMonitor = () => {
 
     const monitorRegistrations = async () => {
       try {
-        // Check for users without profiles (registered in last 24 hours)
-        const { data: usersWithoutProfiles, error } = await supabase
-          .rpc('find_users_without_profiles');
+        // For now, we'll use a different approach since we can't access auth.users directly
+        // We'll check for recent profiles without proper initialization
+        const { data: recentProfiles, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .is('full_name', null)
+          .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+          .limit(10);
 
         if (error) {
-          console.error('Error checking for users without profiles:', error);
+          console.error('Error checking for incomplete profiles:', error);
           return;
         }
 
-        if (usersWithoutProfiles && usersWithoutProfiles.length > 0) {
-          console.warn(`Found ${usersWithoutProfiles.length} users without profiles:`, usersWithoutProfiles);
+        if (recentProfiles && recentProfiles.length > 0) {
+          console.warn(`Found ${recentProfiles.length} profiles with missing data:`, recentProfiles);
           
           toast({
             title: "Registration Issue Detected",
-            description: `${usersWithoutProfiles.length} users found without complete profiles. Check admin panel for details.`,
+            description: `${recentProfiles.length} profiles found with incomplete data. Check admin panel for details.`,
             variant: "destructive",
           });
         }
