@@ -55,10 +55,20 @@ export const useUnifiedChatAnalysis = () => {
     });
   }, [setAttachments, toast]);
 
-  const handleAddUrl = useCallback(async (url: string) => {
-    // This is now handled by URLAttachmentHandler component
-    // The component will handle validation, screenshot capture, and updating attachments
-  }, []);
+  const handleAddUrl = useCallback(async () => {
+    if (!urlInput.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Invalid URL",
+        description: "Please enter a valid URL.",
+      });
+      return;
+    }
+
+    // This will be handled by URLAttachmentHandler component
+    // The URLAttachmentHandler will take care of validation, screenshot capture, and updating attachments
+    console.log('🔗 UNIFIED CHAT - Adding URL:', urlInput);
+  }, [urlInput, toast]);
 
   const removeAttachment = useCallback((id: string) => {
     if (setAttachments) {
