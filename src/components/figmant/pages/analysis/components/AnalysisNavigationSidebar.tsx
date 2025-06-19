@@ -81,8 +81,6 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
           <AnalysisNavigationHeader 
             onToggleCollapse={onToggleCollapse}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
           />
 
           {/* Tab Content */}

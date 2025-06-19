@@ -43,9 +43,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   return (
     <div className="w-80 h-full bg-background border-l border-border flex flex-col">
-      <AnalysisNavigationHeader 
-        onTabChange={setActiveTab}
-      />
+      <AnalysisNavigationHeader />
 
       <AnalysisNavigationTabs 
         activeTab={activeTab}
