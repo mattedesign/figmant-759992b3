@@ -14,21 +14,24 @@ export const CreditStatusCard: React.FC<CreditStatusCardProps> = ({
   totalPurchased
 }) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Zap className="h-5 w-5 text-yellow-500" />
+    <Card className="h-full">
+      <CardHeader className="pb-3 sm:pb-6">
+        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+          <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
           Current Credits
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="text-3xl font-bold">{currentBalance} / {totalPurchased}</div>
-          <Progress value={totalPurchased > 0 ? (currentBalance / totalPurchased) * 100 : 0} className="h-2" />
-          <p className="text-sm text-muted-foreground">
-            Credits remaining
-          </p>
+      <CardContent className="space-y-3 sm:space-y-4">
+        <div className="text-2xl sm:text-3xl font-bold">
+          {currentBalance} / {totalPurchased}
         </div>
+        <Progress 
+          value={totalPurchased > 0 ? (currentBalance / totalPurchased) * 100 : 0} 
+          className="h-2 sm:h-3" 
+        />
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Credits remaining
+        </p>
       </CardContent>
     </Card>
   );
