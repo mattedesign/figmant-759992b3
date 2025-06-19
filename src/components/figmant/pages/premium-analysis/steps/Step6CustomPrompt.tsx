@@ -13,14 +13,7 @@ export const Step6CustomPrompt: React.FC<StepProps> = ({
   totalSteps 
 }) => {
   const handleCustomPromptChange = (value: string) => {
-    if (typeof setStepData === 'function') {
-      const funcStr = setStepData.toString();
-      if (funcStr.includes('key') || setStepData.length === 2) {
-        (setStepData as (key: string, value: any) => void)('customPrompt', value);
-      } else {
-        (setStepData as (newData: typeof stepData) => void)({ ...stepData, customPrompt: value });
-      }
-    }
+    setStepData(prev => ({ ...prev, customPrompt: value }));
   };
 
   const handleAddAnother = () => {

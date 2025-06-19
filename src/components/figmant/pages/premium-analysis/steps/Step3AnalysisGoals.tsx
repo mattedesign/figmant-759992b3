@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { StepProps, StepData } from '../types';
+import { StepProps } from '../types';
 import { StepHeader } from '../components/StepHeader';
 import { FormField } from '../components/FormField';
 
@@ -11,15 +11,7 @@ export const Step3AnalysisGoals: React.FC<StepProps> = ({
   totalSteps 
 }) => {
   const handleAnalysisGoalsChange = (value: string) => {
-    // Check if setStepData is the key-value version or full object version
-    if (typeof setStepData === 'function') {
-      const funcStr = setStepData.toString();
-      if (funcStr.includes('key') || setStepData.length === 2) {
-        (setStepData as (key: string, value: any) => void)('analysisGoals', value);
-      } else {
-        (setStepData as (newData: StepData) => void)({ ...stepData, analysisGoals: value });
-      }
-    }
+    setStepData(prev => ({ ...prev, analysisGoals: value }));
   };
 
   return (

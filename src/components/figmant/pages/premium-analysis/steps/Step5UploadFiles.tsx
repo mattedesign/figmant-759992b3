@@ -1,7 +1,7 @@
 
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { StepProps, StepData } from '../types';
+import { StepProps } from '../types';
 import { StepHeader } from '../components/StepHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,72 +19,32 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const currentFiles = stepData.uploadedFiles || [];
     const newFiles = [...currentFiles, ...acceptedFiles];
-    
-    if (typeof setStepData === 'function') {
-      const funcStr = setStepData.toString();
-      if (funcStr.includes('key') || setStepData.length === 2) {
-        (setStepData as (key: string, value: any) => void)('uploadedFiles', newFiles);
-      } else {
-        (setStepData as (newData: StepData) => void)({ ...stepData, uploadedFiles: newFiles });
-      }
-    }
-  }, [stepData, setStepData]);
+    setStepData(prev => ({ ...prev, uploadedFiles: newFiles }));
+  }, [stepData.uploadedFiles, setStepData]);
 
   const removeFile = (index: number) => {
     const currentFiles = stepData.uploadedFiles || [];
     const newFiles = currentFiles.filter((_, i) => i !== index);
-    
-    if (typeof setStepData === 'function') {
-      const funcStr = setStepData.toString();
-      if (funcStr.includes('key') || setStepData.length === 2) {
-        (setStepData as (key: string, value: any) => void)('uploadedFiles', newFiles);
-      } else {
-        (setStepData as (newData: StepData) => void)({ ...stepData, uploadedFiles: newFiles });
-      }
-    }
+    setStepData(prev => ({ ...prev, uploadedFiles: newFiles }));
   };
 
   const addReferenceLink = () => {
     const currentLinks = stepData.referenceLinks || [''];
     const newLinks = [...currentLinks, ''];
-    
-    if (typeof setStepData === 'function') {
-      const funcStr = setStepData.toString();
-      if (funcStr.includes('key') || setStepData.length === 2) {
-        (setStepData as (key: string, value: any) => void)('referenceLinks', newLinks);
-      } else {
-        (setStepData as (newData: StepData) => void)({ ...stepData, referenceLinks: newLinks });
-      }
-    }
+    setStepData(prev => ({ ...prev, referenceLinks: newLinks }));
   };
 
   const updateReferenceLink = (index: number, value: string) => {
     const currentLinks = stepData.referenceLinks || [''];
     const newLinks = currentLinks.map((link, i) => i === index ? value : link);
-    
-    if (typeof setStepData === 'function') {
-      const funcStr = setStepData.toString();
-      if (funcStr.includes('key') || setStepData.length === 2) {
-        (setStepData as (key: string, value: any) => void)('referenceLinks', newLinks);
-      } else {
-        (setStepData as (newData: StepData) => void)({ ...stepData, referenceLinks: newLinks });
-      }
-    }
+    setStepData(prev => ({ ...prev, referenceLinks: newLinks }));
   };
 
   const removeReferenceLink = (index: number) => {
     const currentLinks = stepData.referenceLinks || [''];
     if (currentLinks.length > 1) {
       const newLinks = currentLinks.filter((_, i) => i !== index);
-      
-      if (typeof setStepData === 'function') {
-        const funcStr = setStepData.toString();
-        if (funcStr.includes('key') || setStepData.length === 2) {
-          (setStepData as (key: string, value: any) => void)('referenceLinks', newLinks);
-        } else {
-          (setStepData as (newData: StepData) => void)({ ...stepData, referenceLinks: newLinks });
-        }
-      }
+      setStepData(prev => ({ ...prev, referenceLinks: newLinks }));
     }
   };
 

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { StepProps, StepData, Stakeholder } from '../types';
+import { StepProps, Stakeholder } from '../types';
 import { StepHeader } from '../components/StepHeader';
 import { FormField } from '../components/FormField';
 import { Button } from '@/components/ui/button';
@@ -14,14 +14,7 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
   totalSteps 
 }) => {
   const handleFieldChange = (field: string, value: any) => {
-    if (typeof setStepData === 'function') {
-      const funcStr = setStepData.toString();
-      if (funcStr.includes('key') || setStepData.length === 2) {
-        (setStepData as (key: string, value: any) => void)(field, value);
-      } else {
-        (setStepData as (newData: StepData) => void)({ ...stepData, [field]: value });
-      }
-    }
+    setStepData(prev => ({ ...prev, [field]: value }));
   };
 
   const addStakeholder = () => {

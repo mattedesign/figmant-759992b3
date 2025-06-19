@@ -51,17 +51,8 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
   const handleTypeSelection = (templateId: string) => {
     console.log('🎯 Step1 - Template selected:', templateId);
     
-    // Update the step data using the key-value interface
-    if (typeof setStepData === 'function') {
-      // Check if it's the two-parameter version (key, value)
-      const funcStr = setStepData.toString();
-      if (funcStr.includes('key') || setStepData.length === 2) {
-        (setStepData as (key: string, value: any) => void)('selectedType', templateId);
-      } else {
-        // It's the one-parameter version (full object)
-        (setStepData as (newData: StepData) => void)({ ...stepData, selectedType: templateId });
-      }
-    }
+    // Update the step data using the new pattern
+    setStepData(prev => ({ ...prev, selectedType: templateId }));
     
     console.log('🎯 Step1 - About to call onNextStep, onNextStep available:', !!onNextStep);
     
