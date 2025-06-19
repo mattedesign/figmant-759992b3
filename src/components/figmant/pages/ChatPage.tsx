@@ -12,7 +12,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({ selectedTemplate }) => {
   return (
     <div className="h-full flex flex-col min-h-0">
       {/* Main Chat Content - Full width since Analysis Assets panel is now at layout level */}
-      <div className="flex-1 min-h-0 px-6">
+      <div className="flex-1 min-h-0 pl-6">
         <UnifiedChatContainer />
       </div>
     </div>
