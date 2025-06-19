@@ -65,23 +65,13 @@ export const SidebarTabsInterface: React.FC<SidebarTabsInterfaceProps> = ({
           >
             <TabsTrigger 
               value="analysis" 
-              style={{
-                borderRadius: '6px',
-                background: 'var(--Background-primary, #FFF)',
-                boxShadow: '0px 1px 1px 0px rgba(11, 19, 36, 0.10), 0px 1px 3px 0px rgba(11, 19, 36, 0.10)'
-              }}
-              className="data-[state=inactive]:bg-transparent data-[state=inactive]:shadow-none"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-[0px_1px_1px_0px_rgba(11,19,36,0.10),0px_1px_3px_0px_rgba(11,19,36,0.10)] data-[state=active]:rounded-[6px] data-[state=inactive]:bg-transparent data-[state=inactive]:shadow-none"
             >
               Menu
             </TabsTrigger>
             <TabsTrigger 
               value="recent" 
-              style={{
-                borderRadius: '6px',
-                background: 'var(--Background-primary, #FFF)',
-                boxShadow: '0px 1px 1px 0px rgba(11, 19, 36, 0.10), 0px 1px 3px 0px rgba(11, 19, 36, 0.10)'
-              }}
-              className="data-[state=inactive]:bg-transparent data-[state=inactive]:shadow-none"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-[0px_1px_1px_0px_rgba(11,19,36,0.10),0px_1px_3px_0px_rgba(11,19,36,0.10)] data-[state=active]:rounded-[6px] data-[state=inactive]:bg-transparent data-[state=inactive]:shadow-none"
             >
               Recent
             </TabsTrigger>
