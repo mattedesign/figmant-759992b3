@@ -10,8 +10,6 @@ import { FileThumbail } from './FileThumbail';
 import { ScreenshotDisplay } from './ScreenshotDisplay';
 import { AnalysisInsights } from './AnalysisInsights';
 import { SuggestionsTabContent } from './SuggestionsTabContent';
-import { AnalysisNavigationHeader } from './AnalysisNavigationHeader';
-import { AnalysisNavigationTabs } from './AnalysisNavigationTabs';
 import { ExtractedSuggestion } from '@/utils/suggestionExtractor';
 import { FileText, Globe, Image, Trash2, Download, Eye, Lightbulb } from 'lucide-react';
 
@@ -32,8 +30,6 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   lastAnalysisResult,
   extractedSuggestions = []
 }) => {
-  const [activeTab, setActiveTab] = React.useState('details');
-  
   // Separate files and URLs from attachments
   const fileAttachments = attachments.filter(att => att.type === 'file');
   const urlAttachments = attachments.filter(att => att.type === 'url');
@@ -43,18 +39,25 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   return (
     <div className="w-80 h-full bg-background border-l border-border flex flex-col">
-      <AnalysisNavigationHeader />
-
-      <AnalysisNavigationTabs 
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
+      <div className="p-4 border-b border-border">
+        <h2 className="text-lg font-semibold">Analysis Sidebar</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Files, screenshots, and insights
+        </p>
+      </div>
 
       <ScrollArea className="flex-1">
         <div className="p-4">
-          {/* Tab Content */}
-          {activeTab === 'details' && (
-            <div className="space-y-6">
+          <Tabs defaultValue="assets" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="assets">Assets</TabsTrigger>
+              <TabsTrigger value="suggestions" className="flex items-center gap-1">
+                <Lightbulb className="h-3 w-3" />
+                Suggestions
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="assets" className="space-y-6 mt-4">
               {/* File Management Section */}
               {fileAttachments.length > 0 && (
                 <Card>
@@ -170,14 +173,12 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   </p>
                 </div>
               )}
-            </div>
-          )}
-          
-          {activeTab === 'suggestions' && (
-            <div>
+            </TabsContent>
+            
+            <TabsContent value="suggestions" className="mt-4">
               <SuggestionsTabContent suggestions={extractedSuggestions} />
-            </div>
-          )}
+            </TabsContent>
+          </Tabs>
         </div>
       </ScrollArea>
     </div>
