@@ -1,13 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Send, Paperclip, Globe, X, FileText, Image } from 'lucide-react';
+import { Plus, Camera, Globe, Video, Mic, Send, ChevronDown, FileText, X } from 'lucide-react';
 import { FigmantPromptTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
-import { SimplePromptTemplateSelector } from './components/SimplePromptTemplateSelector';
-import { URLAttachmentHandler } from './components/URLAttachmentHandler';
 
 interface AnalysisChatInputProps {
   message: string;
@@ -52,6 +50,12 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   onAddUrl,
   onCancelUrl
 }) => {
+  // New state for modern interface
+  const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
+  const [showTemplateMenu, setShowTemplateMenu] = useState(false);
+  const [showModeMenu, setShowModeMenu] = useState(false);
+  const [chatMode, setChatMode] = useState<'chat' | 'analyze'>('analyze');
+
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       onFileUpload(e.target.files);
@@ -59,150 +63,250 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
     }
   };
 
+  const handleAttachmentAction = (type: 'screenshot' | 'link' | 'camera') => {
+    setShowAttachmentMenu(false);
+    switch (type) {
+      case 'screenshot':
+        // Trigger existing file upload
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*,.pdf,.sketch,.fig,.xd';
+        fileInput.multiple = true;
+        fileInput.onchange = (e) => {
+          const target = e.target as HTMLInputElement;
+          if (target.files) {
+            onFileUpload(target.files);
+          }
+        };
+        fileInput.click();
+        break;
+      case 'link':
+        onToggleUrlInput();
+        break;
+      case 'camera':
+        // Future camera functionality
+        break;
+    }
+  };
+
+  const getPlaceholder = () => {
+    if (chatMode === 'analyze') {
+      return selectedPromptTemplate 
+        ? `Ask about your design using ${selectedPromptTemplate.displayName || selectedPromptTemplate.title}...`
+        : "Ask me anything about your design...";
+    }
+    return "How can I help...";
+  };
+
   return (
-    <div className="p-4 border-t bg-background space-y-4">
-      {/* Template Selector */}
-      <SimplePromptTemplateSelector
-        availableTemplates={availableTemplates}
-        selectedTemplate={selectedPromptTemplate}
-        onTemplateSelect={onTemplateSelect}
-        onViewTemplate={onViewTemplate}
-      />
-
-      {/* URL Input Section */}
-      <URLAttachmentHandler
-        urlInput={urlInput}
-        setUrlInput={setUrlInput}
-        setShowUrlInput={(show) => show ? onToggleUrlInput() : onCancelUrl()}
-        attachments={attachments}
-        setAttachments={() => {
-          // This is handled by the parent component through state management
-          // The URLAttachmentHandler will update attachments directly
-        }}
-      >
-        {(handleAddUrl) => showUrlInput && (
-          <div className="p-3 border rounded-lg bg-muted/30">
-            <div className="flex items-center gap-2 mb-2">
-              <Globe className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Add Website URL</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onCancelUrl}
-                className="ml-auto h-6 w-6 p-0"
-              >
-                <X className="w-3 h-3" />
-              </Button>
-            </div>
-            
-            <div className="flex gap-2">
-              <input
-                type="url"
-                placeholder="https://example.com"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                className="flex-1 px-3 py-2 text-sm border rounded-md bg-background"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddUrl();
-                  }
-                }}
-              />
-              <Button
-                size="sm"
-                onClick={handleAddUrl}
-                disabled={!urlInput.trim()}
-              >
-                Add
-              </Button>
-            </div>
-          </div>
-        )}
-      </URLAttachmentHandler>
-
-      {/* Attachments Display */}
+    <div className="flex flex-col items-start gap-6 p-3 rounded-3xl border border-[#ECECEC] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13),0px_2px_0px_0px_#FFF_inset,0px_8px_16px_-12px_rgba(0,0,0,0.08)] backdrop-blur-md lg:gap-6 md:gap-4 sm:gap-3 sm:p-2">
+      
+      {/* ATTACHMENT DISPLAY SECTION */}
       {attachments.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 w-full">
           {attachments.map((attachment) => (
             <Badge
               key={attachment.id}
               variant="secondary"
-              className="flex items-center gap-1 px-2 py-1"
+              className="flex items-center gap-2 px-3 py-2"
             >
               {attachment.type === 'file' ? (
-                attachment.file?.type.startsWith('image/') ? <Image className="w-3 h-3" /> : <FileText className="w-3 h-3" />
+                attachment.file?.type.startsWith('image/') ? <Camera className="w-4 h-4" /> : <FileText className="w-4 h-4" />
               ) : (
-                <Globe className="w-3 h-3" />
+                <Globe className="w-4 h-4" />
               )}
-              <span className="text-xs">{attachment.name}</span>
-              <Button
-                variant="ghost"
-                size="sm"
+              <span className="text-sm truncate max-w-[150px]">
+                {attachment.name}
+              </span>
+              <button
                 onClick={() => onRemoveAttachment(attachment.id)}
-                className="h-3 w-3 p-0 ml-1 hover:bg-destructive hover:text-destructive-foreground"
+                className="ml-1 hover:text-red-500"
               >
-                <X className="w-2 h-2" />
-              </Button>
+                <X className="w-3 h-3" />
+              </button>
             </Badge>
           ))}
         </div>
       )}
 
-      {/* Message Input */}
-      <div className="flex gap-2">
-        <div className="flex-1 relative">
-          <Textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={onKeyPress}
-            placeholder={selectedPromptTemplate 
-              ? `Ask about your design using ${selectedPromptTemplate.displayName || selectedPromptTemplate.title}...`
-              : "Ask me anything about your design..."
-            }
-            className="min-h-[80px] resize-none pr-20"
-            disabled={isAnalyzing}
-          />
+      {/* TEXT INPUT AREA */}
+      <div className="flex p-2 items-start gap-2 self-stretch">
+        <Textarea
+          className="flex-1 overflow-hidden text-[#121212] text-ellipsis font-['Instrument_Sans'] text-[15px] font-normal leading-6 tracking-[-0.3px] border-none outline-none bg-transparent resize-none min-h-[24px] max-h-[192px]"
+          style={{
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 8,
+          }}
+          placeholder={getPlaceholder()}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyPress={onKeyPress}
+          disabled={isAnalyzing}
+        />
+      </div>
+
+      {/* ACTIONS BAR */}
+      <div className="flex justify-between items-center self-stretch sm:flex-col sm:gap-3 sm:items-stretch">
+        
+        {/* LEFT SIDE CONTROLS */}
+        <div className="flex items-center gap-3 sm:justify-between sm:w-full">
           
-          {/* Attachment Buttons */}
-          <div className="absolute bottom-2 right-2 flex gap-1">
-            <input
-              type="file"
-              id="file-upload"
-              multiple
-              accept="image/*,.pdf,.sketch,.fig,.xd"
-              onChange={handleFileInput}
-              className="hidden"
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => document.getElementById('file-upload')?.click()}
-              className="h-6 w-6 p-0"
+          {/* EXPANDABLE PLUS BUTTON */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
+              className="flex h-10 px-[10px] py-1 items-center gap-3 rounded-xl border border-[#E2E2E2] hover:bg-gray-50 transition-colors sm:h-12 sm:px-3"
               disabled={isAnalyzing}
             >
-              <Paperclip className="w-3 h-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onToggleUrlInput}
-              className="h-6 w-6 p-0"
+              <Plus className="w-4 h-4" />
+            </button>
+            
+            {showAttachmentMenu && (
+              <div className="absolute bottom-full left-0 mb-2 flex flex-col gap-1 p-2 rounded-xl border border-[#E2E2E2] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13)] backdrop-blur-md z-20">
+                <button 
+                  onClick={() => handleAttachmentAction('screenshot')}
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <Camera className="w-4 h-4" />
+                  <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">Add Screenshots</span>
+                </button>
+                <button 
+                  onClick={() => handleAttachmentAction('link')}
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <Globe className="w-4 h-4" />
+                  <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">Add A Link</span>
+                </button>
+                <button 
+                  onClick={() => handleAttachmentAction('camera')}
+                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <Video className="w-4 h-4" />
+                  <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">Use Camera</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* TEMPLATE DROPDOWN */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowTemplateMenu(!showTemplateMenu)}
+              className="flex h-10 px-[10px] py-1 items-center gap-3 rounded-xl border border-[#E2E2E2] hover:bg-gray-50 transition-colors sm:h-12 sm:px-3"
               disabled={isAnalyzing}
             >
-              <Globe className="w-3 h-3" />
-            </Button>
+              <div className="flex p-[2px] items-center gap-2 w-4 h-4">
+                <span className="text-lg">⚡</span>
+              </div>
+              <span className="text-[#121212] font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px]">
+                {selectedPromptTemplate?.displayName || selectedPromptTemplate?.title || 'Template Name'}
+              </span>
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            
+            {showTemplateMenu && (
+              <div className="absolute top-full left-0 mt-2 min-w-[200px] flex flex-col gap-1 p-2 rounded-xl border border-[#E2E2E2] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13)] backdrop-blur-md z-20">
+                {availableTemplates.map((template) => (
+                  <button 
+                    key={template.id}
+                    onClick={() => {
+                      onTemplateSelect(template.id);
+                      setShowTemplateMenu(false);
+                    }}
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <span className="text-lg">⚡</span>
+                    <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">
+                      {template.displayName || template.title}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* MODE SELECTOR */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowModeMenu(!showModeMenu)}
+              className="flex px-3 py-[10px] items-center gap-3 rounded-xl hover:bg-gray-50 transition-colors"
+              disabled={isAnalyzing}
+            >
+              <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">
+                {chatMode === 'chat' ? 'Chat' : 'Analyse'}
+              </span>
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            
+            {showModeMenu && (
+              <div className="absolute top-full right-0 mt-2 flex flex-col gap-1 p-2 rounded-xl border border-[#E2E2E2] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13)] backdrop-blur-md z-20">
+                <button 
+                  onClick={() => { setChatMode('chat'); setShowModeMenu(false); }}
+                  className="px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                >
+                  <span className="font-['Instrument_Sans'] text-[14px] font-medium">Chat</span>
+                  <p className="font-['Instrument_Sans'] text-[12px] text-gray-600">Ask questions or interact without getting an analysis</p>
+                </button>
+                <button 
+                  onClick={() => { setChatMode('analyze'); setShowModeMenu(false); }}
+                  className="px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                >
+                  <span className="font-['Instrument_Sans'] text-[14px] font-medium">Analyse</span>
+                  <p className="font-['Instrument_Sans'] text-[12px] text-gray-600">Get analysis on your files or content provided</p>
+                </button>
+              </div>
+            )}
           </div>
         </div>
         
-        <Button
-          onClick={onSendMessage}
-          disabled={!canSend}
-          className="self-end"
-        >
-          <Send className="w-4 h-4" />
-        </Button>
+        {/* RIGHT SIDE CONTROLS */}
+        <div className="flex items-center gap-3 sm:justify-center">
+          {/* MICROPHONE BUTTON */}
+          <button 
+            className="flex h-10 px-[10px] py-1 items-center gap-3 rounded-xl hover:bg-gray-50 transition-colors sm:h-12 sm:px-3"
+            disabled={isAnalyzing}
+          >
+            <Mic className="w-5 h-5 text-[#7B7B7B]" />
+          </button>
+          
+          {/* SUBMIT BUTTON */}
+          <button 
+            onClick={onSendMessage}
+            disabled={!canSend || isAnalyzing}
+            className="flex w-10 h-10 px-8 py-3 justify-center items-center gap-2 rounded-xl bg-gradient-to-b from-[#E5E5E5] to-[#E2E2E2] shadow-[0px_3px_4px_-1px_rgba(0,0,0,0.15),0px_1px_0px_0px_rgba(255,255,255,0.33)_inset,0px_0px_0px_1px_#D4D4D4] hover:from-[#E0E0E0] hover:to-[#DDDDDD] transition-all disabled:opacity-50 sm:w-12 sm:h-12"
+          >
+            {isAnalyzing ? (
+              <div className="w-5 h-5 border-2 border-[#121212] border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Send className="w-5 h-5 text-[#121212] flex-shrink-0" />
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* URL INPUT SECTION (if active) */}
+      {showUrlInput && (
+        <div className="w-full p-3 bg-gray-50 rounded-xl border border-[#E2E2E2]">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              placeholder="Enter website URL..."
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg font-['Instrument_Sans'] text-[14px]"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  onAddUrl();
+                }
+              }}
+            />
+            <Button onClick={onAddUrl} size="sm" disabled={!urlInput.trim()}>Add</Button>
+            <Button onClick={onCancelUrl} variant="outline" size="sm">Cancel</Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
