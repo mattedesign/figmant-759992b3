@@ -30,14 +30,14 @@ export const ChatPage: React.FC<ChatPageProps> = ({ selectedTemplate }) => {
         </div>
       </div>
 
-      {/* Main Content with Sidebar */}
-      <div className="flex-1 min-h-0 flex gap-4 px-6">
-        {/* Main Chat Content */}
+      {/* Main Content - Three Column Layout */}
+      <div className="flex-1 min-h-0 flex px-6 gap-4">
+        {/* Main Chat Content - Takes up remaining space */}
         <div className="flex-1 min-h-0">
           <UnifiedChatContainer />
         </div>
 
-        {/* Right Navigation Sidebar */}
+        {/* Right Analysis Assets Panel */}
         <div className="flex-shrink-0">
           <AnalysisNavigationSidebar
             messages={chatState.messages || []}
