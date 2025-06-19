@@ -1,19 +1,16 @@
 
+
 import React, { useEffect } from 'react';
 import { DashboardHeader } from './dashboard/DashboardHeader';
-import { RecentAnalysisSection } from './dashboard/RecentAnalysisSection';
 import { InsightsSection } from './dashboard/InsightsSection';
 import { PatternAnalysisSection } from './dashboard/PatternAnalysisSection';
-import { DashboardMetricsSection } from './dashboard/DashboardMetricsSection';
 import { DashboardAnalyticsTabsSection } from './dashboard/DashboardAnalyticsTabsSection';
-import { DashboardRevenueSection } from './dashboard/DashboardRevenueSection';
-import { DashboardCompetitorSection } from './dashboard/DashboardCompetitorSection';
 import { DashboardCreditUsageSection } from './dashboard/DashboardCreditUsageSection';
 import { DashboardAnalysisPerformanceSection } from './dashboard/DashboardAnalysisPerformanceSection';
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
 import { useToast } from '@/hooks/use-toast';
-import { transformForCompetitorWidget, transformForRevenueWidget, transformForPerformanceWidget } from './dashboard/utils/widgetDataTransformers';
+import { transformForPerformanceWidget } from './dashboard/utils/widgetDataTransformers';
 
 export const DashboardPage: React.FC = () => {
   const {
@@ -28,16 +25,12 @@ export const DashboardPage: React.FC = () => {
     lastUpdated,
     // Enhanced actions
     refreshAllData,
-    refreshAnalyses,
     refreshInsights,
     // Loading states
     loadingStates,
     errorStates,
     // Performance
     performance,
-    // Computed properties
-    isDataEmpty,
-    hasRecentActivity,
     // Raw data access for widgets
     rawAnalysisData,
     userCredits
@@ -71,8 +64,6 @@ export const DashboardPage: React.FC = () => {
   }
 
   // Transform raw data for widgets
-  const competitorWidgetData = transformForCompetitorWidget(rawAnalysisData || []);
-  const revenueWidgetData = transformForRevenueWidget(rawAnalysisData || []);
   const performanceWidgetData = transformForPerformanceWidget(rawAnalysisData || []);
 
   return (
@@ -85,19 +76,6 @@ export const DashboardPage: React.FC = () => {
           isRefreshing={isRefreshing} 
         />
 
-        {/* Key Metrics Section */}
-        <DashboardMetricsSection dataStats={memoizedDataStats} />
-
-        {/* Revenue-focused top row - Competitor Intelligence & Revenue Impact */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <DashboardCompetitorSection analysisData={competitorWidgetData} userCredits={userCredits} />
-          </div>
-          <div className="lg:col-span-1">
-            <DashboardRevenueSection analysisData={revenueWidgetData} />
-          </div>
-        </div>
-
         {/* Secondary widgets row - Credit Usage & Analysis Performance */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <DashboardCreditUsageSection userCredits={userCredits} />
@@ -109,13 +87,6 @@ export const DashboardPage: React.FC = () => {
         
         {/* Main Content - Single Column Layout */}
         <div className="space-y-8">
-          <RecentAnalysisSection 
-            analysisData={memoizedAnalysisData} 
-            isLoading={loadingStates.analyses} 
-            error={errorStates.analyses} 
-            onRetry={refreshAnalyses} 
-          />
-          
           {/* Pattern Analysis (1/3) and Insights (2/3) Side by Side */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1">
@@ -136,3 +107,4 @@ export const DashboardPage: React.FC = () => {
     </div>
   );
 };
+
