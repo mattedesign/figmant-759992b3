@@ -40,80 +40,56 @@ export const useProfileSync = () => {
             return;
           }
 
-          // Check and create subscription record if missing
-          const { data: existingSubscription } = await supabase
+          // Create subscription record
+          const { error: subscriptionError } = await supabase
             .from('subscriptions')
-            .select('*')
-            .eq('user_id', user.id)
-            .maybeSingle();
+            .insert({
+              user_id: user.id,
+              status: 'inactive'
+            });
 
-          if (!existingSubscription) {
-            const { error: subscriptionError } = await supabase
-              .from('subscriptions')
-              .insert({
-                user_id: user.id,
-                status: 'inactive'
-              });
-
-            if (subscriptionError) {
-              console.error('Error creating subscription:', subscriptionError);
-            }
+          if (subscriptionError) {
+            console.error('Error creating subscription:', subscriptionError);
           }
 
-          // Check and create user credits if missing
-          const { data: existingCredits } = await supabase
+          // Create user credits with welcome bonus
+          const { error: creditsError } = await supabase
             .from('user_credits')
-            .select('*')
-            .eq('user_id', user.id)
-            .maybeSingle();
+            .insert({
+              user_id: user.id,
+              current_balance: 5,
+              total_purchased: 5,
+              total_used: 0
+            });
 
-          if (!existingCredits) {
-            const { error: creditsError } = await supabase
-              .from('user_credits')
-              .insert({
-                user_id: user.id,
-                current_balance: 5,
-                total_purchased: 5,
-                total_used: 0
-              });
-
-            if (creditsError) {
-              console.error('Error creating user credits:', creditsError);
-            } else {
-              // Create welcome transaction
-              const { error: transactionError } = await supabase
-                .from('credit_transactions')
-                .insert({
-                  user_id: user.id,
-                  transaction_type: 'purchase',
-                  amount: 5,
-                  description: 'Welcome bonus - 5 free credits (profile sync)',
-                  created_by: user.id
-                });
-
-              if (transactionError) {
-                console.error('Error creating transaction:', transactionError);
-              }
-            }
+          if (creditsError) {
+            console.error('Error creating user credits:', creditsError);
           }
 
-          // Check and create onboarding record if missing
-          const { data: existingOnboarding } = await supabase
+          // Create welcome transaction
+          const { error: transactionError } = await supabase
+            .from('credit_transactions')
+            .insert({
+              user_id: user.id,
+              transaction_type: 'purchase',
+              amount: 5,
+              description: 'Welcome bonus - 5 free credits (auto-sync)',
+              created_by: user.id
+            });
+
+          if (transactionError) {
+            console.error('Error creating transaction:', transactionError);
+          }
+
+          // Create onboarding record
+          const { error: onboardingError } = await supabase
             .from('user_onboarding')
-            .select('*')
-            .eq('user_id', user.id)
-            .maybeSingle();
+            .insert({
+              user_id: user.id
+            });
 
-          if (!existingOnboarding) {
-            const { error: onboardingError } = await supabase
-              .from('user_onboarding')
-              .insert({
-                user_id: user.id
-              });
-
-            if (onboardingError) {
-              console.error('Error creating onboarding record:', onboardingError);
-            }
+          if (onboardingError) {
+            console.error('Error creating onboarding record:', onboardingError);
           }
 
           // Refresh user data to pick up the new profile

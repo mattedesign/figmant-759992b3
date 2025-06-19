@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { ModernOnboardingFlow } from '@/components/auth/ModernOnboardingFlow';
+import { NewUserOnboarding } from './NewUserOnboarding';
 
 interface OnboardingFlowProps {
   onComplete: () => void;
 }
 
 export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete }) => {
-  return <ModernOnboardingFlow onComplete={onComplete} />;
+  return <NewUserOnboarding onComplete={onComplete} />;
 };

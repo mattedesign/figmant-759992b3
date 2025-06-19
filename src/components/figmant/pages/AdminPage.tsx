@@ -10,7 +10,6 @@ import { AdminSettings } from '@/components/owner/AdminSettings';
 import { ClaudeSettings } from '@/components/owner/ClaudeSettings';
 import { SubscriptionPlansManager } from '@/components/owner/SubscriptionPlansManager';
 import { AdminAssetDashboard } from '@/components/admin/AdminAssetDashboard';
-import { UserProfileSyncPanel } from '@/components/admin/UserProfileSyncPanel';
 
 interface AdminPageProps {
   initialTab?: string;
@@ -84,7 +83,6 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
           <div className="bg-transparent">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsContent value="dashboard" className="space-y-6">
-                <UserProfileSyncPanel />
                 <AdminSettings />
               </TabsContent>
 

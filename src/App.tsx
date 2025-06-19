@@ -1,49 +1,104 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { Toaster as Sonner } from "sonner";
-import { useProfileSync } from "@/hooks/useProfileSync";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import OwnerDashboard from "./pages/OwnerDashboard";
-import Figmant from "./pages/Figmant";
-import ProfilePage from "./pages/ProfilePage";
-import Subscription from "./pages/Subscription";
+import React from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from 'react-router-dom';
+import Auth from '@/pages/Auth';
+import Dashboard from '@/pages/Dashboard';
+import Subscription from '@/pages/Subscription';
+import PaymentSuccess from '@/pages/PaymentSuccess';
+import OwnerDashboard from '@/pages/OwnerDashboard';
+import DesignAnalysis from '@/pages/DesignAnalysis';
+import StripeWebhookTest from '@/pages/StripeWebhookTest';
+import AdminAssets from '@/pages/AdminAssets';
+import { FigmantLayout } from '@/components/figmant/FigmantLayout';
+import { AuthGuard } from '@/components/auth/AuthGuard';
+import ProfilePage from './pages/ProfilePage';
 
-const queryClient = new QueryClient();
-
-// Component that uses the profile sync hook
-const AppWithProfileSync = () => {
-  useProfileSync();
-  
+const App: React.FC = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Auth />} />
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/owner" element={<OwnerDashboard />} />
-      <Route path="/figmant" element={<Figmant />} />
-      <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/subscription" element={<Subscription />} />
-    </Routes>
+    <Router>
+      <Routes>
+        <Route path="/auth" element={<Auth />} />
+        <Route
+          path="/figmant"
+          element={
+            <AuthGuard>
+              <FigmantLayout />
+            </AuthGuard>
+          }
+        />
+        <Route path="/" element={<Navigate to="/figmant" replace />} />
+        <Route
+          path="/dashboard"
+          element={
+            <AuthGuard>
+              <Dashboard />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/analysis"
+          element={
+            <AuthGuard>
+              <DesignAnalysis />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <AuthGuard>
+              <ProfilePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/subscription"
+          element={
+            <AuthGuard>
+              <Subscription />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/payment-success"
+          element={
+            <AuthGuard>
+              <PaymentSuccess />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/admin/assets"
+          element={
+            <AuthGuard>
+              <AdminAssets />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/stripe-webhook-test"
+          element={
+            <AuthGuard requireOwner>
+              <StripeWebhookTest />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/owner"
+          element={
+            <AuthGuard requireOwner>
+              <OwnerDashboard />
+            </AuthGuard>
+          }
+        />
+      </Routes>
+    </Router>
   );
 };
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <AppWithProfileSync />
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
 
 export default App;
