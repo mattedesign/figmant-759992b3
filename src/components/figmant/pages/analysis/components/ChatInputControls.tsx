@@ -80,10 +80,13 @@ export const ChatInputControls: React.FC<ChatInputControlsProps> = ({
         <button 
           onClick={onSendMessage}
           disabled={!canSend || isAnalyzing}
-          className="flex w-11 h-11 justify-center items-center gap-2 rounded-xl bg-gradient-to-b from-[#E5E5E5] to-[#E2E2E2] shadow-[0px_3px_4px_-1px_rgba(0,0,0,0.15),0px_1px_0px_0px_rgba(255,255,255,0.33)_inset,0px_0px_0px_1px_#D4D4D4] hover:from-[#E0E0E0] hover:to-[#DDDDDD] transition-all disabled:opacity-50"
+          className="flex w-11 h-11 justify-center items-center gap-2 hover:from-[#E0E0E0] hover:to-[#DDDDDD] transition-all disabled:opacity-50"
           style={{
             width: '44px',
-            height: '44px'
+            height: '44px',
+            borderRadius: '12px',
+            background: 'linear-gradient(180deg, #E5E5E5 0%, #E2E2E2 100%)',
+            boxShadow: '0px 3px 4px -1px rgba(0, 0, 0, 0.15), 0px 1px 0px 0px rgba(255, 255, 255, 0.33) inset, 0px 0px 0px 1px #D4D4D4'
           }}
         >
           {isAnalyzing ? (
