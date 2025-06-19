@@ -3,19 +3,22 @@ import { Button } from '@/components/ui/button';
 import { PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AnalysisChatContainer } from './AnalysisChatContainer';
+import { AnalysisNavigationSidebar } from './AnalysisNavigationSidebar';
 import { useChatState } from '../ChatStateManager';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
 import { useToast } from '@/hooks/use-toast';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
 import { FileUploadService } from '../utils/fileUploadService';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const UnifiedChatContainer: React.FC = () => {
   const { data: templates = [], isLoading: templatesLoading } = useFigmantPromptTemplates();
   const { mutateAsync: analyzeWithClaude, isPending: isAnalyzing } = useFigmantChatAnalysis();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
-  // Use the shared chat state - this should be the same instance used in FigmantLayout
+  // Use the shared chat state
   const chatState = useChatState();
   
   // Verify we have the chat state functions
@@ -38,6 +41,7 @@ export const UnifiedChatContainer: React.FC = () => {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
+  const [isAssetsPanelVisible, setIsAssetsPanelVisible] = useState(!isMobile);
 
   // Debug logging to track state changes
   useEffect(() => {
@@ -371,6 +375,16 @@ export const UnifiedChatContainer: React.FC = () => {
 
   const canSend = message.trim().length > 0 || attachments.length > 0;
 
+  const handleViewAttachment = (attachment: any) => {
+    console.log('View attachment:', attachment);
+    // Could open a modal or preview
+  };
+
+  // Separate files and URLs from attachments for the assets panel
+  const fileAttachments = attachments.filter(att => att.type === 'file');
+  const urlAttachments = attachments.filter(att => att.type === 'url');
+  const analysisMessages = messages.filter(msg => msg.role === 'assistant');
+
   console.log('🔄 UNIFIED CHAT CONTAINER - Current state:', {
     messagesCount: messages.length,
     attachmentsCount: attachments.length,
@@ -378,33 +392,96 @@ export const UnifiedChatContainer: React.FC = () => {
     lastAnalysisResult: !!lastAnalysisResult,
     showUrlInput,
     urlInput,
+    isAssetsPanelVisible,
     hasChatStateFunctions: !!(setAttachments && setMessages && setMessage)
   });
 
+  if (isMobile) {
+    return (
+      <div className="h-full">
+        <AnalysisChatContainer
+          messages={messages}
+          isAnalyzing={isAnalyzing}
+          message={message}
+          setMessage={setMessage}
+          onSendMessage={handleSendMessage}
+          onKeyPress={handleKeyPress}
+          getCurrentTemplate={getCurrentTemplate}
+          canSend={canSend}
+          onFileUpload={handleFileUpload}
+          onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
+          showUrlInput={showUrlInput}
+          urlInput={urlInput}
+          setUrlInput={setUrlInput}
+          onAddUrl={handleAddUrl}
+          onCancelUrl={() => setShowUrlInput(false)}
+          onTemplateSelect={handleTemplateSelect}
+          availableTemplates={templates}
+          onViewTemplate={handleViewTemplate}
+          attachments={attachments}
+          onRemoveAttachment={removeAttachment}
+        />
+      </div>
+    );
+  }
+
+  // Desktop layout with side-by-side chat and assets panel
   return (
-    <div className="h-full">
-      <AnalysisChatContainer
-        messages={messages}
-        isAnalyzing={isAnalyzing}
-        message={message}
-        setMessage={setMessage}
-        onSendMessage={handleSendMessage}
-        onKeyPress={handleKeyPress}
-        getCurrentTemplate={getCurrentTemplate}
-        canSend={canSend}
-        onFileUpload={handleFileUpload}
-        onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
-        showUrlInput={showUrlInput}
-        urlInput={urlInput}
-        setUrlInput={setUrlInput}
-        onAddUrl={handleAddUrl}
-        onCancelUrl={() => setShowUrlInput(false)}
-        onTemplateSelect={handleTemplateSelect}
-        availableTemplates={templates}
-        onViewTemplate={handleViewTemplate}
-        attachments={attachments}
-        onRemoveAttachment={removeAttachment}
-      />
+    <div className="h-full flex gap-4">
+      {/* Main Chat Container */}
+      <div className="flex-1 min-w-0">
+        <AnalysisChatContainer
+          messages={messages}
+          isAnalyzing={isAnalyzing}
+          message={message}
+          setMessage={setMessage}
+          onSendMessage={handleSendMessage}
+          onKeyPress={handleKeyPress}
+          getCurrentTemplate={getCurrentTemplate}
+          canSend={canSend}
+          onFileUpload={handleFileUpload}
+          onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
+          showUrlInput={showUrlInput}
+          urlInput={urlInput}
+          setUrlInput={setUrlInput}
+          onAddUrl={handleAddUrl}
+          onCancelUrl={() => setShowUrlInput(false)}
+          onTemplateSelect={handleTemplateSelect}
+          availableTemplates={templates}
+          onViewTemplate={handleViewTemplate}
+          attachments={attachments}
+          onRemoveAttachment={removeAttachment}
+        />
+      </div>
+
+      {/* Analysis Assets Panel */}
+      {isAssetsPanelVisible && (
+        <div className="flex-shrink-0">
+          <AnalysisNavigationSidebar
+            messages={messages}
+            attachments={attachments}
+            onRemoveAttachment={removeAttachment}
+            onViewAttachment={handleViewAttachment}
+            lastAnalysisResult={lastAnalysisResult}
+            isCollapsed={false}
+            onToggleCollapse={() => setIsAssetsPanelVisible(!isAssetsPanelVisible)}
+          />
+        </div>
+      )}
+
+      {/* Toggle Button for Assets Panel */}
+      {!isAssetsPanelVisible && (
+        <div className="flex-shrink-0 flex items-start pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsAssetsPanelVisible(true)}
+            className="h-8 w-8 p-0"
+          >
+            <PanelRightOpen className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
