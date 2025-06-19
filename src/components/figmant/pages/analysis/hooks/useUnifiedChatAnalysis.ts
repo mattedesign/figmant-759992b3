@@ -6,7 +6,7 @@ import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInter
 import { useToast } from '@/hooks/use-toast';
 
 export const useUnifiedChatAnalysis = () => {
-  const { templates, isLoading: templatesLoading } = useFigmantPromptTemplates();
+  const { data: templates = [], isLoading: templatesLoading } = useFigmantPromptTemplates();
   const { mutateAsync: analyzeWithClaude, isPending: isAnalyzing } = useFigmantChatAnalysis();
   const { toast } = useToast();
   

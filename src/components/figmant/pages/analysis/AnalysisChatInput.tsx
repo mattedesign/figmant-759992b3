@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Send, Paperclip, Globe, X, FileText, Image } from 'lucide-react';
 import { FigmantPromptTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
-import { PromptTemplateSelector } from './PromptTemplateSelector';
+import { SimplePromptTemplateSelector } from './components/SimplePromptTemplateSelector';
 import { URLAttachmentHandler } from './components/URLAttachmentHandler';
 
 interface AnalysisChatInputProps {
@@ -62,7 +62,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   return (
     <div className="p-4 border-t bg-background space-y-4">
       {/* Template Selector */}
-      <PromptTemplateSelector
+      <SimplePromptTemplateSelector
         availableTemplates={availableTemplates}
         selectedTemplate={selectedPromptTemplate}
         onTemplateSelect={onTemplateSelect}
