@@ -54,9 +54,6 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
               {analysis.title}
             </h4>
             <div className="flex items-center gap-2 mt-1">
-              <Badge variant="outline" className="text-xs">
-                {analysis.analysisType}
-              </Badge>
               <Badge variant="secondary" className="text-xs">
                 Score: {analysis.score}/10
               </Badge>
@@ -82,6 +79,9 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
         <div className="px-3 pb-3 border-t border-gray-100">
           <AnalysisPreview analysis={analysis} />
           <div className="mt-2 flex items-center justify-between">
+            <div className="text-xs text-gray-500">
+              Files: {analysis.fileCount}
+            </div>
             <Button
               variant="outline"
               size="sm"
