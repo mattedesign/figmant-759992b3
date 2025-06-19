@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { usePublicLogoConfig } from '@/hooks/usePublicLogoConfig';
 
@@ -13,10 +12,10 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', className = '', variant
   const [currentLogoUrl, setCurrentLogoUrl] = useState<string>('');
   const { logoConfig, isLoading } = usePublicLogoConfig();
 
-  // Optimized size classes for the logo - updated to make default size 32px
+  // Updated size classes - changed md from h-8 to h-6 to make it 24px
   const sizeClasses = {
     sm: 'h-6 w-auto max-w-[100px]',
-    md: 'h-8 w-auto max-w-[120px]', 
+    md: 'h-6 w-auto max-w-[120px]', // Changed from h-8 to h-6 (24px)
     lg: 'h-12 w-auto max-w-[150px]'
   };
 
