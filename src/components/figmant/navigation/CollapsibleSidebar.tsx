@@ -80,9 +80,14 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
   return (
     <TooltipProvider>
       <div className={cn(
-        "h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out",
+        "h-full flex flex-col transition-all duration-300 ease-in-out",
         isCollapsed ? "w-16" : "w-64"
-      )}>
+      )}
+      style={{
+        borderRadius: '20px',
+        border: '1px solid var(--Stroke-01, #ECECEC)',
+        background: 'var(--Surface-01, #FCFCFC)'
+      }}>
         {/* Header */}
         <div className="flex-none p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">

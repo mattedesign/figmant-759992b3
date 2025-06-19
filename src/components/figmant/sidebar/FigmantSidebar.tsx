@@ -1,12 +1,11 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
-import { SidebarHeader } from './SidebarHeader';
-import { SidebarUserSection } from './components/SidebarUserSection';
-import { SidebarNavigation } from './SidebarNavigation';
-import { SidebarCredits } from './SidebarCredits';
-import { SidebarUserProfile } from './SidebarUserProfile';
+import { SidebarHeader } from './sidebar/SidebarHeader';
+import { SidebarUserSection } from './sidebar/components/SidebarUserSection';
+import { SidebarNavigation } from './sidebar/SidebarNavigation';
+import { SidebarCredits } from './sidebar/SidebarCredits';
+import { SidebarUserProfile } from './sidebar/SidebarUserProfile';
 
 interface FigmantSidebarProps {
   activeSection: string;
@@ -37,10 +36,9 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
         isCollapsed ? 'w-16' : 'w-72'
       }`}
       style={{ 
-        background: 'transparent',
         borderRadius: '20px',
         border: '1px solid var(--Stroke-01, #ECECEC)',
-        backgroundColor: 'var(--Surface-01, #FCFCFC)'
+        background: 'var(--Surface-01, #FCFCFC)'
       }}
     >
       <SidebarHeader 
