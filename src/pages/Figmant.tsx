@@ -4,7 +4,7 @@ import { FigmantLayout } from '@/components/figmant/FigmantLayout';
 import { ChatErrorBoundary } from '@/components/figmant/pages/analysis/components/ChatErrorBoundary';
 
 const Figmant = () => {
-  console.log('Figmant page rendering with error boundary...');
+  console.log('Figmant page rendering with unified navigation...');
   
   return (
     <div className="min-h-screen overflow-hidden">

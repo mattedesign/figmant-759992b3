@@ -1,9 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
-import { AnalysisListSidebar } from './AnalysisListSidebar';
+import React, { useState } from 'react';
 import { AnalysisChatPanel } from './AnalysisChatPanel';
-import { AnalysisDynamicRightPanel } from './AnalysisDynamicRightPanel';
-import { AnalysisNavigationSidebar } from './components/AnalysisNavigationSidebar';
+import { FigmantSidebar } from '@/components/figmant/sidebar/FigmantSidebarContainer';
 
 interface AnalysisDesktopLayoutProps {
   selectedAnalysis: any;
@@ -36,81 +34,39 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
   onBackClick
 }) => {
   const [leftCollapsed, setLeftCollapsed] = useState(false);
-  const [rightCollapsed, setRightCollapsed] = useState(false);
 
-  // Determine the right panel mode based on state
-  const getRightPanelMode = () => {
-    // If there's an active analysis or analysis result, show analysis details
-    if (currentAnalysis || chatPanelProps.lastAnalysisResult || chatPanelProps.messages?.length > 0) {
-      return 'analysis';
-    }
-    // If there are attachments or user is actively engaged, show templates
-    if (attachments?.length > 0 || chatPanelProps.message?.length > 0) {
-      return 'templates';
-    }
-    // Default to empty state
-    return 'empty';
-  };
-
-  const getLeftPanelWidth = () => {
-    return leftCollapsed ? 'w-16' : 'w-1/4'; // 25% when expanded, 64px when collapsed
-  };
-
-  const getRightPanelWidth = () => {
-    return rightCollapsed ? 'w-16' : 'w-80'; // Fixed width for navigation-style sidebar
-  };
-
-  const getMainContentWidth = () => {
-    if (leftCollapsed && rightCollapsed) {
-      return 'calc(100% - 20rem)'; // Both panels collapsed (64px + 320px)
-    } else if (leftCollapsed) {
-      return 'calc(100% - 24rem)'; // Left collapsed, right expanded
-    } else if (rightCollapsed) {
-      return 'calc(75% - 4rem)'; // Right collapsed, left expanded
+  const handleAnalysisSelect = (analysisId: string) => {
+    // Convert section change to analysis selection if needed
+    if (analysisId === 'chat') {
+      onAnalysisSelect(null);
     } else {
-      return 'calc(100% - 44rem)'; // Both expanded (25% + 320px)
+      // Find analysis by ID or handle appropriately
+      onAnalysisSelect({ id: analysisId });
     }
   };
 
-  const handleViewAttachment = (attachment: any) => {
-    console.log('View attachment:', attachment);
-    // Could open a modal or preview
+  const handleCollapseChange = (collapsed: boolean) => {
+    setLeftCollapsed(collapsed);
   };
 
   return (
     <div className="h-full bg-[#F9FAFB] flex gap-4">
-      {/* Left Sidebar - Analysis List */}
-      <div className={`flex-shrink-0 transition-all duration-300 ${getLeftPanelWidth()}`}>
-        <AnalysisListSidebar 
-          selectedAnalysis={selectedAnalysis}
-          onAnalysisSelect={onAnalysisSelect}
-          onCollapseChange={setLeftCollapsed}
+      {/* Unified Figmant Sidebar */}
+      <div className="flex-shrink-0">
+        <FigmantSidebar
+          activeSection={selectedAnalysis?.id || 'chat'}
+          onSectionChange={handleAnalysisSelect}
+          onCollapsedChange={handleCollapseChange}
         />
       </div>
       
       {/* Main Chat Content */}
-      <div 
-        className="flex-1 min-w-0 transition-all duration-300"
-        style={{ width: getMainContentWidth() }}
-      >
+      <div className="flex-1 min-w-0">
         <AnalysisChatPanel 
           {...chatPanelProps}
           promptTemplates={promptTemplates}
           selectedPromptCategory={selectedPromptCategory}
           selectedPromptTemplate={selectedPromptTemplate}
-        />
-      </div>
-      
-      {/* Right Navigation Sidebar - Assets & Analysis */}
-      <div className="flex-shrink-0 transition-all duration-300">
-        <AnalysisNavigationSidebar
-          messages={chatPanelProps.messages || []}
-          attachments={attachments || []}
-          onRemoveAttachment={chatPanelProps.onRemoveAttachment}
-          onViewAttachment={handleViewAttachment}
-          lastAnalysisResult={chatPanelProps.lastAnalysisResult}
-          isCollapsed={rightCollapsed}
-          onToggleCollapse={() => setRightCollapsed(!rightCollapsed)}
         />
       </div>
     </div>

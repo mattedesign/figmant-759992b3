@@ -4,19 +4,20 @@ import { Navigation } from '@/components/layout/Navigation';
 import { SubscriberDashboardErrorBoundary } from '@/components/subscriber/SubscriberDashboardErrorBoundary';
 import { SubscriberSidebar } from '@/components/subscriber/SubscriberSidebar';
 import { TabContentRenderer } from '@/components/subscriber/components/TabContentRenderer';
+import { FigmantSidebar } from '@/components/figmant/sidebar/FigmantSidebarContainer';
 import { useSearchParams } from 'react-router-dom';
 
 // Map tabs to sections for the subscriber navigation
 const tabToSectionMap: Record<string, string> = {
-  design: 'workspace',
-  'all-analysis': 'workspace',
-  insights: 'workspace',
-  prompts: 'workspace',
-  'premium-analysis': 'workspace',
-  integrations: 'workspace',
-  batch: 'workspace', // Hidden but functional
-  history: 'workspace', // Hidden but functional
-  legacy: 'workspace', // Hidden but functional
+  design: 'dashboard',
+  'all-analysis': 'dashboard',
+  insights: 'dashboard',
+  prompts: 'dashboard',
+  'premium-analysis': 'dashboard',
+  integrations: 'dashboard',
+  batch: 'dashboard',
+  history: 'dashboard',
+  legacy: 'dashboard',
 };
 
 const SubscriberDashboard = () => {
@@ -26,7 +27,7 @@ const SubscriberDashboard = () => {
   // Get the tab from URL parameters, default to 'design' (first available tab)
   const tabFromUrl = searchParams.get('tab') || 'design';
   const [activeTab, setActiveTab] = useState(tabFromUrl);
-  const [activeSection, setActiveSection] = useState(tabToSectionMap[tabFromUrl] || 'workspace');
+  const [activeSection, setActiveSection] = useState(tabToSectionMap[tabFromUrl] || 'dashboard');
 
   // Valid tab options - including hidden tabs for direct access
   const validTabs = ['design', 'all-analysis', 'insights', 'prompts', 'premium-analysis', 'integrations', 'batch', 'history', 'legacy'];
@@ -36,10 +37,38 @@ const SubscriberDashboard = () => {
   const handleTabChange = (newTab: string) => {
     console.log('Changing tab to:', newTab);
     setActiveTab(newTab);
-    setActiveSection(tabToSectionMap[newTab] || 'workspace');
+    setActiveSection(tabToSectionMap[newTab] || 'dashboard');
     setSearchParams({
       tab: newTab
     });
+  };
+
+  // Handle section change from figmant sidebar
+  const handleSectionChange = (newSection: string) => {
+    console.log('Changing section to:', newSection);
+    setActiveSection(newSection);
+    
+    // Set the first available tab for the section
+    const sectionTabs = Object.entries(tabToSectionMap)
+      .filter(([_, section]) => section === newSection)
+      .map(([tab, _]) => tab);
+    
+    if (sectionTabs.length > 0) {
+      let firstTab = sectionTabs[0];
+      if (newSection === 'dashboard') {
+        // For dashboard, prefer 'design' first
+        if (sectionTabs.includes('design')) {
+          firstTab = 'design';
+        } else if (sectionTabs.includes('all-analysis')) {
+          firstTab = 'all-analysis';
+        }
+      }
+      
+      setActiveTab(firstTab);
+      setSearchParams({
+        tab: firstTab
+      });
+    }
   };
 
   // Sync tab state with URL changes and handle invalid tabs
@@ -51,13 +80,13 @@ const SubscriberDashboard = () => {
     if (!validTabs.includes(currentTab)) {
       console.log('Invalid tab detected, redirecting to design tab');
       setActiveTab('design');
-      setActiveSection('workspace');
+      setActiveSection('dashboard');
       setSearchParams({
         tab: 'design'
       });
     } else {
       setActiveTab(currentTab);
-      setActiveSection(tabToSectionMap[currentTab] || 'workspace');
+      setActiveSection(tabToSectionMap[currentTab] || 'dashboard');
     }
   }, [searchParams, setSearchParams]);
 
@@ -73,7 +102,15 @@ const SubscriberDashboard = () => {
         
         {/* Main Content Area - Flexible */}
         <div className="flex-1 flex overflow-hidden">
-          {/* Left Navigation Container */}
+          {/* Unified Figmant Navigation */}
+          <div className="flex-none">
+            <FigmantSidebar
+              activeSection={activeSection}
+              onSectionChange={handleSectionChange}
+            />
+          </div>
+          
+          {/* Secondary Navigation for subscriber tabs */}
           <div className="flex-none">
             <SubscriberSidebar
               activeTab={activeTab}
@@ -88,7 +125,7 @@ const SubscriberDashboard = () => {
         </div>
       </div>
     </SubscriberDashboardErrorBoundary>
-  );
+    );
 };
 
 export default SubscriberDashboard;

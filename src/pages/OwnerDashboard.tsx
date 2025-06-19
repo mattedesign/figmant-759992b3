@@ -5,25 +5,26 @@ import { OwnerDashboardErrorBoundary } from '@/components/owner/OwnerDashboardEr
 import { IconSidebar } from '@/components/owner/IconSidebar';
 import { SecondaryNavigation } from '@/components/owner/SecondaryNavigation';
 import { TabContentRenderer } from '@/components/owner/components/TabContentRenderer';
+import { FigmantSidebar } from '@/components/figmant/sidebar/FigmantSidebarContainer';
 import { useSearchParams } from 'react-router-dom';
 
-// Map tabs to sections for the two-level navigation
+// Map tabs to sections for the navigation
 const tabToSectionMap: Record<string, string> = {
-  design: 'workspace',
-  'all-analysis': 'workspace',
-  insights: 'workspace',
-  prompts: 'workspace',
-  'premium-analysis': 'workspace',
-  integrations: 'workspace',
-  batch: 'workspace', // Hidden but functional
-  history: 'workspace', // Hidden but functional
-  legacy: 'workspace', // Hidden but functional
-  users: 'users',
-  plans: 'settings', // Moved to settings
-  claude: 'settings', // Moved to settings
-  settings: 'settings',
-  alerts: 'settings',
-  'prompt-manager': 'settings', // New tab under settings
+  design: 'dashboard',
+  'all-analysis': 'dashboard',
+  insights: 'dashboard',
+  prompts: 'dashboard',
+  'premium-analysis': 'dashboard',
+  integrations: 'dashboard',
+  batch: 'dashboard',
+  history: 'dashboard',
+  legacy: 'dashboard',
+  users: 'admin',
+  plans: 'admin',
+  claude: 'admin',
+  settings: 'admin',
+  alerts: 'admin',
+  'prompt-manager': 'admin',
 };
 
 const OwnerDashboard = () => {
@@ -33,7 +34,7 @@ const OwnerDashboard = () => {
   // Get the tab from URL parameters, default to 'design' (first available tab)
   const tabFromUrl = searchParams.get('tab') || 'design';
   const [activeTab, setActiveTab] = useState(tabFromUrl);
-  const [activeSection, setActiveSection] = useState(tabToSectionMap[tabFromUrl] || 'workspace');
+  const [activeSection, setActiveSection] = useState(tabToSectionMap[tabFromUrl] || 'dashboard');
 
   // Valid tab options - including hidden tabs for direct access
   const validTabs = ['design', 'all-analysis', 'insights', 'prompts', 'premium-analysis', 'integrations', 'batch', 'history', 'legacy', 'users', 'plans', 'claude', 'settings', 'prompt-manager'];
@@ -43,35 +44,35 @@ const OwnerDashboard = () => {
   const handleTabChange = (newTab: string) => {
     console.log('Changing tab to:', newTab);
     setActiveTab(newTab);
-    setActiveSection(tabToSectionMap[newTab] || 'workspace');
+    setActiveSection(tabToSectionMap[newTab] || 'dashboard');
     setSearchParams({
       tab: newTab
     });
   };
 
-  // Handle section change from icon sidebar
+  // Handle section change from figmant sidebar
   const handleSectionChange = (newSection: string) => {
     console.log('Changing section to:', newSection);
     setActiveSection(newSection);
     
-    // Set the first available tab for the section (prioritize visible tabs)
+    // Set the first available tab for the section
     const sectionTabs = Object.entries(tabToSectionMap)
       .filter(([_, section]) => section === newSection)
       .map(([tab, _]) => tab);
     
     if (sectionTabs.length > 0) {
       let firstTab = sectionTabs[0];
-      if (newSection === 'workspace') {
-        // For workspace, prefer 'design' first, then 'all-analysis'
+      if (newSection === 'dashboard') {
+        // For dashboard, prefer 'design' first
         if (sectionTabs.includes('design')) {
           firstTab = 'design';
         } else if (sectionTabs.includes('all-analysis')) {
           firstTab = 'all-analysis';
         }
-      } else if (newSection === 'settings') {
-        // For settings, prefer 'settings' first
-        if (sectionTabs.includes('settings')) {
-          firstTab = 'settings';
+      } else if (newSection === 'admin') {
+        // For admin, prefer 'users' first
+        if (sectionTabs.includes('users')) {
+          firstTab = 'users';
         }
       }
       
@@ -91,15 +92,15 @@ const OwnerDashboard = () => {
     if (!validTabs.includes(currentTab)) {
       console.log('Invalid tab detected, redirecting to design tab');
       setActiveTab('design');
-      setActiveSection('workspace');
+      setActiveSection('dashboard');
       setSearchParams({
         tab: 'design'
       });
     } else {
       setActiveTab(currentTab);
-      setActiveSection(tabToSectionMap[currentTab] || 'workspace');
+      setActiveSection(tabToSectionMap[currentTab] || 'dashboard');
     }
-  }, [searchParams]);
+  }, [searchParams, setSearchParams]);
 
   console.log('Rendering OwnerDashboard with tab:', activeTab, 'section:', activeSection);
   
@@ -113,15 +114,16 @@ const OwnerDashboard = () => {
         
         {/* Main Content Area - Flexible */}
         <div className="flex-1 flex overflow-hidden">
-          {/* Left Navigation Container - Fixed Width, No Scroll */}
-          <div className="flex-none flex">
-            {/* Icon Sidebar */}
-            <IconSidebar 
-              activeSection={activeSection} 
-              onSectionChange={handleSectionChange} 
+          {/* Unified Figmant Navigation */}
+          <div className="flex-none">
+            <FigmantSidebar
+              activeSection={activeSection}
+              onSectionChange={handleSectionChange}
             />
-            
-            {/* Secondary Navigation */}
+          </div>
+          
+          {/* Secondary Navigation for tabs within sections */}
+          <div className="flex-none">
             <SecondaryNavigation 
               activeSection={activeSection}
               activeTab={activeTab}
