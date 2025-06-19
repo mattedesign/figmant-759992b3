@@ -2,11 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { MessageSquare, FileText, History, Lightbulb } from 'lucide-react';
 import { AnalysisChatPanel } from '../AnalysisChatPanel';
-import { AnalysisNavigationSidebar } from './AnalysisNavigationSidebar';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
 import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
@@ -25,9 +21,6 @@ export const UnifiedChatContainer: React.FC = () => {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const [extractedSuggestions, setExtractedSuggestions] = useState<ExtractedSuggestion[]>([]);
-  
-  // Navigation sidebar state
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
   // Template selection state
   const [selectedPromptTemplate, setSelectedPromptTemplate] = useState<string>();
@@ -165,16 +158,6 @@ export const UnifiedChatContainer: React.FC = () => {
     return restoredAttachments;
   };
 
-  const handleRemoveAttachment = (id: string) => {
-    console.log('🗑️ Removing attachment:', id);
-    setAttachments(prev => prev.filter(att => att.id !== id));
-  };
-
-  const handleViewAttachment = (attachment: ChatAttachment) => {
-    console.log('👀 Viewing attachment:', attachment);
-    // Could implement a modal or preview here
-  };
-
   const handleAnalysisComplete = (result: any) => {
     console.log('✅ Analysis completed:', result);
     setLastAnalysisResult(result);
@@ -191,48 +174,33 @@ export const UnifiedChatContainer: React.FC = () => {
     messagesCount: messages.length,
     attachmentsCount: attachments.length,
     hasLastAnalysisResult: !!lastAnalysisResult,
-    sidebarCollapsed,
     extractedSuggestionsCount: extractedSuggestions.length
   });
 
   return (
-    <div className="h-full flex gap-4 p-6 min-h-0">
-      {/* Analysis Navigation Sidebar */}
-      <AnalysisNavigationSidebar
-        messages={messages}
-        attachments={attachments}
-        onRemoveAttachment={handleRemoveAttachment}
-        onViewAttachment={handleViewAttachment}
-        lastAnalysisResult={lastAnalysisResult}
-        isCollapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-      />
-
-      {/* Main Chat Panel */}
-      <div className="flex-1 min-w-0">
-        <Card className="h-full" style={{
-          borderRadius: '20px',
-          border: '1px solid var(--Stroke-01, #ECECEC)',
-          background: 'var(--Surface-01, #FCFCFC)'
-        }}>
-          <AnalysisChatPanel
-            message={message}
-            setMessage={setMessage}
-            messages={messages}
-            setMessages={setMessages}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            urlInput={urlInput}
-            setUrlInput={setUrlInput}
-            showUrlInput={showUrlInput}
-            setShowUrlInput={setShowUrlInput}
-            selectedPromptTemplate={selectedPromptTemplate}
-            selectedPromptCategory={selectedPromptCategory}
-            promptTemplates={promptTemplates}
-            onAnalysisComplete={handleAnalysisComplete}
-          />
-        </Card>
-      </div>
+    <div className="h-full p-6 min-h-0">
+      <Card className="h-full" style={{
+        borderRadius: '20px',
+        border: '1px solid var(--Stroke-01, #ECECEC)',
+        background: 'var(--Surface-01, #FCFCFC)'
+      }}>
+        <AnalysisChatPanel
+          message={message}
+          setMessage={setMessage}
+          messages={messages}
+          setMessages={setMessages}
+          attachments={attachments}
+          setAttachments={setAttachments}
+          urlInput={urlInput}
+          setUrlInput={setUrlInput}
+          showUrlInput={showUrlInput}
+          setShowUrlInput={setShowUrlInput}
+          selectedPromptTemplate={selectedPromptTemplate}
+          selectedPromptCategory={selectedPromptCategory}
+          promptTemplates={promptTemplates}
+          onAnalysisComplete={handleAnalysisComplete}
+        />
+      </Card>
     </div>
   );
 };
