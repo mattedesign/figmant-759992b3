@@ -109,7 +109,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
       <div className="flex items-center gap-3 self-stretch">
         
         {/* LEFT SIDE CONTROLS - Plus Button and Template Dropdown */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-1 justify-start">
           
           {/* EXPANDABLE PLUS BUTTON */}
           <AttachmentMenu
@@ -131,7 +131,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
         </div>
         
         {/* RIGHT SIDE CONTROLS - Mode Selector and Submit Button */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-1 justify-end">
           
           {/* MODE SELECTOR */}
           <ModeSelector
