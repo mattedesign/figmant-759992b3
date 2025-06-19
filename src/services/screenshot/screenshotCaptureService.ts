@@ -84,14 +84,17 @@ export class ScreenshotCaptureService {
   private static async getProvider() {
     console.log('📸 SCREENSHOT SERVICE - Getting provider...');
     
+    // Try to get the API key from environment first (for development)
+    const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
+    if (envApiKey) {
+      console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with environment key');
+      return new ScreenshotOneProvider(envApiKey);
+    }
+
     // Try to get the API key from Supabase edge function
     try {
       console.log('📸 SCREENSHOT SERVICE - Checking for API key from server...');
-      const response = await fetch('/api/screenshot-config', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('sb-okvsvrcphudxxrdonfvp-auth-token')}`
-        }
-      });
+      const response = await fetch('/api/screenshot-config');
       
       if (response.ok) {
         const { apiKey } = await response.json();
@@ -100,16 +103,9 @@ export class ScreenshotCaptureService {
           return new ScreenshotOneProvider(apiKey);
         }
       }
-      console.log('⚠️ SCREENSHOT SERVICE - No API key from server');
+      console.log('⚠️ SCREENSHOT SERVICE - No API key from server, response status:', response.status);
     } catch (error) {
       console.warn('⚠️ SCREENSHOT SERVICE - Failed to fetch API key from server:', error);
-    }
-
-    // Fallback to environment variable (for development)
-    const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
-    if (envApiKey) {
-      console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with environment key');
-      return new ScreenshotOneProvider(envApiKey);
     }
     
     console.warn('⚠️ SCREENSHOT SERVICE - No API key found, using mock service');

@@ -51,27 +51,14 @@ export class ScreenshotOneProvider implements ScreenshotProvider {
     console.log('📸 ScreenshotOne API request URL:', screenshotUrl);
     console.log('📸 ScreenshotOne API thumbnail URL:', thumbnailUrl);
     
-    // Actually test the API endpoint with a HEAD request to verify it works
-    try {
-      const response = await fetch(screenshotUrl, { 
-        method: 'HEAD'
-      });
-      
-      if (!response.ok) {
-        throw new Error(`ScreenshotOne API error: ${response.status} ${response.statusText}`);
-      }
-      
-      console.log('✅ ScreenshotOne API response successful');
-      
-      return {
-        screenshotUrl,
-        thumbnailUrl,
-        size: parseInt(response.headers.get('content-length') || '0') || 100000
-      };
-    } catch (error) {
-      console.error('❌ ScreenshotOne API request failed:', error);
-      throw new Error(`Failed to capture screenshot: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    // Return the URLs directly - the API will generate them when accessed
+    console.log('✅ ScreenshotOne URLs generated successfully');
+    
+    return {
+      screenshotUrl,
+      thumbnailUrl,
+      size: 100000 // Estimated size since we're not pre-fetching
+    };
   }
 
   private buildScreenshotParams(url: string, options: ScreenshotCaptureOptions): URLSearchParams {
