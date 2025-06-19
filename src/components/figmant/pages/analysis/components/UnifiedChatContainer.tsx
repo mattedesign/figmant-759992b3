@@ -5,11 +5,11 @@ import { PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AnalysisChatContainer } from './AnalysisChatContainer';
 import { AnalysisNavigationSidebar } from './AnalysisNavigationSidebar';
+import { URLInputHandler } from './URLInputHandler';
 import { useChatState } from '../ChatStateManager';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
 import { useToast } from '@/hooks/use-toast';
-import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
 import { FileUploadService } from '../utils/fileUploadService';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -40,7 +40,6 @@ export const UnifiedChatContainer: React.FC = () => {
   } = chatState;
 
   const [showUrlInput, setShowUrlInput] = useState(false);
-  const [urlInput, setUrlInput] = useState('');
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const [isAssetsPanelVisible, setIsAssetsPanelVisible] = useState(!isMobile);
 
@@ -56,15 +55,6 @@ export const UnifiedChatContainer: React.FC = () => {
       }))
     });
   }, [attachments]);
-
-  // Debug logging for URL input changes
-  useEffect(() => {
-    console.log('🔗 UNIFIED CHAT - URL input state changed:', {
-      showUrlInput,
-      urlInput,
-      urlInputLength: urlInput.length
-    });
-  }, [showUrlInput, urlInput]);
 
   const getCurrentTemplate = () => {
     return templates.find(t => t.id === selectedTemplateId) || null;
@@ -124,162 +114,20 @@ export const UnifiedChatContainer: React.FC = () => {
     }
   };
 
-  const handleAddUrl = async () => {
-    console.log('🔗 UNIFIED CHAT - handleAddUrl called with:', {
-      urlInput: urlInput,
-      urlInputTrimmed: urlInput.trim(),
-      hasUrlInput: !!urlInput.trim()
+  const handleAttachmentAdd = (attachment: ChatAttachment) => {
+    console.log('🔗 UNIFIED CHAT - Adding attachment:', attachment);
+    setAttachments(prev => {
+      const updated = [...prev, attachment];
+      console.log('🔗 UNIFIED CHAT - Attachments updated, new count:', updated.length);
+      return updated;
     });
+  };
 
-    if (!urlInput.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Invalid URL",
-        description: "Please enter a valid URL.",
-      });
-      return;
-    }
-
-    console.log('🔗 UNIFIED CHAT - Adding URL:', urlInput);
-
-    // Validate URL format
-    let formattedUrl = urlInput.trim();
-    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-      formattedUrl = `https://${formattedUrl}`;
-    }
-
-    try {
-      const urlObj = new URL(formattedUrl);
-      const hostname = urlObj.hostname;
-
-      // Check if URL already exists
-      const urlExists = attachments.some(att => att.url === formattedUrl);
-      if (urlExists) {
-        toast({
-          variant: "destructive",
-          title: "URL Already Added",
-          description: `${hostname} is already in your attachments.`,
-        });
-        return;
-      }
-
-      // Create new URL attachment with processing status
-      const newAttachment: ChatAttachment = {
-        id: crypto.randomUUID(),
-        type: 'url',
-        name: hostname,
-        url: formattedUrl,
-        status: 'processing',
-        metadata: {
-          screenshots: {
-            desktop: { success: false, url: formattedUrl },
-            mobile: { success: false, url: formattedUrl }
-          }
-        }
-      };
-
-      console.log('🔗 UNIFIED CHAT - Creating new URL attachment:', newAttachment.id, newAttachment.name);
-      
-      // Update attachments state immediately so it appears in the UI
-      setAttachments(prev => {
-        const updated = [...prev, newAttachment];
-        console.log('🔗 UNIFIED CHAT - URL attachment added to state, new count:', updated.length);
-        return updated;
-      });
-      
-      // Clear URL input and hide input section
-      setUrlInput('');
-      setShowUrlInput(false);
-      
-      toast({
-        title: "Website Added",
-        description: `${hostname} has been added. Capturing screenshots...`,
-      });
-
-      // Capture screenshots in the background
-      try {
-        console.log('📸 Starting screenshot capture for:', formattedUrl);
-        
-        const screenshotResults = await ScreenshotCaptureService.captureCompetitorSet(
-          [formattedUrl],
-          true, // include desktop
-          true  // include mobile
-        );
-
-        console.log('📸 Screenshot capture results:', screenshotResults);
-
-        // Update the attachment with screenshot data
-        setAttachments(prev => prev.map(att => {
-          if (att.id === newAttachment.id) {
-            const updatedAtt = {
-              ...att,
-              status: 'uploaded' as const,
-              metadata: {
-                ...att.metadata,
-                screenshots: {
-                  desktop: screenshotResults.desktop?.[0] || { success: false, url: formattedUrl, error: 'Desktop screenshot failed' },
-                  mobile: screenshotResults.mobile?.[0] || { success: false, url: formattedUrl, error: 'Mobile screenshot failed' }
-                }
-              }
-            };
-            console.log('📸 Updated attachment with screenshots:', updatedAtt.id);
-            return updatedAtt;
-          }
-          return att;
-        }));
-
-        const desktopSuccess = screenshotResults.desktop?.[0]?.success;
-        const mobileSuccess = screenshotResults.mobile?.[0]?.success;
-
-        if (desktopSuccess || mobileSuccess) {
-          toast({
-            title: "Screenshots Captured",
-            description: `Successfully captured ${desktopSuccess && mobileSuccess ? 'desktop and mobile' : desktopSuccess ? 'desktop' : 'mobile'} screenshots for ${hostname}.`,
-          });
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Screenshot Capture Failed",
-            description: `Unable to capture screenshots for ${hostname}. The website will still be analyzed.`,
-          });
-        }
-
-      } catch (screenshotError) {
-        console.error('📸 Screenshot capture error:', screenshotError);
-        
-        // Update attachment status to show error but keep it functional
-        setAttachments(prev => prev.map(att => {
-          if (att.id === newAttachment.id) {
-            return {
-              ...att,
-              status: 'uploaded' as const,
-              metadata: {
-                ...att.metadata,
-                screenshots: {
-                  desktop: { success: false, url: formattedUrl, error: 'Screenshot service unavailable' },
-                  mobile: { success: false, url: formattedUrl, error: 'Screenshot service unavailable' }
-                }
-              }
-            };
-          }
-          return att;
-        }));
-
-        toast({
-          variant: "destructive",
-          title: "Screenshot Capture Failed",
-          description: `Unable to capture screenshots for ${hostname}. The website will still be analyzed.`,
-        });
-      }
-
-    } catch (error) {
-      console.error('URL validation error:', error);
-      toast({
-        variant: "destructive",
-        title: "Invalid URL",
-        description: "Please enter a valid website URL.",
-      });
-    }
+  const handleAttachmentUpdate = (id: string, updates: Partial<ChatAttachment>) => {
+    console.log('🔗 UNIFIED CHAT - Updating attachment:', id, updates);
+    setAttachments(prev => prev.map(att => 
+      att.id === id ? { ...att, ...updates } : att
+    ));
   };
 
   const removeAttachment = (id: string) => {
@@ -305,12 +153,6 @@ export const UnifiedChatContainer: React.FC = () => {
   const handleToggleUrlInput = () => {
     console.log('🔗 UNIFIED CHAT - Toggle URL input:', !showUrlInput);
     setShowUrlInput(!showUrlInput);
-  };
-
-  const handleCancelUrl = () => {
-    console.log('🔗 UNIFIED CHAT - Cancel URL input');
-    setShowUrlInput(false);
-    setUrlInput('');
   };
 
   const handleSendMessage = async () => {
@@ -408,18 +250,12 @@ export const UnifiedChatContainer: React.FC = () => {
     // Could open a modal or preview
   };
 
-  // Separate files and URLs from attachments for the assets panel
-  const fileAttachments = attachments.filter(att => att.type === 'file');
-  const urlAttachments = attachments.filter(att => att.type === 'url');
-  const analysisMessages = messages.filter(msg => msg.role === 'assistant');
-
   console.log('🔄 UNIFIED CHAT CONTAINER - Current state:', {
     messagesCount: messages.length,
     attachmentsCount: attachments.length,
     attachmentDetails: attachments.map(att => ({ id: att.id, type: att.type, name: att.name, status: att.status })),
     lastAnalysisResult: !!lastAnalysisResult,
     showUrlInput,
-    urlInput,
     isAssetsPanelVisible,
     hasChatStateFunctions: !!(setAttachments && setMessages && setMessage)
   });
@@ -439,15 +275,24 @@ export const UnifiedChatContainer: React.FC = () => {
           onFileUpload={handleFileUpload}
           onToggleUrlInput={handleToggleUrlInput}
           showUrlInput={showUrlInput}
-          urlInput={urlInput}
-          setUrlInput={setUrlInput}
-          onAddUrl={handleAddUrl}
-          onCancelUrl={handleCancelUrl}
+          urlInput=""
+          setUrlInput={() => {}}
+          onAddUrl={() => {}}
+          onCancelUrl={() => setShowUrlInput(false)}
           onTemplateSelect={handleTemplateSelect}
           availableTemplates={templates}
           onViewTemplate={handleViewTemplate}
           attachments={attachments}
           onRemoveAttachment={removeAttachment}
+        />
+        
+        {/* URL Input Handler for Mobile */}
+        <URLInputHandler
+          showUrlInput={showUrlInput}
+          onClose={() => setShowUrlInput(false)}
+          attachments={attachments}
+          onAttachmentAdd={handleAttachmentAdd}
+          onAttachmentUpdate={handleAttachmentUpdate}
         />
       </div>
     );
@@ -457,7 +302,7 @@ export const UnifiedChatContainer: React.FC = () => {
   return (
     <div className="h-full flex gap-4">
       {/* Main Chat Container */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 relative">
         <AnalysisChatContainer
           messages={messages}
           isAnalyzing={isAnalyzing}
@@ -469,17 +314,30 @@ export const UnifiedChatContainer: React.FC = () => {
           canSend={canSend}
           onFileUpload={handleFileUpload}
           onToggleUrlInput={handleToggleUrlInput}
-          showUrlInput={showUrlInput}
-          urlInput={urlInput}
-          setUrlInput={setUrlInput}
-          onAddUrl={handleAddUrl}
-          onCancelUrl={handleCancelUrl}
+          showUrlInput={false}
+          urlInput=""
+          setUrlInput={() => {}}
+          onAddUrl={() => {}}
+          onCancelUrl={() => {}}
           onTemplateSelect={handleTemplateSelect}
           availableTemplates={templates}
           onViewTemplate={handleViewTemplate}
           attachments={attachments}
           onRemoveAttachment={removeAttachment}
         />
+        
+        {/* URL Input Handler */}
+        {showUrlInput && (
+          <div className="absolute top-0 left-0 right-0 z-10 p-4">
+            <URLInputHandler
+              showUrlInput={showUrlInput}
+              onClose={() => setShowUrlInput(false)}
+              attachments={attachments}
+              onAttachmentAdd={handleAttachmentAdd}
+              onAttachmentUpdate={handleAttachmentUpdate}
+            />
+          </div>
+        )}
       </div>
 
       {/* Analysis Assets Panel */}

@@ -12,12 +12,15 @@ export class ScreenshotCaptureService {
     const opts = { ...DEFAULT_OPTIONS, ...options };
     
     try {
-      console.log('📸 Capturing screenshot for:', url);
+      console.log('📸 SCREENSHOT SERVICE - Capturing screenshot for:', url, 'with options:', opts);
       
       const provider = await this.getProvider();
-      return await provider.captureScreenshot(url, opts);
+      const result = await provider.captureScreenshot(url, opts);
+      
+      console.log('📸 SCREENSHOT SERVICE - Result:', result);
+      return result;
     } catch (error) {
-      console.error('Screenshot capture failed:', error);
+      console.error('📸 SCREENSHOT SERVICE - Capture failed:', error);
       return {
         success: false,
         url,
@@ -30,8 +33,11 @@ export class ScreenshotCaptureService {
     urls: string[],
     options: ScreenshotCaptureOptions = {}
   ): Promise<ScreenshotResult[]> {
+    console.log('📸 SCREENSHOT SERVICE - Capturing multiple screenshots for:', urls.length, 'URLs');
     const capturePromises = urls.map(url => this.captureScreenshot(url, options));
-    return Promise.all(capturePromises);
+    const results = await Promise.all(capturePromises);
+    console.log('📸 SCREENSHOT SERVICE - Multiple capture results:', results);
+    return results;
   }
 
   static async captureCompetitorSet(
@@ -39,10 +45,16 @@ export class ScreenshotCaptureService {
     includeDesktop: boolean = true,
     includeMobile: boolean = true
   ): Promise<{ desktop?: ScreenshotResult[]; mobile?: ScreenshotResult[] }> {
+    console.log('📸 SCREENSHOT SERVICE - Capturing competitor set:', {
+      urls,
+      includeDesktop,
+      includeMobile
+    });
+    
     const results: { desktop?: ScreenshotResult[]; mobile?: ScreenshotResult[] } = {};
 
     if (includeDesktop) {
-      console.log('📸 Capturing desktop screenshots...');
+      console.log('📸 SCREENSHOT SERVICE - Capturing desktop screenshots...');
       results.desktop = await this.captureMultipleScreenshots(urls, {
         width: 1920,
         height: 1080,
@@ -54,7 +66,7 @@ export class ScreenshotCaptureService {
     }
 
     if (includeMobile) {
-      console.log('📱 Capturing mobile screenshots...');
+      console.log('📸 SCREENSHOT SERVICE - Capturing mobile screenshots...');
       results.mobile = await this.captureMultipleScreenshots(urls, {
         width: 375,
         height: 812,
@@ -65,12 +77,16 @@ export class ScreenshotCaptureService {
       });
     }
 
+    console.log('📸 SCREENSHOT SERVICE - Competitor set complete:', results);
     return results;
   }
 
   private static async getProvider() {
+    console.log('📸 SCREENSHOT SERVICE - Getting provider...');
+    
     // Try to get the API key from Supabase edge function
     try {
+      console.log('📸 SCREENSHOT SERVICE - Checking for API key from server...');
       const response = await fetch('/api/screenshot-config', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('sb-okvsvrcphudxxrdonfvp-auth-token')}`
@@ -80,22 +96,55 @@ export class ScreenshotCaptureService {
       if (response.ok) {
         const { apiKey } = await response.json();
         if (apiKey) {
-          console.log('✅ Using ScreenshotOne API with configured key');
+          console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with server key');
           return new ScreenshotOneProvider(apiKey);
         }
       }
+      console.log('⚠️ SCREENSHOT SERVICE - No API key from server');
     } catch (error) {
-      console.warn('Failed to fetch ScreenshotOne API key from server:', error);
+      console.warn('⚠️ SCREENSHOT SERVICE - Failed to fetch API key from server:', error);
     }
 
     // Fallback to environment variable (for development)
     const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
     if (envApiKey) {
-      console.log('✅ Using ScreenshotOne API with environment key');
+      console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with environment key');
       return new ScreenshotOneProvider(envApiKey);
     }
     
-    console.warn('⚠️ ScreenshotOne API key not found, using mock service');
+    console.warn('⚠️ SCREENSHOT SERVICE - No API key found, using mock service');
     return new MockScreenshotProvider();
+  }
+
+  // Method to test the service connectivity
+  static async testService(): Promise<{ isWorking: boolean; provider: string; error?: string }> {
+    try {
+      console.log('🧪 SCREENSHOT SERVICE - Testing service...');
+      const provider = await this.getProvider();
+      
+      if (provider instanceof MockScreenshotProvider) {
+        return { isWorking: true, provider: 'mock' };
+      }
+      
+      // Test with a simple URL
+      const testResult = await provider.captureScreenshot('https://google.com', {
+        width: 800,
+        height: 600,
+        mobile: false
+      });
+      
+      return { 
+        isWorking: testResult.success, 
+        provider: 'screenshotone',
+        error: testResult.success ? undefined : testResult.error
+      };
+    } catch (error) {
+      console.error('🧪 SCREENSHOT SERVICE - Test failed:', error);
+      return { 
+        isWorking: false, 
+        provider: 'unknown',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
   }
 }
