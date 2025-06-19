@@ -151,7 +151,22 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
                 <item.icon className={cn("h-4 w-4", isCollapsed ? "" : "mr-1")} />
                 {!isCollapsed && (
                   <>
-                    <span className="flex-1 text-left">{item.label}</span>
+                    <span 
+                      className="flex-1 text-left"
+                      style={{
+                        overflow: 'hidden',
+                        color: 'var(--Text-Primary, #121212)',
+                        textOverflow: 'ellipsis',
+                        fontFamily: '"Instrument Sans"',
+                        fontSize: '12px',
+                        fontStyle: 'normal',
+                        fontWeight: 500,
+                        lineHeight: '16px',
+                        letterSpacing: '-0.12px'
+                      }}
+                    >
+                      {item.label}
+                    </span>
                     {item.badge && (
                       <Badge variant="secondary" className="ml-2 text-xs">
                         {item.badge}

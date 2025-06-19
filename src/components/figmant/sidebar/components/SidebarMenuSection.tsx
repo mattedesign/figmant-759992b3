@@ -79,9 +79,22 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           activeSection === item.id ? "text-[#3D4A5C]" : "text-[#455468]"
         )} />
       </div>
-      <span className={cn(
-        activeSection === item.id ? "text-[#3D4A5C] font-semibold" : "text-[#455468] font-medium"
-      )}>
+      <span 
+        className={cn(
+          activeSection === item.id ? "text-[#3D4A5C] font-semibold" : "text-[#455468] font-medium"
+        )}
+        style={{
+          overflow: 'hidden',
+          color: 'var(--Text-Primary, #121212)',
+          textOverflow: 'ellipsis',
+          fontFamily: '"Instrument Sans"',
+          fontSize: '12px',
+          fontStyle: 'normal',
+          fontWeight: 500,
+          lineHeight: '16px',
+          letterSpacing: '-0.12px'
+        }}
+      >
         {item.label}
       </span>
     </Button>

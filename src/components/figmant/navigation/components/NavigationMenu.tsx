@@ -86,10 +86,23 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
               "h-5 w-5 mr-1",
               activeSection === section.id && "text-[#3D4A5C]"
             )} />
-            <span className={cn(
-              "flex-1 text-left",
-              activeSection === section.id && "text-[#3D4A5C]"
-            )}>
+            <span 
+              className={cn(
+                "flex-1 text-left",
+                activeSection === section.id && "text-[#3D4A5C]"
+              )}
+              style={{
+                overflow: 'hidden',
+                color: 'var(--Text-Primary, #121212)',
+                textOverflow: 'ellipsis',
+                fontFamily: '"Instrument Sans"',
+                fontSize: '12px',
+                fontStyle: 'normal',
+                fontWeight: 500,
+                lineHeight: '16px',
+                letterSpacing: '-0.12px'
+              }}
+            >
               {section.label}
             </span>
             {section.id === 'admin' && (
