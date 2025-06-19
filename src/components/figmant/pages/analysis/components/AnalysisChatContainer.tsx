@@ -2,6 +2,7 @@ import React from 'react';
 import { AnalysisChatInput } from '../AnalysisChatInput';
 import { ChatMessage } from '@/components/design/DesignChatInterface';
 import { useAnalysisChatHandler } from '../hooks/useAnalysisChatHandler';
+
 interface AnalysisChatContainerProps {
   messages: ChatMessage[];
   message: string;
@@ -25,6 +26,7 @@ interface AnalysisChatContainerProps {
   onKeyPress?: (e: React.KeyboardEvent) => void;
   canSend?: boolean;
 }
+
 export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   messages,
   message,
@@ -105,7 +107,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
       </div>
 
       {/* Input Area */}
-      <div className="border-t bg-transparent">
+      <div className="border-t bg-transparent max-w-[540px] w-full mx-auto">
         <AnalysisChatInput message={message} setMessage={setMessage} onSendMessage={finalSendMessage} onKeyPress={finalKeyPress} selectedPromptTemplate={selectedTemplate} canSend={finalCanSend} isAnalyzing={analyzing} onFileUpload={onFileUpload} onToggleUrlInput={onToggleUrlInput} onTemplateSelect={onTemplateSelect} availableTemplates={availableTemplates} onViewTemplate={onViewTemplate} attachments={attachments} onRemoveAttachment={onRemoveAttachment} showUrlInput={showUrlInput} urlInput={urlInput} setUrlInput={setUrlInput} onAddUrl={onAddUrl} onCancelUrl={onCancelUrl} />
       </div>
     </div>;
