@@ -15,7 +15,6 @@ export const ChatPage: React.FC<ChatPageProps> = ({ selectedTemplate }) => {
       <div className="px-6 pt-6 pb-3 bg-transparent flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Chat Analysis</h1>
             <p className="text-gray-600 mt-1">Interactive AI-powered design analysis</p>
           </div>
         </div>
