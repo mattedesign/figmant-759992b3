@@ -18,7 +18,17 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
   onNextStep,
   canProceed
 }) => {
-  if (currentStep >= totalSteps) return null;
+  console.log('🎯 WizardNavigation render:', { currentStep, totalSteps, canProceed });
+
+  // Don't show navigation if we're past the total steps
+  if (currentStep > totalSteps) return null;
+
+  const getButtonText = () => {
+    if (currentStep === totalSteps) {
+      return 'Start Analysis';
+    }
+    return 'Continue';
+  };
 
   return (
     <div className="flex-shrink-0 p-6 bg-white border-t border-gray-200">
@@ -38,7 +48,7 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
           disabled={!canProceed} 
           className="bg-gray-900 hover:bg-gray-800 text-white"
         >
-          {currentStep === totalSteps - 1 ? 'Start Analysis' : 'Continue'}
+          {getButtonText()}
         </Button>
       </div>
     </div>

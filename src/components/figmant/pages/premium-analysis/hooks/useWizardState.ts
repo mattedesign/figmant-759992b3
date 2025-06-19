@@ -23,9 +23,11 @@ export const useWizardState = () => {
   const { mutateAsync: saveWizardAnalysis } = useWizardAnalysisSave();
   const { toast } = useToast();
 
-  const totalSteps = 5;
+  const totalSteps = 6; // Updated to match the actual number of steps
 
   const handleNextStep = useCallback(async () => {
+    console.log('🎯 handleNextStep called - currentStep:', currentStep, 'totalSteps:', totalSteps);
+    
     if (currentStep < totalSteps) {
       setCurrentStep(prev => prev + 1);
     } else {
@@ -59,6 +61,13 @@ export const useWizardState = () => {
   }, [currentStep]);
 
   const canProceedToNextStep = useCallback(() => {
+    console.log('🎯 canProceedToNextStep - currentStep:', currentStep, 'stepData:', {
+      selectedType: stepData.selectedType,
+      projectName: stepData.projectName?.length,
+      analysisGoals: stepData.analysisGoals?.length,
+      desiredOutcome: stepData.desiredOutcome?.length
+    });
+
     switch (currentStep) {
       case 1:
         return stepData.selectedType && stepData.selectedType.length > 0;
@@ -69,7 +78,9 @@ export const useWizardState = () => {
       case 4:
         return stepData.desiredOutcome && stepData.desiredOutcome.trim().length > 0;
       case 5:
-        return true; // Final step
+        return true; // File upload step is optional, always allow proceed
+      case 6:
+        return true; // Custom prompt step is optional, always allow proceed
       default:
         return true;
     }
