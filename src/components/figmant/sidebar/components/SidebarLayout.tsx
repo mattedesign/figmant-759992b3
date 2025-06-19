@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { SidebarHeader } from '../SidebarHeader';
 import { SidebarNavigation } from '../SidebarNavigation';
@@ -67,6 +68,10 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
           isOwner={isOwner}
           isCollapsed={isCollapsed}
           onToggleCollapse={onToggleCollapse}
+          profile={profile}
+          user={user}
+          subscription={subscription}
+          signOut={signOut}
         />
       </div>
 
@@ -77,20 +82,6 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
             currentBalance={currentBalance}
             totalPurchased={totalPurchased}
             creditsLoading={creditsLoading}
-          />
-        </div>
-      )}
-
-      {/* Keep the original user profile at bottom for collapsed state only */}
-      {isCollapsed && (
-        <div className="flex-shrink-0">
-          <SidebarUserProfile 
-            isOwner={isOwner}
-            profile={profile}
-            user={user}
-            subscription={subscription}
-            signOut={signOut}
-            isCollapsed={isCollapsed}
           />
         </div>
       )}

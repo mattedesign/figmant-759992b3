@@ -20,6 +20,11 @@ interface SidebarNavigationProps {
   isOwner?: boolean;
   isCollapsed: boolean;
   onToggleCollapse: (collapsed: boolean) => void;
+  // Added profile props for collapsed view
+  profile?: any;
+  user?: any;
+  subscription?: any;
+  signOut?: () => Promise<void>;
 }
 
 export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
@@ -27,7 +32,11 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   onSectionChange,
   isOwner = false,
   isCollapsed,
-  onToggleCollapse
+  onToggleCollapse,
+  profile,
+  user,
+  subscription,
+  signOut
 }) => {
   const { data: analysisHistory = [] } = useChatAnalysisHistory();
 
@@ -37,14 +46,31 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     { id: 'wizard', label: 'Analysis Wizard', icon: Wand2 },
   ];
 
+  const supportItems = [
+    { id: 'credits', label: 'Credits', icon: CreditCard },
+    { id: 'preferences', label: 'Preferences', icon: Settings },
+    { id: 'support', label: 'Help & Support', icon: HelpCircle },
+  ];
+
+  const adminItems = isOwner ? [
+    { id: 'admin', label: 'Admin Panel', icon: Shield },
+  ] : [];
+
   // Show collapsed view when sidebar is collapsed
   if (isCollapsed) {
     return (
       <SidebarCollapsedView
         mainMenuItems={mainMenuItems}
+        supportItems={supportItems}
+        adminItems={adminItems}
         activeSection={activeSection}
         onSectionChange={onSectionChange}
         onToggleCollapse={onToggleCollapse}
+        isOwner={isOwner}
+        profile={profile}
+        user={user}
+        subscription={subscription}
+        signOut={signOut || (() => Promise.resolve())}
       />
     );
   }
@@ -57,20 +83,14 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 
   const supportSection = {
     title: 'Support',
-    items: [
-      { id: 'credits', label: 'Credits', icon: CreditCard },
-      { id: 'preferences', label: 'Preferences', icon: Settings },
-      { id: 'support', label: 'Help & Support', icon: HelpCircle },
-    ]
+    items: supportItems
   };
 
   // Simplified admin section with just one item
   const adminSections = isOwner ? [
     {
       title: 'Admin',
-      items: [
-        { id: 'admin', label: 'Admin Panel', icon: Shield },
-      ]
+      items: adminItems
     }
   ] : [];
 
