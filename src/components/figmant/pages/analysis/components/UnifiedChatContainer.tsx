@@ -189,7 +189,7 @@ export const UnifiedChatContainer: React.FC = () => {
   return (
     <div className="h-full flex bg-transparent">
       {/* Left Navigation Panel */}
-      <div className="w-80 border-r border-gray-200 flex-shrink-0">
+      <div className="w-80 border-r border-gray-200 flex-shrink-0 bg-white">
         <NavigationSectionList
           fileAttachments={fileAttachments}
           urlAttachments={urlAttachments}
@@ -203,7 +203,7 @@ export const UnifiedChatContainer: React.FC = () => {
       </div>
 
       {/* Main Center Area */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col min-h-0 bg-white">
         {/* Chat Messages Area */}
         <div className="flex-1 overflow-y-auto">
           <ChatMessageArea 
@@ -225,7 +225,7 @@ export const UnifiedChatContainer: React.FC = () => {
         )}
 
         {/* Chat Input at bottom of center area */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 bg-white">
           <ChatInputContainer
             message={message}
             setMessage={setMessage}
@@ -255,50 +255,91 @@ export const UnifiedChatContainer: React.FC = () => {
       </div>
 
       {/* Right Sidebar for Details/Insights */}
-      <div className="w-80 border-l border-gray-200 flex-shrink-0">
-        {/* This would be the Details/Insights panel content */}
+      <div className="w-80 border-l border-gray-200 flex-shrink-0 bg-white">
         <div className="h-full p-4">
+          {/* Tab Header */}
           <div className="flex border-b border-gray-200 mb-4">
             <button 
-              className={`px-4 py-2 text-sm font-medium ${activeTab === 'details' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'details' 
+                  ? 'text-blue-600 border-b-2 border-blue-600' 
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
               onClick={() => setActiveTab('details')}
             >
               Details
             </button>
             <button 
-              className={`px-4 py-2 text-sm font-medium ${activeTab === 'insights' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'insights' 
+                  ? 'text-blue-600 border-b-2 border-blue-600' 
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
               onClick={() => setActiveTab('insights')}
             >
               Insights
             </button>
           </div>
           
+          {/* Tab Content */}
           {activeTab === 'details' && (
             <div className="space-y-6">
               {/* Files Section */}
               <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Files</h3>
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
+                <h3 className="text-sm font-medium text-gray-900 mb-3">Files ({fileAttachments.length})</h3>
+                {fileAttachments.length > 0 ? (
+                  <div className="space-y-2">
+                    {fileAttachments.map((attachment) => (
+                      <div key={attachment.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <span className="text-sm text-gray-700 truncate">{attachment.name}</span>
+                        <button
+                          onClick={() => handleRemoveAttachment(attachment.id)}
+                          className="text-red-500 hover:text-red-700 text-xs"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-sm text-gray-500">No files uploaded yet</p>
-                </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-gray-500">No files uploaded yet</p>
+                  </div>
+                )}
               </div>
 
               {/* Links Section */}
               <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-3">Links</h3>
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
+                <h3 className="text-sm font-medium text-gray-900 mb-3">Links ({urlAttachments.length})</h3>
+                {urlAttachments.length > 0 ? (
+                  <div className="space-y-2">
+                    {urlAttachments.map((attachment) => (
+                      <div key={attachment.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <span className="text-sm text-gray-700 truncate">{attachment.name}</span>
+                        <button
+                          onClick={() => handleRemoveAttachment(attachment.id)}
+                          className="text-red-500 hover:text-red-700 text-xs"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-sm text-gray-500">No links added yet</p>
-                </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                      <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-gray-500">No links added yet</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -310,8 +351,16 @@ export const UnifiedChatContainer: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No files or analysis yet</h3>
-              <p className="text-sm text-gray-500">Upload files or add URLs to see them here</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No analysis insights yet</h3>
+              <p className="text-sm text-gray-500 mb-4">Upload files or add URLs and run an analysis to see insights here</p>
+              {lastAnalysisResult && (
+                <div className="w-full text-left">
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <h4 className="font-medium text-blue-900 mb-2">Latest Analysis</h4>
+                    <p className="text-sm text-blue-700">{lastAnalysisResult.summary || 'Analysis completed'}</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
