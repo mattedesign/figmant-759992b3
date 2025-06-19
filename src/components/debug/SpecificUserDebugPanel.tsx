@@ -61,9 +61,19 @@ export const SpecificUserDebugPanel = () => {
     return null;
   }
 
+  // Check if user is missing from profiles table
   const userNotFound = debugData && !debugData.error && 
     (!debugData.exactMatch || debugData.exactMatch.length === 0) &&
     (!debugData.caseInsensitiveMatch || debugData.caseInsensitiveMatch.length === 0);
+
+  console.log('🔍 Debug panel state:', {
+    hasDebugData: !!debugData,
+    hasError: !!debugData?.error,
+    exactMatchLength: debugData?.exactMatch?.length || 0,
+    caseInsensitiveMatchLength: debugData?.caseInsensitiveMatch?.length || 0,
+    userNotFound,
+    activeSearch
+  });
 
   return (
     <Card className="mt-6">
@@ -140,11 +150,12 @@ export const SpecificUserDebugPanel = () => {
                     )}
                   </div>
 
-                  {userNotFound && (
+                  {/* Show Issue #4 Detection and Fix Button */}
+                  {userNotFound && activeSearch && (
                     <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
                         <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                        <strong className="text-yellow-800">Issue Detected</strong>
+                        <strong className="text-yellow-800">Issue #4 Detected: Database Trigger Failure</strong>
                       </div>
                       <p className="text-yellow-700 mb-3">
                         This user appears to be missing from the profiles table. This typically happens when the 
