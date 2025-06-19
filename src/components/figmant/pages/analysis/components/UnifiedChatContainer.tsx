@@ -37,6 +37,8 @@ export const UnifiedChatContainer: React.FC = () => {
   };
 
   const handleFileUpload = async (files: FileList) => {
+    console.log('📎 UNIFIED CHAT - Starting file upload for', files.length, 'files');
+    
     const newAttachments: ChatAttachment[] = [];
     
     for (const file of Array.from(files)) {
@@ -48,17 +50,22 @@ export const UnifiedChatContainer: React.FC = () => {
         status: 'uploading'
       };
       newAttachments.push(attachment);
-      
-      console.log('📎 UNIFIED CHAT - Adding file attachment:', attachment);
+      console.log('📎 UNIFIED CHAT - Created file attachment:', attachment.id, attachment.name);
     }
     
+    // Add attachments to state immediately so they appear in the UI
     if (setAttachments) {
       setAttachments(prev => {
         const updated = [...prev, ...newAttachments];
-        console.log('📎 UNIFIED CHAT - Updated attachments with files:', updated.length);
+        console.log('📎 UNIFIED CHAT - Updated attachments state, new count:', updated.length);
         return updated;
       });
     }
+    
+    toast({
+      title: "Files Added",
+      description: `${newAttachments.length} file(s) added for analysis.`,
+    });
     
     // Process file uploads in background
     for (const attachment of newAttachments) {
@@ -87,11 +94,6 @@ export const UnifiedChatContainer: React.FC = () => {
         }
       }
     }
-    
-    toast({
-      title: "Files Added",
-      description: `${newAttachments.length} file(s) added for analysis.`,
-    });
   };
 
   const handleAddUrl = async () => {
@@ -142,13 +144,13 @@ export const UnifiedChatContainer: React.FC = () => {
         }
       };
 
-      console.log('🔗 UNIFIED CHAT - Creating new URL attachment:', newAttachment);
+      console.log('🔗 UNIFIED CHAT - Creating new URL attachment:', newAttachment.id, newAttachment.name);
       
-      // Update attachments state immediately
+      // Update attachments state immediately so it appears in the UI
       if (setAttachments) {
         setAttachments(prev => {
           const updated = [...prev, newAttachment];
-          console.log('🔗 UNIFIED CHAT - URL attachments updated, new count:', updated.length);
+          console.log('🔗 UNIFIED CHAT - URL attachment added to state, new count:', updated.length);
           return updated;
         });
       }
@@ -188,7 +190,7 @@ export const UnifiedChatContainer: React.FC = () => {
                   }
                 }
               };
-              console.log('📸 Updated attachment with screenshots:', updatedAtt);
+              console.log('📸 Updated attachment with screenshots:', updatedAtt.id);
               return updatedAtt;
             }
             return att;
@@ -252,6 +254,7 @@ export const UnifiedChatContainer: React.FC = () => {
   };
 
   const removeAttachment = (id: string) => {
+    console.log('🗑️ UNIFIED CHAT - Removing attachment:', id);
     if (setAttachments) {
       setAttachments(prev => {
         const updated = prev.filter(att => att.id !== id);
