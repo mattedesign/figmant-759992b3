@@ -14,8 +14,8 @@ export const AnalysisNavigationHeader: React.FC<AnalysisNavigationHeaderProps> =
 }) => {
   return (
     <div className="flex-none border-b border-border">
-      {/* Header with collapse button on left and credit cost display */}
-      <div className="p-4 flex items-center gap-3">
+      {/* Header with collapse button on left and credit cost display on right */}
+      <div className="p-4 flex items-center justify-between">
         {onToggleCollapse && (
           <Button
             variant="ghost"
