@@ -4,7 +4,7 @@ import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Monitor, Smartphone, ExternalLink, AlertCircle, Loader2 } from 'lucide-react';
+import { Monitor, Smartphone, ExternalLink, AlertCircle, Loader2, Camera } from 'lucide-react';
 
 interface ScreenshotDisplayProps {
   attachment: ChatAttachment;
@@ -13,18 +13,28 @@ interface ScreenshotDisplayProps {
 export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment }) => {
   const [activeView, setActiveView] = useState<'desktop' | 'mobile'>('desktop');
 
+  // Show loading state if attachment is still processing
+  if (attachment.status === 'processing') {
+    return (
+      <div className="p-3 bg-muted/50 rounded-lg text-center">
+        <Loader2 className="w-4 h-4 text-muted-foreground mx-auto mb-2 animate-spin" />
+        <p className="text-xs text-muted-foreground">Capturing screenshots...</p>
+      </div>
+    );
+  }
+
   if (!attachment.metadata?.screenshots) {
     return (
       <div className="p-3 bg-muted/50 rounded-lg text-center">
-        <AlertCircle className="w-4 h-4 text-muted-foreground mx-auto mb-2" />
+        <Camera className="w-4 h-4 text-muted-foreground mx-auto mb-2" />
         <p className="text-xs text-muted-foreground">No screenshots available</p>
       </div>
     );
   }
 
   const { desktop, mobile } = attachment.metadata.screenshots;
-  const hasDesktop = desktop?.success;
-  const hasMobile = mobile?.success;
+  const hasDesktop = desktop?.success && desktop.screenshotUrl;
+  const hasMobile = mobile?.success && mobile.screenshotUrl;
 
   if (!hasDesktop && !hasMobile) {
     return (
@@ -39,6 +49,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
   }
 
   const currentScreenshot = activeView === 'desktop' ? desktop : mobile;
+  const currentScreenshotUrl = activeView === 'desktop' ? desktop?.screenshotUrl : mobile?.screenshotUrl;
 
   return (
     <div className="space-y-2">
@@ -67,15 +78,18 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
       )}
 
       {/* Screenshot Display */}
-      {currentScreenshot?.success && currentScreenshot.url ? (
+      {currentScreenshotUrl ? (
         <Card className="overflow-hidden">
           <CardContent className="p-0">
             <div className="relative group">
               <img 
-                src={currentScreenshot.url}
+                src={currentScreenshotUrl}
                 alt={`${activeView} screenshot of ${attachment.name}`}
                 className="w-full h-auto max-h-48 object-cover"
                 style={{ aspectRatio: activeView === 'desktop' ? '16/10' : '9/16' }}
+                onError={(e) => {
+                  console.error('Screenshot image failed to load:', currentScreenshotUrl);
+                }}
               />
               
               {/* Overlay with link */}
@@ -95,8 +109,13 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
         </Card>
       ) : (
         <div className="p-3 bg-muted/50 rounded-lg text-center">
-          <Loader2 className="w-4 h-4 text-muted-foreground mx-auto mb-2 animate-spin" />
-          <p className="text-xs text-muted-foreground">Capturing screenshot...</p>
+          <AlertCircle className="w-4 h-4 text-muted-foreground mx-auto mb-2" />
+          <p className="text-xs text-muted-foreground">
+            {activeView === 'desktop' ? 'Desktop' : 'Mobile'} screenshot unavailable
+          </p>
+          {currentScreenshot?.error && (
+            <p className="text-xs text-destructive mt-1">{currentScreenshot.error}</p>
+          )}
         </div>
       )}
 
