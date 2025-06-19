@@ -8,7 +8,7 @@ export const useRecentAnalysisData = (analysisHistory: SavedChatAnalysis[]) => {
   const { data: designAnalyses = [], isLoading } = useDesignAnalyses();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-  // Combine both types of analyses and sort by date
+  // Enhanced data mapping with more detailed information
   const allAnalyses = [
     ...designAnalyses.map(a => ({ 
       ...a, 
@@ -17,7 +17,11 @@ export const useRecentAnalysisData = (analysisHistory: SavedChatAnalysis[]) => {
       analysisType: a.analysis_type || 'General',
       score: a.impact_summary?.key_metrics?.overall_score || Math.floor(Math.random() * 4) + 7,
       fileCount: 1,
-      imageUrl: null
+      imageUrl: null, // Could be enhanced to include actual design file URLs
+      // Include full impact summary for detailed preview
+      impact_summary: a.impact_summary,
+      // Include analysis results for content preview
+      analysis_content: a.analysis_results
     })),
     ...analysisHistory.map(a => ({ 
       ...a, 
@@ -26,7 +30,12 @@ export const useRecentAnalysisData = (analysisHistory: SavedChatAnalysis[]) => {
       analysisType: getAnalysisDisplayName(a.analysis_type),
       score: Math.floor((a.confidence_score || 0.8) * 10),
       fileCount: a.analysis_results?.attachments_processed || 1,
-      imageUrl: a.analysis_results?.upload_ids?.[0] || null
+      imageUrl: null, // Could be enhanced with screenshot URLs
+      // Include additional metadata for richer previews
+      attachments: a.analysis_results?.upload_ids || [],
+      prompt_preview: a.prompt_used?.substring(0, 100) + (a.prompt_used?.length > 100 ? '...' : ''),
+      // Include analysis results for attachment counting
+      analysis_content: a.analysis_results
     }))
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
