@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const syncAllAuthUsers = async () => {
@@ -16,8 +15,7 @@ export const syncAllAuthUsers = async () => {
     // Get all existing profiles with explicit typing
     const { data: existingProfiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id')
-      .returns<Array<{ id: string }>>();
+      .select('id') as { data: Array<{ id: string }> | null, error: any };
     
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError);
