@@ -14,12 +14,12 @@ interface AnalysisRequest {
     uploadPath?: string;
     url?: string;
   }>;
-  template?: any; // Added template property
+  template?: any;
 }
 
 interface AnalysisResponse {
   analysis: string;
-  response?: string; // Added response property
+  response?: string;
   confidence_score?: number;
   debugInfo?: any;
 }
@@ -42,6 +42,26 @@ export const useFigmantChatAnalysis = () => {
         template: template?.title || 'None'
       });
 
+      // Validate that we have either a message or attachments
+      if (!message.trim() && (!attachments || attachments.length === 0)) {
+        throw new Error('Please provide a message or attach files for analysis.');
+      }
+
+      // If no message but we have attachments, create a default analysis message
+      let analysisMessage = message.trim();
+      if (!analysisMessage && attachments && attachments.length > 0) {
+        const fileCount = attachments.filter(a => a.type === 'file').length;
+        const urlCount = attachments.filter(a => a.type === 'url').length;
+        
+        if (template?.category === 'competitor') {
+          analysisMessage = `Please analyze the attached ${urlCount > 0 ? 'competitor websites' : 'design files'} using competitive analysis principles. Provide insights on design patterns, user experience, and market positioning opportunities.`;
+        } else {
+          analysisMessage = `Please analyze the attached ${fileCount > 0 ? `${fileCount} file(s)` : ''}${fileCount > 0 && urlCount > 0 ? ' and ' : ''}${urlCount > 0 ? `${urlCount} website(s)` : ''} and provide design insights.`;
+        }
+      }
+
+      console.log('🔍 FIGMANT CHAT - Using analysis message:', analysisMessage);
+
       // Check user access and process credits
       console.log('🔍 FIGMANT CHAT - Checking user access...');
       const hasAccess = await checkUserAccess();
@@ -52,8 +72,6 @@ export const useFigmantChatAnalysis = () => {
       console.log('🔍 FIGMANT CHAT - User has access confirmed');
 
       // Process credits (1 credit for regular chat analysis)
-      // Owners get unlimited access (tracked but not charged)
-      // All other users get charged 1 credit
       console.log('🔍 FIGMANT CHAT - Processing credits...');
       const creditsProcessed = await deductAnalysisCredits(1, 'Figmant chat analysis');
       if (!creditsProcessed) {
@@ -75,7 +93,7 @@ export const useFigmantChatAnalysis = () => {
       // Call Claude AI function
       const { data: claudeResponse, error: claudeError } = await supabase.functions.invoke('claude-ai', {
         body: {
-          message,
+          message: analysisMessage, // Use the validated/generated message
           attachments: processedAttachments,
           requestType: 'figmant_chat_analysis',
           analysisType: 'chat',
@@ -97,7 +115,7 @@ export const useFigmantChatAnalysis = () => {
           .from('chat_analysis_history')
           .insert({
             user_id: user.id,
-            prompt_used: message,
+            prompt_used: analysisMessage,
             analysis_results: {
               response: claudeResponse.response || claudeResponse.analysis,
               attachments: processedAttachments,
@@ -110,13 +128,11 @@ export const useFigmantChatAnalysis = () => {
 
         if (saveError) {
           console.error('🔍 FIGMANT CHAT - Error saving to chat history:', saveError);
-          // Don't throw here - the analysis succeeded, just logging failed
         } else {
           console.log('🔍 FIGMANT CHAT - Analysis saved to chat history successfully');
         }
       } catch (saveError) {
         console.error('🔍 FIGMANT CHAT - Error saving analysis:', saveError);
-        // Don't throw here - the analysis succeeded
       }
 
       console.log('🔍 FIGMANT CHAT - Analysis completed successfully');
