@@ -75,7 +75,8 @@ export class ScreenshotOneProvider implements ScreenshotProvider {
       block_banners_by_heuristics: 'true',
       delay: (options.delay || 2000).toString(),
       timeout: '30',
-      full_page: options.fullPage ? 'true' : 'false'
+      full_page: options.fullPage ? 'true' : 'false',
+      ignore_host_errors: 'true'
     });
 
     if (options.mobile) {
