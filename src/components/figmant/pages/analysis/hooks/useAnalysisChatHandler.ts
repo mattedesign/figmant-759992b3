@@ -8,9 +8,9 @@ export const useAnalysisChatHandler = (
   message: string,
   setMessage: (message: string) => void,
   messages: ChatMessage[],
-  setMessages: (messages: ChatMessage[]) => void,
+  setMessages: (messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void,
   attachments: ChatAttachment[],
-  setAttachments: (attachments: ChatAttachment[]) => void,
+  setAttachments: (attachments: ChatAttachment[] | ((prev: ChatAttachment[]) => ChatAttachment[])) => void,
   selectedTemplate?: any
 ) => {
   const { toast } = useToast();

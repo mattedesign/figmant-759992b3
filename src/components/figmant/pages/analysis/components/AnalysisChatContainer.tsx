@@ -8,7 +8,7 @@ interface AnalysisChatContainerProps {
   messages: ChatMessage[];
   message: string;
   setMessage: (message: string) => void;
-  setMessages: (messages: ChatMessage[]) => void;
+  setMessages: (messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void;
   getCurrentTemplate: () => any;
   onFileUpload: (files: FileList) => void;
   onToggleUrlInput: () => void;
@@ -22,7 +22,10 @@ interface AnalysisChatContainerProps {
   onViewTemplate: (template: any) => void;
   attachments: any[];
   onRemoveAttachment: (id: string) => void;
-  isAnalyzing?: boolean; // Added this prop
+  isAnalyzing?: boolean;
+  onSendMessage?: () => void; // Added missing prop
+  onKeyPress?: (e: React.KeyboardEvent) => void; // Added missing prop
+  canSend?: boolean; // Added missing prop
 }
 
 export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
@@ -43,14 +46,17 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   onViewTemplate,
   attachments,
   onRemoveAttachment,
-  isAnalyzing = false
+  isAnalyzing = false,
+  onSendMessage,
+  onKeyPress,
+  canSend
 }) => {
   const selectedTemplate = getCurrentTemplate();
   
   const {
     handleSendMessage,
     handleKeyPress,
-    canSend,
+    canSend: hookCanSend,
     isAnalyzing: hookIsAnalyzing
   } = useAnalysisChatHandler(
     message,
@@ -64,7 +70,10 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
     selectedTemplate
   );
 
-  // Use the analyzing state from either prop or hook
+  // Use props if provided, otherwise use hook values
+  const finalSendMessage = onSendMessage || handleSendMessage;
+  const finalKeyPress = onKeyPress || handleKeyPress;
+  const finalCanSend = canSend !== undefined ? canSend : hookCanSend;
   const analyzing = isAnalyzing || hookIsAnalyzing;
 
   console.log('📋 ANALYSIS CHAT CONTAINER - Rendering with:', {
@@ -121,10 +130,10 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         <AnalysisChatInput
           message={message}
           setMessage={setMessage}
-          onSendMessage={handleSendMessage}
-          onKeyPress={handleKeyPress}
+          onSendMessage={finalSendMessage}
+          onKeyPress={finalKeyPress}
           selectedPromptTemplate={selectedTemplate}
-          canSend={canSend}
+          canSend={finalCanSend}
           isAnalyzing={analyzing}
           onFileUpload={onFileUpload}
           onToggleUrlInput={onToggleUrlInput}
