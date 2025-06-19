@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowUp } from 'lucide-react';
 import { FigmantPromptTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
@@ -59,6 +58,22 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   const [showTemplateMenu, setShowTemplateMenu] = useState(false);
   const [showModeMenu, setShowModeMenu] = useState(false);
   const [chatMode, setChatMode] = useState<'chat' | 'analyze'>('analyze');
+
+  // Ensure Master UX template is selected by default
+  useEffect(() => {
+    if (!selectedPromptTemplate && availableTemplates.length > 0) {
+      const masterTemplate = availableTemplates.find(template => 
+        template.displayName?.toLowerCase().includes('master') || 
+        template.title?.toLowerCase().includes('master')
+      );
+      if (masterTemplate) {
+        onTemplateSelect(masterTemplate.id);
+      } else if (availableTemplates[0]) {
+        // Fallback to first template if no Master template found
+        onTemplateSelect(availableTemplates[0].id);
+      }
+    }
+  }, [selectedPromptTemplate, availableTemplates, onTemplateSelect]);
 
   const handleAttachmentAction = (type: 'screenshot' | 'link' | 'camera') => {
     setShowAttachmentMenu(false);

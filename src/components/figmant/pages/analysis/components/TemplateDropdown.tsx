@@ -20,6 +20,16 @@ export const TemplateDropdown: React.FC<TemplateDropdownProps> = ({
   onTemplateSelect,
   isAnalyzing
 }) => {
+  // Find Master UX template as default
+  const masterTemplate = availableTemplates.find(template => 
+    template.displayName?.toLowerCase().includes('master') || 
+    template.title?.toLowerCase().includes('master')
+  );
+  
+  // Use selected template or default to Master UX
+  const displayTemplate = selectedPromptTemplate || masterTemplate;
+  const displayName = displayTemplate?.displayName || displayTemplate?.title || 'Master UX Analysis';
+
   return (
     <div className="relative">
       <button 
@@ -31,13 +41,13 @@ export const TemplateDropdown: React.FC<TemplateDropdownProps> = ({
           <span className="text-lg">⚡</span>
         </div>
         <span className="text-[#121212] font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px]">
-          {selectedPromptTemplate?.displayName || selectedPromptTemplate?.title || 'Template Name'}
+          {displayName}
         </span>
         <ChevronDown className="w-3 h-3" />
       </button>
       
       {showTemplateMenu && (
-        <div className="absolute top-full left-0 mt-2 min-w-[200px] flex flex-col gap-1 p-2 rounded-xl border border-[#E2E2E2] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13)] backdrop-blur-md z-20">
+        <div className="absolute bottom-full left-0 mb-2 min-w-[200px] flex flex-col gap-1 p-2 rounded-xl border border-[#E2E2E2] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13)] backdrop-blur-md z-50">
           {availableTemplates.map((template) => (
             <button 
               key={template.id}
