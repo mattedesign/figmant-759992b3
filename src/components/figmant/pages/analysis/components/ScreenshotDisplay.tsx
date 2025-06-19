@@ -12,7 +12,6 @@ interface ScreenshotDisplayProps {
 
 export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment }) => {
   const [activeView, setActiveView] = useState<'desktop' | 'mobile'>('desktop');
-  const [imageError, setImageError] = useState<string | null>(null);
 
   // Show loading state if attachment is still processing
   if (attachment.status === 'processing') {
@@ -25,7 +24,6 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
   }
 
   if (!attachment.metadata?.screenshots) {
-    console.error('🚨 SCREENSHOT DISPLAY - No screenshots metadata found:', attachment);
     return (
       <div className="p-3 bg-muted/50 rounded-lg text-center">
         <Camera className="w-4 h-4 text-muted-foreground mx-auto mb-2" />
@@ -36,16 +34,11 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
 
   const { desktop, mobile } = attachment.metadata.screenshots;
   
-  // Log the screenshot data for debugging
-  console.log('🔍 SCREENSHOT DISPLAY - Desktop data:', desktop);
-  console.log('🔍 SCREENSHOT DISPLAY - Mobile data:', mobile);
-  
-  // Properly check for successful screenshots with URLs
+  // Fixed: Use screenshotUrl instead of url for checking if screenshots are available
   const hasDesktop = desktop?.success && desktop.screenshotUrl;
   const hasMobile = mobile?.success && mobile.screenshotUrl;
 
   if (!hasDesktop && !hasMobile) {
-    console.error('🚨 SCREENSHOT DISPLAY - No valid screenshots found:', { desktop, mobile });
     return (
       <div className="p-3 bg-muted/50 rounded-lg text-center">
         <AlertCircle className="w-4 h-4 text-muted-foreground mx-auto mb-2" />
@@ -58,10 +51,9 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
   }
 
   const currentScreenshot = activeView === 'desktop' ? desktop : mobile;
-  const currentScreenshotUrl = currentScreenshot?.screenshotUrl;
-
-  console.log('🖼️ SCREENSHOT DISPLAY - Current screenshot URL:', currentScreenshotUrl);
-  console.log('🖼️ SCREENSHOT DISPLAY - Current screenshot data:', currentScreenshot);
+  
+  // Fixed: Use screenshotUrl instead of url for displaying the image
+  const currentScreenshotUrl = activeView === 'desktop' ? desktop?.screenshotUrl : mobile?.screenshotUrl;
 
   return (
     <div className="space-y-2">
@@ -91,85 +83,55 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
 
       {/* Screenshot Display */}
       {currentScreenshotUrl ? (
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <div className="relative group">
-              <img 
-                src={currentScreenshotUrl}
-                alt={`${activeView} screenshot of ${attachment.name}`}
-                className="w-full h-auto max-h-48 object-cover"
-                style={{ aspectRatio: activeView === 'desktop' ? '16/10' : '9/16' }}
-                onError={(e) => {
-                  const errorMsg = `Failed to load ${activeView} screenshot`;
-                  console.error('🚨 SCREENSHOT IMAGE ERROR:', {
-                    url: currentScreenshotUrl,
-                    screenshot: currentScreenshot,
-                    attachment: attachment,
-                    error: errorMsg
-                  });
-                  setImageError(errorMsg);
-                }}
-                onLoad={() => {
-                  console.log('✅ SCREENSHOT IMAGE LOADED:', currentScreenshotUrl);
-                  setImageError(null);
-                }}
-              />
-              
-              {/* Overlay with link */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+        <div className="relative group">
+          <img
+            src={currentScreenshotUrl}
+            alt={`${activeView} screenshot of ${attachment.url}`}
+            className="w-full h-auto rounded-md border border-border/50 shadow-sm"
+            onError={(e) => {
+              console.error('Failed to load screenshot:', currentScreenshotUrl);
+              e.currentTarget.classList.add('hidden');
+            }}
+          />
+          
+          {/* Overlay with details */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-md">
+            <div className="absolute bottom-2 left-2 flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">
+                {activeView === 'desktop' ? 'Desktop' : 'Mobile'}
+              </Badge>
+              {currentScreenshot?.metadata && (
+                <Badge variant="outline" className="text-xs">
+                  {currentScreenshot.metadata.width}x{currentScreenshot.metadata.height}
+                </Badge>
+              )}
+            </div>
+            
+            {attachment.url && (
+              <div className="absolute bottom-2 right-2">
                 <Button
-                  variant="secondary"
                   size="sm"
+                  variant="secondary"
+                  className="h-6 w-6 p-0 opacity-80 hover:opacity-100"
                   onClick={() => window.open(attachment.url, '_blank')}
-                  className="h-6 px-2 text-xs"
                 >
-                  <ExternalLink className="w-3 h-3 mr-1" />
-                  Visit
+                  <ExternalLink className="w-3 h-3" />
                 </Button>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            )}
+          </div>
+        </div>
       ) : (
         <div className="p-3 bg-muted/50 rounded-lg text-center">
           <AlertCircle className="w-4 h-4 text-muted-foreground mx-auto mb-2" />
           <p className="text-xs text-muted-foreground">
-            {activeView === 'desktop' ? 'Desktop' : 'Mobile'} screenshot unavailable
+            {activeView === 'desktop' ? 'Desktop' : 'Mobile'} screenshot not available
           </p>
           {currentScreenshot?.error && (
             <p className="text-xs text-destructive mt-1">{currentScreenshot.error}</p>
           )}
         </div>
       )}
-
-      {/* Error Display */}
-      {imageError && (
-        <div className="p-2 bg-red-50 border border-red-200 rounded text-center">
-          <p className="text-xs text-red-600">{imageError}</p>
-          <p className="text-xs text-red-500 mt-1 font-mono break-all">{currentScreenshotUrl}</p>
-        </div>
-      )}
-
-      {/* Status Badge */}
-      <div className="flex items-center justify-between">
-        <Badge 
-          variant={attachment.status === 'uploaded' ? 'default' : 'secondary'}
-          className="text-xs"
-        >
-          {attachment.status}
-        </Badge>
-        
-        {attachment.url && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => window.open(attachment.url, '_blank')}
-            className="h-5 px-2 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <ExternalLink className="w-3 h-3" />
-          </Button>
-        )}
-      </div>
     </div>
   );
 };
