@@ -62,7 +62,8 @@ export class ScreenshotCaptureService {
         mobile: false,
         fullPage: true,
         blockAds: true,
-        blockCookieBanners: true
+        blockCookieBanners: true,
+        delay: 3
       });
     }
 
@@ -74,7 +75,8 @@ export class ScreenshotCaptureService {
         mobile: true,
         fullPage: true,
         blockAds: true,
-        blockCookieBanners: true
+        blockCookieBanners: true,
+        delay: 3
       });
     }
 
