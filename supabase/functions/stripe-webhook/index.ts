@@ -4,6 +4,7 @@ import Stripe from "https://esm.sh/stripe@14.21.0";
 import { logStep } from "./utils/logging.ts";
 import { validateAndConstructEvent } from "./utils/webhookValidator.ts";
 import { processCheckoutSession } from "./utils/sessionProcessor.ts";
+import { createSuccessResponse } from "./utils/responseHelpers.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2023-10-16",
@@ -30,16 +31,10 @@ serve(async (req) => {
       return new Response(result.message, { status: result.statusCode });
     }
 
-    return new Response(JSON.stringify({ received: true, message: result.message }), {
-      headers: { "Content-Type": "application/json" },
-      status: result.statusCode,
-    });
+    return createSuccessResponse(result.message, result.statusCode);
   } else {
     logStep("Unhandled webhook event type", { eventType: event.type });
   }
 
-  return new Response(JSON.stringify({ received: true }), {
-    headers: { "Content-Type": "application/json" },
-    status: 200,
-  });
+  return createSuccessResponse("Event received");
 });
