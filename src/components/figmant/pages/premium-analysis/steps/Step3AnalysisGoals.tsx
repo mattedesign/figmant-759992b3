@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { StepProps } from '../types';
+import { StepProps, StepData } from '../types';
 import { StepHeader } from '../components/StepHeader';
 import { FormField } from '../components/FormField';
 

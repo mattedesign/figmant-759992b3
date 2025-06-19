@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { StepProps } from '../types';
+import { StepProps, StepData } from '../types';
 import { StepHeader } from '../components/StepHeader';
 import { figmantPromptTemplates } from '@/data/figmantPromptTemplates';
 import { Sparkles, Target, BarChart3, Users, ShoppingCart, FlaskConical, Crown, Brain, Star, Eye, Smartphone, Calendar, Layers, ArrowRight } from 'lucide-react';
