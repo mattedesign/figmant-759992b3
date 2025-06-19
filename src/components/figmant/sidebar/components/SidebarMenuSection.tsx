@@ -44,7 +44,8 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
         "w-full justify-start h-12 text-left",
         activeSection === item.id 
           ? "bg-white text-[#3D4A5C] rounded-[20px]"
-          : "hover:bg-white hover:text-[#3D4A5C] hover:rounded-[20px]"
+          : "hover:bg-white hover:text-[#3D4A5C] hover:rounded-[20px]",
+        activeSection !== item.id && "rounded-[8px] bg-[var(--Surface-03,#F1F1F1)]"
       )}
       onClick={() => onSectionChange(item.id)}
     >
