@@ -62,10 +62,11 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
 
   return (
     <div 
-      className={`h-screen flex flex-col transition-all duration-300 overflow-hidden ${
+      className={`flex flex-col transition-all duration-300 overflow-hidden ${
         isCollapsed ? 'w-16' : 'w-72'
       }`}
       style={{ 
+        height: 'calc(100vh - 24px)', // Account for the 12px padding on top and bottom
         borderRadius: '20px',
         border: '1px solid var(--Stroke-01, #ECECEC)',
         background: 'var(--Surface-01, #FCFCFC)'
