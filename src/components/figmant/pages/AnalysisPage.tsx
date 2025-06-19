@@ -8,7 +8,7 @@ interface AnalysisPageProps {
 
 export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) => {
   return (
-    <div className="h-full flex flex-col min-h-0">
+    <div className="h-full flex flex-col min-h-0 overflow-hidden">
       <div className="px-6 pt-6 pb-3 bg-transparent flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>
@@ -18,7 +18,7 @@ export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) 
         </div>
       </div>
 
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 overflow-hidden">
         <AnalysisPageContainer selectedTemplate={selectedTemplate} />
       </div>
     </div>

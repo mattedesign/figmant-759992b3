@@ -4,7 +4,7 @@ import { PremiumAnalysisTabController } from './premium-analysis/PremiumAnalysis
 
 export const WizardPage: React.FC = () => {
   return (
-    <div className="h-full flex flex-col min-h-0">
+    <div className="h-full flex flex-col min-h-0 overflow-hidden">
       <div className="px-6 pt-6 pb-3 bg-transparent flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>
@@ -14,7 +14,7 @@ export const WizardPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         <PremiumAnalysisTabController />
       </div>
     </div>

@@ -6,7 +6,7 @@ const Figmant = () => {
   console.log('Figmant page rendering...');
   
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-hidden">
       <FigmantLayout />
     </div>
   );

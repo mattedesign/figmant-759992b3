@@ -90,10 +90,8 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   }
 
   return (
-    <div style={{ background: 'transparent' }} className="">
-      <div 
-        className={`h-full ${needsScrolling ? 'overflow-y-auto' : 'overflow-hidden'}`}
-      >
+    <div style={{ background: 'transparent' }} className="h-full overflow-y-auto">
+      <div className="h-full">
         {renderContent()}
       </div>
     </div>

@@ -26,7 +26,7 @@ export const FigmantLayout: React.FC = () => {
 
   if (isMobile) {
     return (
-      <div className="min-h-screen flex flex-col w-full" style={{ background: 'transparent' }}>
+      <div className="min-h-screen flex flex-col w-full overflow-hidden" style={{ background: 'transparent' }}>
         {/* Mobile Header with Navigation */}
         <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900">figmant</h1>
@@ -37,7 +37,7 @@ export const FigmantLayout: React.FC = () => {
         </div>
         
         {/* Mobile Main Content */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-hidden">
           <FigmantMainContent
             activeSection={activeSection}
             setActiveSection={setActiveSection}
