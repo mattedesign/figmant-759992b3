@@ -2,11 +2,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
-import { SidebarHeader } from '../SidebarHeader';
+import { SidebarHeader } from './SidebarHeader';
 import { SidebarUserSection } from './components/SidebarUserSection';
-import { SidebarNavigation } from '../SidebarNavigation';
-import { SidebarCredits } from '../SidebarCredits';
-import { SidebarUserProfile } from '../SidebarUserProfile';
+import { SidebarNavigation } from './SidebarNavigation';
+import { SidebarCredits } from './SidebarCredits';
+import { SidebarUserProfile } from './SidebarUserProfile';
 
 interface FigmantSidebarProps {
   activeSection: string;
