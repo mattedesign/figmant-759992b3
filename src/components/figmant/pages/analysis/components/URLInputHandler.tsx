@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -119,18 +118,22 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
 
         console.log('📸 Screenshot results:', screenshotResults);
 
-        // Update attachment with results
+        // Transform the screenshot results to match what ScreenshotDisplay expects
         const updatedMetadata = {
           screenshots: {
-            desktop: screenshotResults.desktop?.[0] || { 
-              success: false, 
-              url: validation.formattedUrl, 
-              error: 'Desktop screenshot failed' 
+            desktop: {
+              success: screenshotResults.desktop?.[0]?.success || false,
+              url: validation.formattedUrl,
+              screenshotUrl: screenshotResults.desktop?.[0]?.screenshotUrl,
+              error: screenshotResults.desktop?.[0]?.success === false ? 
+                (screenshotResults.desktop?.[0]?.error || 'Desktop screenshot failed') : undefined
             },
-            mobile: screenshotResults.mobile?.[0] || { 
-              success: false, 
-              url: validation.formattedUrl, 
-              error: 'Mobile screenshot failed' 
+            mobile: {
+              success: screenshotResults.mobile?.[0]?.success || false,
+              url: validation.formattedUrl,
+              screenshotUrl: screenshotResults.mobile?.[0]?.screenshotUrl,
+              error: screenshotResults.mobile?.[0]?.success === false ? 
+                (screenshotResults.mobile?.[0]?.error || 'Mobile screenshot failed') : undefined
             }
           }
         };
