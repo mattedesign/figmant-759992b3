@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { PanelLeftClose, PanelRight } from 'lucide-react';
+import { PanelLeftClose, PanelRightClose } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 
 interface SidebarHeaderProps {
@@ -24,7 +24,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
             onClick={() => onToggleCollapse(!isCollapsed)}
             className="w-9 h-9 p-0 text-gray-500 hover:text-gray-700 hover:bg-transparent active:bg-transparent flex items-center justify-center"
           >
-            <PanelRight className="h-9 w-9" />
+            <PanelRightClose className="h-9 w-9" />
           </Button>
         )
       ) : (
