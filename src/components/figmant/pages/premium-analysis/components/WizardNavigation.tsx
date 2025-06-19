@@ -25,7 +25,7 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
 
   const getButtonText = () => {
     if (currentStep === totalSteps) {
-      return 'Start Analysis';
+      return 'Wizard Analysis';
     }
     return 'Continue';
   };
