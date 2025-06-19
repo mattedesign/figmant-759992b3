@@ -1,70 +1,23 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { StepData } from './types';
 import { StepRenderer } from './StepRenderer';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { WizardNavigation } from './components/WizardNavigation';
+import { useWizardState } from './hooks/useWizardState';
 
 export const PremiumAnalysisWizard: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [stepData, setStepData] = useState<StepData>({
-    selectedType: '',
-    projectName: '',
-    analysisGoals: '',
-    desiredOutcome: '',
-    improvementMetric: '',
-    deadline: '',
-    date: '',
-    stakeholders: [],
-    referenceLinks: [''],
-    customPrompt: ''
-  });
-  
-  const totalSteps = 7;
-  
-  const handleNextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-  
-  const handlePreviousStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-  
-  const canProceedToNextStep = () => {
-    switch (currentStep) {
-      case 1:
-        return stepData.selectedType !== '';
-      case 2:
-        return stepData.projectName.trim() !== '';
-      case 3:
-        return stepData.analysisGoals.trim() !== '';
-      case 4:
-        // Check if at least one dynamic field has content or if desiredOutcome is filled
-        const hasAnyDynamicField = Object.keys(stepData).some(key => {
-          if (!['selectedType', 'projectName', 'analysisGoals', 'stakeholders', 'referenceLinks', 'uploadedFiles', 'customPrompt'].includes(key)) {
-            const value = stepData[key];
-            return typeof value === 'string' && value.trim() !== '';
-          }
-          return false;
-        });
-        return hasAnyDynamicField || stepData.desiredOutcome?.trim() !== '';
-      case 5:
-        return true; // Optional step
-      case 6:
-        return true; // Optional step
-      default:
-        return false;
-    }
-  };
+  const {
+    currentStep,
+    stepData,
+    setStepData,
+    totalSteps,
+    handleNextStep,
+    handlePreviousStep,
+    canProceedToNextStep
+  } = useWizardState();
 
   return (
     <div className="h-full flex flex-col max-h-screen">
-      {/* Scrollable content area with explicit height constraints */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <ScrollArea className="h-full w-full">
           <div className="p-6 min-h-full">
@@ -82,30 +35,13 @@ export const PremiumAnalysisWizard: React.FC = () => {
         </ScrollArea>
       </div>
       
-      {/* Fixed navigation at bottom - only show for non-processing steps */}
-      {currentStep < 7 && (
-        <div className="flex-shrink-0 p-6 bg-white border-t border-gray-200">
-          <div className="flex justify-between">
-            <Button 
-              variant="outline" 
-              onClick={handlePreviousStep} 
-              disabled={currentStep === 1} 
-              className="flex items-center gap-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-
-            <Button 
-              onClick={handleNextStep} 
-              disabled={!canProceedToNextStep()} 
-              className="bg-gray-900 hover:bg-gray-800 text-white"
-            >
-              {currentStep === 6 ? 'Start Analysis' : 'Continue'}
-            </Button>
-          </div>
-        </div>
-      )}
+      <WizardNavigation
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        onPreviousStep={handlePreviousStep}
+        onNextStep={handleNextStep}
+        canProceed={canProceedToNextStep()}
+      />
     </div>
   );
 };

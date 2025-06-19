@@ -1,13 +1,9 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs } from '@/components/ui/tabs';
 import { DesignBatchAnalysis, DesignUpload } from '@/types/design';
-import { BatchAnalysisResults } from './BatchAnalysisResults';
-import { BatchAnalysisDesigns } from './BatchAnalysisDesigns';
-import { BatchAnalysisSettings } from './BatchAnalysisSettings';
-import { BatchVersionHistory } from './BatchVersionHistory';
-import { ContinueAnalysisUploader } from './ContinueAnalysisUploader';
+import { BatchAnalysisTabList } from './BatchAnalysisContent/BatchAnalysisTabList';
+import { BatchAnalysisTabContent } from './BatchAnalysisContent/BatchAnalysisTabContent';
 
 interface BatchAnalysisContentProps {
   activeTab: string;
@@ -30,52 +26,18 @@ export const BatchAnalysisContent = ({
 }: BatchAnalysisContentProps) => {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
-      <TabsList>
-        <TabsTrigger value="results">Analysis Results</TabsTrigger>
-        <TabsTrigger value="designs">Designs ({batchUploads.length})</TabsTrigger>
-        <TabsTrigger value="history">
-          Version History ({modificationHistory.length})
-        </TabsTrigger>
-        <TabsTrigger value="settings">Settings</TabsTrigger>
-        <TabsTrigger value="continue">Continue Analysis</TabsTrigger>
-      </TabsList>
+      <BatchAnalysisTabList 
+        batchUploadsCount={batchUploads.length}
+        modificationHistoryCount={modificationHistory.length}
+      />
 
-      <TabsContent value="results" className="mt-6">
-        <BatchAnalysisResults selectedVersion={selectedVersion} />
-      </TabsContent>
-
-      <TabsContent value="designs" className="mt-6">
-        <BatchAnalysisDesigns batchUploads={batchUploads} />
-      </TabsContent>
-
-      <TabsContent value="history" className="mt-6">
-        <BatchVersionHistory
-          versions={modificationHistory}
-          onViewVersion={onViewVersion}
-          currentVersionId={selectedVersion.id}
-        />
-      </TabsContent>
-
-      <TabsContent value="settings" className="mt-6">
-        <BatchAnalysisSettings selectedVersion={selectedVersion} />
-      </TabsContent>
-
-      <TabsContent value="continue" className="mt-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Continue Analysis</CardTitle>
-            <CardDescription>
-              Add more screenshots to extend your batch analysis with additional insights
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ContinueAnalysisUploader 
-              batchAnalysis={selectedVersion}
-              onAnalysisStarted={onAnalysisStarted}
-            />
-          </CardContent>
-        </Card>
-      </TabsContent>
+      <BatchAnalysisTabContent
+        selectedVersion={selectedVersion}
+        batchUploads={batchUploads}
+        modificationHistory={modificationHistory}
+        onViewVersion={onViewVersion}
+        onAnalysisStarted={onAnalysisStarted}
+      />
     </Tabs>
   );
 };

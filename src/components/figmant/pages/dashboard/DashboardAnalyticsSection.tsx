@@ -1,12 +1,10 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs } from '@/components/ui/tabs';
 import { AnalyticsMetricsGrid } from '../../analytics/components/AnalyticsMetricsGrid';
-import { TrendAnalysisChart } from '../../analytics/components/TrendAnalysisChart';
-import { ActivityHeatMap } from '../../analytics/components/ActivityHeatMap';
-import { PerformanceInsights } from '../../analytics/components/PerformanceInsights';
-import { TrendingUp, Calendar, Lightbulb } from 'lucide-react';
+import { AnalyticsTabsList } from './DashboardAnalyticsSection/AnalyticsTabsList';
+import { AnalyticsTabsContent } from './DashboardAnalyticsSection/AnalyticsTabsContent';
 
 interface DashboardAnalyticsSectionProps {
   dataStats: any;
@@ -29,53 +27,17 @@ export const DashboardAnalyticsSection: React.FC<DashboardAnalyticsSectionProps>
         </CardHeader>
         
         <CardContent className="w-full">
-          {/* Always show metrics grid - now full width */}
           <div className="w-full">
             <AnalyticsMetricsGrid dataStats={dataStats} className="w-full" />
           </div>
           
-          {/* Analytics sections - now always visible */}
           <div className="mt-8 w-full">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="overview" className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  Trends
-                </TabsTrigger>
-                <TabsTrigger value="activity" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Activity
-                </TabsTrigger>
-                <TabsTrigger value="insights" className="flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4" />
-                  Insights
-                </TabsTrigger>
-                <TabsTrigger value="performance" className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  Performance
-                </TabsTrigger>
-              </TabsList>
-
-              <div className="mt-6 w-full">
-                <TabsContent value="overview" className="space-y-6 w-full">
-                  <TrendAnalysisChart data={analysisData} title="Activity Trends Overview" />
-                </TabsContent>
-
-                <TabsContent value="activity" className="space-y-6 w-full">
-                  <ActivityHeatMap />
-                </TabsContent>
-
-                <TabsContent value="insights" className="space-y-6 w-full">
-                  <PerformanceInsights dataStats={dataStats} />
-                </TabsContent>
-
-                <TabsContent value="performance" className="space-y-6 w-full">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-                    <TrendAnalysisChart data={analysisData} title="Performance Metrics" />
-                    <PerformanceInsights dataStats={dataStats} />
-                  </div>
-                </TabsContent>
-              </div>
+              <AnalyticsTabsList />
+              <AnalyticsTabsContent 
+                analysisData={analysisData}
+                dataStats={dataStats}
+              />
             </Tabs>
           </div>
         </CardContent>
