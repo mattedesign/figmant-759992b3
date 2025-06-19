@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, BarChart3, History, RefreshCw, Target } from 'lucide-react';
-import { DesignChatInterface } from './DesignChatInterface';
+import { AdvancedDesignAnalysisPageContent } from './AdvancedDesignAnalysisPageContent';
 import { DesignList } from './DesignList';
 import { BatchAnalysisDashboard } from './BatchAnalysisDashboard';
 import { UnifiedAnalysisHistory } from './UnifiedAnalysisHistory';
@@ -123,7 +123,7 @@ export const AdvancedDesignAnalysisPage = () => {
         </TabsList>
 
         <TabsContent value="chat" className="mt-6">
-          <DesignChatInterface key={refreshKey} />
+          <AdvancedDesignAnalysisPageContent key={refreshKey} />
         </TabsContent>
 
         <TabsContent value="batch" className="mt-6">
