@@ -51,7 +51,7 @@ export const NavigationSectionList: React.FC<NavigationSectionListProps> = ({
               Details
             </TabsTrigger>
             <TabsTrigger value="suggestions" className="text-sm">
-              Suggestions
+              Insights
             </TabsTrigger>
           </TabsList>
         </Tabs>
