@@ -43,7 +43,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
       key={item.id}
       variant="ghost"
       className={cn(
-        "w-full justify-start text-left",
+        "w-full justify-start text-left h-10 px-2",
         activeSection === item.id
           ? "bg-white text-[#3D4A5C] rounded-[12px] shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
           : "hover:bg-white hover:text-[#3D4A5C] hover:rounded-[12px] hover:shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
@@ -99,7 +99,8 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           letterSpacing: '-0.12px',
           textAlign: 'left',
           display: 'flex',
-          alignItems: 'center'
+          alignItems: 'center',
+          height: '100%'
         }}
       >
         {item.label}
