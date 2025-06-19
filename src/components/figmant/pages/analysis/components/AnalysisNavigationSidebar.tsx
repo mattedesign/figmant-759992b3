@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Tabs } from '@/components/ui/tabs';
 import { ChevronRight } from 'lucide-react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AnalysisNavigationHeader } from './AnalysisNavigationHeader';
@@ -78,14 +77,12 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
       }}
     >
       {!isCollapsed && (
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+        <div className="flex flex-col h-full">
           <AnalysisNavigationHeader 
             onToggleCollapse={onToggleCollapse}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
           />
 
-          {/* Tab Content */}
+          {/* Content with tabs moved down */}
           <NavigationSectionList
             fileAttachments={fileAttachments}
             urlAttachments={urlAttachments}
@@ -94,8 +91,9 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
             onRemoveAttachment={onRemoveAttachment}
             onViewAttachment={onViewAttachment}
             activeTab={activeTab}
+            onTabChange={setActiveTab}
           />
-        </Tabs>
+        </div>
       )}
       
       {isCollapsed && onToggleCollapse && (
