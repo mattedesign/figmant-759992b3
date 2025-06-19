@@ -1,25 +1,14 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Lightbulb, 
-  Target, 
-  Users, 
-  Zap, 
-  TrendingUp, 
-  Eye,
-  ArrowRight
-} from 'lucide-react';
+import { Lightbulb, Target, Users, Zap, TrendingUp, Eye, ArrowRight } from 'lucide-react';
 import { ExtractedSuggestion } from '@/utils/suggestionExtractor';
-
 interface SuggestionsTabContentProps {
   suggestions?: ExtractedSuggestion[];
 }
-
-export const SuggestionsTabContent: React.FC<SuggestionsTabContentProps> = ({ 
-  suggestions = [] 
+export const SuggestionsTabContent: React.FC<SuggestionsTabContentProps> = ({
+  suggestions = []
 }) => {
   const getImpactColor = (impact: string) => {
     switch (impact) {
@@ -33,7 +22,6 @@ export const SuggestionsTabContent: React.FC<SuggestionsTabContentProps> = ({
         return 'secondary';
     }
   };
-
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'Conversion':
@@ -48,7 +36,6 @@ export const SuggestionsTabContent: React.FC<SuggestionsTabContentProps> = ({
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
-
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'Conversion':
@@ -63,10 +50,8 @@ export const SuggestionsTabContent: React.FC<SuggestionsTabContentProps> = ({
         return Zap;
     }
   };
-
   if (suggestions.length === 0) {
-    return (
-      <div className="space-y-4">
+    return <div className="space-y-4 px-[8px] py-[12px]">
         {/* Header */}
         <div className="flex items-center gap-2 mb-4">
           <Lightbulb className="h-4 w-4 text-yellow-600" />
@@ -83,12 +68,9 @@ export const SuggestionsTabContent: React.FC<SuggestionsTabContentProps> = ({
             Start an analysis to see AI-generated suggestions
           </p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="space-y-4">
+  return <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Lightbulb className="h-4 w-4 text-yellow-600" />
@@ -97,10 +79,9 @@ export const SuggestionsTabContent: React.FC<SuggestionsTabContentProps> = ({
 
       {/* Suggestions List */}
       <div className="space-y-3">
-        {suggestions.map((suggestion) => {
-          const IconComponent = getCategoryIcon(suggestion.category);
-          return (
-            <Card key={suggestion.id} className="p-3 hover:shadow-sm transition-shadow">
+        {suggestions.map(suggestion => {
+        const IconComponent = getCategoryIcon(suggestion.category);
+        return <Card key={suggestion.id} className="p-3 hover:shadow-sm transition-shadow">
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -118,16 +99,10 @@ export const SuggestionsTabContent: React.FC<SuggestionsTabContentProps> = ({
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Badge 
-                      variant={getImpactColor(suggestion.impact) as any}
-                      className="text-xs px-2 py-0.5"
-                    >
+                    <Badge variant={getImpactColor(suggestion.impact) as any} className="text-xs px-2 py-0.5">
                       {suggestion.impact} Impact
                     </Badge>
-                    <Badge 
-                      variant="outline"
-                      className={`text-xs px-2 py-0.5 ${getCategoryColor(suggestion.category)}`}
-                    >
+                    <Badge variant="outline" className={`text-xs px-2 py-0.5 ${getCategoryColor(suggestion.category)}`}>
                       {suggestion.category}
                     </Badge>
                   </div>
@@ -137,9 +112,8 @@ export const SuggestionsTabContent: React.FC<SuggestionsTabContentProps> = ({
                   </Button>
                 </div>
               </div>
-            </Card>
-          );
-        })}
+            </Card>;
+      })}
       </div>
 
       {/* Footer */}
@@ -153,6 +127,5 @@ export const SuggestionsTabContent: React.FC<SuggestionsTabContentProps> = ({
           </Button>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
