@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -69,9 +68,6 @@ export const SuggestionsTabContent: React.FC<SuggestionsTabContentProps> = ({
       {/* Analysis Insights Section - Moved from Details tab */}
       {hasAnalysisContent && (
         <div>
-          <div className="py-2 border-b border-gray-100">
-            <h3 className="text-sm font-medium text-gray-900">Analysis Insights</h3>
-          </div>
           <AnalysisInsightsSection
             lastAnalysisResult={lastAnalysisResult}
             analysisMessages={analysisMessages}
