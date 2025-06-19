@@ -3,25 +3,67 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useSpecificUserDebug } from '@/hooks/useSpecificUserDebug';
-import { Search, User, AlertTriangle } from 'lucide-react';
+import { useSpecificUserDebug, useFixMissingProfile } from '@/hooks/useSpecificUserDebug';
+import { Search, User, AlertTriangle, Wrench } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export const SpecificUserDebugPanel = () => {
   const { isOwner } = useAuth();
+  const { toast } = useToast();
   const [searchEmail, setSearchEmail] = useState('hbro13@yahoo.com');
   const [activeSearch, setActiveSearch] = useState('');
+  const [isFixing, setIsFixing] = useState(false);
 
   const { data: debugData, isLoading, refetch } = useSpecificUserDebug(activeSearch);
+  const { fixMissingProfile } = useFixMissingProfile();
 
   const handleSearch = () => {
     setActiveSearch(searchEmail);
     refetch();
   };
 
+  const handleFixMissingProfile = async () => {
+    if (!activeSearch) return;
+    
+    setIsFixing(true);
+    try {
+      const result = await fixMissingProfile(activeSearch);
+      
+      if (result.success) {
+        toast({
+          title: "Profile Fixed",
+          description: `Successfully created missing profile for ${activeSearch}`,
+        });
+        // Refresh the search to show the fixed profile
+        setTimeout(() => {
+          refetch();
+        }, 1000);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Fix Failed",
+          description: result.error || "Failed to create missing profile",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Fix Failed",
+        description: "An unexpected error occurred",
+      });
+    } finally {
+      setIsFixing(false);
+    }
+  };
+
   if (!isOwner) {
     return null;
   }
+
+  const userNotFound = debugData && !debugData.error && 
+    (!debugData.exactMatch || debugData.exactMatch.length === 0) &&
+    (!debugData.caseInsensitiveMatch || debugData.caseInsensitiveMatch.length === 0);
 
   return (
     <Card className="mt-6">
@@ -86,6 +128,39 @@ export const SpecificUserDebugPanel = () => {
                       <div className="ml-4 text-red-600">✗ No case-insensitive match found</div>
                     )}
                   </div>
+
+                  <div>
+                    <strong>Auth.Users Check:</strong>
+                    {debugData.authUsersError ? (
+                      <div className="ml-4 text-orange-600">⚠ {debugData.authUsersError}</div>
+                    ) : debugData.authUserExists ? (
+                      <div className="ml-4 text-green-600">✓ Found in auth.users table</div>
+                    ) : (
+                      <div className="ml-4 text-red-600">✗ Not found in auth.users table</div>
+                    )}
+                  </div>
+
+                  {userNotFound && (
+                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                        <strong className="text-yellow-800">Issue Detected</strong>
+                      </div>
+                      <p className="text-yellow-700 mb-3">
+                        This user appears to be missing from the profiles table. This typically happens when the 
+                        database trigger that creates user profiles fails during registration.
+                      </p>
+                      <Button 
+                        onClick={handleFixMissingProfile}
+                        disabled={isFixing}
+                        className="bg-yellow-600 hover:bg-yellow-700"
+                        size="sm"
+                      >
+                        <Wrench className="h-4 w-4 mr-2" />
+                        {isFixing ? 'Fixing...' : 'Fix Missing Profile'}
+                      </Button>
+                    </div>
+                  )}
 
                   {debugData.similarEmails && debugData.similarEmails.length > 0 && (
                     <div>

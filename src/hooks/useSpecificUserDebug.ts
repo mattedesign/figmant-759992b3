@@ -27,6 +27,22 @@ export const useSpecificUserDebug = (email: string) => {
 
         console.log(`🔍 Case-insensitive profile search for ${email}:`, { profileSearchCI, profileErrorCI });
 
+        // Check if user exists in auth.users (requires service role, will fail with regular user)
+        let authUserExists = null;
+        let authUsersError = null;
+        try {
+          const { data: authUsersData, error: authError } = await supabase.auth.admin.listUsers();
+          if (!authError && authUsersData?.users) {
+            authUserExists = authUsersData.users.find(user => user.email === email);
+            console.log(`🔍 Auth user check for ${email}:`, authUserExists ? 'Found' : 'Not found');
+          } else {
+            authUsersError = authError?.message || 'Cannot access auth.users - requires admin privileges';
+          }
+        } catch (authErr) {
+          authUsersError = 'Cannot access auth.users - requires admin privileges';
+          console.log(`🔍 Auth users access denied for ${email}`);
+        }
+
         // Get all profiles to see what emails exist
         const { data: allProfiles, error: allProfilesError } = await supabase
           .from('profiles')
@@ -52,6 +68,8 @@ export const useSpecificUserDebug = (email: string) => {
           caseInsensitiveMatch: profileSearchCI,
           recentProfiles: allProfiles,
           similarEmails: similarEmails,
+          authUserExists: authUserExists,
+          authUsersError: authUsersError,
           errors: {
             profileError,
             profileErrorCI,
@@ -75,4 +93,32 @@ export const useSpecificUserDebug = (email: string) => {
     staleTime: 0,
     gcTime: 0
   });
+};
+
+export const useFixMissingProfile = () => {
+  return {
+    fixMissingProfile: async (email: string) => {
+      try {
+        console.log(`🔧 Attempting to fix missing profile for ${email}`);
+        
+        // Call the existing function to create a manual user
+        const { data, error } = await supabase.rpc('create_user_manual', {
+          p_email: email,
+          p_full_name: email.split('@')[0], // Use email prefix as name
+          p_role: 'subscriber'
+        });
+
+        if (error) {
+          console.error('Error creating manual user:', error);
+          throw error;
+        }
+
+        console.log('✅ Manual user created:', data);
+        return { success: true, data };
+      } catch (error) {
+        console.error('❌ Failed to fix missing profile:', error);
+        return { success: false, error: error.message };
+      }
+    }
+  };
 };
