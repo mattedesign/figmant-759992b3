@@ -39,8 +39,8 @@ interface AnalysisChatStateRenderProps {
   handleSendMessage: () => void;
   handleKeyPress: (e: React.KeyboardEvent) => void;
   
-  // File handling
-  handleFileUpload: (file: File) => void;
+  // File handling - Updated to match useFileUploadHandler interface
+  handleFileUpload: (files: FileList) => Promise<void>;
   addUrlAttachment: (url: string) => void;
   removeAttachment: (id: string) => void;
 }
@@ -124,7 +124,7 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
     handleSendMessage: messageHandler.handleSendMessage,
     handleKeyPress: messageHandler.handleKeyPress,
     
-    // File handling
+    // File handling - Now correctly matches the useFileUploadHandler interface
     handleFileUpload: fileUploadHandler.handleFileUpload,
     addUrlAttachment,
     removeAttachment
