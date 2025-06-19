@@ -204,15 +204,15 @@ export const UnifiedChatContainer: React.FC = () => {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-h-0">
-        {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto">
-          <ChatMessageArea 
-            messages={messages}
-            isAnalyzing={isAnalyzing}
-            chatMode={chatMode}
-          />
-        </div>
+        <ChatMessageArea 
+          messages={messages}
+          isAnalyzing={isAnalyzing}
+          chatMode={chatMode}
+        />
+      </div>
 
+      {/* Right Input Panel */}
+      <div className="w-96 border-l border-gray-200 flex-shrink-0 flex flex-col">
         {/* URL Input Section (if active) */}
         {showUrlInput && features.urlInput && (
           <URLInputSection
@@ -225,7 +225,7 @@ export const UnifiedChatContainer: React.FC = () => {
         )}
 
         {/* Chat Input */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="flex-1 p-4 border-t border-gray-200">
           <ChatInputContainer
             message={message}
             setMessage={setMessage}
