@@ -33,12 +33,12 @@ export const useSpecificUserDebug = (email: string) => {
         try {
           const { data: authUsersData, error: authError } = await supabase.auth.admin.listUsers();
           if (!authError && authUsersData?.users) {
-            authUserExists = authUsersData.users.find(user => user.email === email);
+            authUserExists = authUsersData.users.find(user => user.email === email) || null;
             console.log(`🔍 Auth user check for ${email}:`, authUserExists ? 'Found' : 'Not found');
           } else {
             authUsersError = authError?.message || 'Cannot access auth.users - requires admin privileges';
           }
-        } catch (authErr) {
+        } catch (authErr: any) {
           authUsersError = 'Cannot access auth.users - requires admin privileges';
           console.log(`🔍 Auth users access denied for ${email}`);
         }
@@ -78,7 +78,7 @@ export const useSpecificUserDebug = (email: string) => {
           }
         };
 
-      } catch (globalError) {
+      } catch (globalError: any) {
         console.error('🔍 Global error in user debug:', globalError);
         return {
           searchEmail: email,
@@ -115,7 +115,7 @@ export const useFixMissingProfile = () => {
 
         console.log('✅ Manual user created:', data);
         return { success: true, data };
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Failed to fix missing profile:', error);
         return { success: false, error: error.message };
       }
