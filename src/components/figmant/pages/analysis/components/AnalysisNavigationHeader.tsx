@@ -12,19 +12,19 @@ export const AnalysisNavigationHeader: React.FC<AnalysisNavigationHeaderProps> =
 }) => {
   return (
     <div className="flex-none border-b border-border">
-      {/* Header with title and collapse button */}
-      <div className="p-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Analysis Assets</h2>
+      {/* Header with collapse button on left and title */}
+      <div className="p-4 flex items-center gap-3">
         {onToggleCollapse && (
           <Button
             variant="ghost"
             size="sm"
             onClick={onToggleCollapse}
-            className="h-6 w-6 p-0 hover:bg-muted"
+            className="h-6 w-6 p-0 hover:bg-muted flex-shrink-0"
           >
             <PanelRightClose className="h-4 w-4" />
           </Button>
         )}
+        <h2 className="text-lg font-semibold">Analysis Assets</h2>
       </div>
     </div>
   );
