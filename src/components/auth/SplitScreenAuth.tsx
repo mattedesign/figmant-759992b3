@@ -6,7 +6,7 @@ import { AuthContainer } from './AuthContainer';
 import { SignInView } from './views/SignInView';
 import { PasswordResetForm } from './PasswordResetForm';
 import { UpdatePasswordForm } from './UpdatePasswordForm';
-import { ModernOnboardingFlow } from './ModernOnboardingFlow';
+import { NewUserOnboarding } from '@/components/onboarding/NewUserOnboarding';
 import { AuthProfileSync } from './AuthProfileSync';
 
 export const SplitScreenAuth = () => {
@@ -38,6 +38,16 @@ export const SplitScreenAuth = () => {
     setShowOnboarding(true);
   };
 
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    // Navigate to main app after onboarding
+    if (isOwner) {
+      navigate('/owner');
+    } else {
+      navigate('/figmant');
+    }
+  };
+
   const getAuthTitle = () => {
     if (showPasswordReset) return "Reset Password";
     return activeTab === 'signin' ? "Welcome Back" : "Get Started";
@@ -65,7 +75,7 @@ export const SplitScreenAuth = () => {
   }
 
   if (showOnboarding) {
-    return <ModernOnboardingFlow onComplete={() => setShowOnboarding(false)} />;
+    return <NewUserOnboarding onComplete={handleOnboardingComplete} />;
   }
 
   // If user is authenticated and not in reset mode or onboarding, the useEffect will handle redirect
