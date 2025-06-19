@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { sectionConfig } from './config/sectionConfig';
-import { NavigationSidebar } from './components/NavigationSidebar';
+import { FigmantSidebar } from '@/components/figmant/sidebar/FigmantSidebarContainer';
 
 interface SecondaryNavigationProps {
   activeSection: string;
@@ -55,12 +55,10 @@ export const SecondaryNavigation = ({ activeSection, activeTab, onTabChange }: S
   }
 
   return (
-    <NavigationSidebar 
-      config={config}
-      activeTab={activeTab}
-      onTabChange={onTabChange}
-      isCollapsed={isCollapsed}
-      onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+    <FigmantSidebar
+      activeSection={activeTab}
+      onSectionChange={onTabChange}
+      onCollapsedChange={() => setIsCollapsed(!isCollapsed)}
     />
   );
 };
