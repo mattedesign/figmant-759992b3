@@ -50,9 +50,17 @@ export const ChatContainer: React.FC<ChatContainerProps> = (props) => {
   const isMobile = useIsMobile();
 
   if (isMobile) {
-    return <MobileChatContainer {...props} />;
+    return (
+      <div className="h-full bg-transparent">
+        <MobileChatContainer {...props} />
+      </div>
+    );
   }
 
   // Desktop layout
-  return <DesktopChatContainer {...props} />;
+  return (
+    <div className="h-full bg-transparent">
+      <DesktopChatContainer {...props} />
+    </div>
+  );
 };

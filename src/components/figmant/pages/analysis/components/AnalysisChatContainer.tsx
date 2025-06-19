@@ -71,7 +71,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
 
   return (
     <CreditStatusChecker>
-      <div className="h-full flex flex-col bg-white">
+      <div className="h-full flex flex-col bg-transparent">
         {/* Fixed Header Content - Selected Template and Attachments */}
         <div className="flex-shrink-0 border-b border-gray-100">
           {/* Selected Template Display */}
@@ -112,7 +112,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         </div>
 
         {/* Fixed Message Input */}
-        <div className="flex-shrink-0 border-t border-gray-200 bg-white">
+        <div className="flex-shrink-0 border-t border-gray-200 bg-transparent">
           <div className="p-6">
             <MessageInputSection
               message={message}

@@ -65,7 +65,7 @@ export const ChatContainerContent: React.FC<ChatContainerContentProps> = ({
   const hasContent = message.trim().length > 0 || attachments.length > 0;
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-transparent">
       <ChatHeader
         onToggleProcessingMonitor={onToggleProcessingMonitor}
         onToggleDebugPanel={onToggleDebugPanel}

@@ -8,8 +8,16 @@ export const DesignChatContainer = () => {
   const isMobile = useIsMobile();
 
   if (isMobile) {
-    return <MobileDesignChatLayout />;
+    return (
+      <div className="h-full bg-transparent">
+        <MobileDesignChatLayout />
+      </div>
+    );
   }
 
-  return <DesktopDesignChatLayout />;
+  return (
+    <div className="h-full bg-transparent">
+      <DesktopDesignChatLayout />
+    </div>
+  );
 };
