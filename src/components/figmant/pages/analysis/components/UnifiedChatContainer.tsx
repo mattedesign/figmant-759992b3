@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PanelRightClose, PanelRightOpen } from 'lucide-react';
@@ -6,7 +5,6 @@ import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInter
 import { AnalysisChatContainer } from './AnalysisChatContainer';
 import { AnalysisNavigationSidebar } from './AnalysisNavigationSidebar';
 import { URLInputHandler } from './URLInputHandler';
-import { ChatSessionHistory } from './ChatSessionHistory';
 import { useChatState } from '../ChatStateManager';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
@@ -53,7 +51,6 @@ export const UnifiedChatContainer: React.FC = () => {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const [isAssetsPanelVisible, setIsAssetsPanelVisible] = useState(!isMobile);
-  const [showSessionHistory, setShowSessionHistory] = useState(false);
 
   // Debug logging to track state changes
   useEffect(() => {
@@ -278,70 +275,37 @@ export const UnifiedChatContainer: React.FC = () => {
   if (isMobile) {
     return (
       <div className="h-full">
-        {/* Session History Toggle for Mobile */}
-        {showSessionHistory ? (
-          <div className="h-full p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Chat History</h2>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowSessionHistory(false)}
-              >
-                Back to Chat
-              </Button>
-            </div>
-            <ChatSessionHistory
-              sessions={sessions}
-              currentSessionId={currentSessionId}
-              sessionAttachments={sessionAttachments}
-              sessionLinks={sessionLinks}
-              onCreateNewSession={() => {
-                startNewSession();
-                setShowSessionHistory(false);
-              }}
-              onSwitchSession={(sessionId) => {
-                loadSession(sessionId);
-                setShowSessionHistory(false);
-              }}
-              isCreatingSession={false}
-            />
-          </div>
-        ) : (
-          <>
-            <AnalysisChatContainer
-              messages={messages}
-              isAnalyzing={isAnalyzing}
-              message={message}
-              setMessage={setMessage}
-              onSendMessage={handleSendMessage}
-              onKeyPress={handleKeyPress}
-              getCurrentTemplate={getCurrentTemplate}
-              canSend={canSend}
-              onFileUpload={handleFileUpload}
-              onToggleUrlInput={handleToggleUrlInput}
-              showUrlInput={showUrlInput}
-              urlInput=""
-              setUrlInput={() => {}}
-              onAddUrl={() => {}}
-              onCancelUrl={() => setShowUrlInput(false)}
-              onTemplateSelect={handleTemplateSelect}
-              availableTemplates={templates}
-              onViewTemplate={handleViewTemplate}
-              attachments={attachments}
-              onRemoveAttachment={removeAttachment}
-            />
-            
-            {/* URL Input Handler for Mobile */}
-            <URLInputHandler
-              showUrlInput={showUrlInput}
-              onClose={() => setShowUrlInput(false)}
-              attachments={attachments}
-              onAttachmentAdd={handleAttachmentAdd}
-              onAttachmentUpdate={handleAttachmentUpdate}
-            />
-          </>
-        )}
+        <AnalysisChatContainer
+          messages={messages}
+          isAnalyzing={isAnalyzing}
+          message={message}
+          setMessage={setMessage}
+          onSendMessage={handleSendMessage}
+          onKeyPress={handleKeyPress}
+          getCurrentTemplate={getCurrentTemplate}
+          canSend={canSend}
+          onFileUpload={handleFileUpload}
+          onToggleUrlInput={handleToggleUrlInput}
+          showUrlInput={showUrlInput}
+          urlInput=""
+          setUrlInput={() => {}}
+          onAddUrl={() => {}}
+          onCancelUrl={() => setShowUrlInput(false)}
+          onTemplateSelect={handleTemplateSelect}
+          availableTemplates={templates}
+          onViewTemplate={handleViewTemplate}
+          attachments={attachments}
+          onRemoveAttachment={removeAttachment}
+        />
+        
+        {/* URL Input Handler for Mobile */}
+        <URLInputHandler
+          showUrlInput={showUrlInput}
+          onClose={() => setShowUrlInput(false)}
+          attachments={attachments}
+          onAttachmentAdd={handleAttachmentAdd}
+          onAttachmentUpdate={handleAttachmentUpdate}
+        />
       </div>
     );
   }
@@ -391,33 +355,15 @@ export const UnifiedChatContainer: React.FC = () => {
       {/* Analysis Assets Panel */}
       {isAssetsPanelVisible && (
         <div className="flex-shrink-0 w-80">
-          <div className="h-full flex flex-col">
-            {/* Session History */}
-            <div className="flex-1 min-h-0 mb-4">
-              <ChatSessionHistory
-                sessions={sessions}
-                currentSessionId={currentSessionId}
-                sessionAttachments={sessionAttachments}
-                sessionLinks={sessionLinks}
-                onCreateNewSession={startNewSession}
-                onSwitchSession={loadSession}
-                isCreatingSession={false}
-              />
-            </div>
-            
-            {/* Traditional Analysis Navigation */}
-            <div className="flex-shrink-0">
-              <AnalysisNavigationSidebar
-                messages={messages}
-                attachments={attachments}
-                onRemoveAttachment={removeAttachment}
-                onViewAttachment={handleViewAttachment}
-                lastAnalysisResult={lastAnalysisResult}
-                isCollapsed={false}
-                onToggleCollapse={() => setIsAssetsPanelVisible(!isAssetsPanelVisible)}
-              />
-            </div>
-          </div>
+          <AnalysisNavigationSidebar
+            messages={messages}
+            attachments={attachments}
+            onRemoveAttachment={removeAttachment}
+            onViewAttachment={handleViewAttachment}
+            lastAnalysisResult={lastAnalysisResult}
+            isCollapsed={false}
+            onToggleCollapse={() => setIsAssetsPanelVisible(!isAssetsPanelVisible)}
+          />
         </div>
       )}
 
