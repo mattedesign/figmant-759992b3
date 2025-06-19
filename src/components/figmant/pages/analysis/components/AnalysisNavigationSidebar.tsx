@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight, FileText, Globe, Brain, Trash2, Eye } from 'lucide-react';
+import { PanelRightClose, ChevronRight, FileText, Globe, Brain, Trash2, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -83,7 +83,7 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
                 onClick={onToggleCollapse}
                 className="h-6 w-6 p-0 hover:bg-muted"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <PanelRightClose className="h-4 w-4" />
               </Button>
             )}
           </div>
