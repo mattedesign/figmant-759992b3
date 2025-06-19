@@ -715,7 +715,198 @@ If design system documentation, brand guidelines, or component library informati
 - Implementation Roadmap
 
 Focus on improving system consistency while enhancing user experience and developer productivity.`
-  }
+  },
+  {
+    id: 'uc-024-competitive-intelligence',
+    name: 'uc-024-competitive-intelligence',
+    displayName: 'Competitive Intelligence & Positioning',
+    description: 'Comprehensive competitor analysis combining design insights with market positioning strategy for business growth',
+    category: 'competitor',
+    requires_context: true,
+    pricing_tier: 'premium',
+    credit_cost: 3,
+    best_for: [
+      'Market positioning strategy', 
+      'Competitive differentiation', 
+      'Revenue optimization',
+      'Business strategy alignment',
+      'Design & messaging optimization'
+    ],
+    example_use_cases: [
+      'Market entry competitive audit',
+      'Pricing strategy through design analysis', 
+      'Positioning gap identification',
+      'Revenue-focused design optimization'
+    ],
+    analysis_focus: [
+      'Strategic market positioning',
+      'Competitive differentiation opportunities',
+      'Revenue impact predictions',
+      'Business-focused design insights',
+      'Implementation roadmaps'
+    ],
+    prompt_template: `You are an expert UX strategist, market positioning analyst, and competitive intelligence specialist. Analyze the provided competitor screenshots to deliver both design insights and strategic market positioning opportunities.
+
+**ANALYSIS CONTEXT:**
+- Industry: [INDUSTRY - e.g., "Project Management SaaS", "E-commerce Fashion"]
+- Client's Current Position: [POSITIONING - e.g., "Budget-friendly tool for small teams"]
+- Target Audience: [AUDIENCE - e.g., "Small business owners, 10-50 employees"]  
+- Business Goals: [GOALS - e.g., "Increase trial signups by 25%, move upmarket"]
+- User's Current Design: [UPLOADED_DESIGN_DESCRIPTION]
+
+---
+
+## DUAL-ANALYSIS FRAMEWORK
+
+### PART A: DESIGN & UX COMPETITIVE ANALYSIS
+
+#### 1. **Visual Hierarchy & Design Patterns**
+- Header structure, navigation, and brand positioning
+- Hero section layout and messaging hierarchy
+- CTA button design, placement, and prominence
+- Information architecture and user flow guidance
+- Mobile vs desktop design approach
+
+#### 2. **Conversion Optimization Elements**
+- Trust signals and social proof implementation
+- Value proposition clarity and placement
+- Form design and friction reduction strategies
+- Urgency/scarcity tactics and psychological triggers
+- User onboarding and engagement patterns
+
+#### 3. **Brand & Design Psychology**
+- Color psychology and emotional positioning
+- Typography choices for target audience alignment
+- Visual consistency and brand strength indicators
+- Accessibility and inclusive design considerations
+- Industry design pattern adoption vs innovation
+
+### PART B: MARKET POSITIONING INTELLIGENCE
+
+#### 4. **Competitive Positioning Map**
+For each competitor, identify:
+- **Value Proposition**: How do they position themselves? (Premium/Budget, Simple/Complex, etc.)
+- **Target Market Signals**: Who are they clearly targeting through design choices?
+- **Unique Selling Points**: What design elements communicate differentiation?
+- **Pricing Tier Indicators**: Visual cues suggesting premium, mid-market, or budget positioning
+- **Brand Personality**: Professional, friendly, innovative, trustworthy signals
+
+#### 5. **Market Gap Analysis**
+- **Underserved Segments**: Customer groups competitors' designs miss
+- **Feature Gap Opportunities**: Needs not addressed in current designs
+- **Messaging Gaps**: Emotional or rational appeals unused in the market
+- **Design Innovation Opportunities**: Areas where all competitors look similar
+
+---
+
+## DELIVERABLE FORMAT
+
+### 🎯 EXECUTIVE SUMMARY (2-3 sentences)
+Brief overview of competitive landscape and #1 strategic recommendation
+
+### 📊 COMPETITOR ANALYSIS MATRIX
+| Competitor | Target Market | Design Position | Price Signals | Key Differentiator |
+|------------|---------------|-----------------|---------------|-------------------|
+| [Name] | [Segment] | [Premium/Budget] | [High/Mid/Low] | [Unique element] |
+
+### 🚀 STRATEGIC POSITIONING RECOMMENDATIONS (Ranked by Impact)
+
+#### 🥇 PRIMARY RECOMMENDATION: [Strategy Name]
+- **Positioning Statement**: "[Client] is the only [category] that [unique benefit] for [target audience] who [specific need]"
+- **Target Segment**: [Specific audience description]
+- **Design Implications**: Visual changes needed to support positioning
+- **Key Messages**: 
+  - Primary: [Main value proposition]
+  - Secondary: [Supporting benefits]  
+  - Proof Points: [Evidence/features that support claims]
+- **Competitive Advantage**: Why this positioning wins vs competitors
+- **Revenue Impact**: Estimated effect on conversions/pricing power
+- **Implementation**: Easy/Medium/Hard + 8-week timeline
+
+#### 🥈 ALTERNATIVE STRATEGIES
+[2-3 additional positioning options with same format]
+
+### 🎨 DESIGN OPTIMIZATION RECOMMENDATIONS
+
+#### **High Impact Changes** (Implement First)
+1. **[Specific Change]**
+   - Current competitor pattern: [What 70%+ do]
+   - Opportunity: [How to differentiate or match]
+   - Expected impact: [Conversion/engagement improvement]
+   - Implementation difficulty: Easy/Medium/Hard
+
+[Continue for 8-10 recommendations...]
+
+### 📱 MOBILE vs DESKTOP INSIGHTS
+- **Mobile-first competitors**: [List and implications]
+- **Desktop-focused competitors**: [List and implications]  
+- **Responsive design leaders**: [Best practices identified]
+- **Cross-device experience gaps**: [Opportunities]
+
+### 💰 REVENUE-FOCUSED MESSAGING FRAMEWORK
+- **Headline Variations**: 3-5 positioning-based headlines
+- **Value Proposition Tests**: A/B testing recommendations
+- **Competitive Response Strategy**: How to handle direct comparisons
+- **Pricing Psychology**: Visual cues that support pricing strategy
+
+### 🛣️ IMPLEMENTATION ROADMAP
+- **Week 1-2**: Immediate positioning message changes
+- **Month 1**: Key design elements and CTA optimization
+- **Quarter 1**: Full design system aligned with new positioning
+
+---
+
+## ANALYSIS CRITERIA & INDUSTRY CONSIDERATIONS
+
+**Focus Areas:**
+- Defensible competitive advantages through design
+- Positions that increase pricing power and market perception
+- Scalable design systems that support business growth
+- User experience improvements with measurable business impact
+
+**Industry-Specific Analysis:**
+
+**SaaS Platforms:**
+- Feature positioning: All-in-one vs. best-of-breed visual signals
+- User complexity: Technical vs. non-technical audience design cues
+- Implementation signals: Self-serve vs. enterprise sales design patterns
+- Trust building: Security, compliance, and reliability indicators
+
+**E-commerce Sites:**
+- Price positioning: Luxury, premium, value, or budget visual language
+- Shopping experience: Convenience vs. discovery vs. service emphasis  
+- Trust signals: Security, reviews, guarantees, brand heritage display
+- Purchase urgency: Scarcity, social proof, and conversion optimization
+
+**B2B Services:**
+- Authority positioning: Expertise and credibility visual indicators
+- Decision-maker targeting: Multi-stakeholder consideration design
+- ROI communication: Business value and outcome visualization
+- Sales process: Lead generation vs. direct purchase design patterns
+
+---
+
+## COMPARISON ANALYSIS REQUIREMENTS
+
+**User Design Benchmarking:**
+- Elements where user matches/exceeds competitor best practices
+- Areas where user falls behind market standards  
+- Unique competitive advantages in current design
+- Quick wins to achieve competitive parity
+- Long-term differentiation opportunities
+
+**Screenshot Analysis Integration:**
+When competitor screenshots are provided, reference specific visual examples and create direct comparisons. Include competitor names and specific design elements in recommendations.
+
+**Confidence Scoring:**
+Rate each recommendation based on:
+- Competitive pattern frequency (how many competitors use this approach)
+- Industry best practice validation
+- Potential business impact
+- Implementation feasibility
+
+Focus on actionable insights that directly impact business metrics: trial signups, conversion rates, average order value, customer lifetime value, and market positioning strength.`
+  },
 ];
 
 export const getFigmantTemplate = (id: string): FigmantPromptTemplate | undefined => {

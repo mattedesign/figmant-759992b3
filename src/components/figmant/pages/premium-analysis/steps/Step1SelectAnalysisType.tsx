@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { StepProps, StepData } from '../types';
 import { StepHeader } from '../components/StepHeader';
 import { figmantPromptTemplates } from '@/data/figmantPromptTemplates';
-import { Sparkles, Target, BarChart3, Users, ShoppingCart, FlaskConical, Crown, Brain, Star, Eye, Smartphone, Calendar, Layers, ArrowRight } from 'lucide-react';
+import { ANALYSIS_CREDIT_COSTS, isPremiumAnalysis, getAnalysisCost, getAnalysisValue } from '@/hooks/premium-analysis/creditCostManager';
+import { Sparkles, Target, BarChart3, Users, ShoppingCart, FlaskConical, Crown, Brain, Star, Eye, Smartphone, Calendar, Layers, ArrowRight, Diamond, TrendingUp, Zap } from 'lucide-react';
 
 const getCategoryIcon = (category: string) => {
   switch (category) {
@@ -89,6 +90,9 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
         {figmantPromptTemplates.map((template) => {
           const IconComponent = getCategoryIcon(template.category);
           const isSelected = stepData.selectedType === template.id;
+          const isPremium = isPremiumAnalysis(template.id);
+          const creditCost = getAnalysisCost(template.id);
+          const analysisValue = getAnalysisValue(template.id);
           
           return (
             <Card 
@@ -97,7 +101,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                 isSelected
                   ? 'ring-2 ring-primary shadow-md'
                   : ''
-              }`}
+              } ${isPremium ? 'border-l-4 border-l-amber-400' : ''}`}
               onClick={() => handleTypeSelection(template.id)}
             >
               <CardHeader>
@@ -107,10 +111,24 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                     <Badge className={getCategoryColor(template.category)}>
                       {template.category.replace('_', ' ')}
                     </Badge>
+                    {isPremium && (
+                      <Badge className="bg-gradient-to-r from-amber-400 to-amber-600 text-white">
+                        <Diamond className="h-3 w-3 mr-1" />
+                        Premium
+                      </Badge>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3 w-3 text-yellow-500 fill-current" />
-                    <span className="text-xs text-muted-foreground">9.5/10</span>
+                  <div className="flex flex-col items-end gap-1">
+                    <div className="flex items-center gap-1">
+                      <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                      <span className="text-xs text-muted-foreground">9.5/10</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs font-medium text-primary">{creditCost} credits</div>
+                      {isPremium && (
+                        <div className="text-xs text-muted-foreground">Value: {analysisValue}</div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
@@ -133,6 +151,21 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                     <div>
                       <p className="text-xs font-medium text-muted-foreground mb-1">Best for:</p>
                       <p className="text-xs">{template.best_for.slice(0, 2).join(', ')}</p>
+                    </div>
+                  )}
+                  
+                  {isPremium && (
+                    <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-3 rounded-lg border border-amber-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="h-4 w-4 text-amber-600" />
+                        <span className="text-sm font-medium text-amber-800">Premium Analysis Includes:</span>
+                      </div>
+                      <ul className="text-xs text-amber-700 space-y-1">
+                        <li>✨ Strategic market positioning insights</li>
+                        <li>📊 Competitive positioning matrix</li>
+                        <li>💰 Revenue impact predictions</li>
+                        <li>🛣️ 8-week implementation roadmap</li>
+                      </ul>
                     </div>
                   )}
                   
@@ -172,11 +205,14 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                       className={`w-full flex items-center justify-center gap-2 ${
                         isSelected 
                           ? 'bg-primary text-primary-foreground' 
-                          : 'bg-gray-900 hover:bg-gray-800 text-white'
+                          : isPremium 
+                            ? 'bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white'
+                            : 'bg-gray-900 hover:bg-gray-800 text-white'
                       }`}
                     >
                       {isSelected ? 'Selected' : 'Select'}
-                      <ArrowRight className="h-4 w-4" />
+                      {isPremium && !isSelected && <Zap className="h-4 w-4" />}
+                      {!isPremium && <ArrowRight className="h-4 w-4" />}
                     </Button>
                   </div>
                 </div>

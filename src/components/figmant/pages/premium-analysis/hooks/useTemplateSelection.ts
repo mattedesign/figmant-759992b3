@@ -2,6 +2,7 @@
 import { useMemo } from 'react';
 import { useClaudePromptExamplesByCategory } from '@/hooks/useClaudePromptExamplesByCategory';
 import { figmantPromptTemplates } from '@/data/figmantPromptTemplates';
+import { isPremiumAnalysis, getAnalysisCost } from '@/hooks/premium-analysis/creditCostManager';
 
 export const useTemplateSelection = (selectedType: string) => {
   const { data: premiumPrompts } = useClaudePromptExamplesByCategory('premium');
@@ -9,7 +10,24 @@ export const useTemplateSelection = (selectedType: string) => {
   const selectedTemplate = useMemo(() => {
     console.log(`Looking for template with ID: ${selectedType}`);
     
-    // First try to find in premium prompts (database)
+    // First try to find in figmant templates (our enhanced local templates)
+    const figmantTemplate = figmantPromptTemplates.find(template => template.id === selectedType);
+    if (figmantTemplate) {
+      console.log(`Found template in figmant templates: ${figmantTemplate.name}`);
+      return {
+        id: figmantTemplate.id,
+        title: figmantTemplate.displayName,
+        category: figmantTemplate.category,
+        original_prompt: figmantTemplate.prompt_template,
+        pricing_tier: figmantTemplate.pricing_tier || 'basic',
+        credit_cost: getAnalysisCost(figmantTemplate.id),
+        is_premium: isPremiumAnalysis(figmantTemplate.id),
+        best_for: figmantTemplate.best_for,
+        analysis_focus: figmantTemplate.analysis_focus
+      };
+    }
+    
+    // Fallback to premium prompts from database
     if (premiumPrompts?.length > 0) {
       const premiumTemplate = premiumPrompts.find(prompt => prompt.id === selectedType);
       if (premiumTemplate) {
@@ -18,21 +36,12 @@ export const useTemplateSelection = (selectedType: string) => {
           id: premiumTemplate.id,
           title: premiumTemplate.title,
           category: premiumTemplate.category,
-          original_prompt: premiumTemplate.original_prompt
+          original_prompt: premiumTemplate.original_prompt,
+          pricing_tier: 'premium',
+          credit_cost: getAnalysisCost(premiumTemplate.id),
+          is_premium: isPremiumAnalysis(premiumTemplate.id)
         };
       }
-    }
-    
-    // If not found in premium prompts, try figmant templates
-    const figmantTemplate = figmantPromptTemplates.find(template => template.id === selectedType);
-    if (figmantTemplate) {
-      console.log(`Found template in figmant templates: ${figmantTemplate.name}`);
-      return {
-        id: figmantTemplate.id,
-        title: figmantTemplate.name,
-        category: 'premium', // Treat figmant templates as premium for analysis
-        original_prompt: figmantTemplate.prompt_template
-      };
     }
     
     console.log(`Template not found in either source`);

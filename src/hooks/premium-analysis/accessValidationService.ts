@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { getAnalysisCost, isPremiumAnalysis } from './creditCostManager';
 
 export class AccessValidationService {
   async validateAndDeductCredits(selectedPrompt: any): Promise<boolean> {
@@ -23,8 +24,15 @@ export class AccessValidationService {
       return true;
     }
 
-    // For non-owners, check and deduct credits
-    const creditsRequired = 5; // Premium analysis costs 5 credits
+    // Get credit cost for the specific template
+    const creditsRequired = getAnalysisCost(selectedPrompt.id);
+    const isPreiumAnalysisType = isPremiumAnalysis(selectedPrompt.id);
+    
+    console.log('🔍 ACCESS VALIDATION - Analysis details:', {
+      templateId: selectedPrompt.id,
+      creditsRequired,
+      isPremium: isPreiumAnalysisType
+    });
     
     const { data: currentCredits } = await supabase
       .from('user_credits')
@@ -33,7 +41,8 @@ export class AccessValidationService {
       .single();
 
     if (!currentCredits || currentCredits.current_balance < creditsRequired) {
-      throw new Error(`Insufficient credits. Premium analysis requires ${creditsRequired} credits.`);
+      const analysisType = isPreiumAnalysisType ? 'Premium analysis' : 'Analysis';
+      throw new Error(`Insufficient credits. ${analysisType} requires ${creditsRequired} credits. You have ${currentCredits?.current_balance || 0} credits remaining.`);
     }
 
     // Deduct credits
@@ -46,7 +55,7 @@ export class AccessValidationService {
       throw new Error('Failed to process credits. Please try again.');
     }
 
-    console.log('🔍 ACCESS VALIDATION - Credits deducted successfully');
+    console.log(`🔍 ACCESS VALIDATION - ${creditsRequired} credits deducted successfully`);
     return true;
   }
 }
