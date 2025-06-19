@@ -3,7 +3,11 @@ import { useState, useCallback, useEffect } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useLocation } from 'react-router-dom';
 
-export const useChatState = () => {
+interface UseChatStateProps {
+  onAttachmentsChange?: (attachments: ChatAttachment[]) => void;
+}
+
+export const useChatState = (props?: UseChatStateProps) => {
   const location = useLocation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [message, setMessage] = useState('');
@@ -11,6 +15,10 @@ export const useChatState = () => {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  
+  // Add missing prompt template state
+  const [selectedPromptCategory, setSelectedPromptCategory] = useState<string>('master');
+  const [selectedPromptTemplate, setSelectedPromptTemplate] = useState<string>('master');
 
   // Load historical analysis if provided in navigation state
   useEffect(() => {
@@ -49,6 +57,13 @@ export const useChatState = () => {
     }
   }, [location.state]);
 
+  // Call onAttachmentsChange when attachments change
+  useEffect(() => {
+    if (props?.onAttachmentsChange) {
+      props.onAttachmentsChange(attachments);
+    }
+  }, [attachments, props?.onAttachmentsChange]);
+
   const addMessage = useCallback((newMessage: ChatMessage) => {
     setMessages(prev => [...prev, newMessage]);
   }, []);
@@ -83,6 +98,10 @@ export const useChatState = () => {
     setUrlInput,
     isAnalyzing,
     setIsAnalyzing,
+    selectedPromptCategory,
+    setSelectedPromptCategory,
+    selectedPromptTemplate,
+    setSelectedPromptTemplate,
     addMessage,
     clearMessages,
     updateLastMessage
