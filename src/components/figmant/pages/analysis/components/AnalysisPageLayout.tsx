@@ -1,28 +1,31 @@
 
 import React from 'react';
-import { AnalysisChatPanel } from '../AnalysisChatPanel';
-import { AnalysisDynamicRightPanel } from '../AnalysisDynamicRightPanel';
-import { ChatAttachment } from '@/components/design/DesignChatInterface';
+import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
+import { AnalysisTabContent } from './AnalysisTabContent';
+import { useFileUploadHandler } from '../useFileUploadHandler';
+import { useAnalysisPageState } from '../hooks/useAnalysisPageState';
+import { AnalysisChatHeader } from '../AnalysisChatHeader';
+import { URLAttachmentHandler } from './URLAttachmentHandler';
 
 interface AnalysisPageLayoutProps {
   message: string;
   setMessage: (message: string) => void;
-  messages: any[];
-  setMessages: (messages: any[]) => void;
+  messages: ChatMessage[];
+  setMessages: (messages: ChatMessage[]) => void;
   attachments: ChatAttachment[];
   setAttachments: (attachments: ChatAttachment[]) => void;
   urlInput: string;
   setUrlInput: (url: string) => void;
   showUrlInput: boolean;
   setShowUrlInput: (show: boolean) => void;
-  selectedPromptTemplate: any;
+  selectedPromptTemplate?: any;
   selectedPromptCategory: string;
-  promptTemplates: any[];
-  onAnalysisComplete: (result: any) => void;
-  lastAnalysisResult: any;
+  promptTemplates?: any[];
+  onAnalysisComplete?: (result: any) => void;
+  lastAnalysisResult?: any;
   isRightPanelCollapsed: boolean;
   selectedPromptTemplateId: string;
-  setSelectedPromptTemplate: (id: string) => void;
+  setSelectedPromptTemplate: (templateId: string) => void;
   onRemoveAttachment: (id: string) => void;
 }
 
@@ -38,61 +41,77 @@ export const AnalysisPageLayout: React.FC<AnalysisPageLayoutProps> = ({
   showUrlInput,
   setShowUrlInput,
   selectedPromptTemplate,
-  selectedPromptCategory,
-  promptTemplates,
+  promptTemplates = [],
   onAnalysisComplete,
-  lastAnalysisResult,
-  isRightPanelCollapsed,
-  selectedPromptTemplateId,
   setSelectedPromptTemplate,
   onRemoveAttachment
 }) => {
-  const getRightPanelMode = () => {
-    if (lastAnalysisResult || attachments.length > 0) {
-      return 'analysis';
-    }
-    return 'empty';
+  const [activeTab, setActiveTab] = React.useState<string>('chat');
+  const { handleFileUpload } = useFileUploadHandler(setAttachments);
+
+  const getCurrentTemplate = () => {
+    return selectedPromptTemplate;
+  };
+
+  const handleTemplateSelect = (templateId: string) => {
+    console.log('🎯 LAYOUT - Template selected:', templateId);
+    setSelectedPromptTemplate(templateId);
+  };
+
+  const handleViewTemplate = (template: any) => {
+    console.log('🎯 LAYOUT - View template:', template);
+    // This would open a modal or details view
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachments(attachments.filter(att => att.id !== id));
   };
 
   return (
-    <div className="flex h-full">
-      {/* Center Panel - Main Content */}
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1">
-          <AnalysisChatPanel
-            message={message}
-            setMessage={setMessage}
-            messages={messages}
-            setMessages={setMessages}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            urlInput={urlInput}
-            setUrlInput={setUrlInput}
-            showUrlInput={showUrlInput}
-            setShowUrlInput={setShowUrlInput}
-            selectedPromptTemplate={selectedPromptTemplate}
-            selectedPromptCategory={selectedPromptCategory}
-            promptTemplates={promptTemplates}
-            onAnalysisComplete={onAnalysisComplete}
-          />
-        </div>
+    <div className="h-full flex flex-col min-h-0">
+      {/* Header with Tabs */}
+      <div className="px-6 pt-6 pb-3 bg-transparent flex-shrink-0">
+        <AnalysisChatHeader 
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
       </div>
 
-      {/* Right Panel - Analysis Details */}
-      <div className={`bg-white flex-shrink-0 transition-all duration-300 ${
-        isRightPanelCollapsed ? 'w-16' : 'w-80'
-      }`}>
-        <AnalysisDynamicRightPanel
-          mode={getRightPanelMode()}
-          promptTemplates={promptTemplates}
-          selectedPromptTemplate={selectedPromptTemplateId}
-          onPromptTemplateSelect={setSelectedPromptTemplate}
-          currentAnalysis={null}
+      {/* Main Content */}
+      <div className="flex-1 min-h-0">
+        <URLAttachmentHandler
+          urlInput={urlInput}
+          setUrlInput={setUrlInput}
+          setShowUrlInput={setShowUrlInput}
           attachments={attachments}
-          onCollapseChange={() => {}}
-          onRemoveAttachment={onRemoveAttachment}
-          lastAnalysisResult={lastAnalysisResult}
-        />
+          setAttachments={setAttachments}
+        >
+          {(handleAddUrl) => (
+            <AnalysisTabContent
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              messages={messages}
+              isAnalyzing={false}
+              message={message}
+              setMessage={setMessage}
+              handleSendMessage={() => {}} // Will be handled by chat handler
+              handleKeyPress={() => {}}
+              getCurrentTemplate={getCurrentTemplate}
+              canSend={message.trim().length > 0 || attachments.length > 0}
+              handleFileUpload={handleFileUpload}
+              showUrlInput={showUrlInput}
+              setShowUrlInput={setShowUrlInput}
+              urlInput={urlInput}
+              setUrlInput={setUrlInput}
+              handleAddUrl={handleAddUrl}
+              handleTemplateSelect={handleTemplateSelect}
+              figmantTemplates={promptTemplates}
+              handleViewTemplate={handleViewTemplate}
+              attachments={attachments}
+              removeAttachment={removeAttachment}
+            />
+          )}
+        </URLAttachmentHandler>
       </div>
     </div>
   );

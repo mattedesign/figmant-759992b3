@@ -2,16 +2,14 @@
 import React from 'react';
 import { AnalysisChatInput } from '../AnalysisChatInput';
 import { ChatMessage } from '@/components/design/DesignChatInterface';
+import { useAnalysisChatHandler } from '../hooks/useAnalysisChatHandler';
 
 interface AnalysisChatContainerProps {
   messages: ChatMessage[];
-  isAnalyzing: boolean;
   message: string;
   setMessage: (message: string) => void;
-  onSendMessage: () => void;
-  onKeyPress: (e: React.KeyboardEvent) => void;
+  setMessages: (messages: ChatMessage[]) => void;
   getCurrentTemplate: () => any;
-  canSend: boolean;
   onFileUpload: (files: FileList) => void;
   onToggleUrlInput: () => void;
   showUrlInput: boolean;
@@ -28,13 +26,10 @@ interface AnalysisChatContainerProps {
 
 export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   messages,
-  isAnalyzing,
   message,
   setMessage,
-  onSendMessage,
-  onKeyPress,
+  setMessages,
   getCurrentTemplate,
-  canSend,
   onFileUpload,
   onToggleUrlInput,
   showUrlInput,
@@ -48,11 +43,30 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   attachments,
   onRemoveAttachment
 }) => {
+  const selectedTemplate = getCurrentTemplate();
+  
+  const {
+    handleSendMessage,
+    handleKeyPress,
+    canSend,
+    isAnalyzing
+  } = useAnalysisChatHandler(
+    message,
+    setMessage,
+    messages,
+    setMessages,
+    attachments,
+    (newAttachments) => {
+      // This will be handled by parent component
+    },
+    selectedTemplate
+  );
+
   console.log('📋 ANALYSIS CHAT CONTAINER - Rendering with:', {
     messagesCount: messages.length,
     attachmentsCount: attachments.length,
     templatesCount: availableTemplates.length,
-    showUrlInput,
+    selectedTemplate: selectedTemplate?.title || 'None',
     isAnalyzing
   });
 
@@ -61,7 +75,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
-          <div className="text-center text-muted-foreground">
+          <div className="text-center text-muted-foreground py-8">
             <h3 className="text-lg font-medium mb-2">Start your analysis</h3>
             <p>Upload files, add URLs, or select a template to get started with your design analysis.</p>
           </div>
@@ -102,9 +116,9 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         <AnalysisChatInput
           message={message}
           setMessage={setMessage}
-          onSendMessage={onSendMessage}
-          onKeyPress={onKeyPress}
-          selectedPromptTemplate={getCurrentTemplate()}
+          onSendMessage={handleSendMessage}
+          onKeyPress={handleKeyPress}
+          selectedPromptTemplate={selectedTemplate}
           canSend={canSend}
           isAnalyzing={isAnalyzing}
           onFileUpload={onFileUpload}
