@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs } from '@/components/ui/tabs';
 import { ChevronRight } from 'lucide-react';
@@ -34,6 +34,22 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
   
   // Get analysis messages from conversation
   const analysisMessages = messages.filter(msg => msg.role === 'assistant');
+
+  // Add effect to track when attachments change
+  useEffect(() => {
+    console.log('🎯 ANALYSIS NAVIGATION SIDEBAR - Attachments updated:', {
+      totalAttachments: attachments.length,
+      fileAttachmentsCount: fileAttachments.length,
+      urlAttachmentsCount: urlAttachments.length,
+      attachmentDetails: attachments.map(att => ({ 
+        id: att.id, 
+        type: att.type, 
+        name: att.name, 
+        status: att.status,
+        url: att.url 
+      }))
+    });
+  }, [attachments]);
 
   console.log('🎯 ANALYSIS NAVIGATION SIDEBAR - Rendering with:', {
     totalAttachments: attachments.length,

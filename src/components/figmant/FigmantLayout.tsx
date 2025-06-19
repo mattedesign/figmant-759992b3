@@ -35,16 +35,7 @@ export const FigmantLayout: React.FC = () => {
   // Show Analysis Assets panel only on chat page
   const showAnalysisAssetsPanel = activeSection === 'chat';
 
-  // Force re-render when attachments change by using a key
-  const [assetsKey, setAssetsKey] = useState(0);
-  
-  useEffect(() => {
-    // Force re-render of the analysis assets panel when attachments change
-    setAssetsKey(prev => prev + 1);
-    console.log('🔧 FIGMANT LAYOUT - Attachments changed, forcing re-render. New count:', chatState.attachments?.length || 0);
-  }, [chatState.attachments]);
-
-  // Debug the chat state connection
+  // Debug the chat state connection with more detailed logging
   console.log('🔧 FIGMANT LAYOUT - Debug chat state:', {
     activeSection,
     showAnalysisAssetsPanel,
@@ -55,9 +46,10 @@ export const FigmantLayout: React.FC = () => {
       id: att.id, 
       type: att.type, 
       name: att.name, 
-      status: att.status 
+      status: att.status,
+      url: att.url 
     })) || [],
-    assetsKey
+    setAttachmentsExists: !!chatState.setAttachments
   });
 
   if (isMobile) {
@@ -113,7 +105,6 @@ export const FigmantLayout: React.FC = () => {
       {showAnalysisAssetsPanel && (
         <div className="flex-shrink-0">
           <AnalysisNavigationSidebar
-            key={assetsKey}
             messages={chatState.messages || []}
             attachments={chatState.attachments || []}
             onRemoveAttachment={chatState.setAttachments ? (id) => {

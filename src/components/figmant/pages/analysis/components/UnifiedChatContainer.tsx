@@ -15,8 +15,15 @@ export const UnifiedChatContainer: React.FC = () => {
   const { mutateAsync: analyzeWithClaude, isPending: isAnalyzing } = useFigmantChatAnalysis();
   const { toast } = useToast();
   
-  // Use the shared chat state
+  // Use the shared chat state - this should be the same instance used in FigmantLayout
   const chatState = useChatState();
+  
+  // Verify we have the chat state functions
+  if (!chatState.setAttachments || !chatState.setMessages || !chatState.setMessage) {
+    console.error('🚨 UNIFIED CHAT - Chat state functions not available!');
+    return <div>Error: Chat state not properly initialized</div>;
+  }
+
   const {
     messages = [],
     setMessages,
@@ -31,6 +38,19 @@ export const UnifiedChatContainer: React.FC = () => {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
+
+  // Debug logging to track state changes
+  useEffect(() => {
+    console.log('🔄 UNIFIED CHAT - Attachments changed:', {
+      count: attachments.length,
+      details: attachments.map(att => ({ 
+        id: att.id, 
+        type: att.type, 
+        name: att.name, 
+        status: att.status 
+      }))
+    });
+  }, [attachments]);
 
   const getCurrentTemplate = () => {
     return templates.find(t => t.id === selectedTemplateId) || null;
@@ -54,13 +74,11 @@ export const UnifiedChatContainer: React.FC = () => {
     }
     
     // Add attachments to state immediately so they appear in the UI
-    if (setAttachments) {
-      setAttachments(prev => {
-        const updated = [...prev, ...newAttachments];
-        console.log('📎 UNIFIED CHAT - Updated attachments state, new count:', updated.length);
-        return updated;
-      });
-    }
+    setAttachments(prev => {
+      const updated = [...prev, ...newAttachments];
+      console.log('📎 UNIFIED CHAT - Updated attachments state, new count:', updated.length);
+      return updated;
+    });
     
     toast({
       title: "Files Added",
@@ -73,25 +91,21 @@ export const UnifiedChatContainer: React.FC = () => {
         console.log('📤 Starting file upload for:', attachment.name);
         const uploadPath = await FileUploadService.uploadFile(attachment.file!, attachment.id);
         
-        if (setAttachments) {
-          setAttachments(prev => prev.map(att => 
-            att.id === attachment.id 
-              ? { ...att, status: 'uploaded', uploadPath }
-              : att
-          ));
-        }
+        setAttachments(prev => prev.map(att => 
+          att.id === attachment.id 
+            ? { ...att, status: 'uploaded', uploadPath }
+            : att
+        ));
         
         console.log('📤 File upload completed:', uploadPath);
         
       } catch (error) {
         console.error('📤 File upload failed:', error);
-        if (setAttachments) {
-          setAttachments(prev => prev.map(att => 
-            att.id === attachment.id 
-              ? { ...att, status: 'error' }
-              : att
-          ));
-        }
+        setAttachments(prev => prev.map(att => 
+          att.id === attachment.id 
+            ? { ...att, status: 'error' }
+            : att
+        ));
       }
     }
   };
@@ -147,13 +161,11 @@ export const UnifiedChatContainer: React.FC = () => {
       console.log('🔗 UNIFIED CHAT - Creating new URL attachment:', newAttachment.id, newAttachment.name);
       
       // Update attachments state immediately so it appears in the UI
-      if (setAttachments) {
-        setAttachments(prev => {
-          const updated = [...prev, newAttachment];
-          console.log('🔗 UNIFIED CHAT - URL attachment added to state, new count:', updated.length);
-          return updated;
-        });
-      }
+      setAttachments(prev => {
+        const updated = [...prev, newAttachment];
+        console.log('🔗 UNIFIED CHAT - URL attachment added to state, new count:', updated.length);
+        return updated;
+      });
       
       setUrlInput('');
       setShowUrlInput(false);
@@ -176,26 +188,24 @@ export const UnifiedChatContainer: React.FC = () => {
         console.log('📸 Screenshot capture results:', screenshotResults);
 
         // Update the attachment with screenshot data
-        if (setAttachments) {
-          setAttachments(prev => prev.map(att => {
-            if (att.id === newAttachment.id) {
-              const updatedAtt = {
-                ...att,
-                status: 'uploaded' as const,
-                metadata: {
-                  ...att.metadata,
-                  screenshots: {
-                    desktop: screenshotResults.desktop?.[0] || { success: false, url: formattedUrl, error: 'Desktop screenshot failed' },
-                    mobile: screenshotResults.mobile?.[0] || { success: false, url: formattedUrl, error: 'Mobile screenshot failed' }
-                  }
+        setAttachments(prev => prev.map(att => {
+          if (att.id === newAttachment.id) {
+            const updatedAtt = {
+              ...att,
+              status: 'uploaded' as const,
+              metadata: {
+                ...att.metadata,
+                screenshots: {
+                  desktop: screenshotResults.desktop?.[0] || { success: false, url: formattedUrl, error: 'Desktop screenshot failed' },
+                  mobile: screenshotResults.mobile?.[0] || { success: false, url: formattedUrl, error: 'Mobile screenshot failed' }
                 }
-              };
-              console.log('📸 Updated attachment with screenshots:', updatedAtt.id);
-              return updatedAtt;
-            }
-            return att;
-          }));
-        }
+              }
+            };
+            console.log('📸 Updated attachment with screenshots:', updatedAtt.id);
+            return updatedAtt;
+          }
+          return att;
+        }));
 
         const desktopSuccess = screenshotResults.desktop?.[0]?.success;
         const mobileSuccess = screenshotResults.mobile?.[0]?.success;
@@ -217,24 +227,22 @@ export const UnifiedChatContainer: React.FC = () => {
         console.error('📸 Screenshot capture error:', screenshotError);
         
         // Update attachment status to show error but keep it functional
-        if (setAttachments) {
-          setAttachments(prev => prev.map(att => {
-            if (att.id === newAttachment.id) {
-              return {
-                ...att,
-                status: 'uploaded' as const,
-                metadata: {
-                  ...att.metadata,
-                  screenshots: {
-                    desktop: { success: false, url: formattedUrl, error: 'Screenshot service unavailable' },
-                    mobile: { success: false, url: formattedUrl, error: 'Screenshot service unavailable' }
-                  }
+        setAttachments(prev => prev.map(att => {
+          if (att.id === newAttachment.id) {
+            return {
+              ...att,
+              status: 'uploaded' as const,
+              metadata: {
+                ...att.metadata,
+                screenshots: {
+                  desktop: { success: false, url: formattedUrl, error: 'Screenshot service unavailable' },
+                  mobile: { success: false, url: formattedUrl, error: 'Screenshot service unavailable' }
                 }
-              };
-            }
-            return att;
-          }));
-        }
+              }
+            };
+          }
+          return att;
+        }));
 
         toast({
           variant: "destructive",
@@ -255,13 +263,11 @@ export const UnifiedChatContainer: React.FC = () => {
 
   const removeAttachment = (id: string) => {
     console.log('🗑️ UNIFIED CHAT - Removing attachment:', id);
-    if (setAttachments) {
-      setAttachments(prev => {
-        const updated = prev.filter(att => att.id !== id);
-        console.log('🗑️ UNIFIED CHAT - Attachment removed, new count:', updated.length);
-        return updated;
-      });
-    }
+    setAttachments(prev => {
+      const updated = prev.filter(att => att.id !== id);
+      console.log('🗑️ UNIFIED CHAT - Attachment removed, new count:', updated.length);
+      return updated;
+    });
   };
 
   const handleTemplateSelect = (templateId: string) => {
@@ -307,8 +313,8 @@ export const UnifiedChatContainer: React.FC = () => {
     };
 
     const newMessages = [...messages, userMessage];
-    if (setMessages) setMessages(newMessages);
-    if (setMessage) setMessage('');
+    setMessages(newMessages);
+    setMessage('');
 
     try {
       const template = getCurrentTemplate();
@@ -334,17 +340,13 @@ export const UnifiedChatContainer: React.FC = () => {
         timestamp: new Date()
       };
 
-      if (setMessages) {
-        setMessages(prev => [...prev, assistantMessage]);
-      }
+      setMessages(prev => [...prev, assistantMessage]);
 
       // Store the analysis result
       setLastAnalysisResult(result);
 
       // Clear attachments after successful analysis
-      if (setAttachments) {
-        setAttachments([]);
-      }
+      setAttachments([]);
 
     } catch (error) {
       console.error('Analysis error:', error);
@@ -356,9 +358,7 @@ export const UnifiedChatContainer: React.FC = () => {
         timestamp: new Date()
       };
 
-      if (setMessages) {
-        setMessages(prev => [...prev, errorMessage]);
-      }
+      setMessages(prev => [...prev, errorMessage]);
     }
   };
 
@@ -377,7 +377,8 @@ export const UnifiedChatContainer: React.FC = () => {
     attachmentDetails: attachments.map(att => ({ id: att.id, type: att.type, name: att.name, status: att.status })),
     lastAnalysisResult: !!lastAnalysisResult,
     showUrlInput,
-    urlInput
+    urlInput,
+    hasChatStateFunctions: !!(setAttachments && setMessages && setMessage)
   });
 
   return (
