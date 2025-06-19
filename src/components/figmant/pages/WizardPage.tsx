@@ -4,7 +4,7 @@ import { PremiumAnalysisTabController } from './premium-analysis/PremiumAnalysis
 
 export const WizardPage: React.FC = () => {
   return (
-    <div className="h-full flex flex-col bg-[#F9FAFB] min-h-0">
+    <div className="h-full flex flex-col min-h-0">
       <div className="px-6 pt-6 pb-3 bg-transparent flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>

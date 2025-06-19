@@ -42,7 +42,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   onAnalysisComplete
 }) => {
   return (
-    <div className="h-full flex flex-col bg-[#F9FAFB] min-h-0">
+    <div className="h-full flex flex-col min-h-0">
       <AnalysisChatState
         selectedPromptTemplate={selectedPromptTemplate}
         onAnalysisComplete={onAnalysisComplete}
