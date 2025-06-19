@@ -28,18 +28,18 @@ export class AccessValidationService {
     
     const { data: currentCredits } = await supabase
       .from('user_credits')
-      .select('credits')
+      .select('current_balance')
       .eq('user_id', user.id)
       .single();
 
-    if (!currentCredits || currentCredits.credits < creditsRequired) {
+    if (!currentCredits || currentCredits.current_balance < creditsRequired) {
       throw new Error(`Insufficient credits. Premium analysis requires ${creditsRequired} credits.`);
     }
 
     // Deduct credits
     const { error: deductError } = await supabase
       .from('user_credits')
-      .update({ credits: currentCredits.credits - creditsRequired })
+      .update({ current_balance: currentCredits.current_balance - creditsRequired })
       .eq('user_id', user.id);
 
     if (deductError) {
