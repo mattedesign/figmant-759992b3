@@ -1,8 +1,17 @@
 
+import { LucideIcon } from 'lucide-react';
+
 export interface Stakeholder {
   name: string;
   role: string;
+  title: string;
   email?: string;
+}
+
+export interface AnalysisType {
+  id: string;
+  title: string;
+  icon: LucideIcon;
 }
 
 export interface StepData {

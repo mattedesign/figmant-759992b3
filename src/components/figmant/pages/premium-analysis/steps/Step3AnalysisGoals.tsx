@@ -11,7 +11,15 @@ export const Step3AnalysisGoals: React.FC<StepProps> = ({
   totalSteps 
 }) => {
   const handleAnalysisGoalsChange = (value: string) => {
-    setStepData({ ...stepData, analysisGoals: value });
+    // Check if setStepData is the key-value version or full object version
+    if (typeof setStepData === 'function') {
+      const funcStr = setStepData.toString();
+      if (funcStr.includes('key') || setStepData.length === 2) {
+        (setStepData as (key: string, value: any) => void)('analysisGoals', value);
+      } else {
+        (setStepData as (newData: StepData) => void)({ ...stepData, analysisGoals: value });
+      }
+    }
   };
 
   return (

@@ -27,7 +27,7 @@ export function buildContextPrompt(stepData: StepData, selectedPrompt: any): str
   if (stepData.stakeholders.length > 0) {
     prompt += `Stakeholders:\n`;
     stepData.stakeholders.forEach(stakeholder => {
-      prompt += `- ${stakeholder.name} (${stakeholder.title})\n`;
+      prompt += `- ${stakeholder.name} (${stakeholder.title || stakeholder.role})\n`;
     });
   }
   

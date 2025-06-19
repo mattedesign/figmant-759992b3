@@ -52,7 +52,14 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
     
     // Update the step data using the key-value interface
     if (typeof setStepData === 'function') {
-      setStepData('selectedType', templateId);
+      // Check if it's the two-parameter version (key, value)
+      const funcStr = setStepData.toString();
+      if (funcStr.includes('key') || setStepData.length === 2) {
+        (setStepData as (key: string, value: any) => void)('selectedType', templateId);
+      } else {
+        // It's the one-parameter version (full object)
+        (setStepData as (newData: StepData) => void)({ ...stepData, selectedType: templateId });
+      }
     }
     
     // Automatically proceed to next step after selection

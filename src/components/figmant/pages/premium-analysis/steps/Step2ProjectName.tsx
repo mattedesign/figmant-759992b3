@@ -11,7 +11,15 @@ export const Step2ProjectName: React.FC<StepProps> = ({
   totalSteps 
 }) => {
   const handleProjectNameChange = (value: string) => {
-    setStepData({ ...stepData, projectName: value });
+    // Check if setStepData is the key-value version or full object version
+    if (typeof setStepData === 'function') {
+      const funcStr = setStepData.toString();
+      if (funcStr.includes('key') || setStepData.length === 2) {
+        (setStepData as (key: string, value: any) => void)('projectName', value);
+      } else {
+        (setStepData as (newData: StepData) => void)({ ...stepData, projectName: value });
+      }
+    }
   };
 
   return (

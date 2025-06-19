@@ -25,6 +25,20 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
 }) => {
   const { data: premiumPrompts } = useClaudePromptExamplesByCategory('premium');
 
+  const updateStepData = (updates: Partial<typeof stepData>) => {
+    if (typeof setStepData === 'function') {
+      const funcStr = setStepData.toString();
+      if (funcStr.includes('key') || setStepData.length === 2) {
+        // For key-value interface, we need to update each field individually
+        Object.entries(updates).forEach(([key, value]) => {
+          (setStepData as (key: string, value: any) => void)(key, value);
+        });
+      } else {
+        (setStepData as (newData: typeof stepData) => void)({ ...stepData, ...updates });
+      }
+    }
+  };
+
   const getFieldsForPromptType = (selectedType: string): FieldConfig[] => {
     // First try to find in premium prompts (database)
     const premiumPrompt = premiumPrompts?.find(prompt => prompt.id === selectedType);
@@ -257,28 +271,24 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
   const fields = getFieldsForPromptType(stepData.selectedType);
 
   const handleFieldChange = (fieldId: string, value: string) => {
-    setStepData({
-      ...stepData,
-      [fieldId]: value
-    });
+    updateStepData({ [fieldId]: value });
   };
 
   const handleStakeholderAdd = () => {
-    setStepData({
-      ...stepData,
-      stakeholders: [...stepData.stakeholders, { name: '', title: '' }]
+    updateStepData({
+      stakeholders: [...stepData.stakeholders, { name: '', role: '', title: '' }]
     });
   };
 
   const handleStakeholderRemove = (index: number) => {
     const newStakeholders = stepData.stakeholders.filter((_, i) => i !== index);
-    setStepData({ ...stepData, stakeholders: newStakeholders });
+    updateStepData({ stakeholders: newStakeholders });
   };
 
-  const handleStakeholderChange = (index: number, field: 'name' | 'title', value: string) => {
+  const handleStakeholderChange = (index: number, field: 'name' | 'role' | 'title', value: string) => {
     const newStakeholders = [...stepData.stakeholders];
     newStakeholders[index][field] = value;
-    setStepData({ ...stepData, stakeholders: newStakeholders });
+    updateStepData({ stakeholders: newStakeholders });
   };
 
   return (

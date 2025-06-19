@@ -15,12 +15,25 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
   currentStep, 
   totalSteps 
 }) => {
+  const updateStepData = (updates: Partial<typeof stepData>) => {
+    if (typeof setStepData === 'function') {
+      const funcStr = setStepData.toString();
+      if (funcStr.includes('key') || setStepData.length === 2) {
+        // For key-value interface, we need to update each field individually
+        Object.entries(updates).forEach(([key, value]) => {
+          (setStepData as (key: string, value: any) => void)(key, value);
+        });
+      } else {
+        (setStepData as (newData: typeof stepData) => void)({ ...stepData, ...updates });
+      }
+    }
+  };
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    setStepData({
-      ...stepData,
+    updateStepData({
       uploadedFiles: [...(stepData.uploadedFiles || []), ...acceptedFiles]
     });
-  }, [setStepData, stepData]);
+  }, [stepData, updateStepData]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -32,8 +45,7 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
   });
 
   const handleReferenceLinkAdd = () => {
-    setStepData({
-      ...stepData,
+    updateStepData({
       referenceLinks: [...stepData.referenceLinks, '']
     });
   };
@@ -41,17 +53,17 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
   const handleReferenceLinkChange = (index: number, value: string) => {
     const newLinks = [...stepData.referenceLinks];
     newLinks[index] = value;
-    setStepData({ ...stepData, referenceLinks: newLinks });
+    updateStepData({ referenceLinks: newLinks });
   };
 
   const removeReferenceLinkAt = (index: number) => {
     const newLinks = stepData.referenceLinks.filter((_, i) => i !== index);
-    setStepData({ ...stepData, referenceLinks: newLinks });
+    updateStepData({ referenceLinks: newLinks });
   };
 
   const removeFile = (index: number) => {
     const newFiles = (stepData.uploadedFiles || []).filter((_, i) => i !== index);
-    setStepData({ ...stepData, uploadedFiles: newFiles });
+    updateStepData({ uploadedFiles: newFiles });
   };
 
   return (
