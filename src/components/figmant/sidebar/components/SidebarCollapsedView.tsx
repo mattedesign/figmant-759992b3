@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { PanelLeftOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SidebarUserProfile } from '../SidebarUserProfile';
+import { Logo } from '@/components/common/Logo';
 
 interface MenuItem {
   id: string;
@@ -143,6 +144,11 @@ export const SidebarCollapsedView: React.FC<SidebarCollapsedViewProps> = ({
             </div>
           </>
         )}
+      </div>
+
+      {/* Logo at the bottom - only for collapsed view */}
+      <div className="flex-shrink-0 p-4 flex justify-center border-t border-gray-200/30">
+        <Logo size="sm" className="h-5 w-auto" variant="collapsed" />
       </div>
     </div>
   );
