@@ -41,6 +41,7 @@ export const SplitScreenLayout: React.FC<SplitScreenLayoutProps> = ({
             alt={imageAlt}
           />
         )}
+        <div className="absolute inset-0 bg-black bg-opacity-20" />
       </div>
     </div>
   );
