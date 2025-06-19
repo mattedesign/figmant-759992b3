@@ -23,7 +23,7 @@ interface SidebarMenuSectionProps {
 }
 
 export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
-  sections,
+  sections = [],
   activeSection,
   onSectionChange
 }) => {
@@ -87,15 +87,20 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
         
         {(!section.title || !isCollapsed) && (
           <div className="space-y-1">
-            {section.items.map(renderMenuItem)}
+            {section.items?.map(renderMenuItem)}
           </div>
         )}
       </div>
     );
   };
 
+  if (!sections || !Array.isArray(sections)) {
+    console.error('SidebarMenuSection: sections prop is required and must be an array');
+    return null;
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 mb-4">
       {sections.map((section, index) => 
         renderMenuSection(section, `section-${index}`)
       )}
