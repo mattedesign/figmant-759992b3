@@ -26,12 +26,14 @@ export interface StepData {
   referenceLinks: string[];
   customPrompt: string;
   uploadedFiles?: File[];
+  analysisResults?: any;
+  attachments?: any[];
   [key: string]: any;
 }
 
 export interface StepProps {
   stepData: StepData;
-  setStepData: ((newData: StepData) => void) | ((key: string, value: any) => void);
+  setStepData: (newData: StepData | ((prev: StepData) => StepData)) => void;
   currentStep: number;
   totalSteps: number;
   onNextStep?: () => void;

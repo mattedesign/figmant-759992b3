@@ -4,6 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { StepRenderer } from './StepRenderer';
 import { WizardNavigation } from './components/WizardNavigation';
 import { useWizardState } from './hooks/useWizardState';
+import { StepData } from './types';
 
 export const PremiumAnalysisWizard: React.FC = () => {
   const {
@@ -16,6 +17,15 @@ export const PremiumAnalysisWizard: React.FC = () => {
     canProceedToNextStep
   } = useWizardState();
 
+  // Create a proper setStepData function that matches the expected signature
+  const handleSetStepData = (newData: StepData | ((prev: StepData) => StepData)) => {
+    if (typeof newData === 'function') {
+      setStepData(newData(stepData));
+    } else {
+      setStepData(newData);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col max-h-screen">
       <div className="flex-1 min-h-0 overflow-hidden">
@@ -24,7 +34,7 @@ export const PremiumAnalysisWizard: React.FC = () => {
             <div className="h-full">
               <StepRenderer 
                 stepData={stepData} 
-                setStepData={setStepData} 
+                setStepData={handleSetStepData} 
                 currentStep={currentStep} 
                 totalSteps={totalSteps} 
                 onNextStep={handleNextStep} 

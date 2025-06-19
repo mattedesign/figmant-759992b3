@@ -31,6 +31,13 @@ export const useRecentAnalysisData = (analysisHistory: SavedChatAnalysis[]) => {
 
   const isLoading = designLoading || wizardLoading;
 
+  // Helper function to safely get nested properties
+  const safeGet = (obj: any, path: string, defaultValue: any = null) => {
+    return path.split('.').reduce((current, key) => {
+      return current && current[key] !== undefined ? current[key] : defaultValue;
+    }, obj);
+  };
+
   // Combine all types of analyses and sort by date
   const allAnalyses = [
     ...designAnalyses.map(a => ({ 
@@ -48,8 +55,8 @@ export const useRecentAnalysisData = (analysisHistory: SavedChatAnalysis[]) => {
       title: getAnalysisDisplayName(a.analysis_type),
       analysisType: getAnalysisDisplayName(a.analysis_type),
       score: Math.floor((a.confidence_score || 0.8) * 10),
-      fileCount: a.analysis_results?.attachments_processed || 1,
-      imageUrl: a.analysis_results?.upload_ids?.[0] || null
+      fileCount: safeGet(a, 'analysis_results.attachments_processed', 1),
+      imageUrl: safeGet(a, 'analysis_results.upload_ids.0', null)
     })),
     ...wizardAnalyses.map(a => ({ 
       ...a, 
@@ -57,8 +64,8 @@ export const useRecentAnalysisData = (analysisHistory: SavedChatAnalysis[]) => {
       title: 'Wizard Analysis',
       analysisType: 'Premium Wizard',
       score: Math.floor((a.confidence_score || 0.8) * 10),
-      fileCount: a.analysis_results?.attachments_processed || 1,
-      imageUrl: a.analysis_results?.upload_ids?.[0] || null
+      fileCount: safeGet(a, 'analysis_results.attachments_processed', 1),
+      imageUrl: safeGet(a, 'analysis_results.upload_ids.0', null)
     }))
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
