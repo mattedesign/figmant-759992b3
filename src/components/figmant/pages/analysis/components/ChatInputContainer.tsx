@@ -27,15 +27,6 @@ interface ChatInputContainerProps {
   setUrlInput: (url: string) => void;
   onAddUrl: () => void;
   onCancelUrl: () => void;
-  chatMode: 'chat' | 'analyze';
-  onModeChange: (mode: 'chat' | 'analyze') => void;
-  placeholder: string;
-  features: {
-    fileUpload: boolean;
-    templates: boolean;
-    urlInput: boolean;
-    attachments: boolean;
-  };
 }
 
 export const ChatInputContainer: React.FC<ChatInputContainerProps> = ({
@@ -57,20 +48,17 @@ export const ChatInputContainer: React.FC<ChatInputContainerProps> = ({
   urlInput,
   setUrlInput,
   onAddUrl,
-  onCancelUrl,
-  chatMode,
-  onModeChange,
-  placeholder,
-  features
+  onCancelUrl
 }) => {
   // New state for modern interface
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const [showTemplateMenu, setShowTemplateMenu] = useState(false);
   const [showModeMenu, setShowModeMenu] = useState(false);
+  const [chatMode, setChatMode] = useState<'chat' | 'analyze'>('analyze');
 
-  // Ensure Master UX template is selected by default in analyze mode
+  // Ensure Master UX template is selected by default
   useEffect(() => {
-    if (chatMode === 'analyze' && !selectedPromptTemplate && availableTemplates.length > 0) {
+    if (!selectedPromptTemplate && availableTemplates.length > 0) {
       const masterTemplate = availableTemplates.find(template => 
         template.displayName?.toLowerCase().includes('master') || 
         template.title?.toLowerCase().includes('master')
@@ -82,19 +70,10 @@ export const ChatInputContainer: React.FC<ChatInputContainerProps> = ({
         onTemplateSelect(availableTemplates[0].id);
       }
     }
-  }, [chatMode, selectedPromptTemplate, availableTemplates, onTemplateSelect]);
+  }, [selectedPromptTemplate, availableTemplates, onTemplateSelect]);
 
   const handleAttachmentAction = (type: 'screenshot' | 'link' | 'camera') => {
     setShowAttachmentMenu(false);
-    
-    if (!features.fileUpload && (type === 'screenshot' || type === 'camera')) {
-      return; // Feature not available in current mode
-    }
-    
-    if (!features.urlInput && type === 'link') {
-      return; // Feature not available in current mode
-    }
-    
     switch (type) {
       case 'screenshot':
         // Trigger existing file upload
@@ -123,12 +102,10 @@ export const ChatInputContainer: React.FC<ChatInputContainerProps> = ({
     <div className="flex flex-col items-start gap-6 p-3 rounded-3xl border border-[#ECECEC] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13),0px_2px_0px_0px_#FFF_inset,0px_8px_16px_-12px_rgba(0,0,0,0.08)] backdrop-blur-md lg:gap-6 md:gap-4 sm:gap-3 sm:p-2">
       
       {/* ATTACHMENT DISPLAY SECTION */}
-      {features.attachments && attachments.length > 0 && (
-        <AttachmentDisplay 
-          attachments={attachments}
-          onRemoveAttachment={onRemoveAttachment}
-        />
-      )}
+      <AttachmentDisplay 
+        attachments={attachments}
+        onRemoveAttachment={onRemoveAttachment}
+      />
 
       {/* TEXT INPUT AREA */}
       <MessageTextArea
@@ -138,7 +115,6 @@ export const ChatInputContainer: React.FC<ChatInputContainerProps> = ({
         selectedPromptTemplate={selectedPromptTemplate}
         chatMode={chatMode}
         isAnalyzing={isAnalyzing}
-        placeholder={placeholder}
       />
 
       {/* ACTIONS BAR */}
@@ -154,23 +130,20 @@ export const ChatInputContainer: React.FC<ChatInputContainerProps> = ({
         showModeMenu={showModeMenu}
         setShowModeMenu={setShowModeMenu}
         chatMode={chatMode}
-        setChatMode={onModeChange}
+        setChatMode={setChatMode}
         onSendMessage={onSendMessage}
         canSend={canSend}
         isAnalyzing={isAnalyzing}
-        features={features}
       />
 
       {/* URL INPUT SECTION (if active) */}
-      {showUrlInput && features.urlInput && (
-        <URLInputSection
-          showUrlInput={showUrlInput}
-          urlInput={urlInput}
-          setUrlInput={setUrlInput}
-          onAddUrl={onAddUrl}
-          onCancelUrl={onCancelUrl}
-        />
-      )}
+      <URLInputSection
+        showUrlInput={showUrlInput}
+        urlInput={urlInput}
+        setUrlInput={setUrlInput}
+        onAddUrl={onAddUrl}
+        onCancelUrl={onCancelUrl}
+      />
     </div>
   );
 };

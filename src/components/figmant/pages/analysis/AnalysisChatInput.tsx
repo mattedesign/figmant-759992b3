@@ -27,21 +27,5 @@ interface AnalysisChatInputProps {
 }
 
 export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = (props) => {
-  // Provide default values for the missing props
-  const defaultFeatures = {
-    fileUpload: true,
-    templates: true,
-    urlInput: true,
-    attachments: true
-  };
-
-  return (
-    <ChatInputContainer 
-      {...props} 
-      chatMode="analyze"
-      onModeChange={() => {}} // No-op since this is analysis mode only
-      placeholder="Describe what you'd like me to analyze..."
-      features={defaultFeatures}
-    />
-  );
+  return <ChatInputContainer {...props} />;
 };
