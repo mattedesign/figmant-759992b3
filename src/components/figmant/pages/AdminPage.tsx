@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -11,6 +10,7 @@ import { ClaudeSettings } from '@/components/owner/ClaudeSettings';
 import { SubscriptionPlansManager } from '@/components/owner/SubscriptionPlansManager';
 import { AdminAssetDashboard } from '@/components/admin/AdminAssetDashboard';
 import { RegistrationDebugPanel } from '@/components/debug/RegistrationDebugPanel';
+import { SpecificUserDebugPanel } from '@/components/debug/SpecificUserDebugPanel';
 
 interface AdminPageProps {
   initialTab?: string;
@@ -90,6 +90,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
               <TabsContent value="users" className="space-y-6">
                 <UserManagement />
                 <RegistrationDebugPanel />
+                <SpecificUserDebugPanel />
               </TabsContent>
 
               <TabsContent value="prompts" className="space-y-6">
