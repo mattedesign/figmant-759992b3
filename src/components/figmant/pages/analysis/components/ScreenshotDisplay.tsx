@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Monitor, Smartphone, ExternalLink, AlertCircle, Loader2, Camera } from 'lucide-react';
 
 interface ScreenshotDisplayProps {
@@ -12,6 +11,7 @@ interface ScreenshotDisplayProps {
 
 export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment }) => {
   const [activeView, setActiveView] = useState<'desktop' | 'mobile'>('desktop');
+  const [imageLoadError, setImageLoadError] = useState<string | null>(null);
 
   // Show loading state if attachment is still processing
   if (attachment.status === 'processing') {
@@ -23,6 +23,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
     );
   }
 
+  // Check if screenshots metadata exists
   if (!attachment.metadata?.screenshots) {
     return (
       <div className="p-3 bg-muted/50 rounded-lg text-center">
@@ -34,7 +35,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
 
   const { desktop, mobile } = attachment.metadata.screenshots;
   
-  // Fixed: Use screenshotUrl instead of url for checking if screenshots are available
+  // Check if screenshots are available using the correct property (screenshotUrl)
   const hasDesktop = desktop?.success && desktop.screenshotUrl;
   const hasMobile = mobile?.success && mobile.screenshotUrl;
 
@@ -51,13 +52,11 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
   }
 
   const currentScreenshot = activeView === 'desktop' ? desktop : mobile;
-  
-  // Fixed: Use screenshotUrl instead of url for displaying the image
-  const currentScreenshotUrl = activeView === 'desktop' ? desktop?.screenshotUrl : mobile?.screenshotUrl;
+  const currentScreenshotUrl = currentScreenshot?.screenshotUrl;
 
   return (
     <div className="space-y-2">
-      {/* View Toggle */}
+      {/* View Toggle - only show if both views are available */}
       {hasDesktop && hasMobile && (
         <div className="flex items-center gap-1">
           <Button
@@ -81,16 +80,22 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
         </div>
       )}
 
-      {/* Screenshot Display */}
-      {currentScreenshotUrl ? (
+      {/* Screenshot Display using background image to bypass CORS */}
+      {currentScreenshotUrl && !imageLoadError ? (
         <div className="relative group">
-          <img
-            src={currentScreenshotUrl}
-            alt={`${activeView} screenshot of ${attachment.url}`}
-            className="w-full h-auto rounded-md border border-border/50 shadow-sm"
-            onError={(e) => {
+          <div
+            className="w-full min-h-[300px] rounded-md border border-border/50 shadow-sm bg-gray-100"
+            style={{
+              backgroundImage: `url(${currentScreenshotUrl})`,
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+              aspectRatio: activeView === 'desktop' ? '16/10' : '9/16'
+            }}
+            onLoad={() => setImageLoadError(null)}
+            onError={() => {
               console.error('Failed to load screenshot:', currentScreenshotUrl);
-              e.currentTarget.classList.add('hidden');
+              setImageLoadError(`Failed to load ${activeView} screenshot`);
             }}
           />
           
@@ -102,7 +107,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
               </Badge>
               {currentScreenshot?.metadata && (
                 <Badge variant="outline" className="text-xs">
-                  {currentScreenshot.metadata.width}x{currentScreenshot.metadata.height}
+                  {currentScreenshot.metadata.width}×{currentScreenshot.metadata.height}
                 </Badge>
               )}
             </div>
@@ -125,7 +130,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
         <div className="p-3 bg-muted/50 rounded-lg text-center">
           <AlertCircle className="w-4 h-4 text-muted-foreground mx-auto mb-2" />
           <p className="text-xs text-muted-foreground">
-            {activeView === 'desktop' ? 'Desktop' : 'Mobile'} screenshot not available
+            {imageLoadError || `${activeView === 'desktop' ? 'Desktop' : 'Mobile'} screenshot not available`}
           </p>
           {currentScreenshot?.error && (
             <p className="text-xs text-destructive mt-1">{currentScreenshot.error}</p>
