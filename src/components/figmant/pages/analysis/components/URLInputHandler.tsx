@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useToast } from '@/hooks/use-toast';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
+import { ScreenshotServiceDebugger } from './ScreenshotServiceDebugger';
 
 interface URLInputHandlerProps {
   showUrlInput: boolean;
@@ -27,6 +28,7 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
   const [urlInput, setUrlInput] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [showDebugger, setShowDebugger] = useState(false);
   const { toast } = useToast();
 
   if (!showUrlInput) return null;
@@ -133,6 +135,8 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
           }
         };
 
+        console.log('📸 Updating attachment with metadata:', updatedMetadata);
+
         onAttachmentUpdate(newAttachment.id, {
           status: 'uploaded',
           metadata: updatedMetadata
@@ -213,15 +217,28 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
             </Badge>
           )}
         </div>
-        <Button
-          onClick={onClose}
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0"
-        >
-          <X className="h-3 w-3" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setShowDebugger(!showDebugger)}
+            variant="ghost"
+            size="sm"
+            className="h-6 w-16 p-0 text-xs"
+          >
+            Debug
+          </Button>
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0"
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </div>
       </div>
+
+      {/* Service Debugger */}
+      {showDebugger && <ScreenshotServiceDebugger />}
 
       <div className="space-y-3">
         <div className="flex gap-2">

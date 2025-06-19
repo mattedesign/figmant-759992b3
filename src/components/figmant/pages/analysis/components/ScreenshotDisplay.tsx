@@ -12,6 +12,7 @@ interface ScreenshotDisplayProps {
 
 export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment }) => {
   const [activeView, setActiveView] = useState<'desktop' | 'mobile'>('desktop');
+  const [imageError, setImageError] = useState<string | null>(null);
 
   // Show loading state if attachment is still processing
   if (attachment.status === 'processing') {
@@ -24,6 +25,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
   }
 
   if (!attachment.metadata?.screenshots) {
+    console.error('🚨 SCREENSHOT DISPLAY - No screenshots metadata found:', attachment);
     return (
       <div className="p-3 bg-muted/50 rounded-lg text-center">
         <Camera className="w-4 h-4 text-muted-foreground mx-auto mb-2" />
@@ -33,10 +35,16 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
   }
 
   const { desktop, mobile } = attachment.metadata.screenshots;
+  
+  // Log the screenshot data for debugging
+  console.log('🔍 SCREENSHOT DISPLAY - Desktop data:', desktop);
+  console.log('🔍 SCREENSHOT DISPLAY - Mobile data:', mobile);
+  
   const hasDesktop = desktop?.success && desktop.screenshotUrl;
   const hasMobile = mobile?.success && mobile.screenshotUrl;
 
   if (!hasDesktop && !hasMobile) {
+    console.error('🚨 SCREENSHOT DISPLAY - No valid screenshots found:', { desktop, mobile });
     return (
       <div className="p-3 bg-muted/50 rounded-lg text-center">
         <AlertCircle className="w-4 h-4 text-muted-foreground mx-auto mb-2" />
@@ -50,6 +58,9 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
 
   const currentScreenshot = activeView === 'desktop' ? desktop : mobile;
   const currentScreenshotUrl = activeView === 'desktop' ? desktop?.screenshotUrl : mobile?.screenshotUrl;
+
+  console.log('🖼️ SCREENSHOT DISPLAY - Current screenshot URL:', currentScreenshotUrl);
+  console.log('🖼️ SCREENSHOT DISPLAY - Current screenshot data:', currentScreenshot);
 
   return (
     <div className="space-y-2">
@@ -88,11 +99,18 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
                 className="w-full h-auto max-h-48 object-cover"
                 style={{ aspectRatio: activeView === 'desktop' ? '16/10' : '9/16' }}
                 onError={(e) => {
-                  console.error('Screenshot image failed to load:', currentScreenshotUrl);
-                  console.error('Current screenshot data:', currentScreenshot);
+                  const errorMsg = `Failed to load ${activeView} screenshot`;
+                  console.error('🚨 SCREENSHOT IMAGE ERROR:', {
+                    url: currentScreenshotUrl,
+                    screenshot: currentScreenshot,
+                    attachment: attachment,
+                    error: errorMsg
+                  });
+                  setImageError(errorMsg);
                 }}
                 onLoad={() => {
-                  console.log('Screenshot image loaded successfully:', currentScreenshotUrl);
+                  console.log('✅ SCREENSHOT IMAGE LOADED:', currentScreenshotUrl);
+                  setImageError(null);
                 }}
               />
               
@@ -120,6 +138,14 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
           {currentScreenshot?.error && (
             <p className="text-xs text-destructive mt-1">{currentScreenshot.error}</p>
           )}
+        </div>
+      )}
+
+      {/* Error Display */}
+      {imageError && (
+        <div className="p-2 bg-red-50 border border-red-200 rounded text-center">
+          <p className="text-xs text-red-600">{imageError}</p>
+          <p className="text-xs text-red-500 mt-1 font-mono break-all">{currentScreenshotUrl}</p>
         </div>
       )}
 
