@@ -13,10 +13,11 @@ serve(async (req) => {
   }
 
   try {
-    // Get the ScreenshotOne API key from environment
-    const apiKey = Deno.env.get('VITE_SCREENSHOTONE_API_KEY');
+    // Get the ScreenshotOne API key from Supabase secrets
+    const apiKey = Deno.env.get('SCREENSHOTONE_API_KEY');
     
     if (!apiKey) {
+      console.log('ScreenshotOne API key not found in secrets');
       return new Response(
         JSON.stringify({ error: 'ScreenshotOne API key not configured' }),
         { 
@@ -26,6 +27,7 @@ serve(async (req) => {
       );
     }
 
+    console.log('ScreenshotOne API key found, returning to client');
     return new Response(
       JSON.stringify({ apiKey }),
       { 
