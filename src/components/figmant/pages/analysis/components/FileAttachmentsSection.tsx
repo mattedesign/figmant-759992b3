@@ -20,20 +20,29 @@ export const FileAttachmentsSection: React.FC<FileAttachmentsSectionProps> = ({
   if (fileAttachments.length === 0) return null;
 
   return (
-    <div className="mt-2 px-3 space-y-2">
+    <div className="px-3 space-y-3">
       {fileAttachments.map((attachment) => (
-        <div key={attachment.id} className="flex items-center gap-3 p-2 bg-muted/30 rounded-lg">
-          <FileThumbail attachment={attachment} size="sm" />
+        <div key={attachment.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+          <div className="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center flex-shrink-0">
+            <FileThumbail attachment={attachment} size="sm" />
+          </div>
           
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate">{attachment.name}</p>
-            <Badge 
-              variant={attachment.status === 'uploaded' ? 'default' : 
-                      attachment.status === 'error' ? 'destructive' : 'secondary'}
-              className="text-xs mt-1"
-            >
-              {attachment.status}
-            </Badge>
+            <p className="text-sm font-medium text-gray-900 truncate">{attachment.name}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <Badge 
+                variant={attachment.status === 'uploaded' ? 'default' : 
+                        attachment.status === 'error' ? 'destructive' : 'secondary'}
+                className="text-xs"
+              >
+                {attachment.status}
+              </Badge>
+              {attachment.file && (
+                <span className="text-xs text-gray-500">
+                  {(attachment.file.size / 1024 / 1024).toFixed(1)} MB
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-1">
@@ -41,17 +50,17 @@ export const FileAttachmentsSection: React.FC<FileAttachmentsSectionProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => onViewAttachment(attachment)}
-              className="h-5 w-5 p-0"
+              className="h-8 w-8 p-0 hover:bg-gray-200"
             >
-              <Eye className="w-3 h-3" />
+              <Eye className="w-4 h-4" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onRemoveAttachment(attachment.id)}
-              className="h-5 w-5 p-0 text-destructive hover:text-destructive"
+              className="h-8 w-8 p-0 text-destructive hover:bg-red-50 hover:text-destructive"
             >
-              <Trash2 className="w-3 h-3" />
+              <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         </div>

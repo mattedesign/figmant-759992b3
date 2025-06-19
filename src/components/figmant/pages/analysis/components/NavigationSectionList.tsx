@@ -31,41 +31,69 @@ export const NavigationSectionList: React.FC<NavigationSectionListProps> = ({
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <TabsContent value="details" className="mt-0 space-y-4">
+      <TabsContent value="details" className="mt-0 space-y-6">
         {hasContent ? (
-          <div className="space-y-4">
-            {/* File Attachments */}
-            {fileAttachments.length > 0 && (
-              <div>
-                <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Files ({fileAttachments.length})
-                </div>
+          <div className="space-y-6">
+            {/* Files Section */}
+            <div>
+              <div className="px-3 py-2 flex items-center justify-between">
+                <h3 className="text-sm font-medium text-gray-900">Files</h3>
+                {fileAttachments.length > 0 && (
+                  <span className="text-xs text-gray-500">({fileAttachments.length})</span>
+                )}
+              </div>
+              {fileAttachments.length > 0 ? (
                 <FileAttachmentsSection
                   fileAttachments={fileAttachments}
                   onRemoveAttachment={onRemoveAttachment}
                   onViewAttachment={onViewAttachment}
                 />
-              </div>
-            )}
-
-            {/* Website Attachments */}
-            {urlAttachments.length > 0 && (
-              <div>
-                <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Websites ({urlAttachments.length})
+              ) : (
+                <div className="px-3">
+                  <div className="text-center py-6 border-2 border-dashed border-gray-200 rounded-lg">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                    </div>
+                    <p className="text-xs text-gray-500">No files uploaded yet</p>
+                  </div>
                 </div>
+              )}
+            </div>
+
+            {/* Links Section */}
+            <div>
+              <div className="px-3 py-2 flex items-center justify-between">
+                <h3 className="text-sm font-medium text-gray-900">Links</h3>
+                {urlAttachments.length > 0 && (
+                  <span className="text-xs text-gray-500">({urlAttachments.length})</span>
+                )}
+              </div>
+              {urlAttachments.length > 0 ? (
                 <WebsiteAttachmentsSection
                   urlAttachments={urlAttachments}
                   onRemoveAttachment={onRemoveAttachment}
                 />
-              </div>
-            )}
+              ) : (
+                <div className="px-3">
+                  <div className="text-center py-6 border-2 border-dashed border-gray-200 rounded-lg">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.102m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                    </div>
+                    <p className="text-xs text-gray-500">No links added yet</p>
+                  </div>
+                </div>
+              )}
+            </div>
 
-            {/* Analysis Insights */}
+            {/* Analysis Insights Section - Only show if there are insights */}
             {(lastAnalysisResult || analysisMessages.length > 0) && (
               <div>
-                <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Analysis Insights
+                <div className="px-3 py-2">
+                  <h3 className="text-sm font-medium text-gray-900">Analysis Insights</h3>
                 </div>
                 <AnalysisInsightsSection
                   lastAnalysisResult={lastAnalysisResult}
