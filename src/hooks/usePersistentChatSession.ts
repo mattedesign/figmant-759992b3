@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChatSessionService, ChatSession, ChatAttachmentRecord, ChatLinkRecord } from '@/services/chatSessionService';
@@ -149,11 +148,11 @@ export const usePersistentChatSession = () => {
         // Update activity for this session
         ChatSessionService.updateSessionActivity(recentSession.id);
       } else {
-        // Create a new session
-        createSessionMutation.mutate();
+        // Create a new session with default name
+        createSessionMutation.mutate(`Chat ${new Date().toLocaleDateString()}`);
       }
     }
-  }, [user, sessions, sessionsLoading, isSessionInitialized]);
+  }, [user, sessions, sessionsLoading, isSessionInitialized, createSessionMutation]);
 
   const createNewSession = useCallback((sessionName?: string) => {
     createSessionMutation.mutate(sessionName);
