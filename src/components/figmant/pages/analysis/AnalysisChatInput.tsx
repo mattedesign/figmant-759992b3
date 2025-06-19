@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Camera, Globe, Video, Mic, Send, ChevronDown, FileText, X } from 'lucide-react';
+import { Plus, Camera, Globe, Video, Mic, ArrowUp, ChevronDown, FileText, X } from 'lucide-react';
 import { FigmantPromptTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
@@ -285,7 +284,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
             {isAnalyzing ? (
               <div className="w-5 h-5 border-2 border-[#121212] border-t-transparent rounded-full animate-spin" />
             ) : (
-              <Send className="w-5 h-5 text-[#121212] flex-shrink-0" />
+              <ArrowUp className="w-5 h-5 text-[#121212] flex-shrink-0" />
             )}
           </button>
         </div>
