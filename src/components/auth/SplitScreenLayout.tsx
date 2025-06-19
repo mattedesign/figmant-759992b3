@@ -24,7 +24,7 @@ export const SplitScreenLayout: React.FC<SplitScreenLayoutProps> = ({
       </div>
       
       {/* Right side - Background Video or Image */}
-      <div className="hidden lg:block relative flex-1">
+      <div className="hidden lg:block relative flex-1 rounded-l-[20px] overflow-hidden">
         {backgroundVideo ? (
           <video
             className="absolute inset-0 h-full w-full object-cover"
