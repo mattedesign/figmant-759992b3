@@ -45,7 +45,15 @@ export const SidebarTabsInterface: React.FC<SidebarTabsInterfaceProps> = ({
       <Tabs defaultValue="analysis" className="flex flex-col h-full">
         {/* Fixed tabs header */}
         <div className="flex-shrink-0 px-4 mb-4">
-          <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+          <TabsList 
+            className="grid w-full grid-cols-2"
+            style={{
+              borderRadius: '12px',
+              border: '1px solid var(--Stroke-02, #E2E2E2)',
+              background: 'var(--Surface-03, #F1F1F1)',
+              boxShadow: '0px 1px 1.9px 0px var(--Shade-7-10, rgba(50, 50, 50, 0.10)) inset'
+            }}
+          >
             <TabsTrigger value="analysis" className="data-[state=active]:bg-white">
               Menu
             </TabsTrigger>
