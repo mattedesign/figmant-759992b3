@@ -36,7 +36,7 @@ export const SimpleTemplateSelector: React.FC<SimpleTemplateSelectorProps> = ({
               <SelectValue placeholder="Select analysis template" className="truncate" />
             </div>
           </SelectTrigger>
-          <SelectContent className="bg-white border border-gray-200 shadow-lg z-[9999]">
+          <SelectContent className="bg-white border border-gray-200 shadow-lg z-[99999] relative">
             {availableTemplates.map((template) => (
               <SelectItem key={template.id} value={template.id}>
                 <div className="flex items-center justify-between w-full">
