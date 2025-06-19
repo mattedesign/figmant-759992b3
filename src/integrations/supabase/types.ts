@@ -72,6 +72,127 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_attachments: {
+        Row: {
+          chat_session_id: string
+          created_by: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          is_active: boolean | null
+          message_id: string | null
+          upload_timestamp: string | null
+        }
+        Insert: {
+          chat_session_id: string
+          created_by: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          message_id?: string | null
+          upload_timestamp?: string | null
+        }
+        Update: {
+          chat_session_id?: string
+          created_by?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          message_id?: string | null
+          upload_timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_attachments_chat_session_id_fkey"
+            columns: ["chat_session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_links: {
+        Row: {
+          chat_session_id: string
+          created_by: string
+          id: string
+          is_active: boolean | null
+          link_description: string | null
+          link_thumbnail: string | null
+          link_title: string | null
+          message_id: string | null
+          upload_timestamp: string | null
+          url: string
+        }
+        Insert: {
+          chat_session_id: string
+          created_by: string
+          id?: string
+          is_active?: boolean | null
+          link_description?: string | null
+          link_thumbnail?: string | null
+          link_title?: string | null
+          message_id?: string | null
+          upload_timestamp?: string | null
+          url: string
+        }
+        Update: {
+          chat_session_id?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean | null
+          link_description?: string | null
+          link_thumbnail?: string | null
+          link_title?: string | null
+          message_id?: string | null
+          upload_timestamp?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_links_chat_session_id_fkey"
+            columns: ["chat_session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_activity: string | null
+          session_name: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_activity?: string | null
+          session_name?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_activity?: string | null
+          session_name?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       claude_insights: {
         Row: {
           confidence_score: number | null
@@ -1111,6 +1232,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_attachments: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_logo_config: {
         Args: {
           user_id: string
@@ -1214,6 +1339,10 @@ export type Database = {
       }
       update_public_logo_config: {
         Args: { new_logo_url: string; new_fallback_logo_url: string }
+        Returns: undefined
+      }
+      update_session_activity: {
+        Args: { session_id: string }
         Returns: undefined
       }
       upsert_admin_setting: {

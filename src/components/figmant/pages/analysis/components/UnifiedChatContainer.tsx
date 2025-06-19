@@ -6,6 +6,7 @@ import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInter
 import { AnalysisChatContainer } from './AnalysisChatContainer';
 import { AnalysisNavigationSidebar } from './AnalysisNavigationSidebar';
 import { URLInputHandler } from './URLInputHandler';
+import { ChatSessionHistory } from './ChatSessionHistory';
 import { useChatState } from '../ChatStateManager';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
@@ -19,7 +20,7 @@ export const UnifiedChatContainer: React.FC = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   
-  // Use the shared chat state
+  // Use the enhanced chat state with persistent sessions
   const chatState = useChatState();
   
   // Verify we have the chat state functions
@@ -36,25 +37,35 @@ export const UnifiedChatContainer: React.FC = () => {
     attachments = [],
     setAttachments,
     selectedTemplateId,
-    setSelectedTemplateId
+    setSelectedTemplateId,
+    // Session management
+    currentSessionId,
+    currentSession,
+    sessions,
+    sessionAttachments,
+    sessionLinks,
+    isSessionInitialized,
+    startNewSession,
+    loadSession,
+    saveMessageAttachments
   } = chatState;
 
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const [isAssetsPanelVisible, setIsAssetsPanelVisible] = useState(!isMobile);
+  const [showSessionHistory, setShowSessionHistory] = useState(false);
 
   // Debug logging to track state changes
   useEffect(() => {
-    console.log('🔄 UNIFIED CHAT - Attachments changed:', {
-      count: attachments.length,
-      details: attachments.map(att => ({ 
-        id: att.id, 
-        type: att.type, 
-        name: att.name, 
-        status: att.status 
-      }))
+    console.log('🔄 UNIFIED CHAT - Session state:', {
+      currentSessionId,
+      sessionName: currentSession?.session_name,
+      attachmentsCount: attachments.length,
+      sessionAttachmentsCount: sessionAttachments.length,
+      sessionLinksCount: sessionLinks.length,
+      isSessionInitialized
     });
-  }, [attachments]);
+  }, [currentSessionId, currentSession, attachments, sessionAttachments, sessionLinks, isSessionInitialized]);
 
   const getCurrentTemplate = () => {
     return templates.find(t => t.id === selectedTemplateId) || null;
@@ -168,14 +179,8 @@ export const UnifiedChatContainer: React.FC = () => {
     console.log('🚀 UNIFIED CHAT - Sending message with attachments:', {
       messageLength: message.length,
       attachmentsCount: attachments.length,
-      attachmentDetails: attachments.map(att => ({ 
-        id: att.id, 
-        type: att.type, 
-        name: att.name, 
-        status: att.status,
-        uploadPath: att.uploadPath,
-        url: att.url
-      }))
+      currentSessionId,
+      sessionName: currentSession?.session_name
     });
 
     const userMessage: ChatMessage = {
@@ -189,6 +194,16 @@ export const UnifiedChatContainer: React.FC = () => {
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setMessage('');
+
+    // Save message attachments to persistent storage
+    if (isSessionInitialized && userMessage.attachments) {
+      saveMessageAttachments(userMessage);
+      
+      toast({
+        title: "Attachments Saved",
+        description: "Your files and links have been saved to this chat session.",
+      });
+    }
 
     try {
       const template = getCurrentTemplate();
@@ -263,37 +278,73 @@ export const UnifiedChatContainer: React.FC = () => {
   if (isMobile) {
     return (
       <div className="h-full">
-        <AnalysisChatContainer
-          messages={messages}
-          isAnalyzing={isAnalyzing}
-          message={message}
-          setMessage={setMessage}
-          onSendMessage={handleSendMessage}
-          onKeyPress={handleKeyPress}
-          getCurrentTemplate={getCurrentTemplate}
-          canSend={canSend}
-          onFileUpload={handleFileUpload}
-          onToggleUrlInput={handleToggleUrlInput}
-          showUrlInput={showUrlInput}
-          urlInput=""
-          setUrlInput={() => {}}
-          onAddUrl={() => {}}
-          onCancelUrl={() => setShowUrlInput(false)}
-          onTemplateSelect={handleTemplateSelect}
-          availableTemplates={templates}
-          onViewTemplate={handleViewTemplate}
-          attachments={attachments}
-          onRemoveAttachment={removeAttachment}
-        />
-        
-        {/* URL Input Handler for Mobile */}
-        <URLInputHandler
-          showUrlInput={showUrlInput}
-          onClose={() => setShowUrlInput(false)}
-          attachments={attachments}
-          onAttachmentAdd={handleAttachmentAdd}
-          onAttachmentUpdate={handleAttachmentUpdate}
-        />
+        {/* Session History Toggle for Mobile */}
+        {showSessionHistory ? (
+          <div className="h-full p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Chat History</h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowSessionHistory(false)}
+              >
+                Back to Chat
+              </Button>
+            </div>
+            <ChatSessionHistory
+              sessions={sessions}
+              currentSessionId={currentSessionId}
+              sessionAttachments={sessionAttachments}
+              sessionLinks={sessionLinks}
+              onCreateNewSession={() => {
+                startNewSession();
+                setShowSessionHistory(false);
+              }}
+              onSwitchSession={(sessionId) => {
+                loadSession(sessionId);
+                setShowSessionHistory(false);
+              }}
+              isCreatingSession={false}
+            />
+          </div>
+        ) : (
+          <>
+            <AnalysisChatContainer
+              messages={messages}
+              isAnalyzing={isAnalyzing}
+              message={message}
+              setMessage={setMessage}
+              onSendMessage={handleSendMessage}
+              onKeyPress={handleKeyPress}
+              getCurrentTemplate={getCurrentTemplate}
+              canSend={canSend}
+              onFileUpload={handleFileUpload}
+              onToggleUrlInput={handleToggleUrlInput}
+              showUrlInput={showUrlInput}
+              urlInput=""
+              setUrlInput={() => {}}
+              onAddUrl={() => {}}
+              onCancelUrl={() => setShowUrlInput(false)}
+              onTemplateSelect={handleTemplateSelect}
+              availableTemplates={templates}
+              onViewTemplate={handleViewTemplate}
+              attachments={attachments}
+              onRemoveAttachment={removeAttachment}
+              // Add session controls
+              onShowHistory={() => setShowSessionHistory(true)}
+              currentSessionName={currentSession?.session_name}
+            />
+            
+            {/* URL Input Handler for Mobile */}
+            <URLInputHandler
+              showUrlInput={showUrlInput}
+              onClose={() => setShowUrlInput(false)}
+              attachments={attachments}
+              onAttachmentAdd={handleAttachmentAdd}
+              onAttachmentUpdate={handleAttachmentUpdate}
+            />
+          </>
+        )}
       </div>
     );
   }
@@ -324,6 +375,8 @@ export const UnifiedChatContainer: React.FC = () => {
           onViewTemplate={handleViewTemplate}
           attachments={attachments}
           onRemoveAttachment={removeAttachment}
+          // Add session controls
+          currentSessionName={currentSession?.session_name}
         />
         
         {/* URL Input Handler */}
@@ -342,16 +395,34 @@ export const UnifiedChatContainer: React.FC = () => {
 
       {/* Analysis Assets Panel */}
       {isAssetsPanelVisible && (
-        <div className="flex-shrink-0">
-          <AnalysisNavigationSidebar
-            messages={messages}
-            attachments={attachments}
-            onRemoveAttachment={removeAttachment}
-            onViewAttachment={handleViewAttachment}
-            lastAnalysisResult={lastAnalysisResult}
-            isCollapsed={false}
-            onToggleCollapse={() => setIsAssetsPanelVisible(!isAssetsPanelVisible)}
-          />
+        <div className="flex-shrink-0 w-80">
+          <div className="h-full flex flex-col">
+            {/* Session History */}
+            <div className="flex-1 min-h-0 mb-4">
+              <ChatSessionHistory
+                sessions={sessions}
+                currentSessionId={currentSessionId}
+                sessionAttachments={sessionAttachments}
+                sessionLinks={sessionLinks}
+                onCreateNewSession={startNewSession}
+                onSwitchSession={loadSession}
+                isCreatingSession={false}
+              />
+            </div>
+            
+            {/* Traditional Analysis Navigation */}
+            <div className="flex-shrink-0">
+              <AnalysisNavigationSidebar
+                messages={messages}
+                attachments={attachments}
+                onRemoveAttachment={removeAttachment}
+                onViewAttachment={handleViewAttachment}
+                lastAnalysisResult={lastAnalysisResult}
+                isCollapsed={false}
+                onToggleCollapse={() => setIsAssetsPanelVisible(!isAssetsPanelVisible)}
+              />
+            </div>
+          </div>
         </div>
       )}
 

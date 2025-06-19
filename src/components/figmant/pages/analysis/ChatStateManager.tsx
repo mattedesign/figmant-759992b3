@@ -2,6 +2,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useLocation } from 'react-router-dom';
+import { usePersistentChatSession } from '@/hooks/usePersistentChatSession';
 
 interface UseChatStateProps {
   onAttachmentsChange?: (attachments: ChatAttachment[]) => void;
@@ -16,10 +17,23 @@ export const useChatState = (props?: UseChatStateProps) => {
   const [urlInput, setUrlInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
-  // Add missing template state
+  // Template state
   const [selectedPromptCategory, setSelectedPromptCategory] = useState<string>('master');
   const [selectedPromptTemplate, setSelectedPromptTemplate] = useState<string>('master');
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('master');
+
+  // Persistent session management
+  const {
+    currentSessionId,
+    currentSession,
+    sessions,
+    saveMessageAttachments,
+    sessionAttachments,
+    sessionLinks,
+    createNewSession,
+    switchToSession,
+    isSessionInitialized
+  } = usePersistentChatSession();
 
   // Load historical analysis if provided in navigation state
   useEffect(() => {
@@ -66,11 +80,21 @@ export const useChatState = (props?: UseChatStateProps) => {
   }, [attachments, props?.onAttachmentsChange]);
 
   const addMessage = useCallback((newMessage: ChatMessage) => {
-    setMessages(prev => [...prev, newMessage]);
-  }, []);
+    setMessages(prev => {
+      const updatedMessages = [...prev, newMessage];
+      
+      // Save attachments for user messages
+      if (newMessage.role === 'user' && isSessionInitialized) {
+        saveMessageAttachments(newMessage);
+      }
+      
+      return updatedMessages;
+    });
+  }, [saveMessageAttachments, isSessionInitialized]);
 
   const clearMessages = useCallback(() => {
     setMessages([]);
+    setAttachments([]);
   }, []);
 
   const updateLastMessage = useCallback((content: string) => {
@@ -86,7 +110,25 @@ export const useChatState = (props?: UseChatStateProps) => {
     });
   }, []);
 
+  const startNewSession = useCallback((sessionName?: string) => {
+    // Clear current chat state
+    clearMessages();
+    
+    // Create new persistent session
+    createNewSession(sessionName);
+  }, [clearMessages, createNewSession]);
+
+  const loadSession = useCallback((sessionId: string) => {
+    // Clear current messages and switch session
+    clearMessages();
+    switchToSession(sessionId);
+    
+    // Note: In a full implementation, you'd also load the message history
+    // from the database here. For now, we're focusing on attachment persistence.
+  }, [clearMessages, switchToSession]);
+
   return {
+    // Message state
     messages,
     setMessages,
     message,
@@ -99,14 +141,31 @@ export const useChatState = (props?: UseChatStateProps) => {
     setUrlInput,
     isAnalyzing,
     setIsAnalyzing,
+    
+    // Template state
     selectedPromptCategory,
     setSelectedPromptCategory,
     selectedPromptTemplate,
     setSelectedPromptTemplate,
     selectedTemplateId,
     setSelectedTemplateId,
+    
+    // Message operations
     addMessage,
     clearMessages,
-    updateLastMessage
+    updateLastMessage,
+    
+    // Session state
+    currentSessionId,
+    currentSession,
+    sessions,
+    sessionAttachments,
+    sessionLinks,
+    isSessionInitialized,
+    
+    // Session operations
+    startNewSession,
+    loadSession,
+    saveMessageAttachments
   };
 };
