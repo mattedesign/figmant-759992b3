@@ -44,7 +44,16 @@ export const SidebarTabsInterface: React.FC<SidebarTabsInterfaceProps> = ({
     <div className="flex flex-col h-full">
       <Tabs defaultValue="analysis" className="flex flex-col h-full">
         {/* Fixed tabs header */}
-        <div className="flex-shrink-0 px-4 mb-4">
+        <div 
+          style={{
+            display: 'flex',
+            padding: '12px 16px',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            alignSelf: 'stretch',
+            borderTop: '1px solid var(--Stroke-01, #ECECEC)'
+          }}
+        >
           <TabsList 
             className="grid w-full grid-cols-2"
             style={{
