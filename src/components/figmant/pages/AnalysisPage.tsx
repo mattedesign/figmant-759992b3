@@ -7,6 +7,8 @@ interface AnalysisPageProps {
 }
 
 export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) => {
+  console.log('📊 ANALYSIS PAGE - Rendering analysis management system');
+
   return (
     <div className="h-full flex flex-col min-h-0 overflow-hidden">
       <div className="px-6 pt-6 pb-3 bg-transparent flex-shrink-0">

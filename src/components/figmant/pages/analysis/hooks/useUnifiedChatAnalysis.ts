@@ -67,7 +67,7 @@ export const useUnifiedChatAnalysis = () => {
 
         if (error) throw error;
 
-        // Update attachment with upload path
+        // Update attachment with upload path using correct status
         setAttachments(prev => prev.map(att => 
           att.id === attachmentId 
             ? { ...att, uploadPath: data.path, status: 'uploaded' }
@@ -81,9 +81,10 @@ export const useUnifiedChatAnalysis = () => {
 
       } catch (error) {
         console.error('Upload error:', error);
+        // Use 'error' instead of 'failed' to match the ChatAttachment interface
         setAttachments(prev => prev.map(att => 
           att.id === attachmentId 
-            ? { ...att, status: 'failed' }
+            ? { ...att, status: 'error', errorMessage: error instanceof Error ? error.message : 'Upload failed' }
             : att
         ));
 
