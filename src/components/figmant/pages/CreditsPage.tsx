@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { useSubscriptionPlans } from '@/hooks/useSubscriptionPlans';
@@ -8,6 +9,7 @@ import { CreditsPageHeader } from './credits/CreditsPageHeader';
 import { CreditStatusCard } from './credits/CreditStatusCard';
 import { UsageSummaryCard } from './credits/UsageSummaryCard';
 import { CreditPacksList } from './credits/CreditPacksList';
+
 export const CreditsPage: React.FC = () => {
   const {
     credits
@@ -52,7 +54,7 @@ export const CreditsPage: React.FC = () => {
       });
     }
   };
-  return <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 h-full overflow-y-auto px-[16px]">
+  return <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6 h-full overflow-y-auto">
       <CreditsPageHeader />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
