@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   BrowserRouter as Router,
@@ -17,87 +16,102 @@ import AdminAssets from '@/pages/AdminAssets';
 import { FigmantLayout } from '@/components/figmant/FigmantLayout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 import ProfilePage from './pages/ProfilePage';
+import { EnhancedProfileSync } from '@/components/auth/EnhancedProfileSync';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { QueryClient } from '@/components/QueryClient';
+import { AuthProvider } from '@/components/AuthProvider';
+import { Toaster } from '@/components/Toaster';
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route
-          path="/figmant"
-          element={
-            <AuthGuard>
-              <FigmantLayout />
-            </AuthGuard>
-          }
-        />
-        <Route path="/" element={<Navigate to="/figmant" replace />} />
-        <Route
-          path="/dashboard"
-          element={
-            <AuthGuard>
-              <Dashboard />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/analysis"
-          element={
-            <AuthGuard>
-              <DesignAnalysis />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <AuthGuard>
-              <ProfilePage />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/subscription"
-          element={
-            <AuthGuard>
-              <Subscription />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/payment-success"
-          element={
-            <AuthGuard>
-              <PaymentSuccess />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/admin/assets"
-          element={
-            <AuthGuard>
-              <AdminAssets />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/stripe-webhook-test"
-          element={
-            <AuthGuard requireOwner>
-              <StripeWebhookTest />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/owner"
-          element={
-            <AuthGuard requireOwner>
-              <OwnerDashboard />
-            </AuthGuard>
-          }
-        />
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <QueryClient>
+        <AuthProvider>
+          <EnhancedProfileSync />
+          <div className="min-h-screen bg-gray-50">
+            <Router>
+              <Routes>
+                <Route path="/auth" element={<Auth />} />
+                <Route
+                  path="/figmant"
+                  element={
+                    <AuthGuard>
+                      <FigmantLayout />
+                    </AuthGuard>
+                  }
+                />
+                <Route path="/" element={<Navigate to="/figmant" replace />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <AuthGuard>
+                      <Dashboard />
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/analysis"
+                  element={
+                    <AuthGuard>
+                      <DesignAnalysis />
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <AuthGuard>
+                      <ProfilePage />
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/subscription"
+                  element={
+                    <AuthGuard>
+                      <Subscription />
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/payment-success"
+                  element={
+                    <AuthGuard>
+                      <PaymentSuccess />
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/admin/assets"
+                  element={
+                    <AuthGuard>
+                      <AdminAssets />
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/stripe-webhook-test"
+                  element={
+                    <AuthGuard requireOwner>
+                      <StripeWebhookTest />
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/owner"
+                  element={
+                    <AuthGuard requireOwner>
+                      <OwnerDashboard />
+                    </AuthGuard>
+                  }
+                />
+              </Routes>
+            </Router>
+          </div>
+          <Toaster />
+        </AuthProvider>
+      </QueryClient>
+    </ErrorBoundary>
   );
 };
 
