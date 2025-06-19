@@ -124,15 +124,11 @@ export const AnalysisDetailsPanel: React.FC<AnalysisDetailsPanelProps> = ({
             <h5 className="text-sm font-medium text-gray-700 mb-3">
               Attachments ({attachments.length})
             </h5>
-            <div className="space-y-2">
-              {attachments.map((attachment) => (
-                <AttachmentPreview
-                  key={attachment.id}
-                  attachment={attachment}
-                  onRemove={handleRemoveAttachment}
-                />
-              ))}
-            </div>
+            <AttachmentPreview
+              attachments={attachments}
+              onRemoveAttachment={handleRemoveAttachment}
+              showRemoveButton={true}
+            />
           </div>
         )}
 

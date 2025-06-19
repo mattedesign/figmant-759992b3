@@ -7,14 +7,14 @@ import { X, Download } from 'lucide-react';
 interface ImagePreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  imageName: string;
+  imageName?: string;
   imageUrl: string;
 }
 
 export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
   isOpen,
   onClose,
-  imageName,
+  imageName = 'Screenshot',
   imageUrl
 }) => {
   const handleDownload = () => {
