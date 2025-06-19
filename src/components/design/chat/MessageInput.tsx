@@ -62,10 +62,23 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     <div className="p-4 bg-background">
       <div
         {...restRootProps}
-        className={`relative bg-white rounded-2xl border transition-colors ${
+        style={{
+          display: 'flex',
+          padding: '12px',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          gap: '24px',
+          alignSelf: 'stretch',
+          borderRadius: '24px',
+          border: '1px solid var(--Stroke-01, #ECECEC)',
+          background: 'var(--Surface-01, #FCFCFC)',
+          boxShadow: '0px 18px 24px -20px rgba(0, 0, 0, 0.13), 0px 2px 0px 0px #FFF inset, 0px 8px 16px -12px rgba(0, 0, 0, 0.08)',
+          backdropFilter: 'blur(6px)'
+        }}
+        className={`relative transition-colors ${
           isDragActive
             ? 'border-primary ring-2 ring-primary ring-offset-2'
-            : 'border-gray-200'
+            : ''
         } ${isLoading ? 'opacity-70' : ''}`}
       >
         <input {...inputProps} />
