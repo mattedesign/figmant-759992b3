@@ -73,7 +73,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
   const renderMenuSection = (section: MenuSection, sectionKey: string) => {
     const isCollapsed = section.title ? collapsedSections[section.title] : false;
     return <div key={sectionKey} className="space-y-2">
-        {section.title && <div className="flex items-center justify-between">
+        {section.title && <div className="flex items-center justify-between px-[8px]">
             <h3 className="text-sm font-medium text-gray-500">{section.title}</h3>
             {section.collapsible && <Button variant="ghost" size="sm" onClick={() => toggleSection(section.title!)} className="h-6 w-6 p-0">
                 {isCollapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
