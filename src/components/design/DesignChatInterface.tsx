@@ -27,6 +27,14 @@ export interface ScreenshotResult {
   error?: string;
 }
 
+export interface ProcessedImage {
+  originalSize: number;
+  processedSize: number;
+  compressionRatio: number;
+  width?: number;
+  height?: number;
+}
+
 export interface ChatAttachment {
   id: string;
   type: 'file' | 'url';
@@ -34,8 +42,9 @@ export interface ChatAttachment {
   file?: File;
   url?: string;
   uploadPath?: string;
-  status: 'processing' | 'uploaded' | 'error';
+  status: 'pending' | 'processing' | 'uploading' | 'uploaded' | 'error';
   errorMessage?: string;
+  processingInfo?: ProcessedImage;
   metadata?: {
     screenshots?: {
       desktop?: ScreenshotResult;
@@ -50,6 +59,8 @@ export interface ChatMessage {
   content: string;
   attachments?: ChatAttachment[];
   timestamp: Date;
+  batchId?: string;
+  uploadIds?: string[];
 }
 
 interface DesignChatInterfaceProps {

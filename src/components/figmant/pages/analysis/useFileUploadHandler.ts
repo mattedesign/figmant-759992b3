@@ -47,13 +47,13 @@ export const useFileUploadHandler = (setAttachments: React.Dispatch<React.SetSta
       
       console.log('📁 FIGMANT CHAT - Processing file:', file.name, 'Size:', file.size);
       
-      // Add file to attachments with uploading status
+      // Add file to attachments with processing status
       const newAttachment: ChatAttachment = {
         id: attachmentId,
         type: 'file',
         name: file.name,
         file: file,
-        status: 'uploading',
+        status: 'processing',
         url: URL.createObjectURL(file)
       };
       

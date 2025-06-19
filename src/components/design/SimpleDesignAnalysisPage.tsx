@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { DesignChatInterface } from './DesignChatInterface';
+import { SimpleDesignAnalysisPageContent } from './SimpleDesignAnalysisPageContent';
 
 export const SimpleDesignAnalysisPage = () => {
-  return <DesignChatInterface />;
+  return <SimpleDesignAnalysisPageContent />;
 };

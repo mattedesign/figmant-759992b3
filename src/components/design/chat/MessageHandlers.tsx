@@ -32,7 +32,7 @@ export const useMessageHandlers = () => {
 
     // Immediate validation of current attachment states
     const currentProcessingAttachments = attachments.filter(att => 
-      att.status === 'uploading' || att.status === 'processing'
+      att.status === 'uploading' || att.status === 'processing' || att.status === 'pending'
     );
     
     const currentFailedAttachments = attachments.filter(att => att.status === 'error');
@@ -73,7 +73,7 @@ export const useMessageHandlers = () => {
             // Get fresh attachment state by checking the current DOM/state
             setAttachments(currentAttachments => {
               const stillProcessing = currentAttachments.filter(att => 
-                att.status === 'uploading' || att.status === 'processing'
+                att.status === 'uploading' || att.status === 'processing' || att.status === 'pending'
               );
               
               const newFailures = currentAttachments.filter(att => att.status === 'error');
@@ -127,7 +127,7 @@ export const useMessageHandlers = () => {
 
     const finalFailedAttachments = finalAttachments.filter(att => att.status === 'error');
     const finalProcessingAttachments = finalAttachments.filter(att => 
-      att.status === 'uploading' || att.status === 'processing'
+      att.status === 'uploading' || att.status === 'processing' || att.status === 'pending'
     );
 
     if (finalFailedAttachments.length > 0 || finalProcessingAttachments.length > 0) {
@@ -267,7 +267,7 @@ export const useMessageHandlers = () => {
 
   const validateAttachmentsStatus = (attachments: ChatAttachment[]) => {
     const processing = attachments.filter(att => 
-      att.status === 'uploading' || att.status === 'processing'
+      att.status === 'uploading' || att.status === 'processing' || att.status === 'pending'
     );
     const failed = attachments.filter(att => att.status === 'error');
     const uploaded = attachments.filter(att => att.status === 'uploaded');
