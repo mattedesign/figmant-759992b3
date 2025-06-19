@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 export const SpecificUserDebugPanel = () => {
   const { isOwner } = useAuth();
   const { toast } = useToast();
-  const [searchEmail, setSearchEmail] = useState('hbro13@yahoo.com');
+  const [searchEmail, setSearchEmail] = useState('say1534@gmail.com');
   const [activeSearch, setActiveSearch] = useState('');
   const [isFixing, setIsFixing] = useState(false);
 
@@ -20,6 +20,12 @@ export const SpecificUserDebugPanel = () => {
 
   const handleSearch = () => {
     setActiveSearch(searchEmail);
+    refetch();
+  };
+
+  const handleQuickSearch = (email: string) => {
+    setSearchEmail(email);
+    setActiveSearch(email);
     refetch();
   };
 
@@ -84,6 +90,31 @@ export const SpecificUserDebugPanel = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Quick Search Buttons */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => handleQuickSearch('say1534@gmail.com')}
+          >
+            Search say1534@gmail.com
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => handleQuickSearch('stephyoungdesign@gmail.com')}
+          >
+            Search stephyoungdesign@gmail.com
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => handleQuickSearch('hbro13@yahoo.com')}
+          >
+            Search hbro13@yahoo.com
+          </Button>
+        </div>
+
         <div className="flex gap-2">
           <Input
             type="email"
