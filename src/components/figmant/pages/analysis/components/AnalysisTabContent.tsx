@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { PremiumAnalysisTabController } from '../../premium-analysis/PremiumAnalysisTabController';
+import { PremiumAnalysisWizard } from '../../premium-analysis/PremiumAnalysisWizard';
 import { AnalysisChatContainer } from './AnalysisChatContainer';
 
 interface AnalysisTabContentProps {
@@ -102,7 +102,7 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
       {/* Wizard Tab Content */}
       {activeTab === 'wizard' && (
         <div className="h-full flex flex-col min-h-0">
-          <PremiumAnalysisTabController />
+          <PremiumAnalysisWizard />
         </div>
       )}
     </div>

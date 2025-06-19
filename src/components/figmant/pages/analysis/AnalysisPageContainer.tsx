@@ -1,62 +1,67 @@
 
-import React from 'react';
-import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AnalysisPageLayout } from './components/AnalysisPageLayout';
-import { useAnalysisPageState } from './hooks/useAnalysisPageState';
+import { UnifiedChatContainer } from './components/UnifiedChatContainer';
+import { PremiumAnalysisWizard } from '../premium-analysis/PremiumAnalysisWizard';
+import { useChatState } from './ChatStateManager';
+import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
 
 interface AnalysisPageContainerProps {
   selectedTemplate?: any;
 }
 
-export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({ 
-  selectedTemplate 
+export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
+  selectedTemplate
 }) => {
-  const { data: claudePromptTemplates = [], isLoading: promptsLoading } = useClaudePromptExamples();
-  const analysisState = useAnalysisPageState();
+  const [searchParams] = useSearchParams();
+  const [mode, setMode] = useState<'chat' | 'wizard'>('chat');
+  const chatState = useChatState();
+  const { data: promptTemplates = [] } = useClaudePromptExamples();
 
-  console.log('📊 ANALYSIS PAGE CONTAINER - State:', {
-    templatesLoaded: claudePromptTemplates.length > 0,
-    templatesCount: claudePromptTemplates.length,
-    promptsLoading,
-    selectedTemplate: analysisState.selectedPromptTemplate,
-    attachmentsCount: analysisState.attachments.length
-  });
+  // Check if wizard mode is requested via URL params
+  useEffect(() => {
+    const wizardMode = searchParams.get('mode');
+    if (wizardMode === 'wizard') {
+      setMode('wizard');
+    }
+  }, [searchParams]);
 
-  // If templates are still loading, show loading state
-  if (promptsLoading) {
+  console.log('🏗️ ANALYSIS PAGE CONTAINER - Mode:', mode);
+
+  // If wizard mode, render the wizard
+  if (mode === 'wizard') {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading analysis templates...</p>
-        </div>
+      <div className="h-full flex flex-col min-h-0">
+        <PremiumAnalysisWizard />
       </div>
     );
   }
 
-  const selectedTemplateData = claudePromptTemplates.find(t => t.id === analysisState.selectedPromptTemplate);
-
+  // Default chat mode
   return (
-    <AnalysisPageLayout
-      message={analysisState.message}
-      setMessage={analysisState.setMessage}
-      messages={analysisState.messages}
-      setMessages={analysisState.setMessages}
-      attachments={analysisState.attachments}
-      setAttachments={analysisState.setAttachments}
-      urlInput={analysisState.urlInput}
-      setUrlInput={analysisState.setUrlInput}
-      showUrlInput={analysisState.showUrlInput}
-      setShowUrlInput={analysisState.setShowUrlInput}
-      selectedPromptTemplate={selectedTemplateData}
-      selectedPromptCategory={analysisState.selectedPromptCategory}
-      promptTemplates={claudePromptTemplates}
-      onAnalysisComplete={analysisState.handleAnalysisComplete}
-      lastAnalysisResult={analysisState.lastAnalysisResult}
-      isRightPanelCollapsed={analysisState.isRightPanelCollapsed}
-      selectedPromptTemplateId={analysisState.selectedPromptTemplate}
-      setSelectedPromptTemplate={analysisState.setSelectedPromptTemplate}
-      onRemoveAttachment={analysisState.handleRemoveAttachment}
-    />
+    <div className="h-full flex flex-col min-h-0">
+      <AnalysisPageLayout
+        message={chatState.message}
+        setMessage={chatState.setMessage}
+        messages={chatState.messages}
+        setMessages={chatState.setMessages}
+        attachments={chatState.attachments}
+        setAttachments={chatState.setAttachments}
+        urlInput={chatState.urlInput}
+        setUrlInput={chatState.setUrlInput}
+        showUrlInput={chatState.showUrlInput}
+        setShowUrlInput={chatState.setShowUrlInput}
+        selectedPromptTemplate={selectedTemplate}
+        selectedPromptCategory=""
+        promptTemplates={promptTemplates}
+        isRightPanelCollapsed={false}
+        selectedPromptTemplateId=""
+        setSelectedPromptTemplate={() => {}}
+        onRemoveAttachment={(id) => {
+          chatState.setAttachments(prev => prev.filter(att => att.id !== id));
+        }}
+      />
+    </div>
   );
 };
