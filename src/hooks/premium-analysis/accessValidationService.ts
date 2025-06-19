@@ -1,36 +1,56 @@
 
-import { useCreditAccess } from '@/hooks/credits/useCreditAccess';
+import { supabase } from '@/integrations/supabase/client';
 
 export class AccessValidationService {
-  constructor(
-    private checkUserAccess: () => Promise<boolean>,
-    private deductAnalysisCredits: (amount: number, description: string) => Promise<boolean>
-  ) {}
-
-  async validateAndDeductCredits(selectedPrompt: any): Promise<void> {
-    console.log('🔍 PREMIUM ANALYSIS - Checking user access...');
-    const hasAccess = await this.checkUserAccess();
-    if (!hasAccess) {
-      console.error('🔍 PREMIUM ANALYSIS - User does not have access');
-      throw new Error('You need credits to perform premium analysis. Please purchase credits to continue.');
+  async validateAndDeductCredits(selectedPrompt: any): Promise<boolean> {
+    console.log('🔍 ACCESS VALIDATION - Validating user access for premium analysis...');
+    
+    // Get current user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      throw new Error('User not authenticated');
     }
-    console.log('🔍 PREMIUM ANALYSIS - User has access confirmed');
 
-    // Deduct credits for premium analysis (5 credits for premium analysis)
-    // Owners get unlimited access (tracked but not charged)
-    // All other users get charged 5 credits
-    console.log('🔍 PREMIUM ANALYSIS - Attempting to deduct credits...');
-    const creditsDeducted = await this.deductAnalysisCredits(5, `Premium analysis: ${selectedPrompt.category}`);
-    if (!creditsDeducted) {
-      console.error('🔍 PREMIUM ANALYSIS - Failed to process credits');
-      throw new Error('Unable to process premium analysis. Please check your credit balance.');
+    // Check if user is owner (unlimited access)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.role === 'owner') {
+      console.log('🔍 ACCESS VALIDATION - Owner detected, unlimited access granted');
+      return true;
     }
-    console.log('🔍 PREMIUM ANALYSIS - Credits processed successfully');
+
+    // For non-owners, check and deduct credits
+    const creditsRequired = 5; // Premium analysis costs 5 credits
+    
+    const { data: currentCredits } = await supabase
+      .from('user_credits')
+      .select('credits')
+      .eq('user_id', user.id)
+      .single();
+
+    if (!currentCredits || currentCredits.credits < creditsRequired) {
+      throw new Error(`Insufficient credits. Premium analysis requires ${creditsRequired} credits.`);
+    }
+
+    // Deduct credits
+    const { error: deductError } = await supabase
+      .from('user_credits')
+      .update({ credits: currentCredits.credits - creditsRequired })
+      .eq('user_id', user.id);
+
+    if (deductError) {
+      throw new Error('Failed to process credits. Please try again.');
+    }
+
+    console.log('🔍 ACCESS VALIDATION - Credits deducted successfully');
+    return true;
   }
 }
 
 export const useAccessValidationService = () => {
-  const { checkUserAccess, deductAnalysisCredits } = useCreditAccess();
-  
-  return new AccessValidationService(checkUserAccess, deductAnalysisCredits);
+  return new AccessValidationService();
 };

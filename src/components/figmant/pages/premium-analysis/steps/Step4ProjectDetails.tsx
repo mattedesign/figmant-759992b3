@@ -1,21 +1,11 @@
+
 import React from 'react';
-import { Plus, X } from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { StepProps } from '../types';
+import { StepProps, StepData, Stakeholder } from '../types';
 import { StepHeader } from '../components/StepHeader';
 import { FormField } from '../components/FormField';
-import { ActionButton } from '../components/ActionButton';
-import { useClaudePromptExamplesByCategory } from '@/hooks/useClaudePromptExamplesByCategory';
-import { figmantPromptTemplates } from '@/data/figmantPromptTemplates';
-
-interface FieldConfig {
-  id: string;
-  label: string;
-  placeholder: string;
-  type: 'input' | 'textarea';
-  required?: boolean;
-}
+import { Button } from '@/components/ui/button';
+import { Plus, X } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const Step4ProjectDetails: React.FC<StepProps> = ({ 
   stepData, 
@@ -23,272 +13,52 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
   currentStep, 
   totalSteps 
 }) => {
-  const { data: premiumPrompts } = useClaudePromptExamplesByCategory('premium');
-
-  const updateStepData = (updates: Partial<typeof stepData>) => {
+  const handleFieldChange = (field: string, value: any) => {
     if (typeof setStepData === 'function') {
       const funcStr = setStepData.toString();
       if (funcStr.includes('key') || setStepData.length === 2) {
-        // For key-value interface, we need to update each field individually
-        Object.entries(updates).forEach(([key, value]) => {
-          (setStepData as (key: string, value: any) => void)(key, value);
-        });
+        (setStepData as (key: string, value: any) => void)(field, value);
       } else {
-        (setStepData as (newData: typeof stepData) => void)({ ...stepData, ...updates });
+        (setStepData as (newData: StepData) => void)({ ...stepData, [field]: value });
       }
     }
   };
 
-  const getFieldsForPromptType = (selectedType: string): FieldConfig[] => {
-    // First try to find in premium prompts (database)
-    const premiumPrompt = premiumPrompts?.find(prompt => prompt.id === selectedType);
-    if (premiumPrompt) {
-      return getFieldsForCategory(premiumPrompt.category);
-    }
-    
-    // If not found in premium prompts, try figmant templates
-    const figmantTemplate = figmantPromptTemplates.find(template => template.id === selectedType);
-    if (figmantTemplate) {
-      return getFieldsForCategory(figmantTemplate.category);
-    }
-    
-    // Default fields if no match found
-    return getDefaultFields();
+  const addStakeholder = () => {
+    const newStakeholder: Stakeholder = {
+      name: '',
+      role: '',
+      title: ''
+    };
+    const updatedStakeholders = [...(stepData.stakeholders || []), newStakeholder];
+    handleFieldChange('stakeholders', updatedStakeholders);
   };
 
-  const getFieldsForCategory = (category: string): FieldConfig[] => {
-    switch (category) {
-      case 'competitor':
-      case 'competitor_analysis':
-        return [
-          {
-            id: 'targetMarket',
-            label: 'Target Market',
-            placeholder: 'e.g., B2B SaaS companies, small businesses',
-            type: 'input',
-            required: true
-          },
-          {
-            id: 'competitorUrls',
-            label: 'Competitor URLs',
-            placeholder: 'Enter competitor website URLs (one per line)',
-            type: 'textarea'
-          },
-          {
-            id: 'marketPosition',
-            label: 'Current Market Position',
-            placeholder: 'How do you currently position yourself in the market?',
-            type: 'input'
-          },
-          {
-            id: 'competitiveAdvantage',
-            label: 'Unique Value Proposition',
-            placeholder: 'What makes you different from competitors?',
-            type: 'textarea'
-          }
-        ];
-
-      case 'ecommerce_revenue':
-      case 'ecommerce':
-        return [
-          {
-            id: 'currentConversionRate',
-            label: 'Current Conversion Rate',
-            placeholder: 'e.g., 2.5%',
-            type: 'input'
-          },
-          {
-            id: 'averageOrderValue',
-            label: 'Average Order Value',
-            placeholder: 'e.g., $85',
-            type: 'input'
-          },
-          {
-            id: 'revenueGoal',
-            label: 'Revenue Goal',
-            placeholder: 'e.g., Increase revenue by 25%',
-            type: 'input',
-            required: true
-          },
-          {
-            id: 'customerSegments',
-            label: 'Key Customer Segments',
-            placeholder: 'Describe your main customer types',
-            type: 'textarea'
-          }
-        ];
-
-      case 'ab_testing':
-        return [
-          {
-            id: 'testHypothesis',
-            label: 'Test Hypothesis',
-            placeholder: 'What do you want to test and why?',
-            type: 'textarea',
-            required: true
-          },
-          {
-            id: 'successMetrics',
-            label: 'Success Metrics',
-            placeholder: 'e.g., Conversion rate, click-through rate',
-            type: 'input'
-          },
-          {
-            id: 'testDuration',
-            label: 'Planned Test Duration',
-            placeholder: 'e.g., 2 weeks',
-            type: 'input'
-          },
-          {
-            id: 'trafficVolume',
-            label: 'Expected Traffic Volume',
-            placeholder: 'e.g., 1000 visitors per week',
-            type: 'input'
-          }
-        ];
-
-      case 'visual_hierarchy':
-        return [
-          {
-            id: 'primaryGoal',
-            label: 'Primary User Goal',
-            placeholder: 'What should users accomplish on this page?',
-            type: 'input',
-            required: true
-          },
-          {
-            id: 'keyElements',
-            label: 'Key Elements to Highlight',
-            placeholder: 'Which elements are most important?',
-            type: 'textarea'
-          },
-          {
-            id: 'userFlow',
-            label: 'Desired User Flow',
-            placeholder: 'Describe the ideal user journey',
-            type: 'textarea'
-          },
-          {
-            id: 'brandGuidelines',
-            label: 'Brand Guidelines',
-            placeholder: 'Any specific brand or design constraints?',
-            type: 'input'
-          }
-        ];
-
-      case 'copy_messaging':
-        return [
-          {
-            id: 'targetAudience',
-            label: 'Target Audience',
-            placeholder: 'Who are you trying to reach?',
-            type: 'input',
-            required: true
-          },
-          {
-            id: 'keyMessage',
-            label: 'Key Message',
-            placeholder: 'What\'s the main message you want to convey?',
-            type: 'textarea'
-          },
-          {
-            id: 'toneOfVoice',
-            label: 'Tone of Voice',
-            placeholder: 'e.g., Professional, friendly, authoritative',
-            type: 'input'
-          },
-          {
-            id: 'callToAction',
-            label: 'Desired Call to Action',
-            placeholder: 'What action should users take?',
-            type: 'input'
-          }
-        ];
-
-      case 'accessibility':
-        return [
-          {
-            id: 'complianceLevel',
-            label: 'Target Compliance Level',
-            placeholder: 'e.g., WCAG 2.1 AA',
-            type: 'input'
-          },
-          {
-            id: 'userNeeds',
-            label: 'Specific Accessibility Needs',
-            placeholder: 'Any specific accessibility requirements?',
-            type: 'textarea'
-          },
-          {
-            id: 'assistiveTech',
-            label: 'Assistive Technologies',
-            placeholder: 'Which assistive technologies should be supported?',
-            type: 'input'
-          },
-          {
-            id: 'currentIssues',
-            label: 'Known Accessibility Issues',
-            placeholder: 'Any current accessibility problems?',
-            type: 'textarea'
-          }
-        ];
-
-      default:
-        return getDefaultFields();
-    }
+  const removeStakeholder = (index: number) => {
+    const updatedStakeholders = (stepData.stakeholders || []).filter((_, i) => i !== index);
+    handleFieldChange('stakeholders', updatedStakeholders);
   };
 
-  const getDefaultFields = (): FieldConfig[] => {
-    return [
-      {
-        id: 'desiredOutcome',
-        label: 'Desired Outcome',
-        placeholder: 'What do you want to achieve?',
-        type: 'input',
-        required: true
-      },
-      {
-        id: 'improvementMetric',
-        label: 'Success Metric',
-        placeholder: 'How will you measure success?',
-        type: 'input'
-      },
-      {
-        id: 'timeline',
-        label: 'Timeline',
-        placeholder: 'When do you need this completed?',
-        type: 'input'
-      },
-      {
-        id: 'constraints',
-        label: 'Constraints or Requirements',
-        placeholder: 'Any specific limitations or requirements?',
-        type: 'textarea'
-      }
-    ];
+  const updateStakeholder = (index: number, field: keyof Stakeholder, value: string) => {
+    const updatedStakeholders = [...(stepData.stakeholders || [])];
+    updatedStakeholders[index] = { ...updatedStakeholders[index], [field]: value };
+    handleFieldChange('stakeholders', updatedStakeholders);
   };
 
-  const fields = getFieldsForPromptType(stepData.selectedType);
-
-  const handleFieldChange = (fieldId: string, value: string) => {
-    updateStepData({ [fieldId]: value });
+  const addReferenceLink = () => {
+    const updatedLinks = [...(stepData.referenceLinks || []), ''];
+    handleFieldChange('referenceLinks', updatedLinks);
   };
 
-  const handleStakeholderAdd = () => {
-    updateStepData({
-      stakeholders: [...stepData.stakeholders, { name: '', role: '', title: '' }]
-    });
+  const removeReferenceLink = (index: number) => {
+    const updatedLinks = (stepData.referenceLinks || []).filter((_, i) => i !== index);
+    handleFieldChange('referenceLinks', updatedLinks);
   };
 
-  const handleStakeholderRemove = (index: number) => {
-    const newStakeholders = stepData.stakeholders.filter((_, i) => i !== index);
-    updateStepData({ stakeholders: newStakeholders });
-  };
-
-  const handleStakeholderChange = (index: number, field: 'name' | 'role' | 'title', value: string) => {
-    const newStakeholders = [...stepData.stakeholders];
-    newStakeholders[index][field] = value;
-    updateStepData({ stakeholders: newStakeholders });
+  const updateReferenceLink = (index: number, value: string) => {
+    const updatedLinks = [...(stepData.referenceLinks || [])];
+    updatedLinks[index] = value;
+    handleFieldChange('referenceLinks', updatedLinks);
   };
 
   return (
@@ -300,60 +70,117 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
       />
 
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Dynamic fields based on prompt type */}
-        <div className="grid grid-cols-1 gap-4">
-          {fields.map((field) => (
-            <FormField
-              key={field.id}
-              id={field.id}
-              type={field.type}
-              label={field.label}
-              placeholder={field.placeholder}
-              value={(stepData as any)[field.id] || ''}
-              onChange={(value) => handleFieldChange(field.id, value)}
-              minHeight={field.type === 'textarea' ? 'min-h-[100px]' : undefined}
-            />
-          ))}
-        </div>
+        {/* Desired Outcome */}
+        <FormField
+          id="desiredOutcome"
+          type="textarea"
+          label="Desired Outcome"
+          placeholder="What specific outcome are you hoping to achieve?"
+          value={stepData.desiredOutcome || ''}
+          onChange={(value) => handleFieldChange('desiredOutcome', value)}
+        />
 
-        {/* Stakeholders section - keep this for all prompt types */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <Label className="text-base font-medium">Stakeholders</Label>
-            <Label className="text-base font-medium">Title & Role</Label>
-          </div>
-          
-          {stepData.stakeholders.map((stakeholder, index) => (
-            <div key={index} className="flex items-center gap-4 mb-4">
-              <Input
-                placeholder="Name"
-                value={stakeholder.name}
-                onChange={(e) => handleStakeholderChange(index, 'name', e.target.value)}
-              />
-              <Input
-                placeholder="Title/Role"
-                value={stakeholder.title}
-                onChange={(e) => handleStakeholderChange(index, 'title', e.target.value)}
-              />
-              <ActionButton 
-                variant="outline"
-                icon={X}
-                onClick={() => handleStakeholderRemove(index)}
-                className="px-2"
-              >
-                Remove
-              </ActionButton>
-            </div>
-          ))}
+        {/* Improvement Metric */}
+        <FormField
+          id="improvementMetric"
+          type="input"
+          label="Key Improvement Metric"
+          placeholder="e.g. Increase conversion rate by 15%"
+          value={stepData.improvementMetric || ''}
+          onChange={(value) => handleFieldChange('improvementMetric', value)}
+        />
 
-          <ActionButton 
-            icon={Plus}
-            onClick={handleStakeholderAdd}
-            className="mt-2"
-          >
-            Add Stakeholder
-          </ActionButton>
-        </div>
+        {/* Deadline */}
+        <FormField
+          id="deadline"
+          type="input"
+          label="Deadline (Optional)"
+          placeholder="e.g. End of Q1 2024"
+          value={stepData.deadline || ''}
+          onChange={(value) => handleFieldChange('deadline', value)}
+        />
+
+        {/* Stakeholders */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              Stakeholders
+              <Button onClick={addStakeholder} size="sm">
+                <Plus className="h-4 w-4 mr-1" />
+                Add Stakeholder
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {(stepData.stakeholders || []).map((stakeholder, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg">
+                <FormField
+                  id={`stakeholder-name-${index}`}
+                  type="input"
+                  label="Name"
+                  placeholder="John Doe"
+                  value={stakeholder.name}
+                  onChange={(value) => updateStakeholder(index, 'name', value)}
+                />
+                <FormField
+                  id={`stakeholder-role-${index}`}
+                  type="input"
+                  label="Role"
+                  placeholder="Product Manager"
+                  value={stakeholder.role}
+                  onChange={(value) => updateStakeholder(index, 'role', value)}
+                />
+                <div className="flex items-end">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => removeStakeholder(index)}
+                    className="w-full"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Reference Links */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              Reference Links
+              <Button onClick={addReferenceLink} size="sm">
+                <Plus className="h-4 w-4 mr-1" />
+                Add Link
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {(stepData.referenceLinks || []).map((link, index) => (
+              <div key={index} className="flex gap-2">
+                <FormField
+                  id={`reference-link-${index}`}
+                  type="input"
+                  label=""
+                  placeholder="https://example.com"
+                  value={link}
+                  onChange={(value) => updateReferenceLink(index, value)}
+                  className="flex-1"
+                />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => removeReferenceLink(index)}
+                  className="mt-6"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

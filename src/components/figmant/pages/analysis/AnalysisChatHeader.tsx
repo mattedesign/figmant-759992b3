@@ -13,21 +13,21 @@ export const AnalysisChatHeader: React.FC<AnalysisChatHeaderProps> = ({
   onTabChange
 }) => {
   return (
-    <div className="space-y-4">
+    <div className="flex items-center justify-between">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Design Analysis</h1>
-        <p className="text-gray-600 mt-1">Get AI-powered insights on your designs</p>
+        <p className="text-gray-600 mt-1">Analyze your designs with AI-powered insights</p>
       </div>
-
-      <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
+      
+      <Tabs value={activeTab} onValueChange={onTabChange} className="w-auto">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="chat" className="flex items-center gap-2">
+          <TabsTrigger value="chat" className="flex items-center space-x-2">
             <MessageSquare className="h-4 w-4" />
-            Chat Analysis
+            <span>Chat Analysis</span>
           </TabsTrigger>
-          <TabsTrigger value="wizard" className="flex items-center gap-2">
+          <TabsTrigger value="wizard" className="flex items-center space-x-2">
             <Wand2 className="h-4 w-4" />
-            Analysis Wizard
+            <span>Guided Wizard</span>
           </TabsTrigger>
         </TabsList>
       </Tabs>

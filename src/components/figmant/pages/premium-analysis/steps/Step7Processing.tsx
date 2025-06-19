@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, AlertCircle, Loader2, Download, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
+import { usePremiumAnalysisSubmission } from '@/hooks/usePremiumAnalysisSubmission';
+import { figmantPromptTemplates } from '@/data/figmantPromptTemplates';
 import { StepProps } from '../types';
 
 export const Step7Processing: React.FC<StepProps> = ({ 
@@ -17,7 +18,7 @@ export const Step7Processing: React.FC<StepProps> = ({
   const [status, setStatus] = useState<'processing' | 'completed' | 'error'>('processing');
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const { toast } = useToast();
-  const analysisQuery = useFigmantChatAnalysis();
+  const premiumAnalysisMutation = usePremiumAnalysisSubmission();
 
   useEffect(() => {
     // Start the analysis when component mounts
@@ -40,30 +41,20 @@ export const Step7Processing: React.FC<StepProps> = ({
         });
       }, 500);
 
-      // Prepare analysis request
-      const analysisRequest = {
-        message: `Please analyze this project based on the following requirements:
-        
-Project: ${stepData.projectName}
-Analysis Type: ${stepData.selectedType}
-Goals: ${stepData.analysisGoals}
-Desired Outcome: ${stepData.desiredOutcome}
-${stepData.improvementMetric ? `Key Metric: ${stepData.improvementMetric}` : ''}
-${stepData.deadline ? `Deadline: ${stepData.deadline}` : ''}
-${stepData.stakeholders?.length ? `Stakeholders: ${stepData.stakeholders.join(', ')}` : ''}
-${stepData.referenceLinks?.filter(link => link.trim()).length ? `Reference Links: ${stepData.referenceLinks.filter(link => link.trim()).join(', ')}` : ''}
-${stepData.customPrompt ? `Additional Instructions: ${stepData.customPrompt}` : ''}`,
-        attachments: stepData.uploadedFiles ? stepData.uploadedFiles.map((file, index) => ({
-          id: `wizard-file-${index}`,
-          type: 'file' as const,
-          name: file.name,
-          file: file,
-          status: 'uploaded' as const
-        })) : [],
-        template: null
-      };
+      // Find the selected prompt template
+      const selectedPrompt = figmantPromptTemplates.find(
+        template => template.id === stepData.selectedType
+      );
 
-      const result = await analysisQuery.mutateAsync(analysisRequest);
+      if (!selectedPrompt) {
+        throw new Error('Selected analysis type not found');
+      }
+
+      // Execute premium analysis
+      const result = await premiumAnalysisMutation.mutateAsync({
+        stepData,
+        selectedPrompt
+      });
       
       clearInterval(progressInterval);
       setProgress(100);
@@ -71,12 +62,12 @@ ${stepData.customPrompt ? `Additional Instructions: ${stepData.customPrompt}` : 
       setStatus('completed');
       
       toast({
-        title: "Analysis Complete",
-        description: "Your design analysis has been completed successfully.",
+        title: "Premium Analysis Complete",
+        description: "Your comprehensive analysis has been generated successfully.",
       });
 
     } catch (error) {
-      console.error('Analysis failed:', error);
+      console.error('Premium analysis failed:', error);
       setStatus('error');
       setProgress(0);
       
@@ -94,12 +85,12 @@ ${stepData.customPrompt ? `Additional Instructions: ${stepData.customPrompt}` : 
 
   const handleDownloadResults = () => {
     if (analysisResult) {
-      const dataStr = JSON.stringify(analysisResult, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const dataStr = analysisResult.analysis || 'Analysis completed successfully';
+      const dataBlob = new Blob([dataStr], { type: 'text/plain' });
       const url = URL.createObjectURL(dataBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${stepData.projectName}-analysis-results.json`;
+      link.download = `${stepData.projectName}-premium-analysis.txt`;
       link.click();
       URL.revokeObjectURL(url);
     }
@@ -114,14 +105,14 @@ ${stepData.customPrompt ? `Additional Instructions: ${stepData.customPrompt}` : 
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-2">
-          {status === 'processing' && 'Processing Analysis...'}
-          {status === 'completed' && 'Analysis Complete!'}
+          {status === 'processing' && 'Processing Premium Analysis...'}
+          {status === 'completed' && 'Premium Analysis Complete!'}
           {status === 'error' && 'Analysis Failed'}
         </h2>
         <p className="text-gray-600">
-          {status === 'processing' && 'Please wait while we analyze your project requirements.'}
-          {status === 'completed' && 'Your comprehensive analysis is ready for review.'}
-          {status === 'error' && 'There was an error processing your analysis. Please try again.'}
+          {status === 'processing' && 'Please wait while we generate your comprehensive premium analysis.'}
+          {status === 'completed' && 'Your premium analysis is ready for review and download.'}
+          {status === 'error' && 'There was an error processing your premium analysis. Please try again.'}
         </p>
       </div>
 
@@ -131,7 +122,7 @@ ${stepData.customPrompt ? `Additional Instructions: ${stepData.customPrompt}` : 
             {status === 'processing' && <Loader2 className="h-5 w-5 animate-spin" />}
             {status === 'completed' && <CheckCircle className="h-5 w-5 text-green-600" />}
             {status === 'error' && <AlertCircle className="h-5 w-5 text-red-600" />}
-            <span>Analysis Status</span>
+            <span>Premium Analysis Status</span>
           </CardTitle>
           <CardDescription>
             Project: {stepData.projectName} | Type: {stepData.selectedType}
@@ -152,7 +143,7 @@ ${stepData.customPrompt ? `Additional Instructions: ${stepData.customPrompt}` : 
                 <p className="text-green-700 text-sm">
                   {analysisResult.analysis ? 
                     `${analysisResult.analysis.substring(0, 200)}...` : 
-                    'Analysis completed successfully with comprehensive insights.'
+                    'Premium analysis completed successfully with comprehensive insights and recommendations.'
                   }
                 </p>
               </div>
@@ -174,7 +165,7 @@ ${stepData.customPrompt ? `Additional Instructions: ${stepData.customPrompt}` : 
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <h3 className="font-semibold text-red-800 mb-2">Error Details</h3>
                 <p className="text-red-700 text-sm">
-                  The analysis could not be completed. Please check your inputs and try again.
+                  The premium analysis could not be completed. Please check your inputs and try again.
                 </p>
               </div>
               
@@ -205,6 +196,9 @@ ${stepData.customPrompt ? `Additional Instructions: ${stepData.customPrompt}` : 
           {stepData.deadline && <div><strong>Deadline:</strong> {stepData.deadline}</div>}
           {stepData.uploadedFiles?.length && (
             <div><strong>Files:</strong> {stepData.uploadedFiles.length} uploaded</div>
+          )}
+          {stepData.stakeholders?.length && (
+            <div><strong>Stakeholders:</strong> {stepData.stakeholders.length} added</div>
           )}
         </CardContent>
       </Card>
