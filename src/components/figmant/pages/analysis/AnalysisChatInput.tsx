@@ -108,8 +108,8 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
       {/* ACTIONS BAR */}
       <div className="flex justify-between items-center self-stretch sm:flex-col sm:gap-3 sm:items-stretch">
         
-        {/* LEFT SIDE CONTROLS */}
-        <div className="flex items-center gap-3 sm:justify-between sm:w-full">
+        {/* LEFT SIDE CONTROLS - Plus Button and Template Dropdown */}
+        <div className="flex items-center gap-3">
           
           {/* EXPANDABLE PLUS BUTTON */}
           <AttachmentMenu
@@ -128,7 +128,11 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
             onTemplateSelect={onTemplateSelect}
             isAnalyzing={isAnalyzing}
           />
-
+        </div>
+        
+        {/* RIGHT SIDE CONTROLS - Mode Selector and Submit Button */}
+        <div className="flex items-center gap-3">
+          
           {/* MODE SELECTOR */}
           <ModeSelector
             showModeMenu={showModeMenu}
@@ -138,7 +142,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
             isAnalyzing={isAnalyzing}
           />
 
-          {/* SUBMIT BUTTON - Now positioned right after the mode selector */}
+          {/* SUBMIT BUTTON */}
           <button 
             onClick={onSendMessage}
             disabled={!canSend || isAnalyzing}
@@ -154,12 +158,12 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
               <ArrowUp className="w-5 h-5 text-[#121212] flex-shrink-0" />
             )}
           </button>
+
+          {/* ACTION BUTTONS COMPONENT (for microphone or other future controls) */}
+          <ActionButtons
+            isAnalyzing={isAnalyzing}
+          />
         </div>
-        
-        {/* RIGHT SIDE CONTROLS */}
-        <ActionButtons
-          isAnalyzing={isAnalyzing}
-        />
       </div>
 
       {/* URL INPUT SECTION (if active) */}
