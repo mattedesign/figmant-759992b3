@@ -5,62 +5,34 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
 interface BaseFormFieldProps {
+  id: string;
   label: string;
-  required?: boolean;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
   className?: string;
 }
 
 interface InputFormFieldProps extends BaseFormFieldProps {
   type: 'input';
-  id: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
   inputType?: string;
 }
 
 interface TextareaFormFieldProps extends BaseFormFieldProps {
   type: 'textarea';
-  id: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
   minHeight?: string;
 }
 
-interface CustomFormFieldProps extends BaseFormFieldProps {
-  type: 'custom';
-  children: React.ReactNode;
-}
-
-type FormFieldProps = InputFormFieldProps | TextareaFormFieldProps | CustomFormFieldProps;
+type FormFieldProps = InputFormFieldProps | TextareaFormFieldProps;
 
 export const FormField: React.FC<FormFieldProps> = props => {
   const {
-    label,
-    required = false,
-    className = ''
-  } = props;
-
-  if (props.type === 'custom') {
-    return (
-      <div className={className}>
-        <Label className="text-base font-medium">
-          {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
-        </Label>
-        <div className="mt-2">
-          {props.children}
-        </div>
-      </div>
-    );
-  }
-
-  const {
     id,
+    label,
     value,
     onChange,
-    placeholder
+    placeholder,
+    className = ''
   } = props;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -71,7 +43,6 @@ export const FormField: React.FC<FormFieldProps> = props => {
     <div className={className}>
       <Label htmlFor={id} className="text-base font-medium">
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
       {props.type === 'input' ? (
         <Input 

@@ -12,8 +12,6 @@ export interface AnalysisType {
   id: string;
   title: string;
   icon: LucideIcon;
-  description: string;
-  features: string[];
 }
 
 export interface StepData {
