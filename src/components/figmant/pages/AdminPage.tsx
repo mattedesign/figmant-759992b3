@@ -10,6 +10,7 @@ import { AdminSettings } from '@/components/owner/AdminSettings';
 import { ClaudeSettings } from '@/components/owner/ClaudeSettings';
 import { SubscriptionPlansManager } from '@/components/owner/SubscriptionPlansManager';
 import { AdminAssetDashboard } from '@/components/admin/AdminAssetDashboard';
+import { RegistrationDebugPanel } from '@/components/debug/RegistrationDebugPanel';
 
 interface AdminPageProps {
   initialTab?: string;
@@ -88,6 +89,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
 
               <TabsContent value="users" className="space-y-6">
                 <UserManagement />
+                <RegistrationDebugPanel />
               </TabsContent>
 
               <TabsContent value="prompts" className="space-y-6">

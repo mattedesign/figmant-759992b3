@@ -14,18 +14,30 @@ export const useAuthState = () => {
 
   const authService = createAuthService();
 
-  const updateUserData = async (userId: string) => {
+  const updateUserData = async (userId: string, retryCount = 0) => {
     try {
-      console.log('Updating user data for:', userId);
+      console.log(`Updating user data for: ${userId}, attempt: ${retryCount + 1}`);
       const { profile: profileData, subscription: subscriptionData } = await authService.fetchUserProfile(userId);
       
       console.log('Fetched user data:', { profileData, subscriptionData });
       
-      if (profileData) setProfile(profileData);
+      // If no profile data and this is the first few attempts, retry after a delay
+      if (!profileData && retryCount < 3) {
+        console.log(`No profile found for user ${userId}, retrying in ${(retryCount + 1) * 2000}ms...`);
+        setTimeout(() => {
+          updateUserData(userId, retryCount + 1);
+        }, (retryCount + 1) * 2000);
+        return;
+      }
       
-      // If no subscription data exists, create a default 'inactive' subscription
+      if (profileData) {
+        setProfile(profileData);
+      } else {
+        console.error(`Failed to create/fetch profile for user ${userId} after ${retryCount + 1} attempts`);
+      }
+      
+      // Handle subscription data
       if (subscriptionData) {
-        // Convert to valid subscription status (removed 'free' check since it's no longer valid)
         const validSubscription: Subscription = {
           ...subscriptionData,
           status: subscriptionData.status as 'active' | 'inactive' | 'cancelled' | 'expired'
@@ -33,7 +45,6 @@ export const useAuthState = () => {
         setSubscription(validSubscription);
       } else {
         console.log('No subscription found, creating inactive subscription for user:', userId);
-        // Try to create an inactive subscription for this user
         try {
           const { data, error } = await supabase
             .from('subscriptions')
@@ -46,7 +57,6 @@ export const useAuthState = () => {
           
           if (error) {
             console.error('Error creating inactive subscription:', error);
-            // Set a default inactive subscription locally if database insert fails
             setSubscription({
               id: 'temp-inactive',
               user_id: userId,
@@ -65,7 +75,6 @@ export const useAuthState = () => {
           }
         } catch (createError) {
           console.error('Failed to create subscription:', createError);
-          // Fallback: set a local inactive subscription
           setSubscription({
             id: 'temp-inactive',
             user_id: userId,
@@ -79,6 +88,11 @@ export const useAuthState = () => {
       }
     } catch (error) {
       console.error('Error updating user data:', error);
+      
+      // If this is a retry attempt and we still have errors, log more details
+      if (retryCount > 0) {
+        console.error(`Failed to fetch user data after ${retryCount + 1} attempts:`, error);
+      }
     }
   };
 
@@ -98,10 +112,13 @@ export const useAuthState = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Add a small delay to ensure database triggers have completed
+          // For new signups, give the database trigger more time to complete
+          const delay = event === 'SIGNED_UP' ? 3000 : 1500;
+          console.log(`Auth event: ${event}, waiting ${delay}ms before fetching user data`);
+          
           setTimeout(() => {
             updateUserData(session.user.id);
-          }, 1000);
+          }, delay);
         } else {
           setProfile(null);
           setSubscription(null);
@@ -118,10 +135,9 @@ export const useAuthState = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        // Add a delay here too for initial load
         setTimeout(() => {
           updateUserData(session.user.id);
-        }, 1000);
+        }, 1500);
       }
       
       setLoading(false);
@@ -131,7 +147,6 @@ export const useAuthState = () => {
   }, []);
 
   const isOwner = profile?.role === 'owner';
-  // Updated logic: Now only 'active' subscriptions provide access, plus owners always have access
   const hasActiveSubscription = subscription?.status === 'active' || isOwner;
 
   console.log('Current auth state:', {

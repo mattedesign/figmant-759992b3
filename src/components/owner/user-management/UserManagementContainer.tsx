@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,9 +20,15 @@ export const UserManagementContainer = () => {
   const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
   const [creditManagementDialogOpen, setCreditManagementDialogOpen] = useState(false);
 
-  const { data: users, isLoading, refetch } = useQuery({
+  const { data: users, isLoading, refetch, error } = useQuery({
     queryKey: ['all-users'],
     queryFn: async () => {
+      console.log('Fetching all users...');
+      
+      // First, let's check what users exist in auth.users
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      console.log('Auth users:', authUsers?.users?.length, authError);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select(`
@@ -35,15 +41,39 @@ export const UserManagementContainer = () => {
         `)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profiles:', error);
+        throw error;
+      }
+      
+      console.log('Profiles fetched:', data?.length);
+      console.log('Profile data sample:', data?.slice(0, 2));
       
       // Transform the data to match the UserManagementProfile type
-      return data.map(profile => ({
+      const transformedData = data.map(profile => ({
         ...profile,
         subscriptions: profile.subscriptions ? [profile.subscriptions] : []
       })) as UserManagementProfile[];
-    }
+      
+      return transformedData;
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds to catch new users
+    refetchOnWindowFocus: true,
   });
+
+  // Add effect to log when users data changes
+  useEffect(() => {
+    if (users) {
+      console.log(`User management: ${users.length} users loaded`);
+      console.log('Users by role:', {
+        owners: users.filter(u => u.role === 'owner').length,
+        subscribers: users.filter(u => u.role === 'subscriber').length
+      });
+    }
+    if (error) {
+      console.error('User management error:', error);
+    }
+  }, [users, error]);
 
   const { data: creditsMap, refetch: refetchCredits } = useUserManagementCredits();
 
@@ -80,6 +110,7 @@ export const UserManagementContainer = () => {
       
       refetch();
     } catch (error) {
+      console.error('Error updating user role:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -89,6 +120,7 @@ export const UserManagementContainer = () => {
   };
 
   const handleUserCreated = () => {
+    console.log('User created, refetching user list...');
     refetch();
     setCreateUserDialogOpen(false);
     toast({
@@ -98,6 +130,7 @@ export const UserManagementContainer = () => {
   };
 
   const handleUserUpdated = () => {
+    console.log('User updated, refetching user list...');
     refetch();
     setEditUserDialogOpen(false);
   };
@@ -129,6 +162,25 @@ export const UserManagementContainer = () => {
             {[...Array(5)].map((_, i) => (
               <div key={i} className="h-12 bg-muted rounded animate-pulse" />
             ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <UserManagementHeader onCreateUser={() => setCreateUserDialogOpen(true)} />
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-destructive mb-4">Error loading users: {error.message}</p>
+            <button 
+              onClick={() => refetch()} 
+              className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+            >
+              Retry
+            </button>
           </div>
         </CardContent>
       </Card>
