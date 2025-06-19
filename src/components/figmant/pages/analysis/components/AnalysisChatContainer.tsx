@@ -22,6 +22,7 @@ interface AnalysisChatContainerProps {
   onViewTemplate: (template: any) => void;
   attachments: any[];
   onRemoveAttachment: (id: string) => void;
+  isAnalyzing?: boolean; // Added this prop
 }
 
 export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
@@ -41,7 +42,8 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   availableTemplates,
   onViewTemplate,
   attachments,
-  onRemoveAttachment
+  onRemoveAttachment,
+  isAnalyzing = false
 }) => {
   const selectedTemplate = getCurrentTemplate();
   
@@ -49,7 +51,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
     handleSendMessage,
     handleKeyPress,
     canSend,
-    isAnalyzing
+    isAnalyzing: hookIsAnalyzing
   } = useAnalysisChatHandler(
     message,
     setMessage,
@@ -62,12 +64,15 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
     selectedTemplate
   );
 
+  // Use the analyzing state from either prop or hook
+  const analyzing = isAnalyzing || hookIsAnalyzing;
+
   console.log('📋 ANALYSIS CHAT CONTAINER - Rendering with:', {
     messagesCount: messages.length,
     attachmentsCount: attachments.length,
     templatesCount: availableTemplates.length,
     selectedTemplate: selectedTemplate?.title || 'None',
-    isAnalyzing
+    isAnalyzing: analyzing
   });
 
   return (
@@ -99,7 +104,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         )}
         
         {/* Loading indicator */}
-        {isAnalyzing && (
+        {analyzing && (
           <div className="flex justify-start">
             <div className="bg-muted p-3 rounded-lg">
               <div className="flex items-center space-x-2">
@@ -120,7 +125,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
           onKeyPress={handleKeyPress}
           selectedPromptTemplate={selectedTemplate}
           canSend={canSend}
-          isAnalyzing={isAnalyzing}
+          isAnalyzing={analyzing}
           onFileUpload={onFileUpload}
           onToggleUrlInput={onToggleUrlInput}
           onTemplateSelect={onTemplateSelect}

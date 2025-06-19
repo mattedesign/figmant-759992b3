@@ -72,7 +72,7 @@ export const useAnalysisChatHandler = (
         timestamp: new Date()
       };
 
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages((prev: ChatMessage[]) => [...prev, aiMessage]);
 
       toast({
         title: "Analysis Complete",
@@ -89,7 +89,7 @@ export const useAnalysisChatHandler = (
         timestamp: new Date()
       };
 
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev: ChatMessage[]) => [...prev, errorMessage]);
 
       toast({
         variant: "destructive",

@@ -14,10 +14,12 @@ interface AnalysisRequest {
     uploadPath?: string;
     url?: string;
   }>;
+  template?: any; // Added template property
 }
 
 interface AnalysisResponse {
   analysis: string;
+  response?: string; // Added response property
   confidence_score?: number;
   debugInfo?: any;
 }
@@ -28,7 +30,7 @@ export const useFigmantChatAnalysis = () => {
   const { checkUserAccess, deductAnalysisCredits } = useCreditAccess();
 
   return useMutation({
-    mutationFn: async ({ message, attachments }: AnalysisRequest): Promise<AnalysisResponse> => {
+    mutationFn: async ({ message, attachments, template }: AnalysisRequest): Promise<AnalysisResponse> => {
       if (!user?.id) {
         throw new Error('User not authenticated');
       }
@@ -36,7 +38,8 @@ export const useFigmantChatAnalysis = () => {
       console.log('🔍 FIGMANT CHAT - Starting analysis...', {
         userId: user.id,
         messageLength: message.length,
-        attachmentCount: attachments?.length || 0
+        attachmentCount: attachments?.length || 0,
+        template: template?.title || 'None'
       });
 
       // Check user access and process credits
@@ -75,7 +78,8 @@ export const useFigmantChatAnalysis = () => {
           message,
           attachments: processedAttachments,
           requestType: 'figmant_chat_analysis',
-          analysisType: 'chat'
+          analysisType: 'chat',
+          template: template || null
         }
       });
 
@@ -97,7 +101,8 @@ export const useFigmantChatAnalysis = () => {
             analysis_results: {
               response: claudeResponse.response || claudeResponse.analysis,
               attachments: processedAttachments,
-              metadata: claudeResponse.debugInfo
+              metadata: claudeResponse.debugInfo,
+              template: template
             },
             confidence_score: claudeResponse.confidence_score || 0.8,
             analysis_type: 'figmant_chat'
@@ -118,6 +123,7 @@ export const useFigmantChatAnalysis = () => {
       
       return {
         analysis: claudeResponse.response || claudeResponse.analysis,
+        response: claudeResponse.response || claudeResponse.analysis,
         confidence_score: claudeResponse.confidence_score,
         debugInfo: claudeResponse.debugInfo
       };
