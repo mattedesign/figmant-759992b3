@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useToast } from '@/hooks/use-toast';
@@ -8,7 +9,7 @@ interface URLAttachmentHandlerProps {
   setUrlInput: (url: string) => void;
   setShowUrlInput: (show: boolean) => void;
   attachments: ChatAttachment[];
-  setAttachments: (attachments: ChatAttachment[]) => void;
+  setAttachments: (attachments: ChatAttachment[] | ((prev: ChatAttachment[]) => ChatAttachment[])) => void;
   children: (handleAddUrl: () => void) => React.ReactNode;
 }
 
@@ -71,7 +72,7 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
       };
 
       console.log('Creating new URL attachment with screenshot capture:', newAttachment);
-      setAttachments([...attachments, newAttachment]);
+      setAttachments(prev => [...prev, newAttachment]);
       
       setUrlInput('');
       setShowUrlInput(false);

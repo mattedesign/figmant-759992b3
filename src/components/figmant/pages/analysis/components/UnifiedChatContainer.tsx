@@ -21,7 +21,6 @@ export const UnifiedChatContainer: React.FC = () => {
     setSelectedTemplateId,
     getCurrentTemplate,
     handleFileUpload,
-    handleAddUrl,
     handleSendMessage,
     handleKeyPress,
     removeAttachment,
@@ -45,6 +44,11 @@ export const UnifiedChatContainer: React.FC = () => {
   if (templatesLoading) {
     return <ChatLoadingState message="Loading analysis templates..." />;
   }
+
+  const handleAddUrl = () => {
+    // URL addition is handled by URLAttachmentHandler component
+    // which directly updates the attachments state
+  };
 
   return (
     <div className="h-full flex flex-col">

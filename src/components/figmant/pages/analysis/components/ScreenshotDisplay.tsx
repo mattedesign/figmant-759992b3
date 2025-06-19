@@ -33,8 +33,8 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
   }
 
   const { desktop, mobile } = attachment.metadata.screenshots;
-  const hasDesktop = desktop?.success && desktop.screenshotUrl;
-  const hasMobile = mobile?.success && mobile.screenshotUrl;
+  const hasDesktop = desktop?.success && desktop.url;
+  const hasMobile = mobile?.success && mobile.url;
 
   if (!hasDesktop && !hasMobile) {
     return (
@@ -49,7 +49,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
   }
 
   const currentScreenshot = activeView === 'desktop' ? desktop : mobile;
-  const currentScreenshotUrl = activeView === 'desktop' ? desktop?.screenshotUrl : mobile?.screenshotUrl;
+  const currentScreenshotUrl = activeView === 'desktop' ? desktop?.url : mobile?.url;
 
   return (
     <div className="space-y-2">

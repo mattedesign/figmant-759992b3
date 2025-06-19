@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Send, Paperclip, Globe, X, FileText, Image } from 'lucide-react';
-import { FigmantPromptTemplate } from '@/types/figmant';
+import { FigmantPromptTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { PromptTemplateSelector } from './PromptTemplateSelector';
 import { URLAttachmentHandler } from './components/URLAttachmentHandler';
@@ -63,7 +63,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
     <div className="p-4 border-t bg-background space-y-4">
       {/* Template Selector */}
       <PromptTemplateSelector
-        templates={availableTemplates}
+        availableTemplates={availableTemplates}
         selectedTemplate={selectedPromptTemplate}
         onTemplateSelect={onTemplateSelect}
         onViewTemplate={onViewTemplate}
@@ -75,7 +75,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
         setUrlInput={setUrlInput}
         setShowUrlInput={(show) => show ? onToggleUrlInput() : onCancelUrl()}
         attachments={attachments}
-        setAttachments={(newAttachments) => {
+        setAttachments={() => {
           // This is handled by the parent component through state management
           // The URLAttachmentHandler will update attachments directly
         }}
@@ -157,7 +157,7 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={onKeyPress}
             placeholder={selectedPromptTemplate 
-              ? `Ask about your design using ${selectedPromptTemplate.display_name || selectedPromptTemplate.title}...`
+              ? `Ask about your design using ${selectedPromptTemplate.displayName || selectedPromptTemplate.title}...`
               : "Ask me anything about your design..."
             }
             className="min-h-[80px] resize-none pr-20"

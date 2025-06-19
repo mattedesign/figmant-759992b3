@@ -16,9 +16,10 @@ export const useChatState = (props?: UseChatStateProps) => {
   const [urlInput, setUrlInput] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
-  // Add missing prompt template state
+  // Add missing template state
   const [selectedPromptCategory, setSelectedPromptCategory] = useState<string>('master');
   const [selectedPromptTemplate, setSelectedPromptTemplate] = useState<string>('master');
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('master');
 
   // Load historical analysis if provided in navigation state
   useEffect(() => {
@@ -102,6 +103,8 @@ export const useChatState = (props?: UseChatStateProps) => {
     setSelectedPromptCategory,
     selectedPromptTemplate,
     setSelectedPromptTemplate,
+    selectedTemplateId,
+    setSelectedTemplateId,
     addMessage,
     clearMessages,
     updateLastMessage
