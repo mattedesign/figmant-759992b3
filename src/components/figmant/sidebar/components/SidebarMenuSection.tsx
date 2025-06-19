@@ -61,7 +61,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
       color: 'var(--Text-Primary, #121212)',
       textOverflow: 'ellipsis',
       fontFamily: '"Instrument Sans"',
-      fontSize: '12px',
+      fontSize: '13px',
       fontStyle: 'normal',
       fontWeight: 500,
       lineHeight: '16px',
