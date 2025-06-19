@@ -1,4 +1,3 @@
-
 import { ScreenshotCaptureOptions, ScreenshotResult } from './types';
 import { DEFAULT_OPTIONS } from './config';
 import { ScreenshotOneProvider } from './screenshotOneProvider';
@@ -90,7 +89,7 @@ export class ScreenshotCaptureService {
     // Replace with your actual ScreenshotOne API key
     const testApiKey = 'Qd6TmvADx_A3ug';
     
-    if (testApiKey && testApiKey !== 'Qd6TmvADx_A3ug') {
+    if (testApiKey) {
       console.log('✅ SCREENSHOT SERVICE - Using hardcoded API key for testing');
       return new ScreenshotOneProvider(testApiKey);
     }
