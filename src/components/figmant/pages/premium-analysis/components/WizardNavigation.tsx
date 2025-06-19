@@ -18,29 +18,48 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
   onNextStep,
   canProceed
 }) => {
-  console.log('🎯 WizardNavigation render:', { currentStep, totalSteps, canProceed });
+  console.log('🎯 WizardNavigation render:', { 
+    currentStep, 
+    totalSteps, 
+    canProceed,
+    isOnFinalStep: currentStep === totalSteps
+  });
 
   // Don't show navigation if we're past the total steps
   if (currentStep > totalSteps) return null;
 
+  const isOnFinalStep = currentStep === totalSteps;
   const getButtonText = () => {
-    if (currentStep === totalSteps) {
-      return 'Wizard Analysis';
+    if (isOnFinalStep) {
+      return 'Start Wizard Analysis';
     }
     return 'Continue';
   };
 
   const handleNextClick = () => {
-    console.log('🎯 Next button clicked - currentStep:', currentStep, 'canProceed:', canProceed);
+    console.log('🎯 Next button clicked:', {
+      currentStep,
+      canProceed,
+      isOnFinalStep,
+      buttonText: getButtonText()
+    });
+    
     if (canProceed) {
+      console.log('🎯 Calling onNextStep...');
       onNextStep();
     } else {
-      console.log('🎯 Cannot proceed - button should be disabled');
+      console.log('🎯 Cannot proceed - button should be disabled but was clicked');
     }
   };
 
   const isDisabled = !canProceed;
-  console.log('🎯 Button disabled state:', isDisabled);
+  console.log('🎯 Button state:', {
+    isDisabled,
+    canProceed,
+    currentStep,
+    isOnFinalStep,
+    buttonText: getButtonText()
+  });
 
   return (
     <div className="flex-shrink-0 p-6 bg-white border-t border-gray-200">
@@ -59,7 +78,13 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
           onClick={handleNextClick} 
           disabled={isDisabled}
           variant="default"
-          className={`${isDisabled ? 'opacity-50 cursor-not-allowed' : 'bg-gray-900 hover:bg-gray-800'} text-white`}
+          className={`${
+            isDisabled 
+              ? 'opacity-50 cursor-not-allowed bg-gray-400' 
+              : isOnFinalStep
+                ? 'bg-green-600 hover:bg-green-700'
+                : 'bg-gray-900 hover:bg-gray-800'
+          } text-white font-medium`}
         >
           {getButtonText()}
         </Button>

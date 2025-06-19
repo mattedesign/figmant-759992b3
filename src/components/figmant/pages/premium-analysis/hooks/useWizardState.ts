@@ -89,7 +89,7 @@ export const useWizardState = () => {
         canProceed = true; // File upload step is optional, always allow proceed
         break;
       case 6:
-        canProceed = true; // Custom prompt step is optional, always allow proceed
+        canProceed = true; // Custom prompt step is optional, always allow proceed - this triggers the analysis
         break;
       default:
         canProceed = true;
