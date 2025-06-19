@@ -71,12 +71,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         <input {...inputProps} />
         
         {/* Main input area */}
-        <div className="p-4">
+        <div className="p-6">
           <Textarea
             value={message}
             onChange={(e) => onMessageChange(e.target.value)}
             placeholder={isDragActive ? "Drop files to attach" : "How can I help..."}
-            className="w-full resize-none border-0 shadow-none focus-visible:ring-0 p-0 bg-transparent text-base placeholder:text-gray-400 min-h-[60px]"
+            className="w-full resize-none border-0 shadow-none focus-visible:ring-0 p-0 bg-transparent text-base placeholder:text-gray-400 min-h-[80px]"
             disabled={isLoading}
             onKeyPress={(e) => {
               if (e.key === 'Enter' && !e.shiftKey && !isDisabled) {
@@ -88,7 +88,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
         </div>
 
         {/* Controls row */}
-        <div className="flex items-center justify-between px-4 pb-4 gap-3">
+        <div className="flex items-center justify-between px-6 pb-6 gap-3">
           <div className="flex items-center gap-3">
             {/* Add attachment button */}
             <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
@@ -96,7 +96,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-10 w-10 rounded-xl border-gray-200"
+                  className="h-12 w-12 rounded-2xl border-gray-200 bg-white"
                   disabled={isLoading}
                 >
                   <Plus className="h-5 w-5" />
@@ -125,13 +125,13 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
             {/* Prompt Template selector */}
             <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-              <SelectTrigger className="w-40 h-10 rounded-xl border-gray-200 bg-white">
+              <SelectTrigger className="w-60 h-12 rounded-2xl border-gray-200 bg-white">
                 <div className="flex items-center gap-2">
                   <Zap className="h-4 w-4 text-green-500" />
                   <SelectValue placeholder="Prompt Template" />
                 </div>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border border-gray-200 shadow-lg">
                 <SelectItem value="competitor">Competitor Analysis</SelectItem>
                 <SelectItem value="revenue">Revenue Impact</SelectItem>
                 <SelectItem value="testing">A/B Testing</SelectItem>
@@ -142,10 +142,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
             {/* Model selector */}
             <Select value={selectedModel} onValueChange={setSelectedModel}>
-              <SelectTrigger className="w-36 h-10 rounded-xl border-gray-200 bg-white">
+              <SelectTrigger className="w-48 h-12 rounded-2xl border-gray-200 bg-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border border-gray-200 shadow-lg">
                 <SelectItem value="claude-sonnet">Claude Sonnet</SelectItem>
                 <SelectItem value="claude-haiku">Claude Haiku</SelectItem>
                 <SelectItem value="claude-opus">Claude Opus</SelectItem>
@@ -158,7 +158,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10 rounded-xl border-gray-200"
+              className="h-12 w-12 rounded-2xl border-gray-200 bg-white"
               disabled={isLoading}
             >
               <Mic className="h-5 w-5" />
@@ -169,7 +169,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
               onClick={onSendMessage}
               disabled={isDisabled}
               size="icon"
-              className="h-10 w-10 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-600"
+              className="h-12 w-12 rounded-2xl bg-gray-200 hover:bg-gray-300 text-gray-600"
             >
               {getSendButtonContent()}
             </Button>
@@ -178,7 +178,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
         {/* Loading stage indicator */}
         {isLoading && loadingStage && (
-          <div className="px-4 pb-2">
+          <div className="px-6 pb-2">
             <div className="text-center text-xs text-muted-foreground">
               {loadingStage}
             </div>
