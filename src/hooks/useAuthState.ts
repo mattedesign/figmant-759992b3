@@ -113,7 +113,7 @@ export const useAuthState = () => {
         
         if (session?.user) {
           // For new signups, give the database trigger more time to complete
-          const delay = event === 'SIGNED_UP' ? 3000 : 1500;
+          const delay = event === 'SIGNED_IN' ? 3000 : 1500;
           console.log(`Auth event: ${event}, waiting ${delay}ms before fetching user data`);
           
           setTimeout(() => {
