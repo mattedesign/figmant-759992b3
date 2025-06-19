@@ -32,17 +32,13 @@ export const MessageTextArea: React.FC<MessageTextAreaProps> = ({
   return (
     <div className="flex p-2 items-start gap-2 self-stretch">
       <Textarea
-        className="flex-1 overflow-hidden text-[#121212] text-ellipsis font-['Instrument_Sans'] text-[15px] font-normal leading-6 tracking-[-0.3px] border-none outline-none bg-transparent resize-none min-h-[24px] max-h-[192px]"
-        style={{
-          display: '-webkit-box',
-          WebkitBoxOrient: 'vertical',
-          WebkitLineClamp: 8,
-        }}
+        className="flex-1 overflow-hidden text-[#121212] text-ellipsis font-['Instrument_Sans'] text-[15px] font-normal leading-6 tracking-[-0.3px] border-none outline-none bg-transparent resize-none min-h-[24px] max-h-[96px]"
         placeholder={getPlaceholder()}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyPress={onKeyPress}
         disabled={isAnalyzing}
+        rows={1}
       />
     </div>
   );
