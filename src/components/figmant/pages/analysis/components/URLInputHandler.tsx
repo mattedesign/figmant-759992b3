@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Globe, Check, AlertCircle, X } from 'lucide-react';
+import { Globe, Check, AlertCircle, X, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useToast } from '@/hooks/use-toast';
@@ -239,11 +239,17 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
           <Button 
             onClick={handleAddUrl} 
             disabled={!canAdd}
-            loading={isValidating}
             size="sm"
             className={canAdd ? 'bg-green-600 hover:bg-green-700' : ''}
           >
-            {isValidating ? 'Adding...' : 'Add'}
+            {isValidating ? (
+              <>
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              'Add'
+            )}
           </Button>
         </div>
         
