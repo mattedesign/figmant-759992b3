@@ -1,12 +1,10 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { FileAttachmentsSection } from './FileAttachmentsSection';
 import { WebsiteAttachmentsSection } from './WebsiteAttachmentsSection';
-import { AnalysisInsightsSection } from './AnalysisInsightsSection';
 import { SuggestionsTabContent } from './SuggestionsTabContent';
-import { NavigationEmptyState } from './NavigationEmptyState';
 
 interface NavigationSectionListProps {
   fileAttachments: ChatAttachment[];
@@ -29,37 +27,13 @@ export const NavigationSectionList: React.FC<NavigationSectionListProps> = ({
   activeTab = 'details',
   onTabChange
 }) => {
-  const hasAnyContent = fileAttachments.length > 0 || urlAttachments.length > 0 || lastAnalysisResult || analysisMessages.length > 0;
-
-  console.log('📋 NAVIGATION SECTION LIST - Rendering with:', {
-    fileAttachmentsCount: fileAttachments.length,
-    urlAttachmentsCount: urlAttachments.length,
-    analysisMessagesCount: analysisMessages.length,
-    hasLastAnalysisResult: !!lastAnalysisResult,
-    activeTab,
-    fileAttachmentDetails: fileAttachments.map(att => ({ id: att.id, name: att.name, status: att.status })),
-    urlAttachmentDetails: urlAttachments.map(att => ({ id: att.id, name: att.name, url: att.url, status: att.status }))
-  });
-
   return (
     <div className="flex-1 overflow-y-auto">
-      {/* Tabs moved here - positioned lower in the layout */}
-      <div className="px-4 py-3 border-b border-border">
-        <Tabs value={activeTab} onValueChange={onTabChange}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details" className="text-sm">
-              Details
-            </TabsTrigger>
-            <TabsTrigger value="suggestions" className="text-sm">
-              Insights
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
+      {/* REMOVED TABS FROM HERE - They should be in the parent component header */}
+      
       <Tabs value={activeTab} onValueChange={onTabChange}>
-        <TabsContent value="details" className="mt-0 space-y-6">
-          <div className="space-y-6">
+        <TabsContent value="details" className="mt-0 space-y-0">
+          <div className="space-y-0">
             {/* Files Section - Always show */}
             <div>
               <div className="px-3 py-2 flex items-center justify-between border-b border-gray-100">
@@ -114,23 +88,14 @@ export const NavigationSectionList: React.FC<NavigationSectionListProps> = ({
                 </div>
               )}
             </div>
-
-            {/* Show overall empty state only if no content at all */}
-            {!hasAnyContent && (
-              <div className="px-3">
-                <NavigationEmptyState />
-              </div>
-            )}
           </div>
         </TabsContent>
 
         <TabsContent value="suggestions" className="mt-0">
-          <div className="px-3">
-            <SuggestionsTabContent 
-              lastAnalysisResult={lastAnalysisResult}
-              analysisMessages={analysisMessages}
-            />
-          </div>
+          <SuggestionsTabContent 
+            lastAnalysisResult={lastAnalysisResult}
+            analysisMessages={analysisMessages}
+          />
         </TabsContent>
       </Tabs>
     </div>
