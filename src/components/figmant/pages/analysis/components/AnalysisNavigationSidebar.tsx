@@ -1,6 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Tabs } from '@/components/ui/tabs';
 import { ChevronRight } from 'lucide-react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AnalysisNavigationHeader } from './AnalysisNavigationHeader';
@@ -25,6 +26,8 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
   isCollapsed = false,
   onToggleCollapse
 }) => {
+  const [activeTab, setActiveTab] = useState('details');
+
   // Separate files and URLs from attachments
   const fileAttachments = attachments.filter(att => att.type === 'file');
   const urlAttachments = attachments.filter(att => att.type === 'url');
@@ -42,21 +45,24 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
       }}
     >
       {!isCollapsed && (
-        <>
-          <AnalysisNavigationHeader onToggleCollapse={onToggleCollapse} />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+          <AnalysisNavigationHeader 
+            onToggleCollapse={onToggleCollapse}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
 
-          {/* Navigation Items */}
-          <div className="flex-1 overflow-y-auto">
-            <NavigationSectionList
-              fileAttachments={fileAttachments}
-              urlAttachments={urlAttachments}
-              analysisMessages={analysisMessages}
-              lastAnalysisResult={lastAnalysisResult}
-              onRemoveAttachment={onRemoveAttachment}
-              onViewAttachment={onViewAttachment}
-            />
-          </div>
-        </>
+          {/* Tab Content */}
+          <NavigationSectionList
+            fileAttachments={fileAttachments}
+            urlAttachments={urlAttachments}
+            analysisMessages={analysisMessages}
+            lastAnalysisResult={lastAnalysisResult}
+            onRemoveAttachment={onRemoveAttachment}
+            onViewAttachment={onViewAttachment}
+            activeTab={activeTab}
+          />
+        </Tabs>
       )}
       
       {isCollapsed && onToggleCollapse && (

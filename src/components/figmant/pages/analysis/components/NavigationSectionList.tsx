@@ -1,12 +1,11 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { FileText, Globe, Brain } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { TabsContent } from '@/components/ui/tabs';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { FileAttachmentsSection } from './FileAttachmentsSection';
 import { WebsiteAttachmentsSection } from './WebsiteAttachmentsSection';
 import { AnalysisInsightsSection } from './AnalysisInsightsSection';
+import { SuggestionsTabContent } from './SuggestionsTabContent';
 import { NavigationEmptyState } from './NavigationEmptyState';
 
 interface NavigationSectionListProps {
@@ -16,6 +15,7 @@ interface NavigationSectionListProps {
   lastAnalysisResult?: any;
   onRemoveAttachment: (id: string) => void;
   onViewAttachment: (attachment: ChatAttachment) => void;
+  activeTab?: string;
 }
 
 export const NavigationSectionList: React.FC<NavigationSectionListProps> = ({
@@ -24,106 +24,66 @@ export const NavigationSectionList: React.FC<NavigationSectionListProps> = ({
   analysisMessages,
   lastAnalysisResult,
   onRemoveAttachment,
-  onViewAttachment
+  onViewAttachment,
+  activeTab = 'details'
 }) => {
-  // Navigation sections
-  const sections = [
-    {
-      id: 'files',
-      label: `Files (${fileAttachments.length})`,
-      icon: FileText,
-      badge: fileAttachments.length > 0 ? fileAttachments.length.toString() : undefined,
-      content: fileAttachments
-    },
-    {
-      id: 'websites',
-      label: `Websites (${urlAttachments.length})`,
-      icon: Globe,
-      badge: urlAttachments.length > 0 ? urlAttachments.length.toString() : undefined,
-      content: urlAttachments
-    },
-    {
-      id: 'insights',
-      label: 'Analysis Insights',
-      icon: Brain,
-      badge: analysisMessages.length > 0 ? analysisMessages.length.toString() : undefined,
-      content: analysisMessages
-    }
-  ];
-
-  const hasAnyContent = fileAttachments.length > 0 || urlAttachments.length > 0 || lastAnalysisResult;
+  const hasContent = fileAttachments.length > 0 || urlAttachments.length > 0 || lastAnalysisResult || analysisMessages.length > 0;
 
   return (
-    <div 
-      style={{
-        display: 'flex',
-        padding: '12px',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '4px',
-        alignSelf: 'stretch',
-        borderTop: '1px solid var(--Stroke-01, #ECECEC)'
-      }}
-    >
-      {sections.map((section) => (
-        <div key={section.id} className="w-full">
-          <div
-            className={cn(
-              "w-full justify-start h-10 px-3 flex-shrink-0 flex items-center",
-              "hover:bg-accent hover:text-accent-foreground cursor-pointer rounded-md"
+    <div className="flex-1 overflow-y-auto">
+      <TabsContent value="details" className="mt-0 space-y-4">
+        {hasContent ? (
+          <div className="space-y-4">
+            {/* File Attachments */}
+            {fileAttachments.length > 0 && (
+              <div>
+                <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Files ({fileAttachments.length})
+                </div>
+                <FileAttachmentsSection
+                  fileAttachments={fileAttachments}
+                  onRemoveAttachment={onRemoveAttachment}
+                  onViewAttachment={onViewAttachment}
+                />
+              </div>
             )}
-          >
-            <section.icon className="h-4 w-4 mr-1" />
-            <span 
-              className="flex-1 text-left"
-              style={{
-                overflow: 'hidden',
-                color: 'var(--Text-Primary, #121212)',
-                textOverflow: 'ellipsis',
-                fontFamily: '"Instrument Sans"',
-                fontSize: '12px',
-                fontStyle: 'normal',
-                fontWeight: 500,
-                lineHeight: '16px',
-                letterSpacing: '-0.12px'
-              }}
-            >
-              {section.label}
-            </span>
-            {section.badge && (
-              <Badge variant="secondary" className="ml-2 text-xs">
-                {section.badge}
-              </Badge>
+
+            {/* Website Attachments */}
+            {urlAttachments.length > 0 && (
+              <div>
+                <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Websites ({urlAttachments.length})
+                </div>
+                <WebsiteAttachmentsSection
+                  urlAttachments={urlAttachments}
+                  onRemoveAttachment={onRemoveAttachment}
+                />
+              </div>
+            )}
+
+            {/* Analysis Insights */}
+            {(lastAnalysisResult || analysisMessages.length > 0) && (
+              <div>
+                <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Analysis Insights
+                </div>
+                <AnalysisInsightsSection
+                  lastAnalysisResult={lastAnalysisResult}
+                  analysisMessages={analysisMessages}
+                />
+              </div>
             )}
           </div>
+        ) : (
+          <NavigationEmptyState />
+        )}
+      </TabsContent>
 
-          {/* Section Content */}
-          {section.id === 'files' && (
-            <FileAttachmentsSection
-              fileAttachments={fileAttachments}
-              onRemoveAttachment={onRemoveAttachment}
-              onViewAttachment={onViewAttachment}
-            />
-          )}
-
-          {section.id === 'websites' && (
-            <WebsiteAttachmentsSection
-              urlAttachments={urlAttachments}
-              onRemoveAttachment={onRemoveAttachment}
-            />
-          )}
-
-          {section.id === 'insights' && (
-            <AnalysisInsightsSection
-              lastAnalysisResult={lastAnalysisResult}
-              analysisMessages={analysisMessages}
-            />
-          )}
+      <TabsContent value="suggestions" className="mt-0">
+        <div className="px-3">
+          <SuggestionsTabContent />
         </div>
-      ))}
-
-      {/* Empty State */}
-      {!hasAnyContent && <NavigationEmptyState />}
+      </TabsContent>
     </div>
   );
 };
