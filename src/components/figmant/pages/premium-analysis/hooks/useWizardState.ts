@@ -1,21 +1,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-
-export interface StepData {
-  selectedType: string;
-  projectName: string;
-  analysisGoals: string;
-  desiredOutcome: string;
-  improvementMetric: string;
-  deadline: string;
-  date: string;
-  stakeholders: string[];
-  referenceLinks: string[];
-  customPrompt: string;
-  uploadedFiles?: File[];
-  [key: string]: any;
-}
+import { StepData, Stakeholder } from '../types';
 
 export const useWizardState = () => {
   const location = useLocation();
@@ -87,11 +73,9 @@ export const useWizardState = () => {
     }
   }, [currentStep, stepData, isProcessing]);
 
-  const updateStepData = useCallback((key: string, value: any) => {
-    setStepData(prev => ({
-      ...prev,
-      [key]: value
-    }));
+  // Update the function signature to match the expected interface
+  const updateStepData = useCallback((newData: StepData) => {
+    setStepData(newData);
   }, []);
 
   const resetWizard = useCallback(() => {
