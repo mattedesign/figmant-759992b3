@@ -82,9 +82,6 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
         <div className="px-3 pb-3 border-t border-gray-100">
           <AnalysisPreview analysis={analysis} />
           <div className="mt-2 flex items-center justify-between">
-            <div className="text-xs text-gray-500">
-              Files: {analysis.fileCount}
-            </div>
             <Button
               variant="outline"
               size="sm"
