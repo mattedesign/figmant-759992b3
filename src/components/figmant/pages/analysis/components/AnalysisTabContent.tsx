@@ -16,7 +16,7 @@ interface AnalysisTabContentProps {
   handleKeyPress: (e: React.KeyboardEvent) => void;
   getCurrentTemplate: () => any;
   canSend: boolean;
-  handleFileUpload: (file: File) => void;
+  handleFileUpload: (files: FileList) => Promise<void>; // Updated to match useFileUploadHandler interface
   showUrlInput: boolean;
   setShowUrlInput: (show: boolean) => void;
   urlInput: string;
@@ -53,7 +53,7 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
   removeAttachment
 }) => {
   const handleFileUploadFromInput = (files: FileList) => {
-    Array.from(files).forEach(file => handleFileUpload(file));
+    handleFileUpload(files); // Now correctly passes FileList directly
   };
 
   const handleToggleUrlInput = () => setShowUrlInput(!showUrlInput);
