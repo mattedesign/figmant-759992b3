@@ -57,7 +57,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
   }
 
   const currentScreenshot = activeView === 'desktop' ? desktop : mobile;
-  const currentScreenshotUrl = activeView === 'desktop' ? desktop?.screenshotUrl : mobile?.screenshotUrl;
+  const currentScreenshotUrl = currentScreenshot?.screenshotUrl;
 
   console.log('🖼️ SCREENSHOT DISPLAY - Current screenshot URL:', currentScreenshotUrl);
   console.log('🖼️ SCREENSHOT DISPLAY - Current screenshot data:', currentScreenshot);
