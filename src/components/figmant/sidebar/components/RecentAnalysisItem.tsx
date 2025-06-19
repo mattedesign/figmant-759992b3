@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, ExternalLink, Users, TrendingUp } from 'lucide-react';
+import { Clock, ExternalLink, Users, TrendingUp, RotateCcw } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { AnalysisImage } from './AnalysisImage';
 import { AnalysisPreview } from './AnalysisPreview';
@@ -53,6 +53,15 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
       metrics.push({
         icon: TrendingUp,
         label: `${analysis.impact_summary.business_impact.conversion_potential}% conversion potential`,
+        variant: 'outline' as const
+      });
+    }
+
+    // Add attachment restoration indicator
+    if (analysis.attachmentInfo?.hasAttachments || analysis.attachmentInfo?.hasDesignFile) {
+      metrics.push({
+        icon: RotateCcw,
+        label: 'Restores artifacts',
         variant: 'outline' as const
       });
     }
@@ -131,16 +140,18 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
           {/* Action Buttons */}
           <div className="mt-3 flex items-center justify-between">
             <div className="text-xs text-gray-500">
-              Files: {analysis.fileCount} • Created {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
+              {analysis.attachmentInfo?.attachmentCount ? 
+                `Artifacts: ${analysis.attachmentInfo.attachmentCount}` : 
+                `Files: ${analysis.fileCount}`} • Created {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={handleAnalysisClick}
-              className="h-7 text-xs px-3"
+              className="h-7 text-xs px-3 flex items-center gap-1"
             >
-              <ExternalLink className="w-3 h-3 mr-1" />
-              {analysis.type === 'chat' ? 'Continue Chat' : 'Open Wizard'}
+              <RotateCcw className="w-3 h-3" />
+              {analysis.type === 'chat' ? 'Restore Chat' : 'Load Analysis'}
             </Button>
           </div>
         </div>
