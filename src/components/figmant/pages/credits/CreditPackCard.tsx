@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CreditCard, Coins, Check } from 'lucide-react';
+import { CreditCard, Coins } from 'lucide-react';
 import { SubscriptionPlan } from '@/types/subscription';
 
 interface CreditPackCardProps {
@@ -18,26 +18,6 @@ export const CreditPackCard: React.FC<CreditPackCardProps> = ({
 }) => {
   const price = plan.credit_price || plan.price_monthly || 0;
   const isValidPlan = price > 0 && plan.credits > 0;
-
-  const getFeatures = (credits: number) => {
-    const features = [
-      `${credits} analysis credits`,
-      'AI-powered UX insights',
-      'Design upload support',
-      'Detailed analytics reports'
-    ];
-
-    if (credits >= 50) {
-      features.push('Priority support');
-    }
-
-    if (credits >= 100) {
-      features.push('Batch analysis support');
-      features.push('Advanced insights');
-    }
-
-    return features;
-  };
 
   return (
     <div className="p-3 sm:p-4 border rounded-lg text-center relative bg-card hover:shadow-md transition-shadow">
@@ -63,15 +43,6 @@ export const CreditPackCard: React.FC<CreditPackCardProps> = ({
           ${(price / plan.credits).toFixed(3)} per credit
         </div>
       )}
-      
-      <ul className="space-y-1 mb-3 sm:mb-4 text-xs text-left">
-        {getFeatures(plan.credits).map((feature, index) => (
-          <li key={index} className="flex items-start">
-            <Check className="h-3 w-3 text-green-500 mr-1 mt-0.5 flex-shrink-0" />
-            <span className="leading-tight">{feature}</span>
-          </li>
-        ))}
-      </ul>
       
       <Button
         className="w-full text-xs sm:text-sm min-h-[40px] sm:min-h-[44px]"
