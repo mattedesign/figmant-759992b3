@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { DashboardHeader } from './dashboard/DashboardHeader';
 import { RecentAnalysisSection } from './dashboard/RecentAnalysisSection';
@@ -76,7 +77,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="container mx-auto space-y-8 2xl:max-w-none 2xl:px-8 px-0 py-0">
+      <div className="container mx-auto space-y-8 2xl:max-w-none 2xl:px-8 px-0 py-0 pt-6">
         <DashboardHeader 
           dataStats={memoizedDataStats} 
           lastUpdated={lastUpdated ? new Date(lastUpdated) : null} 
