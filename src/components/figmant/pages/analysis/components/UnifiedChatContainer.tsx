@@ -330,9 +330,6 @@ export const UnifiedChatContainer: React.FC = () => {
               onViewTemplate={handleViewTemplate}
               attachments={attachments}
               onRemoveAttachment={removeAttachment}
-              // Add session controls
-              onShowHistory={() => setShowSessionHistory(true)}
-              currentSessionName={currentSession?.session_name}
             />
             
             {/* URL Input Handler for Mobile */}
@@ -375,8 +372,6 @@ export const UnifiedChatContainer: React.FC = () => {
           onViewTemplate={handleViewTemplate}
           attachments={attachments}
           onRemoveAttachment={removeAttachment}
-          // Add session controls
-          currentSessionName={currentSession?.session_name}
         />
         
         {/* URL Input Handler */}

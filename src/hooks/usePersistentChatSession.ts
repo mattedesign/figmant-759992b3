@@ -16,7 +16,7 @@ export const usePersistentChatSession = () => {
   // Query for user's chat sessions
   const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
     queryKey: ['chat-sessions', user?.id],
-    queryFn: ChatSessionService.getSessionsByUser,
+    queryFn: () => ChatSessionService.getSessionsByUser(),
     enabled: !!user
   });
 
