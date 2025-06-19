@@ -6,12 +6,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster as Sonner } from "sonner";
 import { useProfileSync } from "@/hooks/useProfileSync";
-import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import OwnerDashboard from "./pages/OwnerDashboard";
-import FigmantDashboard from "./pages/FigmantDashboard";
-import Profile from "./pages/Profile";
+import Figmant from "./pages/Figmant";
+import ProfilePage from "./pages/ProfilePage";
 import Subscription from "./pages/Subscription";
 
 const queryClient = new QueryClient();
@@ -22,12 +21,12 @@ const AppWithProfileSync = () => {
   
   return (
     <Routes>
-      <Route path="/" element={<Index />} />
+      <Route path="/" element={<Auth />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/owner" element={<OwnerDashboard />} />
-      <Route path="/figmant" element={<FigmantDashboard />} />
-      <Route path="/profile" element={<Profile />} />
+      <Route path="/figmant" element={<Figmant />} />
+      <Route path="/profile" element={<ProfilePage />} />
       <Route path="/subscription" element={<Subscription />} />
     </Routes>
   );

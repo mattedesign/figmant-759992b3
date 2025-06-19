@@ -23,7 +23,7 @@ export const syncAllAuthUsers = async () => {
       throw profilesError;
     }
 
-    const existingProfileIds = new Set(existingProfiles?.map(p => p.id) || []);
+    const existingProfileIds = new Set((existingProfiles || []).map((p: { id: string }) => p.id));
     const usersNeedingProfiles = authUsers.users.filter(user => !existingProfileIds.has(user.id));
 
     console.log(`Found ${usersNeedingProfiles.length} users needing profile sync`);
