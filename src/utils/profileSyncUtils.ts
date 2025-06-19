@@ -23,9 +23,10 @@ export const syncAllAuthUsers = async () => {
       throw profilesError;
     }
 
-    // Type the profiles data explicitly to avoid TypeScript errors
-    const profilesData = existingProfiles as Array<{ id: string }> | null;
-    const existingProfileIds = new Set((profilesData || []).map(p => p.id));
+    // Handle the profiles data with proper type checking
+    const existingProfileIds = new Set(
+      existingProfiles ? existingProfiles.map((profile) => profile.id) : []
+    );
     const usersNeedingProfiles = authUsers.users.filter(user => !existingProfileIds.has(user.id));
 
     console.log(`Found ${usersNeedingProfiles.length} users needing profile sync`);
