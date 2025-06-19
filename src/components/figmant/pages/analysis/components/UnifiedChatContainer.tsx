@@ -3,7 +3,6 @@ import React from 'react';
 import { AnalysisChatInput } from '../AnalysisChatInput';
 import { ChatMessages } from '../ChatMessages';
 import { ChatLoadingState } from './ChatLoadingState';
-import { ChatSidebar } from './ChatSidebar';
 import { useUnifiedChatAnalysis } from '../hooks/useUnifiedChatAnalysis';
 
 export const UnifiedChatContainer: React.FC = () => {
@@ -47,57 +46,40 @@ export const UnifiedChatContainer: React.FC = () => {
     return <ChatLoadingState message="Loading analysis templates..." />;
   }
 
-  const handleViewAttachment = (attachment: any) => {
-    console.log('View attachment:', attachment);
-    // Could open a modal or preview
-  };
-
   return (
-    <div className="h-full flex">
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <ChatMessages 
-            messages={messages}
-            isAnalyzing={isAnalyzing}
-          />
-        </div>
-
-        {/* Input Area */}
-        <div className="border-t bg-background">
-          <AnalysisChatInput
-            message={message}
-            setMessage={setMessage}
-            onSendMessage={handleSendMessage}
-            onKeyPress={handleKeyPress}
-            selectedPromptTemplate={selectedTemplate}
-            canSend={canSend}
-            isAnalyzing={isAnalyzing}
-            onFileUpload={handleFileUpload}
-            onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
-            onTemplateSelect={setSelectedTemplateId}
-            availableTemplates={templates}
-            onViewTemplate={(template) => console.log('View template:', template)}
-            attachments={attachments}
-            onRemoveAttachment={removeAttachment}
-            showUrlInput={showUrlInput}
-            urlInput={urlInput}
-            setUrlInput={setUrlInput}
-            onAddUrl={handleAddUrl}
-            onCancelUrl={() => setShowUrlInput(false)}
-          />
-        </div>
+    <div className="h-full flex flex-col">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <ChatMessages 
+          messages={messages}
+          isAnalyzing={isAnalyzing}
+        />
       </div>
 
-      {/* Dynamic Sidebar */}
-      <ChatSidebar
-        messages={messages}
-        attachments={attachments}
-        onRemoveAttachment={removeAttachment}
-        onViewAttachment={handleViewAttachment}
-        lastAnalysisResult={messages.filter(m => m.role === 'assistant').slice(-1)[0]?.content}
-      />
+      {/* Input Area */}
+      <div className="border-t bg-background">
+        <AnalysisChatInput
+          message={message}
+          setMessage={setMessage}
+          onSendMessage={handleSendMessage}
+          onKeyPress={handleKeyPress}
+          selectedPromptTemplate={selectedTemplate}
+          canSend={canSend}
+          isAnalyzing={isAnalyzing}
+          onFileUpload={handleFileUpload}
+          onToggleUrlInput={() => setShowUrlInput(!showUrlInput)}
+          onTemplateSelect={setSelectedTemplateId}
+          availableTemplates={templates}
+          onViewTemplate={(template) => console.log('View template:', template)}
+          attachments={attachments}
+          onRemoveAttachment={removeAttachment}
+          showUrlInput={showUrlInput}
+          urlInput={urlInput}
+          setUrlInput={setUrlInput}
+          onAddUrl={handleAddUrl}
+          onCancelUrl={() => setShowUrlInput(false)}
+        />
+      </div>
     </div>
   );
 };

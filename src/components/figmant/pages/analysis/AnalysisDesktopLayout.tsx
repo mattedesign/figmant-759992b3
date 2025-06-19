@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { AnalysisListSidebar } from './AnalysisListSidebar';
 import { AnalysisChatPanel } from './AnalysisChatPanel';
 import { AnalysisDynamicRightPanel } from './AnalysisDynamicRightPanel';
+import { AnalysisNavigationSidebar } from './components/AnalysisNavigationSidebar';
 
 interface AnalysisDesktopLayoutProps {
   selectedAnalysis: any;
@@ -56,22 +57,29 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
   };
 
   const getRightPanelWidth = () => {
-    return rightCollapsed ? 'w-16' : 'w-1/4'; // 25% when expanded, 64px when collapsed
+    return rightCollapsed ? 'w-16' : 'w-80'; // Fixed width for navigation-style sidebar
   };
 
   const getMainContentWidth = () => {
     if (leftCollapsed && rightCollapsed) {
-      return 'calc(100% - 8rem)'; // Both panels collapsed (64px each)
-    } else if (leftCollapsed || rightCollapsed) {
-      return 'calc(75% - 4rem)'; // One panel collapsed
+      return 'calc(100% - 20rem)'; // Both panels collapsed (64px + 320px)
+    } else if (leftCollapsed) {
+      return 'calc(100% - 24rem)'; // Left collapsed, right expanded
+    } else if (rightCollapsed) {
+      return 'calc(75% - 4rem)'; // Right collapsed, left expanded
     } else {
-      return 'w-1/2'; // 50% when both expanded
+      return 'calc(100% - 44rem)'; // Both expanded (25% + 320px)
     }
   };
 
+  const handleViewAttachment = (attachment: any) => {
+    console.log('View attachment:', attachment);
+    // Could open a modal or preview
+  };
+
   return (
-    <div className="h-full bg-[#F9FAFB] flex">
-      {/* Left Sidebar */}
+    <div className="h-full bg-[#F9FAFB] flex gap-4">
+      {/* Left Sidebar - Analysis List */}
       <div className={`flex-shrink-0 transition-all duration-300 ${getLeftPanelWidth()}`}>
         <AnalysisListSidebar 
           selectedAnalysis={selectedAnalysis}
@@ -93,22 +101,16 @@ export const AnalysisDesktopLayout: React.FC<AnalysisDesktopLayoutProps> = ({
         />
       </div>
       
-      {/* Right Panel */}
-      <div className={`flex-shrink-0 transition-all duration-300 ${getRightPanelWidth()}`}>
-        <AnalysisDynamicRightPanel
-          mode={getRightPanelMode()}
-          promptTemplates={promptTemplates}
-          selectedPromptCategory={selectedPromptCategory}
-          selectedPromptTemplate={selectedPromptTemplate}
-          onPromptTemplateSelect={onPromptTemplateSelect}
-          onPromptCategoryChange={onPromptCategoryChange}
-          currentAnalysis={currentAnalysis}
-          attachments={attachments}
-          onAnalysisClick={onAnalysisClick}
-          onBackClick={onBackClick}
-          onCollapseChange={setRightCollapsed}
+      {/* Right Navigation Sidebar - Assets & Analysis */}
+      <div className="flex-shrink-0 transition-all duration-300">
+        <AnalysisNavigationSidebar
+          messages={chatPanelProps.messages || []}
+          attachments={attachments || []}
           onRemoveAttachment={chatPanelProps.onRemoveAttachment}
+          onViewAttachment={handleViewAttachment}
           lastAnalysisResult={chatPanelProps.lastAnalysisResult}
+          isCollapsed={rightCollapsed}
+          onToggleCollapse={() => setRightCollapsed(!rightCollapsed)}
         />
       </div>
     </div>
