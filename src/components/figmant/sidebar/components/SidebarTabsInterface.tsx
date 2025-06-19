@@ -54,10 +54,26 @@ export const SidebarTabsInterface: React.FC<SidebarTabsInterfaceProps> = ({
               boxShadow: '0px 1px 1.9px 0px var(--Shade-7-10, rgba(50, 50, 50, 0.10)) inset'
             }}
           >
-            <TabsTrigger value="analysis" className="data-[state=active]:bg-white">
+            <TabsTrigger 
+              value="analysis" 
+              style={{
+                borderRadius: '8px',
+                background: 'var(--Surface-01, #FCFCFC)',
+                boxShadow: '0px 1.25px 3px 0px var(--Shade-7-10, rgba(50, 50, 50, 0.10)), 0px 1.25px 1px 0px #FFF inset'
+              }}
+              className="data-[state=active]:bg-[var(--Surface-01,#FCFCFC)] data-[state=active]:shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
+            >
               Menu
             </TabsTrigger>
-            <TabsTrigger value="recent" className="data-[state=active]:bg-white">
+            <TabsTrigger 
+              value="recent" 
+              style={{
+                borderRadius: '8px',
+                background: 'var(--Surface-01, #FCFCFC)',
+                boxShadow: '0px 1.25px 3px 0px var(--Shade-7-10, rgba(50, 50, 50, 0.10)), 0px 1.25px 1px 0px #FFF inset'
+              }}
+              className="data-[state=active]:bg-[var(--Surface-01,#FCFCFC)] data-[state=active]:shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
+            >
               Recent
             </TabsTrigger>
           </TabsList>
