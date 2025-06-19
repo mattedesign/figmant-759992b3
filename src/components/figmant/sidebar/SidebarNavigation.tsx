@@ -31,7 +31,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   isCollapsed,
   onToggleCollapse
 }) => {
-  const { analysisHistory } = useChatAnalysisHistory();
+  const { data: analysisHistory = [] } = useChatAnalysisHistory();
 
   // Don't show tabbed interface when collapsed
   if (isCollapsed) {
