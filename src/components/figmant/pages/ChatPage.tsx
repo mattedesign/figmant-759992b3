@@ -121,6 +121,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({ selectedTemplate }) => {
       <div className="flex-1 min-h-0">
         <AnalysisChatContainer
           messages={chatState.messages}
+          setMessages={chatState.setMessages} // Now providing setMessages
           isAnalyzing={analysisQuery.isPending}
           message={chatState.message}
           setMessage={chatState.setMessage}

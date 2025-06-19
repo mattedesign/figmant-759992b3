@@ -8,7 +8,7 @@ interface AnalysisChatContainerProps {
   messages: ChatMessage[];
   message: string;
   setMessage: (message: string) => void;
-  setMessages: (messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void;
+  setMessages?: (messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void; // Made optional
   getCurrentTemplate: () => any;
   onFileUpload: (files: FileList) => void;
   onToggleUrlInput: () => void;
@@ -23,16 +23,16 @@ interface AnalysisChatContainerProps {
   attachments: any[];
   onRemoveAttachment: (id: string) => void;
   isAnalyzing?: boolean;
-  onSendMessage?: () => void; // Added missing prop
-  onKeyPress?: (e: React.KeyboardEvent) => void; // Added missing prop
-  canSend?: boolean; // Added missing prop
+  onSendMessage?: () => void;
+  onKeyPress?: (e: React.KeyboardEvent) => void;
+  canSend?: boolean;
 }
 
 export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   messages,
   message,
   setMessage,
-  setMessages,
+  setMessages, // Now optional
   getCurrentTemplate,
   onFileUpload,
   onToggleUrlInput,
@@ -53,6 +53,9 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
 }) => {
   const selectedTemplate = getCurrentTemplate();
   
+  // Only use the hook if setMessages is provided (internal chat management)
+  const shouldUseInternalHandler = !!setMessages;
+  
   const {
     handleSendMessage,
     handleKeyPress,
@@ -62,7 +65,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
     message,
     setMessage,
     messages,
-    setMessages,
+    setMessages || (() => {}), // Provide fallback
     attachments,
     (newAttachments) => {
       // This will be handled by parent component
@@ -70,18 +73,20 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
     selectedTemplate
   );
 
-  // Use props if provided, otherwise use hook values
-  const finalSendMessage = onSendMessage || handleSendMessage;
-  const finalKeyPress = onKeyPress || handleKeyPress;
-  const finalCanSend = canSend !== undefined ? canSend : hookCanSend;
-  const analyzing = isAnalyzing || hookIsAnalyzing;
+  // Use props if provided, otherwise use hook values (only if internal handler should be used)
+  const finalSendMessage = onSendMessage || (shouldUseInternalHandler ? handleSendMessage : () => {});
+  const finalKeyPress = onKeyPress || (shouldUseInternalHandler ? handleKeyPress : () => {});
+  const finalCanSend = canSend !== undefined ? canSend : (shouldUseInternalHandler ? hookCanSend : false);
+  const analyzing = isAnalyzing || (shouldUseInternalHandler ? hookIsAnalyzing : false);
 
   console.log('📋 ANALYSIS CHAT CONTAINER - Rendering with:', {
     messagesCount: messages.length,
     attachmentsCount: attachments.length,
     templatesCount: availableTemplates.length,
     selectedTemplate: selectedTemplate?.title || 'None',
-    isAnalyzing: analyzing
+    isAnalyzing: analyzing,
+    hasSetMessages: !!setMessages,
+    shouldUseInternalHandler
   });
 
   return (
