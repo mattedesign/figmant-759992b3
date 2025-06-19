@@ -54,7 +54,20 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
   const handleToggleUrlInput = () => setShowUrlInput(!showUrlInput);
   const handleCancelUrl = () => setShowUrlInput(false);
   
-  const handleAddUrlWithInput = () => handleAddUrl(urlInput);
+  const handleAddUrlWithInput = () => {
+    if (urlInput.trim()) {
+      handleAddUrl(urlInput);
+      setUrlInput('');
+      setShowUrlInput(false);
+    }
+  };
+
+  console.log('🎯 ANALYSIS TAB CONTENT - Rendering with:', {
+    activeTab,
+    messagesCount: messages.length,
+    templatesCount: figmantTemplates.length,
+    attachmentsCount: attachments.length
+  });
 
   return (
     <div className="h-full flex flex-col min-h-0">

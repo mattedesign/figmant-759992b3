@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useAnalysisChatState } from '../hooks/useAnalysisChatState';
-import { useMessageHandler } from '../useMessageHandler';
 import { useChatAnalysis } from '@/hooks/useChatAnalysis';
+import { useFileUploadHandler } from '../useFileUploadHandler';
 import { useToast } from '@/hooks/use-toast';
 
 interface AnalysisChatStateProps {
@@ -69,42 +69,66 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
   // Chat analysis hook
   const { analyzeWithChat } = useChatAnalysis();
 
-  // Simple file upload handler
+  // File upload handler
+  const { handleFileUpload: processFileUpload } = useFileUploadHandler(setAttachments);
+
+  // File upload wrapper
   const handleFileUpload = (files: FileList) => {
-    console.log('📁 FIGMANT CHAT - Handling file upload for', files.length, 'files');
-    
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const attachmentId = crypto.randomUUID();
-      
-      const newAttachment: ChatAttachment = {
-        id: attachmentId,
-        type: 'file',
-        name: file.name,
-        file: file,
-        status: 'uploaded',
-        url: URL.createObjectURL(file)
-      };
-      
-      setAttachments(prev => [...prev, newAttachment]);
-    }
+    console.log('📁 ANALYSIS CHAT STATE - Handling file upload for', files.length, 'files');
+    processFileUpload(files);
   };
 
   const addUrlAttachment = (url: string) => {
     if (!url.trim()) return;
     
-    const urlAttachment: ChatAttachment = {
-      id: crypto.randomUUID(),
-      type: 'url',
-      name: url,
-      url: url,
-      status: 'uploaded'
-    };
+    console.log('🔗 ANALYSIS CHAT STATE - Adding URL:', url);
     
-    setAttachments(prev => [...prev, urlAttachment]);
+    // Validate URL format
+    let formattedUrl = url.trim();
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      formattedUrl = `https://${formattedUrl}`;
+    }
+
+    try {
+      const urlObj = new URL(formattedUrl);
+      const hostname = urlObj.hostname;
+
+      // Check if URL already exists
+      const urlExists = attachments.some(att => att.url === formattedUrl);
+      if (urlExists) {
+        toast({
+          variant: "destructive",
+          title: "URL Already Added",
+          description: `${hostname} is already in your attachments.`,
+        });
+        return;
+      }
+
+      const urlAttachment: ChatAttachment = {
+        id: crypto.randomUUID(),
+        type: 'url',
+        name: hostname,
+        url: formattedUrl,
+        status: 'uploaded'
+      };
+      
+      setAttachments(prev => [...prev, urlAttachment]);
+      
+      toast({
+        title: "Website Added",
+        description: `${hostname} has been added for analysis.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Invalid URL",
+        description: "Please enter a valid website URL.",
+      });
+    }
   };
 
   const removeAttachment = (id: string) => {
+    console.log('🗑️ ANALYSIS CHAT STATE - Removing attachment:', id);
     setAttachments(prev => prev.filter(att => att.id !== id));
   };
 
@@ -114,6 +138,12 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
 
   const handleSendMessage = async () => {
     if (!canSend || isAnalyzing) return;
+
+    console.log('💬 ANALYSIS CHAT STATE - Sending message with:', {
+      messageLength: message.length,
+      attachmentsCount: attachments.length,
+      selectedTemplate: analysisState.selectedTemplate
+    });
 
     setIsAnalyzing(true);
 
@@ -129,7 +159,10 @@ export const AnalysisChatState: React.FC<AnalysisChatStateProps> = ({
 
       setMessages(prev => [...prev, userMessage]);
 
-      // Call analysis
+      // Call analysis with current template context
+      const currentTemplate = analysisState.getCurrentTemplate();
+      console.log('📝 Using template for analysis:', currentTemplate?.title || 'No template');
+
       const result = await analyzeWithChat.mutateAsync({
         message,
         attachments

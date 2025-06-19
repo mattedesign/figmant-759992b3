@@ -51,8 +51,8 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   console.log('📋 ANALYSIS CHAT CONTAINER - Rendering with:', {
     messagesCount: messages.length,
     attachmentsCount: attachments.length,
+    templatesCount: availableTemplates.length,
     showUrlInput,
-    urlInput,
     isAnalyzing
   });
 
@@ -63,7 +63,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         {messages.length === 0 ? (
           <div className="text-center text-muted-foreground">
             <h3 className="text-lg font-medium mb-2">Start your analysis</h3>
-            <p>Upload files or add URLs to get started with your design analysis.</p>
+            <p>Upload files, add URLs, or select a template to get started with your design analysis.</p>
           </div>
         ) : (
           messages.map((msg) => (
@@ -83,10 +83,22 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
             </div>
           ))
         )}
+        
+        {/* Loading indicator */}
+        {isAnalyzing && (
+          <div className="flex justify-start">
+            <div className="bg-muted p-3 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                <span className="text-sm text-muted-foreground">Analyzing...</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input Area */}
-      <div className="border-t">
+      <div className="border-t bg-background">
         <AnalysisChatInput
           message={message}
           setMessage={setMessage}

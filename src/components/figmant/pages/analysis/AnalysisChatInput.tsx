@@ -1,12 +1,10 @@
 
 import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Upload, Link, Loader2, X, Globe, FileText } from 'lucide-react';
-import { SimpleTemplateSelector } from './SimpleTemplateSelector';
+import { Send, Paperclip, Link, Sparkles } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
+import { SimpleTemplateSelector } from './SimpleTemplateSelector';
 
 interface AnalysisChatInputProps {
   message: string;
@@ -21,14 +19,13 @@ interface AnalysisChatInputProps {
   onTemplateSelect: (templateId: string) => void;
   availableTemplates: any[];
   onViewTemplate: (template: any) => void;
-  attachments?: ChatAttachment[];
-  onRemoveAttachment?: (attachmentId: string) => void;
-  // URL input props
-  showUrlInput?: boolean;
-  urlInput?: string;
-  setUrlInput?: (value: string) => void;
-  onAddUrl?: () => void;
-  onCancelUrl?: () => void;
+  attachments: ChatAttachment[];
+  onRemoveAttachment: (id: string) => void;
+  showUrlInput: boolean;
+  urlInput: string;
+  setUrlInput: (value: string) => void;
+  onAddUrl: () => void;
+  onCancelUrl: () => void;
 }
 
 export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
@@ -44,173 +41,153 @@ export const AnalysisChatInput: React.FC<AnalysisChatInputProps> = ({
   onTemplateSelect,
   availableTemplates,
   onViewTemplate,
-  attachments = [],
+  attachments,
   onRemoveAttachment,
-  showUrlInput = false,
-  urlInput = '',
+  showUrlInput,
+  urlInput,
   setUrlInput,
   onAddUrl,
   onCancelUrl
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUploadClick = () => {
-    console.log('📁 FIGMANT CHAT - Upload button clicked');
+  console.log('📝 ANALYSIS CHAT INPUT - Rendering with:', {
+    messageLength: message.length,
+    canSend,
+    isAnalyzing,
+    attachmentsCount: attachments.length,
+    templatesCount: availableTemplates.length,
+    selectedTemplate: selectedPromptTemplate?.title || 'None'
+  });
+
+  const handleFileClick = () => {
     fileInputRef.current?.click();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('📁 FIGMANT CHAT - File input changed');
     const files = e.target.files;
     if (files && files.length > 0) {
-      console.log('📁 FIGMANT CHAT - Files selected:', files.length);
       onFileUpload(files);
     }
+    // Reset the input so the same file can be selected again
     e.target.value = '';
   };
 
-  const handleAddUrlClick = () => {
-    console.log('🔗 FIGMANT CHAT - Add URL clicked, current urlInput:', urlInput);
-    if (urlInput.trim() && onAddUrl) {
-      onAddUrl();
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (canSend && !isAnalyzing) {
-        onSendMessage();
-      }
-    }
-  };
-
   return (
-    <div className="p-4 space-y-3 bg-transparent">
-      <input 
-        ref={fileInputRef} 
-        type="file" 
-        multiple 
-        accept="image/*,.pdf" 
-        onChange={handleFileChange} 
-        style={{ display: 'none' }} 
-      />
-
+    <div className="p-4 space-y-3">
       {/* Template Selector */}
-      <div className="flex items-center gap-2">
-        <SimpleTemplateSelector 
-          selectedTemplate={selectedPromptTemplate} 
-          onTemplateSelect={onTemplateSelect} 
-          availableTemplates={availableTemplates} 
-          onViewTemplate={onViewTemplate} 
+      <div className="flex items-center justify-between">
+        <SimpleTemplateSelector
+          selectedTemplate={selectedPromptTemplate}
+          onTemplateSelect={onTemplateSelect}
+          availableTemplates={availableTemplates}
+          onViewTemplate={onViewTemplate}
         />
       </div>
 
       {/* Attachments Display */}
       {attachments.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex flex-wrap gap-2">
-            {attachments.map((attachment) => (
-              <Badge key={attachment.id} variant="secondary" className="flex items-center gap-1">
-                {attachment.type === 'file' ? <FileText className="h-3 w-3" /> : <Globe className="h-3 w-3" />}
-                <span className="truncate max-w-32">{attachment.name}</span>
-                <span className="text-xs">({attachment.status})</span>
-                {onRemoveAttachment && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-4 w-4 p-0 ml-1"
-                    onClick={() => onRemoveAttachment(attachment.id)}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                )}
-              </Badge>
-            ))}
-          </div>
+        <div className="flex flex-wrap gap-2 p-2 bg-muted rounded-md">
+          {attachments.map((attachment) => (
+            <div key={attachment.id} className="flex items-center gap-1 bg-background px-2 py-1 rounded text-sm">
+              <span className="truncate max-w-32">{attachment.name}</span>
+              <button
+                onClick={() => onRemoveAttachment(attachment.id)}
+                className="text-muted-foreground hover:text-destructive"
+                disabled={isAnalyzing}
+              >
+                ×
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
       {/* URL Input Section */}
       {showUrlInput && (
-        <div className="flex gap-2 p-3 bg-muted rounded-lg">
-          <Input
-            placeholder="Enter website URL (e.g., https://example.com)"
+        <div className="flex gap-2">
+          <input
+            type="text"
             value={urlInput}
-            onChange={(e) => setUrlInput?.(e.target.value)}
-            className="flex-1"
+            onChange={(e) => setUrlInput(e.target.value)}
+            placeholder="Enter website URL..."
+            className="flex-1 px-3 py-2 border rounded-md"
+            disabled={isAnalyzing}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                onAddUrl();
+              }
+            }}
           />
-          <Button 
-            onClick={handleAddUrlClick}
-            disabled={!urlInput.trim()}
-            size="sm"
-          >
-            Add URL
+          <Button onClick={onAddUrl} disabled={!urlInput.trim() || isAnalyzing}>
+            Add
           </Button>
-          <Button 
-            onClick={onCancelUrl}
-            variant="outline"
-            size="sm"
-          >
+          <Button variant="outline" onClick={onCancelUrl} disabled={isAnalyzing}>
             Cancel
           </Button>
         </div>
       )}
 
-      {/* Message Input */}
-      <div className="space-y-2">
-        <Textarea 
-          value={message} 
-          onChange={(e) => setMessage(e.target.value)} 
-          placeholder="Describe what you'd like me to analyze..." 
-          className="min-h-[100px] resize-none" 
-          onKeyDown={handleKeyDown}
-          disabled={isAnalyzing}
-        />
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onToggleUrlInput} 
-              className="flex items-center gap-2"
-              disabled={isAnalyzing}
-            >
-              <Link className="h-4 w-4" />
-              Add URL
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleUploadClick} 
-              className="flex items-center gap-2"
-              disabled={isAnalyzing}
-            >
-              <Upload className="h-4 w-4" />
-              Upload Files
-            </Button>
-          </div>
+      {/* Main Input Area */}
+      <div className="flex gap-2">
+        {/* Message Input */}
+        <div className="flex-1">
+          <Textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={onKeyPress}
+            placeholder="Describe your design analysis needs..."
+            className="min-h-[80px] resize-none"
+            disabled={isAnalyzing}
+          />
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleFileClick}
+            disabled={isAnalyzing}
+            title="Upload files"
+          >
+            <Paperclip className="h-4 w-4" />
+          </Button>
           
-          <Button 
-            onClick={onSendMessage} 
-            disabled={!canSend || isAnalyzing} 
-            className="flex items-center gap-2"
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onToggleUrlInput}
+            disabled={isAnalyzing}
+            title="Add website URL"
+          >
+            <Link className="h-4 w-4" />
+          </Button>
+          
+          <Button
+            onClick={onSendMessage}
+            disabled={!canSend || isAnalyzing}
+            size="icon"
+            title="Send message"
           >
             {isAnalyzing ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Analyzing...
-              </>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
             ) : (
-              <>
-                <Send className="h-4 w-4" />
-                Send Analysis
-              </>
+              <Send className="h-4 w-4" />
             )}
           </Button>
         </div>
       </div>
+
+      {/* Hidden File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*,.pdf,.doc,.docx,.txt"
+        onChange={handleFileChange}
+        className="hidden"
+      />
     </div>
   );
 };

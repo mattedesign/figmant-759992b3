@@ -23,56 +23,63 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
   const { toast } = useToast();
 
   const handleAddUrl = () => {
-    if (urlInput.trim()) {
-      console.log('Adding URL:', urlInput);
-      
-      // Validate URL format
-      let formattedUrl = urlInput.trim();
-      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-        formattedUrl = `https://${formattedUrl}`;
-      }
+    if (!urlInput.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Invalid URL",
+        description: "Please enter a valid URL.",
+      });
+      return;
+    }
 
-      try {
-        const urlObj = new URL(formattedUrl);
-        const hostname = urlObj.hostname;
+    console.log('🔗 URL ATTACHMENT HANDLER - Adding URL:', urlInput);
 
-        // Check if URL already exists
-        const urlExists = attachments.some(att => att.url === formattedUrl);
-        if (urlExists) {
-          toast({
-            variant: "destructive",
-            title: "URL Already Added",
-            description: `${hostname} is already in your attachments.`,
-          });
-          return;
-        }
+    // Validate URL format
+    let formattedUrl = urlInput.trim();
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      formattedUrl = `https://${formattedUrl}`;
+    }
 
-        // Create new URL attachment
-        const newAttachment: ChatAttachment = {
-          id: crypto.randomUUID(),
-          type: 'url',
-          name: hostname,
-          url: formattedUrl,
-          status: 'uploaded'
-        };
+    try {
+      const urlObj = new URL(formattedUrl);
+      const hostname = urlObj.hostname;
 
-        console.log('Creating new URL attachment:', newAttachment);
-        setAttachments([...attachments, newAttachment]);
-        
-        setUrlInput('');
-        setShowUrlInput(false);
-        
-        toast({
-          title: "Website Added",
-          description: `${hostname} has been added for analysis.`,
-        });
-      } catch (error) {
+      // Check if URL already exists
+      const urlExists = attachments.some(att => att.url === formattedUrl);
+      if (urlExists) {
         toast({
           variant: "destructive",
-          title: "Invalid URL",
-          description: "Please enter a valid website URL.",
+          title: "URL Already Added",
+          description: `${hostname} is already in your attachments.`,
         });
+        return;
       }
+
+      // Create new URL attachment
+      const newAttachment: ChatAttachment = {
+        id: crypto.randomUUID(),
+        type: 'url',
+        name: hostname,
+        url: formattedUrl,
+        status: 'uploaded'
+      };
+
+      console.log('Creating new URL attachment:', newAttachment);
+      setAttachments([...attachments, newAttachment]);
+      
+      setUrlInput('');
+      setShowUrlInput(false);
+      
+      toast({
+        title: "Website Added",
+        description: `${hostname} has been added for analysis.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Invalid URL",
+        description: "Please enter a valid website URL.",
+      });
     }
   };
 
