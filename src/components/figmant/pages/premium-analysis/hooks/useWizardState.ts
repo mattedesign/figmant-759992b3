@@ -34,10 +34,21 @@ export const useWizardState = () => {
   }, [location.state]);
   
   const handleNextStep = useCallback(() => {
+    console.log('🎯 WIZARD STATE - handleNextStep called', { currentStep, totalSteps, canProceed: canProceedToNextStep() });
+    
     if (currentStep < totalSteps && canProceedToNextStep()) {
-      setCurrentStep(currentStep + 1);
+      const nextStep = currentStep + 1;
+      console.log('🎯 WIZARD STATE - Moving to step', nextStep);
+      setCurrentStep(nextStep);
+    } else {
+      console.log('🎯 WIZARD STATE - Cannot proceed', { 
+        currentStep, 
+        totalSteps, 
+        canProceed: canProceedToNextStep(),
+        stepData 
+      });
     }
-  }, [currentStep]);
+  }, [currentStep, totalSteps]);
   
   const handlePreviousStep = useCallback(() => {
     if (currentStep > 1) {
@@ -46,9 +57,13 @@ export const useWizardState = () => {
   }, [currentStep]);
   
   const canProceedToNextStep = useCallback(() => {
+    console.log('🎯 WIZARD STATE - canProceedToNextStep check', { currentStep, stepData: stepData.selectedType });
+    
     switch (currentStep) {
       case 1:
-        return stepData.selectedType !== '';
+        const canProceedStep1 = stepData.selectedType !== '';
+        console.log('🎯 WIZARD STATE - Step 1 can proceed:', canProceedStep1, 'selectedType:', stepData.selectedType);
+        return canProceedStep1;
       case 2:
         return stepData.projectName.trim() !== '';
       case 3:
@@ -75,15 +90,19 @@ export const useWizardState = () => {
 
   // Provide both interfaces - the new one for full updates and the old one for key-value updates
   const updateStepData = useCallback((newDataOrKey: StepData | string, value?: any) => {
+    console.log('🎯 WIZARD STATE - updateStepData called', { newDataOrKey, value });
+    
     if (typeof newDataOrKey === 'string') {
       // Old interface - key-value update
-      setStepData(prev => ({
-        ...prev,
-        [newDataOrKey]: value
-      }));
+      setStepData(prev => {
+        const updated = { ...prev, [newDataOrKey]: value };
+        console.log('🎯 WIZARD STATE - Updated stepData (key-value):', updated);
+        return updated;
+      });
     } else {
       // New interface - full object update
       setStepData(newDataOrKey);
+      console.log('🎯 WIZARD STATE - Updated stepData (full object):', newDataOrKey);
     }
   }, []);
 

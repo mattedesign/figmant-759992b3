@@ -62,13 +62,13 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
       }
     }
     
-    // Automatically proceed to next step after selection
-    setTimeout(() => {
-      if (onNextStep) {
-        console.log('🎯 Step1 - Proceeding to next step');
-        onNextStep();
-      }
-    }, 100);
+    console.log('🎯 Step1 - About to call onNextStep, onNextStep available:', !!onNextStep);
+    
+    // Call onNextStep immediately - no timeout needed
+    if (onNextStep) {
+      console.log('🎯 Step1 - Calling onNextStep now');
+      onNextStep();
+    }
   };
 
   console.log('🎯 Step1 - Current state:', {
