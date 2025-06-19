@@ -23,10 +23,20 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
     <TooltipProvider>
       <div 
         className={cn(
-          "h-full flex flex-col transition-all duration-300 ease-in-out",
-          isCollapsed ? "w-16" : "w-64"
+          "h-full transition-all duration-300 ease-in-out",
+          isCollapsed ? "w-16" : ""
         )}
-        style={{
+        style={!isCollapsed ? {
+          display: 'flex',
+          maxWidth: '240px',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexShrink: 0,
+          borderRadius: '20px',
+          border: '1px solid var(--Stroke-01, #ECECEC)',
+          background: 'var(--Surface-01, #FCFCFC)'
+        } : {
           borderRadius: '20px',
           border: '1px solid var(--Stroke-01, #ECECEC)',
           background: 'var(--Surface-01, #FCFCFC)'
