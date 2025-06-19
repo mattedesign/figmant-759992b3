@@ -47,7 +47,7 @@ export const CreditPackCard: React.FC<CreditPackCardProps> = ({
       <Button
         className="w-full text-xs sm:text-sm min-h-[40px] sm:min-h-[44px]"
         onClick={() => onPurchase(plan)}
-        variant={plan.credits >= 100 ? 'default' : 'outline'}
+        variant="default"
         disabled={isProcessing || !isValidPlan}
       >
         <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
