@@ -3,7 +3,6 @@ import React from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AnalysisTabContent } from './AnalysisTabContent';
 import { useFileUploadHandler } from '../useFileUploadHandler';
-import { useAnalysisPageState } from '../hooks/useAnalysisPageState';
 import { AnalysisChatHeader } from '../AnalysisChatHeader';
 import { URLAttachmentHandler } from './URLAttachmentHandler';
 
