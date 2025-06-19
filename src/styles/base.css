@@ -85,11 +85,11 @@
   }
 }
 
-/* Strong override for background color */
+/* Background color rules */
 @layer base {
-  /* Target the root element */
+  /* Target the root element - default background for all pages */
   #root {
-    background-color: #ffffff !important;
+    background-color: #E5DFDB !important;
     min-height: 100vh !important;
     height: 100vh !important;
     overflow: hidden !important;
@@ -101,7 +101,7 @@
 
   html {
     @apply text-foreground font-sans;
-    background-color: #ffffff !important;
+    background-color: #E5DFDB !important;
     font-feature-settings: "rlig" 1, "calt" 1, "kern" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -114,7 +114,7 @@
 
   body {
     @apply text-foreground font-sans;
-    background-color: #ffffff !important;
+    background-color: #E5DFDB !important;
     font-feature-settings: "rlig" 1, "calt" 1, "kern" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -129,5 +129,18 @@
   body > div:first-child,
   #root > div:first-child {
     background-color: transparent !important;
+  }
+
+  /* Override background color specifically for auth pages */
+  body:has([data-auth-page]) {
+    background-color: #ffffff !important;
+  }
+
+  html:has([data-auth-page]) {
+    background-color: #ffffff !important;
+  }
+
+  #root:has([data-auth-page]) {
+    background-color: #ffffff !important;
   }
 }
