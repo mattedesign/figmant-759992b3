@@ -34,16 +34,16 @@ export const TemplateDropdown: React.FC<TemplateDropdownProps> = ({
     <div className="relative">
       <button 
         onClick={() => setShowTemplateMenu(!showTemplateMenu)}
-        className="flex h-10 px-[10px] py-1 items-center gap-3 rounded-xl border border-[#E2E2E2] hover:bg-gray-50 transition-colors sm:h-12 sm:px-3"
+        className="flex h-10 px-[10px] py-1 items-center gap-3 rounded-xl border border-[#E2E2E2] hover:bg-gray-50 transition-colors sm:h-12 sm:px-3 min-w-0 max-w-[200px]"
         disabled={isAnalyzing}
       >
-        <div className="flex p-[2px] items-center gap-2 w-4 h-4">
+        <div className="flex p-[2px] items-center gap-2 w-4 h-4 flex-shrink-0">
           <span className="text-lg">⚡</span>
         </div>
-        <span className="text-[#121212] font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px]">
+        <span className="text-[#121212] font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] truncate min-w-0">
           {displayName}
         </span>
-        <ChevronDown className="w-3 h-3" />
+        <ChevronDown className="w-3 h-3 flex-shrink-0" />
       </button>
       
       {showTemplateMenu && (
@@ -55,10 +55,10 @@ export const TemplateDropdown: React.FC<TemplateDropdownProps> = ({
                 onTemplateSelect(template.id);
                 setShowTemplateMenu(false);
               }}
-              className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
+              className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors text-left min-w-0"
             >
-              <span className="text-lg">⚡</span>
-              <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">
+              <span className="text-lg flex-shrink-0">⚡</span>
+              <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212] truncate min-w-0">
                 {template.displayName || template.title}
               </span>
             </button>
