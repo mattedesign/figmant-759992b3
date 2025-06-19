@@ -40,6 +40,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({ attachment
   console.log('🔍 SCREENSHOT DISPLAY - Desktop data:', desktop);
   console.log('🔍 SCREENSHOT DISPLAY - Mobile data:', mobile);
   
+  // Properly check for successful screenshots with URLs
   const hasDesktop = desktop?.success && desktop.screenshotUrl;
   const hasMobile = mobile?.success && mobile.screenshotUrl;
 
