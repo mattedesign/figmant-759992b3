@@ -1,6 +1,5 @@
 
 import { AttachmentData } from './types.ts';
-import { arrayBufferToBase64 } from './storage.ts';
 
 export async function processFileAttachment(supabase: any, attachment: AttachmentData): Promise<Array<{ type: 'text' | 'image'; text?: string; source?: any }>> {
   console.log('=== PROCESSING FILE ATTACHMENT ===');
@@ -75,7 +74,7 @@ async function processImageFile(supabase: any, filePath: string, fileName: strin
 
     // Convert image to base64
     const arrayBuffer = await imageData.arrayBuffer();
-    const base64 = arrayBufferToBase64(arrayBuffer);
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
     
     // Determine media type
     const mediaType = getMediaTypeFromFileName(fileName);
