@@ -1,11 +1,12 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
-import { SidebarHeader } from './sidebar/SidebarHeader';
-import { SidebarUserSection } from './sidebar/components/SidebarUserSection';
-import { SidebarNavigation } from './sidebar/SidebarNavigation';
-import { SidebarCredits } from './sidebar/SidebarCredits';
-import { SidebarUserProfile } from './sidebar/SidebarUserProfile';
+import { SidebarHeader } from '../SidebarHeader';
+import { SidebarUserSection } from './components/SidebarUserSection';
+import { SidebarNavigation } from '../SidebarNavigation';
+import { SidebarCredits } from '../SidebarCredits';
+import { SidebarUserProfile } from '../SidebarUserProfile';
 
 interface FigmantSidebarProps {
   activeSection: string;

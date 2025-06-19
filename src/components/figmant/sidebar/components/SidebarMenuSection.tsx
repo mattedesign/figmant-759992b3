@@ -126,7 +126,17 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
         )}
         
         {(!section.title || !isCollapsed) && (
-          <div className="space-y-1">
+          <div 
+            className="space-y-1"
+            style={{
+              display: 'flex',
+              padding: '12px',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '4px',
+              alignSelf: 'stretch'
+            }}
+          >
             {section.items?.map(renderMenuItem)}
           </div>
         )}
