@@ -38,7 +38,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
   return (
     <div 
       className={`h-screen flex flex-col transition-all duration-300 overflow-hidden ${
-        isCollapsed ? 'w-16' : 'w-72'
+        isCollapsed ? 'w-20' : 'w-72'
       }`}
       style={{ 
         borderRadius: '20px',

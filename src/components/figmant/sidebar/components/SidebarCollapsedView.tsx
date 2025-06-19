@@ -40,17 +40,7 @@ export const SidebarCollapsedView: React.FC<SidebarCollapsedViewProps> = ({
 }) => {
   return (
     <div className="flex flex-col h-full">
-      {/* Header with expand button */}
-      <div className="p-4 border-b border-gray-200/30 flex justify-center">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => onToggleCollapse(false)}
-          className="w-8 h-8 p-0 text-gray-500 hover:text-gray-700 hover:bg-transparent active:bg-transparent"
-        >
-          <PanelLeftOpen className="h-4 w-4" />
-        </Button>
-      </div>
+      {/* Header with expand button - now handled by SidebarHeader */}
 
       {/* User Profile Section - Positioned at top like expanded state */}
       <div className="flex-shrink-0">
@@ -74,7 +64,7 @@ export const SidebarCollapsedView: React.FC<SidebarCollapsedViewProps> = ({
               variant="ghost"
               size="icon"
               className={cn(
-                "w-10 h-10 p-0",
+                "w-11 h-11 p-0",
                 activeSection === item.id 
                   ? "bg-white text-[#3D4A5C]" 
                   : "hover:bg-white hover:text-[#3D4A5C]"
@@ -103,7 +93,7 @@ export const SidebarCollapsedView: React.FC<SidebarCollapsedViewProps> = ({
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "w-10 h-10 p-0",
+                    "w-11 h-11 p-0",
                     activeSection === item.id 
                       ? "bg-white text-[#3D4A5C]" 
                       : "hover:bg-white hover:text-[#3D4A5C]"
@@ -134,7 +124,7 @@ export const SidebarCollapsedView: React.FC<SidebarCollapsedViewProps> = ({
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "w-10 h-10 p-0",
+                    "w-11 h-11 p-0",
                     activeSection === item.id 
                       ? "bg-white text-[#3D4A5C]" 
                       : "hover:bg-white hover:text-[#3D4A5C]"
