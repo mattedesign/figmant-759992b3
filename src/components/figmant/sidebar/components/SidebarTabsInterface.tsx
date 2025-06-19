@@ -41,31 +41,39 @@ export const SidebarTabsInterface: React.FC<SidebarTabsInterfaceProps> = ({
   ];
 
   return (
-    <div className="px-4 mb-4">
-      <Tabs defaultValue="analysis" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-gray-100">
-          <TabsTrigger value="analysis" className="data-[state=active]:bg-white">
-            Analysis
-          </TabsTrigger>
-          <TabsTrigger value="recent" className="data-[state=active]:bg-white">
-            Recent
-          </TabsTrigger>
-        </TabsList>
+    <div className="flex flex-col h-full">
+      <Tabs defaultValue="analysis" className="flex flex-col h-full">
+        {/* Fixed tabs header */}
+        <div className="flex-shrink-0 px-4 mb-4">
+          <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+            <TabsTrigger value="analysis" className="data-[state=active]:bg-white">
+              Analysis
+            </TabsTrigger>
+            <TabsTrigger value="recent" className="data-[state=active]:bg-white">
+              Recent
+            </TabsTrigger>
+          </TabsList>
+        </div>
         
-        <TabsContent value="analysis" className="mt-4 space-y-6">
-          <SidebarMenuSection
-            sections={allAnalysisSections}
-            activeSection={activeSection}
-            onSectionChange={onSectionChange}
-          />
-        </TabsContent>
-        
-        <TabsContent value="recent" className="mt-4 h-96">
-          <SidebarRecentAnalyses
-            analysisHistory={analysisHistory}
-            onSectionChange={onSectionChange}
-          />
-        </TabsContent>
+        {/* Scrollable content area */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <TabsContent value="analysis" className="h-full m-0 overflow-y-auto">
+            <div className="space-y-6">
+              <SidebarMenuSection
+                sections={allAnalysisSections}
+                activeSection={activeSection}
+                onSectionChange={onSectionChange}
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="recent" className="h-full m-0 flex flex-col">
+            <SidebarRecentAnalyses
+              analysisHistory={analysisHistory}
+              onSectionChange={onSectionChange}
+            />
+          </TabsContent>
+        </div>
       </Tabs>
     </div>
   );
