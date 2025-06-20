@@ -2,11 +2,14 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, DollarSign, Target, BarChart3 } from 'lucide-react';
+import { TrendingUp, DollarSign, Target, BarChart3, Activity, Eye, Calculator } from 'lucide-react';
 import { DashboardRevenueSection } from './DashboardRevenueSection';
 import { RealTimeMetricsWidget } from './widgets/real-time-metrics/RealTimeMetricsWidget';
 import { ExecutiveSummaryWidget } from './widgets/executive-summary/ExecutiveSummaryWidget';
 import { CompetitorInsightCard } from './widgets/competitive-intelligence/CompetitorInsightCard';
+import { AIAnalysisPerformanceDashboard } from './widgets/ai-performance/AIAnalysisPerformanceDashboard';
+import { BusinessImpactCalculator } from './widgets/business-impact/BusinessImpactCalculator';
+import { CompetitiveIntelligenceTracker } from './widgets/competitive-intelligence/CompetitiveIntelligenceTracker';
 
 interface DashboardAnalyticsTabsSectionProps {
   dataStats: any;
@@ -80,22 +83,30 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
         
         <CardContent>
           <Tabs defaultValue="executive" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-6 mb-6">
               <TabsTrigger value="executive" className="flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
-                Executive Summary
+                Executive
               </TabsTrigger>
               <TabsTrigger value="revenue" className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
-                Revenue Impact
+                Revenue
+              </TabsTrigger>
+              <TabsTrigger value="performance" className="flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                AI Performance
+              </TabsTrigger>
+              <TabsTrigger value="impact" className="flex items-center gap-2">
+                <Calculator className="h-4 w-4" />
+                Business Impact
               </TabsTrigger>
               <TabsTrigger value="competitive" className="flex items-center gap-2">
                 <Target className="h-4 w-4" />
-                Competitive Intel
+                Competitive
               </TabsTrigger>
               <TabsTrigger value="realtime" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
-                Real-time Metrics
+                Real-time
               </TabsTrigger>
             </TabsList>
 
@@ -103,8 +114,10 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
               <ExecutiveSummaryWidget
                 totalROI={estimatedROI}
                 monthlyImpact={monthlyImpact}
-                successRate={realData?.dataStats?.realSuccessRate || avgConfidence}
-                completedAnalyses={realData?.dataStats?.totalRealAnalyses || dataStats.completedAnalyses}
+                successRate={realData?.analysisMetrics?.length > 0 
+                  ? (realData.analysisMetrics.filter(m => m.analysis_success).length / realData.analysisMetrics.length) * 100
+                  : avgConfidence}
+                completedAnalyses={realData?.designAnalysis?.length || dataStats.completedAnalyses}
               />
             </TabsContent>
 
@@ -120,9 +133,17 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
               />
             </TabsContent>
 
+            <TabsContent value="performance" className="space-y-6">
+              <AIAnalysisPerformanceDashboard realData={realData} />
+            </TabsContent>
+
+            <TabsContent value="impact" className="space-y-6">
+              <BusinessImpactCalculator realData={realData} />
+            </TabsContent>
+
             <TabsContent value="competitive" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <CompetitorInsightCard insights={competitorInsights} />
+              <div className="grid grid-cols-1 gap-6">
+                <CompetitiveIntelligenceTracker realData={realData} />
                 
                 <Card>
                   <CardHeader>
@@ -133,8 +154,8 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
                       <div className="p-4 bg-blue-50 rounded-lg">
                         <h4 className="font-semibold text-blue-900 mb-2">Competitive Advantage Score</h4>
                         <div className="text-3xl font-bold text-blue-700">
-                          {realData?.dataStats?.avgConfidenceScore ? 
-                            Math.round(realData.dataStats.avgConfidenceScore) : 78}/100
+                          {realData?.designAnalysis?.length > 0 ? 
+                            Math.round(realData.designAnalysis.reduce((sum, d) => sum + (d.confidence_score || 0), 0) / realData.designAnalysis.length) : 78}/100
                         </div>
                         <p className="text-sm text-blue-700 mt-1">Above industry average</p>
                       </div>
@@ -143,15 +164,15 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
                         <div className="flex justify-between text-sm">
                           <span>UX Quality</span>
                           <span className="font-medium">
-                            {realData?.dataStats?.avgConfidenceScore ? 
-                              `${Math.round(realData.dataStats.avgConfidenceScore)}%` : '85%'}
+                            {realData?.designAnalysis?.length > 0 ? 
+                              `${Math.round(realData.designAnalysis.reduce((sum, d) => sum + (d.confidence_score || 0), 0) / realData.designAnalysis.length)}%` : '85%'}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span>Conversion Optimization</span>
                           <span className="font-medium">
-                            {realData?.dataStats?.realSuccessRate ? 
-                              `${Math.round(realData.dataStats.realSuccessRate)}%` : '72%'}
+                            {realData?.analysisMetrics?.length > 0 ? 
+                              `${Math.round((realData.analysisMetrics.filter(m => m.analysis_success).length / realData.analysisMetrics.length) * 100)}%` : '72%'}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
@@ -178,8 +199,8 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
                       <div className="flex justify-between items-center">
                         <span className="text-sm">API Response Time</span>
                         <span className="text-sm font-medium text-green-600">
-                          {realData?.dataStats?.avgProcessingTime ? 
-                            `${Math.round(realData.dataStats.avgProcessingTime)}ms` : '1.2s'}
+                          {realData?.analysisMetrics?.length > 0 ? 
+                            `${Math.round(realData.analysisMetrics.reduce((sum, m) => sum + (m.processing_time_ms || 0), 0) / realData.analysisMetrics.length)}ms` : '1.2s'}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
@@ -207,7 +228,7 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Analyses This Week</span>
                         <span className="text-sm font-medium">
-                          {realData?.dataStats?.totalRealAnalyses || dataStats.totalAnalyses}
+                          {realData?.designAnalysis?.length || dataStats.totalAnalyses}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">

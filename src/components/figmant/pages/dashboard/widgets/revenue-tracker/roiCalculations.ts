@@ -9,9 +9,11 @@ export const calculateROI = (
     return {
       estimated_conversion_improvement: 0,
       monthly_revenue_impact: 0,
+      annual_revenue_impact: 0,
       implementation_cost: 0,
       roi_percentage: 0,
       payback_period: 0,
+      confidence_score: 0,
       current_monthly_revenue: 0,
       improved_monthly_revenue: 0
     };
@@ -39,6 +41,7 @@ export const calculateROI = (
     businessMetrics.avg_order_value;
   
   const monthly_revenue_impact = improved_monthly_revenue - current_monthly_revenue;
+  const annual_revenue_impact = monthly_revenue_impact * 12;
 
   // Estimate implementation cost (design + dev time)
   const total_suggestions = analysisData.reduce((sum, analysis) => 
@@ -46,17 +49,19 @@ export const calculateROI = (
   const implementation_cost = total_suggestions * 500; // $500 per suggestion implementation
 
   const roi_percentage = implementation_cost > 0 ? 
-    ((monthly_revenue_impact * 12 - implementation_cost) / implementation_cost) * 100 : 0;
+    ((annual_revenue_impact - implementation_cost) / implementation_cost) * 100 : 0;
   
-  const payback_period = implementation_cost > 0 ? 
+  const payback_period = implementation_cost > 0 && monthly_revenue_impact > 0 ? 
     implementation_cost / monthly_revenue_impact : 0;
 
   return {
     estimated_conversion_improvement,
     monthly_revenue_impact,
+    annual_revenue_impact,
     implementation_cost,
     roi_percentage,
     payback_period,
+    confidence_score: avgConfidence,
     current_monthly_revenue,
     improved_monthly_revenue
   };
