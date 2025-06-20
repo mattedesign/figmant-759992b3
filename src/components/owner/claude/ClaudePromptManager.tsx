@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, CheckCircle, XCircle, Clock, Plus } from 'lucide-react';
-import { useClaudePromptExamples, useCreatePromptExample, ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
+import { useClaudePromptExamples, ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
 import { useClaudeSettings } from '@/hooks/useClaudeSettings';
 import { ConnectionStatus } from '@/types/claude';
 import { CreatePromptForm } from './CreatePromptForm';
@@ -24,21 +24,7 @@ export const ClaudePromptManager: React.FC = () => {
   const { isOwner, loading } = useAuth();
   const { data: claudeSettings, isLoading: settingsLoading } = useClaudeSettings();
   const { data: promptTemplates = [], isLoading: templatesLoading, refetch } = useClaudePromptExamples();
-  const createPromptMutation = useCreatePromptExample();
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newPrompt, setNewPrompt] = useState<Partial<ClaudePromptExample>>({
-    title: '',
-    display_name: '',
-    description: '',
-    category: 'general' as const,
-    original_prompt: '',
-    claude_response: '',
-    use_case_context: '',
-    business_domain: '',
-    is_template: true,
-    is_active: true,
-    effectiveness_rating: 5
-  });
 
   console.log('🚀 ClaudePromptManager mounting with auth state:', { isOwner, loading });
 
@@ -87,47 +73,13 @@ export const ClaudePromptManager: React.FC = () => {
     };
   };
 
-  const handleSavePrompt = async () => {
-    if (!newPrompt.title || !newPrompt.display_name || !newPrompt.original_prompt || !newPrompt.claude_response) {
-      return;
-    }
-
-    try {
-      await createPromptMutation.mutateAsync(newPrompt as Omit<ClaudePromptExample, 'id' | 'created_at' | 'updated_at'>);
-      setShowCreateForm(false);
-      setNewPrompt({
-        title: '',
-        display_name: '',
-        description: '',
-        category: 'general' as const,
-        original_prompt: '',
-        claude_response: '',
-        use_case_context: '',
-        business_domain: '',
-        is_template: true,
-        is_active: true,
-        effectiveness_rating: 5
-      });
-    } catch (error) {
-      console.error('Failed to create prompt:', error);
-    }
+  const handleCreateSuccess = () => {
+    setShowCreateForm(false);
+    refetch();
   };
 
   const handleCancelCreate = () => {
     setShowCreateForm(false);
-    setNewPrompt({
-      title: '',
-      display_name: '',
-      description: '',
-      category: 'general' as const,
-      original_prompt: '',
-      claude_response: '',
-      use_case_context: '',
-      business_domain: '',
-      is_template: true,
-      is_active: true,
-      effectiveness_rating: 5
-    });
   };
 
   const handleView = (template: ClaudePromptExample) => {
@@ -175,11 +127,8 @@ export const ClaudePromptManager: React.FC = () => {
 
       {showCreateForm && (
         <CreatePromptForm
-          newPrompt={newPrompt}
-          setNewPrompt={setNewPrompt}
-          onSave={handleSavePrompt}
           onCancel={handleCancelCreate}
-          isSaving={createPromptMutation.isPending}
+          onSuccess={handleCreateSuccess}
         />
       )}
       
