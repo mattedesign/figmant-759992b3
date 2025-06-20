@@ -24,45 +24,42 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h2 className="text-3xl font-bold text-center mb-8">Project Details</h2>
+    <div className="w-full">
+      <h2 className="text-3xl font-bold text-center mb-8 w-full">Project Details</h2>
       
-      {/* If no template is selected or no contextual fields, show a message */}
-      {!selectedTemplate ? (
-        <Card>
-          <CardContent className="text-center p-0">
-            <p className="text-muted-foreground">
-              Please select an analysis template first to configure project details.
-            </p>
-          </CardContent>
-        </Card>
-      ) : !selectedTemplate.contextual_fields || selectedTemplate.contextual_fields.length === 0 ? (
-        <Card>
-          <CardHeader className="p-0">
-            <p className="text-sm text-muted-foreground">
-              This template doesn't require additional configuration details.
-            </p>
-          </CardHeader>
-          <CardContent className="p-0">
-            <p className="text-muted-foreground">
-              You can proceed to the next step to upload your files for analysis.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="space-y-4 p-0">
-            {selectedTemplate.contextual_fields.map((field) => (
-              <ContextualFieldRenderer
-                key={field.id}
-                field={field}
-                value={stepData.contextualData?.[field.id] || ''}
-                onChange={(value) => handleContextualFieldChange(field.id, value)}
-              />
-            ))}
-          </CardContent>
-        </Card>
-      )}
+      <div className="max-w-2xl mx-auto">
+        {/* If no template is selected or no contextual fields, show a message */}
+        {!selectedTemplate ? (
+          <Card>
+            <CardContent className="text-center p-0">
+              <p className="text-muted-foreground">
+                Please select an analysis template first to configure project details.
+              </p>
+            </CardContent>
+          </Card>
+        ) : !selectedTemplate.contextual_fields || selectedTemplate.contextual_fields.length === 0 ? (
+          <Card>
+            <CardContent className="p-0">
+              <p className="text-muted-foreground">
+                You can proceed to the next step to upload your files for analysis.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="space-y-4 p-0">
+              {selectedTemplate.contextual_fields.map((field) => (
+                <ContextualFieldRenderer
+                  key={field.id}
+                  field={field}
+                  value={stepData.contextualData?.[field.id] || ''}
+                  onChange={(value) => handleContextualFieldChange(field.id, value)}
+                />
+              ))}
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
