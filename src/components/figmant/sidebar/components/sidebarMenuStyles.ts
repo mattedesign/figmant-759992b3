@@ -79,7 +79,7 @@ export const getInactiveLabelInlineStyles = () => {
     fontWeight: 500,
     lineHeight: '20px',
     letterSpacing: '-0.12px',
-    textAlign: 'left',
+    textAlign: 'left' as const,
     display: 'flex',
     alignItems: 'center',
     height: '100%',
@@ -91,7 +91,7 @@ export const getMenuSectionContainerStyles = (isFirst: boolean) => {
   return {
     display: 'flex',
     padding: '12px',
-    flexDirection: 'column',
+    flexDirection: 'column' as const,
     alignItems: 'center',
     gap: '4px',
     alignSelf: 'stretch',
