@@ -1,8 +1,6 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
-
 interface WizardNavigationProps {
   currentStep: number;
   totalSteps: number;
@@ -10,7 +8,6 @@ interface WizardNavigationProps {
   onNextStep: () => void;
   canProceed: boolean;
 }
-
 export const WizardNavigation: React.FC<WizardNavigationProps> = ({
   currentStep,
   totalSteps,
@@ -18,9 +15,9 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
   onNextStep,
   canProceed
 }) => {
-  console.log('🎯 WizardNavigation render:', { 
-    currentStep, 
-    totalSteps, 
+  console.log('🎯 WizardNavigation render:', {
+    currentStep,
+    totalSteps,
     canProceed,
     isOnFinalStep: currentStep === 4,
     isProcessingStep: currentStep === 5
@@ -28,7 +25,6 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
 
   // Don't show navigation if we're past the total steps OR on processing step
   if (currentStep > totalSteps || currentStep === 5) return null;
-
   const isOnFinalStep = currentStep === 4;
   const getButtonText = () => {
     if (isOnFinalStep) {
@@ -36,7 +32,6 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
     }
     return 'Continue';
   };
-
   const handleNextClick = () => {
     console.log('🎯 Next button clicked:', {
       currentStep,
@@ -44,7 +39,6 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
       isOnFinalStep,
       buttonText: getButtonText()
     });
-    
     if (canProceed) {
       console.log('🎯 Calling onNextStep...');
       onNextStep();
@@ -52,7 +46,6 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
       console.log('🎯 Cannot proceed - button should be disabled but was clicked');
     }
   };
-
   const isDisabled = !canProceed;
   console.log('🎯 Button state:', {
     isDisabled,
@@ -61,35 +54,16 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
     isOnFinalStep,
     buttonText: getButtonText()
   });
-
-  return (
-    <div className="flex-shrink-0 p-6 bg-white border-t border-gray-200">
+  return <div className="flex-shrink-0 p-6 border-t border-gray-200 bg-transparent">
       <div className="flex justify-between">
-        <Button 
-          variant="outline" 
-          onClick={onPreviousStep} 
-          disabled={currentStep === 1} 
-          className="flex items-center gap-2"
-        >
+        <Button variant="outline" onClick={onPreviousStep} disabled={currentStep === 1} className="flex items-center gap-2">
           <ChevronLeft className="h-4 w-4" />
           Previous
         </Button>
 
-        <Button 
-          onClick={handleNextClick} 
-          disabled={isDisabled}
-          variant="default"
-          className={`${
-            isDisabled 
-              ? 'opacity-50 cursor-not-allowed bg-gray-400' 
-              : isOnFinalStep
-                ? 'bg-green-600 hover:bg-green-700'
-                : 'bg-gray-900 hover:bg-gray-800'
-          } text-white font-medium`}
-        >
+        <Button onClick={handleNextClick} disabled={isDisabled} variant="default" className={`${isDisabled ? 'opacity-50 cursor-not-allowed bg-gray-400' : isOnFinalStep ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-900 hover:bg-gray-800'} text-white font-medium`}>
           {getButtonText()}
         </Button>
       </div>
-    </div>
-  );
+    </div>;
 };
