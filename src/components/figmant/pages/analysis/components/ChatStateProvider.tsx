@@ -27,10 +27,10 @@ interface ChatStateContextType {
   templates: any[];
   templatesLoading: boolean;
   
-  // Actions
-  setMessages: (messages: ChatMessage[]) => void;
-  setMessage: (message: string) => void;
-  setAttachments: (attachments: ChatAttachment[]) => void;
+  // Actions - properly typed React setters
+  setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
+  setMessage: React.Dispatch<React.SetStateAction<string>>;
+  setAttachments: React.Dispatch<React.SetStateAction<ChatAttachment[]>>;
   setSelectedTemplateId?: (id: string) => void;
   startNewSession: () => void;
   loadSession: (sessionId: string) => void;
@@ -110,7 +110,7 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
     templates,
     templatesLoading,
     
-    // Actions
+    // Actions - now properly typed as React setters
     setMessages,
     setMessage,
     setAttachments,

@@ -130,11 +130,11 @@ export const useChatState = (props?: UseChatStateProps) => {
   return {
     // Message state
     messages,
-    setMessages,
+    setMessages, // This is now properly typed as React.Dispatch<React.SetStateAction<ChatMessage[]>>
     message,
-    setMessage,
+    setMessage, // This is now properly typed as React.Dispatch<React.SetStateAction<string>>
     attachments,
-    setAttachments,
+    setAttachments, // This is now properly typed as React.Dispatch<React.SetStateAction<ChatAttachment[]>>
     showUrlInput,
     setShowUrlInput,
     urlInput,
