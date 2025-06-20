@@ -1,4 +1,5 @@
 
+
 // Base interfaces for revenue tracking and ROI calculations
 export interface BusinessMetrics {
   monthly_revenue: number;
@@ -13,7 +14,7 @@ export interface BusinessMetrics {
 export interface RevenueAnalysisData {
   id: string;
   confidence_score: number;
-  suggestions: Record<string, string>;
+  suggestions?: Record<string, string>; // Made optional to match actual usage
   impact_summary?: {
     business_impact?: {
       conversion_potential?: number;
@@ -50,3 +51,4 @@ export const calculateROI = (
   const improvementFactor = Object.values(improvements).reduce((sum, val) => sum + val, 0) / Object.keys(improvements).length;
   return (baseRevenue * improvementFactor) / baseRevenue * 100;
 };
+
