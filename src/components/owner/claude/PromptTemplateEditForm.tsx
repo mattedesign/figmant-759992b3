@@ -57,8 +57,15 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
     metadata: template.metadata || {}
   });
 
+  // Extract contextual fields from metadata with proper type checking
+  const getContextualFieldsFromMetadata = (metadata: any): ContextualField[] => {
+    if (!metadata || typeof metadata !== 'object') return [];
+    if (!Array.isArray(metadata.contextual_fields)) return [];
+    return metadata.contextual_fields as ContextualField[];
+  };
+
   const [contextualFields, setContextualFields] = useState<ContextualField[]>(
-    (template.metadata?.contextual_fields as ContextualField[]) || []
+    getContextualFieldsFromMetadata(template.metadata)
   );
 
   const handleContextualFieldsUpdate = (fields: ContextualField[]) => {
@@ -103,9 +110,17 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
     }
 
     try {
+      const updateData = {
+        ...editedTemplate,
+        metadata: {
+          ...editedTemplate.metadata,
+          contextual_fields: contextualFields
+        }
+      };
+
       await updateTemplateMutation.mutateAsync({
         id: template.id,
-        updates: editedTemplate
+        updates: updateData
       });
       
       console.log('✅ Template saved successfully');

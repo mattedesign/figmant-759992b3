@@ -1,12 +1,12 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Trash2, Plus } from 'lucide-react';
 import { ContextualField } from '@/types/figmant';
 
 interface ContextualFieldsSectionProps {
@@ -14,33 +14,25 @@ interface ContextualFieldsSectionProps {
   onUpdateFields: (fields: ContextualField[]) => void;
 }
 
-const FIELD_TYPES = [
-  { value: 'text', label: 'Text' },
-  { value: 'textarea', label: 'Textarea' },
-  { value: 'select', label: 'Select' },
-  { value: 'number', label: 'Number' },
-  { value: 'date', label: 'Date' },
-  { value: 'url', label: 'URL' },
-  { value: 'email', label: 'Email' }
-];
-
 export const ContextualFieldsSection: React.FC<ContextualFieldsSectionProps> = ({
   contextualFields,
   onUpdateFields
 }) => {
-  const addField = () => {
+  const addNewField = () => {
     const newField: ContextualField = {
       id: `field_${Date.now()}`,
       label: '',
       type: 'text',
-      required: false
+      placeholder: '',
+      required: false,
+      description: ''
     };
     onUpdateFields([...contextualFields, newField]);
   };
 
-  const updateField = (index: number, updatedField: Partial<ContextualField>) => {
+  const updateField = (index: number, updates: Partial<ContextualField>) => {
     const updatedFields = contextualFields.map((field, i) => 
-      i === index ? { ...field, ...updatedField } : field
+      i === index ? { ...field, ...updates } : field
     );
     onUpdateFields(updatedFields);
   };
@@ -50,174 +42,196 @@ export const ContextualFieldsSection: React.FC<ContextualFieldsSectionProps> = (
     onUpdateFields(updatedFields);
   };
 
-  const updateFieldOptions = (index: number, optionsText: string) => {
-    const options = optionsText.split('\n').filter(option => option.trim());
-    updateField(index, { options: options.length > 0 ? options : undefined });
+  const addOption = (fieldIndex: number) => {
+    const field = contextualFields[fieldIndex];
+    const newOptions = [...(field.options || []), ''];
+    updateField(fieldIndex, { options: newOptions });
+  };
+
+  const updateOption = (fieldIndex: number, optionIndex: number, value: string) => {
+    const field = contextualFields[fieldIndex];
+    const newOptions = (field.options || []).map((option, i) => 
+      i === optionIndex ? value : option
+    );
+    updateField(fieldIndex, { options: newOptions });
+  };
+
+  const removeOption = (fieldIndex: number, optionIndex: number) => {
+    const field = contextualFields[fieldIndex];
+    const newOptions = (field.options || []).filter((_, i) => i !== optionIndex);
+    updateField(fieldIndex, { options: newOptions });
   };
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Contextual Fields</CardTitle>
-          <Button onClick={addField} size="sm">
-            <Plus className="h-4 w-4 mr-1" />
-            Add Field
-          </Button>
-        </div>
+        <CardTitle>Contextual Fields</CardTitle>
+        <CardDescription>
+          Configure dynamic form fields that will be shown to users when they select this template
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {contextualFields.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            No contextual fields defined. Add fields to collect specific context for this prompt template.
-          </p>
-        ) : (
-          contextualFields.map((field, index) => (
-            <Card key={field.id} className="border-l-4 border-l-blue-500">
-              <CardContent className="pt-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Field #{index + 1}</Label>
-                  <Button
-                    onClick={() => removeField(index)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+        {contextualFields.map((field, index) => (
+          <Card key={field.id} className="border-dashed">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium">Field {index + 1}</h4>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeField(index)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Field ID</Label>
+                  <Input
+                    value={field.id}
+                    onChange={(e) => updateField(index, { id: e.target.value })}
+                    placeholder="field_id"
+                  />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label htmlFor={`field-id-${index}`} className="text-xs">Field ID</Label>
-                    <Input
-                      id={`field-id-${index}`}
-                      value={field.id}
-                      onChange={(e) => updateField(index, { id: e.target.value })}
-                      placeholder="field_id"
-                      className="text-sm"
-                    />
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <Label htmlFor={`field-label-${index}`} className="text-xs">Label</Label>
-                    <Input
-                      id={`field-label-${index}`}
-                      value={field.label}
-                      onChange={(e) => updateField(index, { label: e.target.value })}
-                      placeholder="Field Label"
-                      className="text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label htmlFor={`field-type-${index}`} className="text-xs">Type</Label>
-                    <Select
-                      value={field.type}
-                      onValueChange={(value) => updateField(index, { type: value as any })}
-                    >
-                      <SelectTrigger className="text-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {FIELD_TYPES.map(type => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2 pt-6">
-                    <input
-                      type="checkbox"
-                      id={`field-required-${index}`}
-                      checked={field.required || false}
-                      onChange={(e) => updateField(index, { required: e.target.checked })}
-                      className="rounded"
-                    />
-                    <Label htmlFor={`field-required-${index}`} className="text-xs">Required</Label>
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor={`field-placeholder-${index}`} className="text-xs">Placeholder</Label>
+                <div className="space-y-2">
+                  <Label>Label</Label>
                   <Input
-                    id={`field-placeholder-${index}`}
+                    value={field.label}
+                    onChange={(e) => updateField(index, { label: e.target.value })}
+                    placeholder="Field Label"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Type</Label>
+                  <Select
+                    value={field.type}
+                    onValueChange={(value) => updateField(index, { type: value as ContextualField['type'] })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="text">Text</SelectItem>
+                      <SelectItem value="textarea">Textarea</SelectItem>
+                      <SelectItem value="select">Select</SelectItem>
+                      <SelectItem value="number">Number</SelectItem>
+                      <SelectItem value="date">Date</SelectItem>
+                      <SelectItem value="url">URL</SelectItem>
+                      <SelectItem value="email">Email</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Placeholder</Label>
+                  <Input
                     value={field.placeholder || ''}
                     onChange={(e) => updateField(index, { placeholder: e.target.value })}
                     placeholder="Placeholder text"
-                    className="text-sm"
                   />
                 </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor={`field-description-${index}`} className="text-xs">Description</Label>
-                  <Textarea
-                    id={`field-description-${index}`}
-                    value={field.description || ''}
-                    onChange={(e) => updateField(index, { description: e.target.value })}
-                    placeholder="Field description or help text"
-                    rows={2}
-                    className="text-sm"
-                  />
+              </div>
+              
+              <div className="mt-4 space-y-2">
+                <Label>Description</Label>
+                <Textarea
+                  value={field.description || ''}
+                  onChange={(e) => updateField(index, { description: e.target.value })}
+                  placeholder="Field description or help text"
+                  rows={2}
+                />
+              </div>
+              
+              <div className="mt-4 flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={field.required || false}
+                  onChange={(e) => updateField(index, { required: e.target.checked })}
+                  className="rounded"
+                />
+                <Label>Required field</Label>
+              </div>
+              
+              {field.type === 'select' && (
+                <div className="mt-4">
+                  <Label>Options</Label>
+                  <div className="space-y-2 mt-2">
+                    {(field.options || []).map((option, optionIndex) => (
+                      <div key={optionIndex} className="flex items-center space-x-2">
+                        <Input
+                          value={option}
+                          onChange={(e) => updateOption(index, optionIndex, e.target.value)}
+                          placeholder={`Option ${optionIndex + 1}`}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeOption(index, optionIndex)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addOption(index)}
+                      className="mt-2"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Option
+                    </Button>
+                  </div>
                 </div>
-
-                {field.type === 'select' && (
-                  <div className="space-y-1">
-                    <Label htmlFor={`field-options-${index}`} className="text-xs">Options (one per line)</Label>
-                    <Textarea
-                      id={`field-options-${index}`}
-                      value={field.options?.join('\n') || ''}
-                      onChange={(e) => updateFieldOptions(index, e.target.value)}
-                      placeholder="Option 1\nOption 2\nOption 3"
-                      rows={3}
-                      className="text-sm"
+              )}
+              
+              {field.type === 'number' && (
+                <div className="mt-4 grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Minimum Value</Label>
+                    <Input
+                      type="number"
+                      value={field.validation?.min || ''}
+                      onChange={(e) => updateField(index, { 
+                        validation: { 
+                          ...field.validation, 
+                          min: e.target.value ? parseInt(e.target.value) : undefined 
+                        }
+                      })}
                     />
                   </div>
-                )}
-
-                {field.type === 'number' && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label htmlFor={`field-min-${index}`} className="text-xs">Min Value</Label>
-                      <Input
-                        id={`field-min-${index}`}
-                        type="number"
-                        value={field.validation?.min || ''}
-                        onChange={(e) => updateField(index, { 
-                          validation: { 
-                            ...field.validation, 
-                            min: e.target.value ? parseInt(e.target.value) : undefined 
-                          } 
-                        })}
-                        className="text-sm"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor={`field-max-${index}`} className="text-xs">Max Value</Label>
-                      <Input
-                        id={`field-max-${index}`}
-                        type="number"
-                        value={field.validation?.max || ''}
-                        onChange={(e) => updateField(index, { 
-                          validation: { 
-                            ...field.validation, 
-                            max: e.target.value ? parseInt(e.target.value) : undefined 
-                          } 
-                        })}
-                        className="text-sm"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label>Maximum Value</Label>
+                    <Input
+                      type="number"
+                      value={field.validation?.max || ''}
+                      onChange={(e) => updateField(index, { 
+                        validation: { 
+                          ...field.validation, 
+                          max: e.target.value ? parseInt(e.target.value) : undefined 
+                        }
+                      })}
+                    />
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ))
-        )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+        
+        <Button
+          variant="outline"
+          onClick={addNewField}
+          className="w-full"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Contextual Field
+        </Button>
       </CardContent>
     </Card>
   );
