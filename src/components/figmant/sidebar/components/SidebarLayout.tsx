@@ -66,6 +66,11 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
           onSectionChange={onSectionChange}
           isOwner={isOwner}
           isCollapsed={isCollapsed}
+          onToggleCollapse={onToggleCollapse}
+          profile={profile}
+          user={user}
+          subscription={subscription}
+          signOut={signOut}
         />
       </div>
 

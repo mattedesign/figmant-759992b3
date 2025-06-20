@@ -20,7 +20,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
   isCollapsed,
   onToggleCollapse
 }) => {
-  const { isOwner } = useAuth();
+  const { isOwner, profile, user, subscription, signOut } = useAuth();
 
   return (
     <TooltipProvider>
@@ -45,7 +45,12 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
             activeSection={activeSection}
             onSectionChange={onSectionChange}
             isCollapsed={isCollapsed}
+            onToggleCollapse={(collapsed) => onToggleCollapse()}
             isOwner={isOwner}
+            profile={profile}
+            user={user}
+            subscription={subscription}
+            signOut={signOut}
           />
         </div>
 

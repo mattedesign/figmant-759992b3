@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,6 +18,10 @@ interface SidebarNavigationProps {
   isCollapsed: boolean;
   onToggleCollapse: (collapsed: boolean) => void;
   isOwner?: boolean;
+  profile?: any;
+  user?: any;
+  subscription?: any;
+  signOut?: () => Promise<void>;
 }
 
 export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
@@ -26,7 +29,11 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   onSectionChange,
   isCollapsed,
   onToggleCollapse,
-  isOwner = false
+  isOwner = false,
+  profile,
+  user,
+  subscription,
+  signOut
 }) => {
   const [activeTab, setActiveTab] = useState('menu');
 
