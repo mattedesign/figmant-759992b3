@@ -157,7 +157,7 @@ export const RevenueProjectionEngine: React.FC<RevenueProjectionEngineProps> = (
                     <XAxis dataKey="industryType" tick={{ fontSize: 10 }} />
                     <YAxis tick={{ fontSize: 10 }} />
                     <Tooltip 
-                      formatter={(value) => [`$${value.toLocaleString()}`, 'Monthly Impact']}
+                      formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Monthly Impact']}
                     />
                     <Bar dataKey="monthlyImpact" fill="#3B82F6" />
                   </BarChart>
@@ -202,7 +202,7 @@ export const RevenueProjectionEngine: React.FC<RevenueProjectionEngineProps> = (
                     <YAxis />
                     <Tooltip 
                       formatter={(value, name) => [
-                        name === 'improvement' ? `$${value.toLocaleString()}` : `${value.toFixed(1)}%`,
+                        name === 'improvement' ? `$${Number(value).toLocaleString()}` : `${Number(value).toFixed(1)}%`,
                         name === 'improvement' ? 'Revenue Impact' : 'Confidence'
                       ]}
                     />
@@ -320,7 +320,7 @@ export const RevenueProjectionEngine: React.FC<RevenueProjectionEngineProps> = (
                     <XAxis type="number" tick={{ fontSize: 10 }} />
                     <YAxis dataKey="type" type="category" tick={{ fontSize: 10 }} width={100} />
                     <Tooltip 
-                      formatter={(value) => [`$${value.toLocaleString()}`, 'Avg ROI']}
+                      formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Avg ROI']}
                     />
                     <Bar dataKey="avgROI" fill="#10B981" />
                   </BarChart>
