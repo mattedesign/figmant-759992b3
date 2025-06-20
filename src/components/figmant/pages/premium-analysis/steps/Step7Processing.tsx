@@ -186,7 +186,6 @@ export const Step7Processing: React.FC<StepProps> = ({
         </CardHeader>
         <CardContent className="space-y-3">
           <div><strong>Analysis Type:</strong> {selectedTemplate?.displayName || stepData.selectedType}</div>
-          <div><strong>Goals:</strong> {stepData.analysisGoals}</div>
           {stepData.contextualData && Object.keys(stepData.contextualData).length > 0 && (
             <div>
               <strong>Project Details:</strong>

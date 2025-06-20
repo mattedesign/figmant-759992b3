@@ -22,14 +22,14 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
     currentStep, 
     totalSteps, 
     canProceed,
-    isOnFinalStep: currentStep === 5,
-    isProcessingStep: currentStep === 6
+    isOnFinalStep: currentStep === 4,
+    isProcessingStep: currentStep === 5
   });
 
   // Don't show navigation if we're past the total steps OR on processing step
-  if (currentStep > totalSteps || currentStep === 6) return null;
+  if (currentStep > totalSteps || currentStep === 5) return null;
 
-  const isOnFinalStep = currentStep === 5;
+  const isOnFinalStep = currentStep === 4;
   const getButtonText = () => {
     if (isOnFinalStep) {
       return 'Start Wizard Analysis';

@@ -8,7 +8,7 @@ export const PremiumAnalysisController: React.FC = () => {
   const [stepData, setStepData] = useState<StepData>({
     selectedType: '',
     projectName: 'Untitled Analysis', // Set default project name
-    analysisGoals: '',
+    analysisGoals: '', // Keep this field but it won't be collected via the form
     contextualData: {},
     stakeholders: [],
     referenceLinks: [''],
@@ -53,7 +53,7 @@ export const PremiumAnalysisController: React.FC = () => {
     <div className="h-full flex flex-col">
       <StepRenderer
         currentStep={currentStep}
-        totalSteps={6}
+        totalSteps={5}
         stepData={stepData}
         setStepData={setStepData}
         onNextStep={goToNextStep}
