@@ -78,7 +78,9 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
         <item.icon className={cn(
           "h-4 w-4",
           activeSection === item.id ? "text-[#1812E9]" : "text-[#455468]"
-        )} />
+        )} 
+        fill={activeSection === item.id ? "currentColor" : "none"}
+        />
       </div>
       <span
         className={cn(
