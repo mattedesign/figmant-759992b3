@@ -89,7 +89,7 @@
 @layer base {
   /* Target the root element - default background for all pages */
   #root {
-    background-color: #E9EFF6 !important;
+    background-color: #F0FAFF !important;
     min-height: 100vh !important;
     height: 100vh !important;
     overflow: hidden !important;
@@ -101,7 +101,7 @@
 
   html {
     @apply text-foreground font-sans;
-    background-color: #E9EFF6 !important;
+    background-color: #F0FAFF !important;
     font-feature-settings: "rlig" 1, "calt" 1, "kern" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -114,7 +114,7 @@
 
   body {
     @apply text-foreground font-sans;
-    background-color: #E9EFF6 !important;
+    background-color: #F0FAFF !important;
     font-feature-settings: "rlig" 1, "calt" 1, "kern" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
