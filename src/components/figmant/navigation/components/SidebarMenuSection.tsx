@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useIsMobile, useIsSmallMobile } from '@/hooks/use-mobile';
 
 interface MenuItem {
   id: string;
@@ -22,11 +23,17 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
   activeSection,
   onSectionChange
 }) => {
+  const isMobile = useIsMobile();
+  const isSmallMobile = useIsSmallMobile();
+
   return (
     <div className="space-y-1">
       {title && (
         <h3 
-          className="text-xs font-medium px-3 mb-2 uppercase tracking-wide"
+          className={cn(
+            "text-xs font-medium uppercase tracking-wide mb-2",
+            isMobile ? "px-4" : "px-3"
+          )}
           style={{ color: '#6B7280' }}
         >
           {title}
@@ -39,14 +46,17 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           onClick={() => onSectionChange(item.id)}
           className={cn(
             "w-full justify-start transition-all duration-200 border-none shadow-none group",
-            "hover:bg-transparent"
+            "hover:bg-transparent active:bg-transparent focus:bg-transparent",
+            // Mobile-specific touch target sizing
+            isMobile && "min-h-[48px]",
+            isSmallMobile && "min-h-[52px]"
           )}
           style={
             activeSection === item.id 
               ? {
                   display: 'flex',
-                  height: '40px',
-                  padding: '0px 12px 0px 4px',
+                  height: isMobile ? (isSmallMobile ? '52px' : '48px') : '40px',
+                  padding: isMobile ? '0px 16px 0px 8px' : '0px 12px 0px 4px',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   alignSelf: 'stretch',
@@ -54,17 +64,17 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
                   color: '#1812E9',
                   textOverflow: 'ellipsis',
                   fontFamily: '"Instrument Sans"',
-                  fontSize: '12px',
+                  fontSize: isMobile ? '14px' : '12px',
                   fontStyle: 'normal',
                   fontWeight: '500',
-                  lineHeight: '16px',
-                  letterSpacing: '-0.12px',
+                  lineHeight: isMobile ? '20px' : '16px',
+                  letterSpacing: isMobile ? '-0.14px' : '-0.12px',
                   backgroundColor: '#D8F1FF'
                 }
               : {
                   display: 'flex',
-                  height: '40px',
-                  padding: '0px 12px 0px 4px',
+                  height: isMobile ? (isSmallMobile ? '52px' : '48px') : '40px',
+                  padding: isMobile ? '0px 16px 0px 8px' : '0px 12px 0px 4px',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   alignSelf: 'stretch',
@@ -72,16 +82,17 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
                   color: '#6B7280',
                   textOverflow: 'ellipsis',
                   fontFamily: '"Instrument Sans"',
-                  fontSize: '12px',
+                  fontSize: isMobile ? '14px' : '12px',
                   fontStyle: 'normal',
                   fontWeight: '500',
-                  lineHeight: '16px',
-                  letterSpacing: '-0.12px',
+                  lineHeight: isMobile ? '20px' : '16px',
+                  letterSpacing: isMobile ? '-0.14px' : '-0.12px',
                   backgroundColor: 'transparent'
                 }
           }
           onMouseEnter={(e) => {
-            if (activeSection !== item.id) {
+            // Only apply hover effects on non-touch devices
+            if (!isMobile && activeSection !== item.id) {
               e.currentTarget.style.color = '#1812E9';
               e.currentTarget.style.backgroundColor = '#D8F1FF';
               // Apply hover styles to icon container
@@ -93,7 +104,8 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
             }
           }}
           onMouseLeave={(e) => {
-            if (activeSection !== item.id) {
+            // Only apply hover effects on non-touch devices
+            if (!isMobile && activeSection !== item.id) {
               e.currentTarget.style.color = '#6B7280';
               e.currentTarget.style.backgroundColor = 'transparent';
               // Reset icon container styles
@@ -104,39 +116,61 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
               }
             }
           }}
+          // Add touch-specific feedback for mobile
+          onTouchStart={(e) => {
+            if (isMobile && activeSection !== item.id) {
+              e.currentTarget.style.backgroundColor = '#F0F8FF';
+            }
+          }}
+          onTouchEnd={(e) => {
+            if (isMobile && activeSection !== item.id) {
+              setTimeout(() => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }, 150);
+            }
+          }}
         >
           <div 
-            className={cn("icon-container flex justify-center items-center mr-1 transition-all duration-200")}
+            className={cn(
+              "icon-container flex justify-center items-center transition-all duration-200",
+              isMobile ? "mr-3" : "mr-1"
+            )}
             style={
               activeSection === item.id 
                 ? {
                     display: 'flex',
-                    padding: '8px',
+                    padding: isMobile ? '10px' : '8px',
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: '8px',
-                    borderRadius: '8px',
+                    borderRadius: isMobile ? '10px' : '8px',
                     background: '#FFF',
                     color: '#1812E9'
                   }
                 : {
                     display: 'flex',
-                    padding: '8px',
+                    padding: isMobile ? '10px' : '8px',
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: '8px',
-                    borderRadius: '8px'
+                    borderRadius: isMobile ? '10px' : '8px'
                   }
             }
           >
             <item.icon 
-              className="h-4 w-4"
+              className={cn(
+                "flex-shrink-0",
+                isMobile ? "h-5 w-5" : "h-4 w-4"
+              )}
               style={{ 
                 color: 'inherit'
               }}
             />
           </div>
-          <span className="font-medium text-sm flex-1 text-left">
+          <span className={cn(
+            "font-medium flex-1 text-left truncate",
+            isMobile ? "text-sm" : "text-sm"
+          )}>
             {item.label}
           </span>
         </Button>

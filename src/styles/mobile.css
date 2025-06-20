@@ -27,6 +27,24 @@
       min-height: 44px;
       min-width: 44px;
     }
+
+    /* Sidebar navigation mobile optimizations */
+    .sidebar-menu-item {
+      min-height: 48px;
+      padding: 12px 16px;
+    }
+
+    /* Remove hover effects on touch devices */
+    .sidebar-menu-item:hover {
+      background-color: transparent;
+    }
+
+    /* Add touch feedback */
+    .sidebar-menu-item:active {
+      background-color: rgba(24, 18, 233, 0.1);
+      transform: scale(0.98);
+      transition: all 0.1s ease;
+    }
   }
 
   /* Mobile-optimized text sizes */
@@ -36,5 +54,26 @@
     .text-base { font-size: 1rem; }
     .text-lg { font-size: 1.125rem; }
     .text-xl { font-size: 1.25rem; }
+
+    /* Extra small mobile adjustments for sidebar */
+    .sidebar-menu-item {
+      min-height: 52px;
+      padding: 14px 16px;
+    }
+  }
+
+  /* Touch-friendly sidebar adjustments */
+  @media (hover: none) and (pointer: coarse) {
+    /* Remove hover effects for touch devices */
+    .sidebar-menu-item:hover {
+      background-color: inherit !important;
+      color: inherit !important;
+    }
+
+    /* Add touch feedback instead */
+    .sidebar-menu-item:active {
+      background-color: rgba(24, 18, 233, 0.1) !important;
+      transform: scale(0.98);
+    }
   }
 }

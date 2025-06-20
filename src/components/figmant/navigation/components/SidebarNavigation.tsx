@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { SidebarNavigationCollapsed } from './SidebarNavigationCollapsed';
 import { SidebarNavigationExpanded } from './SidebarNavigationExpanded';
 
@@ -29,6 +30,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   signOut
 }) => {
   const [activeTab, setActiveTab] = useState('menu');
+  const isMobile = useIsMobile();
 
   // Fetch analysis history data
   const { data: chatAnalyses = [], isLoading: chatLoading } = useChatAnalysisHistory();
@@ -50,23 +52,24 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     }))
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  if (isCollapsed) {
+  // On mobile, force expanded view (mobile navigation is handled differently)
+  if (isMobile || (!isCollapsed)) {
     return (
-      <SidebarNavigationCollapsed
+      <SidebarNavigationExpanded
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        activeSection={activeSection}
         onSectionChange={onSectionChange}
         isOwner={isOwner}
+        allAnalyses={allAnalyses}
       />
     );
   }
 
   return (
-    <SidebarNavigationExpanded
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
-      activeSection={activeSection}
+    <SidebarNavigationCollapsed
       onSectionChange={onSectionChange}
       isOwner={isOwner}
-      allAnalyses={allAnalyses}
     />
   );
 };
