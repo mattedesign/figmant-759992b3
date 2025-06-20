@@ -12,6 +12,7 @@ export interface FigmantPromptTemplate {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  metadata?: Record<string, any>; // Add metadata property
 }
 
 export const useFigmantPromptTemplates = () => {
@@ -39,7 +40,8 @@ export const useFigmantPromptTemplates = () => {
         prompt: item.original_prompt,
         isActive: item.is_active,
         createdAt: item.created_at,
-        updatedAt: item.updated_at
+        updatedAt: item.updated_at,
+        metadata: item.metadata // Include metadata in the transformation
       }));
     }
   });
