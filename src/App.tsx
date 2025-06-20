@@ -27,9 +27,9 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <AuthProvider>
-          <TooltipProvider delayDuration={300}>
+      <TooltipProvider delayDuration={300}>
+        <ThemeProvider>
+          <AuthProvider>
             <EnhancedProfileSync />
             <div className="min-h-screen bg-gray-50">
               <Router>
@@ -112,9 +112,9 @@ const App: React.FC = () => {
               </Router>
             </div>
             <Toaster />
-          </TooltipProvider>
-        </AuthProvider>
-      </ThemeProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </TooltipProvider>
     </ErrorBoundary>
   );
 };
