@@ -6,47 +6,35 @@ export function buildContextPrompt(stepData: StepData, selectedPrompt: any): str
   
   let prompt = `Premium Analysis Request - ${selectedPrompt.title}\n\n`;
   
+  // Add basic project information
   prompt += `Project: ${stepData.projectName}\n`;
   
   if (stepData.analysisGoals) {
     prompt += `Analysis Goals: ${stepData.analysisGoals}\n`;
   }
   
-  if (stepData.desiredOutcome) {
-    prompt += `Desired Outcome: ${stepData.desiredOutcome}\n`;
-  }
-  
-  if (stepData.improvementMetric) {
-    prompt += `Target Improvement: ${stepData.improvementMetric}\n`;
-  }
-  
-  if (stepData.deadline) {
-    prompt += `Deadline: ${stepData.deadline}\n`;
-  }
-  
-  if (stepData.stakeholders.length > 0) {
-    prompt += `Stakeholders:\n`;
-    stepData.stakeholders.forEach(stakeholder => {
-      prompt += `- ${stakeholder.name} (${stakeholder.title || stakeholder.role})\n`;
-    });
-  }
-  
-  if (stepData.referenceLinks.filter(link => link.trim()).length > 0) {
-    prompt += `Reference Links:\n`;
-    stepData.referenceLinks.filter(link => link.trim()).forEach(link => {
-      prompt += `- ${link}\n`;
+  // Add contextual field data if available
+  if (stepData.contextualData && Object.keys(stepData.contextualData).length > 0) {
+    prompt += `\nContextual Information:\n`;
+    Object.entries(stepData.contextualData).forEach(([fieldId, value]) => {
+      if (value && value.toString().trim()) {
+        // Find the field definition to get the label
+        const field = selectedPrompt.contextual_fields?.find((f: any) => f.id === fieldId);
+        const fieldLabel = field?.label || fieldId;
+        prompt += `${fieldLabel}: ${value}\n`;
+      }
     });
   }
 
   if (stepData.uploadedFiles && stepData.uploadedFiles.length > 0) {
-    prompt += `Uploaded Files:\n`;
+    prompt += `\nUploaded Files:\n`;
     stepData.uploadedFiles.forEach(file => {
       prompt += `- ${file.name} (${file.type}, ${Math.round(file.size / 1024)} KB)\n`;
     });
   }
   
   if (stepData.customPrompt) {
-    prompt += `Additional Instructions: ${stepData.customPrompt}\n`;
+    prompt += `\nAdditional Instructions: ${stepData.customPrompt}\n`;
   }
   
   prompt += `\nPlease provide a comprehensive ${selectedPrompt.category} analysis based on the above context and the following prompt template:\n\n`;
