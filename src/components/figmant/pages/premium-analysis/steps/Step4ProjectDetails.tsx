@@ -35,7 +35,7 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
         />
         <div className="max-w-2xl mx-auto">
           <Card>
-            <CardContent className="text-center">
+            <CardContent className="text-center p-0">
               <p className="text-muted-foreground">
                 Please select an analysis template first to configure project details.
               </p>
@@ -56,13 +56,13 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
         />
         <div className="max-w-2xl mx-auto">
           <Card>
-            <CardHeader>
+            <CardHeader className="p-0">
               <CardTitle>{selectedTemplate.displayName}</CardTitle>
               <p className="text-sm text-muted-foreground">
                 This template doesn't require additional configuration details.
               </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <p className="text-muted-foreground">
                 You can proceed to the next step to upload your files for analysis.
               </p>
@@ -83,13 +83,13 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
 
       <div className="max-w-2xl mx-auto">
         <Card>
-          <CardHeader>
+          <CardHeader className="p-0">
             <CardTitle>{selectedTemplate.displayName}</CardTitle>
             <p className="text-sm text-muted-foreground">
               {selectedTemplate.description}
             </p>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-0">
             {selectedTemplate.contextual_fields.map((field) => (
               <ContextualFieldRenderer
                 key={field.id}
