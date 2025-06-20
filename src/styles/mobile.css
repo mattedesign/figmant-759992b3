@@ -76,4 +76,210 @@
       transform: scale(0.98);
     }
   }
+
+  /* Mobile-specific spacing and layout adjustments for Figmant pages */
+  @media (max-width: 768px) {
+    /* Dashboard page mobile optimizations */
+    .dashboard-container {
+      @apply px-3 py-2;
+    }
+
+    .dashboard-header {
+      @apply text-lg px-4 py-3;
+    }
+
+    .dashboard-cards {
+      @apply grid-cols-1 gap-3;
+    }
+
+    /* Analysis page mobile optimizations */
+    .analysis-container {
+      @apply px-3 py-2;
+    }
+
+    .analysis-header {
+      @apply text-lg px-4 py-3;
+    }
+
+    .analysis-tabs {
+      @apply text-sm;
+    }
+
+    /* Chat page mobile optimizations */
+    .chat-container {
+      @apply px-2 py-2;
+    }
+
+    .chat-header {
+      @apply text-lg px-4 py-3;
+    }
+
+    .chat-input {
+      @apply text-base px-4 py-3;
+      min-height: 48px;
+    }
+
+    /* Premium analysis wizard mobile optimizations */
+    .wizard-container {
+      @apply px-3 py-2;
+    }
+
+    .wizard-step-title {
+      @apply text-xl px-4 py-3;
+    }
+
+    .wizard-navigation {
+      @apply px-4 py-3;
+    }
+
+    /* Form fields mobile optimizations */
+    .form-field-container {
+      @apply mb-4;
+    }
+
+    .form-field-label {
+      @apply text-base mb-2;
+    }
+
+    .form-field-input {
+      @apply text-base px-4 py-3;
+      min-height: 48px;
+    }
+
+    .form-field-textarea {
+      @apply text-base px-4 py-3;
+      min-height: 120px;
+    }
+
+    /* Card components mobile optimizations */
+    .card-container {
+      @apply p-4 rounded-lg;
+    }
+
+    .card-header {
+      @apply mb-3;
+    }
+
+    .card-title {
+      @apply text-lg;
+    }
+
+    .card-content {
+      @apply space-y-3;
+    }
+
+    /* Button components mobile optimizations */
+    .button-primary {
+      @apply px-6 py-3 text-base;
+      min-height: 48px;
+    }
+
+    .button-secondary {
+      @apply px-6 py-3 text-base;
+      min-height: 48px;
+    }
+
+    .button-icon {
+      @apply w-12 h-12;
+    }
+
+    /* Navigation components mobile optimizations */
+    .nav-item {
+      @apply px-4 py-3 text-base;
+      min-height: 48px;
+    }
+
+    .nav-link {
+      @apply block px-4 py-3;
+      min-height: 48px;
+    }
+
+    /* Modal and dialog mobile optimizations */
+    .modal-container {
+      @apply mx-3 my-6;
+    }
+
+    .modal-header {
+      @apply px-4 py-3;
+    }
+
+    .modal-content {
+      @apply px-4 py-3;
+    }
+
+    .modal-footer {
+      @apply px-4 py-3;
+    }
+
+    /* Table components mobile optimizations */
+    .table-container {
+      @apply overflow-x-auto;
+    }
+
+    .table-cell {
+      @apply px-3 py-2 text-sm;
+    }
+
+    /* Grid layouts mobile optimizations */
+    .grid-responsive {
+      @apply grid-cols-1;
+    }
+
+    /* Flex layouts mobile optimizations */
+    .flex-responsive {
+      @apply flex-col;
+    }
+
+    /* Spacing adjustments for mobile */
+    .space-y-responsive {
+      @apply space-y-3;
+    }
+
+    .space-x-responsive {
+      @apply space-x-0 space-y-3 flex-col;
+    }
+
+    /* Text size adjustments for mobile */
+    .text-responsive-lg {
+      @apply text-lg;
+    }
+
+    .text-responsive-xl {
+      @apply text-xl;
+    }
+
+    .text-responsive-2xl {
+      @apply text-xl;
+    }
+
+    .text-responsive-3xl {
+      @apply text-2xl;
+    }
+  }
+
+  /* Tablet-specific optimizations (768px and under) */
+  @media (max-width: 768px) and (min-width: 641px) {
+    /* Tablet-specific sidebar adjustments */
+    .sidebar-tablet {
+      @apply w-16;
+    }
+
+    .sidebar-tablet-expanded {
+      @apply w-64;
+    }
+
+    /* Tablet grid layouts */
+    .grid-tablet-2 {
+      @apply grid-cols-2;
+    }
+
+    /* Tablet text sizes */
+    .text-tablet-lg {
+      @apply text-lg;
+    }
+
+    .text-tablet-xl {
+      @apply text-xl;
+    }
+  }
 }
