@@ -34,10 +34,18 @@ export const RecentAnalysesWidget: React.FC = () => {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 6);
 
-  const handleAnalysisClick = (analysis: any) => {
-    console.log('Opening analysis modal:', analysis);
+  const handleAnalysisClick = (event: React.MouseEvent, analysis: any) => {
+    // Prevent any navigation or bubbling
+    event.preventDefault();
+    event.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation();
+    
+    console.log('Opening analysis modal from RecentAnalysesWidget:', analysis);
     setSelectedAnalysis(analysis);
     setShowModal(true);
+    
+    // Additional safety: return false to prevent any default behavior
+    return false;
   };
 
   const handleCloseModal = () => {
@@ -74,7 +82,15 @@ export const RecentAnalysesWidget: React.FC = () => {
                   <div
                     key={`${analysis.type}-${analysis.id}`}
                     className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => handleAnalysisClick(analysis)}
+                    onClick={(e) => handleAnalysisClick(e, analysis)}
+                    onMouseDown={(e) => {
+                      // Prevent any mouse down events from propagating
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    style={{ 
+                      cursor: 'pointer'
+                    }}
                   >
                     <div className="flex items-center gap-3 flex-1">
                       <Icon className="h-4 w-4 text-muted-foreground" />
@@ -93,7 +109,15 @@ export const RecentAnalysesWidget: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={(e) => handleAnalysisClick(e, analysis)}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
                       <Eye className="h-4 w-4" />
                     </Button>
                   </div>
