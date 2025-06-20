@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { navigationConfig, getNavigationItemsByPriority } from '@/config/navigation';
+import { navigationConfig } from '@/config/navigation';
 
 interface NavigationMenuProps {
   activeSection: string;
@@ -17,7 +17,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
   const { isOwner } = useAuth();
 
   // Mobile shows priority 1 items only to maintain clean interface
-  const mainSections = getNavigationItemsByPriority(1);
+  const mainSections = navigationConfig.mainItems.filter(item => item.priority === 1);
   
   // Add admin section for owners
   const adminSections = isOwner ? navigationConfig.adminItems : [];
