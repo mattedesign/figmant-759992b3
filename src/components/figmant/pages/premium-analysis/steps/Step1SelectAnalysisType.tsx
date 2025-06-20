@@ -72,7 +72,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
 
   if (isLoading) {
     return (
-      <div className="space-y-6 pb-8">
+      <div className="pb-8">
         <StepHeader 
           title="Choose Your Premium Analysis"
           currentStep={currentStep}
@@ -86,7 +86,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
   }
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="pb-8">
       <StepHeader 
         title="Choose Your Premium Analysis"
         currentStep={currentStep}
@@ -116,7 +116,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                 } ${isPremium ? 'border-l-4 border-l-amber-400' : ''}`}
                 onClick={() => handleTypeSelection(template.id)}
               >
-                <CardHeader>
+                <CardHeader className="px-0">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <IconComponent className="h-5 w-5 text-primary" />
@@ -159,7 +159,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                   </CardDescription>
                 </CardHeader>
                 
-                <CardContent>
+                <CardContent className="px-0">
                   <div className="space-y-3">
                     {isPremium && (
                       <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-3 rounded-lg border border-amber-200">

@@ -98,7 +98,7 @@ export const Step7Processing: React.FC<StepProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div>
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-2">
           {status === 'processing' && 'Processing Premium Analysis...'}
@@ -113,7 +113,7 @@ export const Step7Processing: React.FC<StepProps> = ({
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="px-0">
           <CardTitle className="flex items-center space-x-2">
             {status === 'processing' && <Loader2 className="h-5 w-5 animate-spin" />}
             {status === 'completed' && <CheckCircle className="h-5 w-5 text-green-600" />}
@@ -124,7 +124,7 @@ export const Step7Processing: React.FC<StepProps> = ({
             Project: {stepData.projectName} | Type: {selectedTemplate?.displayName || stepData.selectedType}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 px-0">
           {status === 'processing' && (
             <div className="space-y-2">
               <Progress value={progress} className="w-full" />
@@ -181,10 +181,10 @@ export const Step7Processing: React.FC<StepProps> = ({
 
       {/* Project Summary */}
       <Card>
-        <CardHeader>
+        <CardHeader className="px-0">
           <CardTitle>Project Summary</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 px-0">
           <div><strong>Analysis Type:</strong> {selectedTemplate?.displayName || stepData.selectedType}</div>
           {stepData.contextualData && Object.keys(stepData.contextualData).length > 0 && (
             <div>

@@ -30,7 +30,7 @@ export const PremiumAnalysisWizard: React.FC = () => {
     <div className="h-full flex flex-col max-h-screen">
       <div className="flex-1 min-h-0 overflow-hidden">
         <ScrollArea className="h-full w-full">
-          <div className="p-6 min-h-full">
+          <div className="px-0 py-6 min-h-full">
             <div className="h-full">
               <StepRenderer 
                 stepData={stepData} 

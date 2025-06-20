@@ -27,7 +27,7 @@ export const Step6CustomPrompt: React.FC<StepProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div>
       <StepHeader 
         title="Prompts us..."
         currentStep={currentStep}

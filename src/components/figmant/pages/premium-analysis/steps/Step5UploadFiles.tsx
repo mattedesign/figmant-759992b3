@@ -70,7 +70,7 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
   const validLinks = (stepData.referenceLinks || []).filter(link => link.trim() !== '');
 
   return (
-    <div className="space-y-6">
+    <div>
       <StepHeader 
         title="Upload Files & Reference Links"
         currentStep={currentStep}
@@ -92,13 +92,13 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
 
           <TabsContent value="files" className="space-y-4">
             <Card>
-              <CardHeader>
+              <CardHeader className="px-0">
                 <CardTitle>File Upload (Optional)</CardTitle>
                 <CardDescription>
                   Upload design files, mockups, or reference materials to enhance your analysis
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-0">
                 <div
                   {...getRootProps()}
                   className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
@@ -128,10 +128,10 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
             {/* Uploaded Files List */}
             {stepData.uploadedFiles && stepData.uploadedFiles.length > 0 && (
               <Card>
-                <CardHeader>
+                <CardHeader className="px-0">
                   <CardTitle>Uploaded Files ({stepData.uploadedFiles.length})</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-0">
                   <div className="space-y-3">
                     {stepData.uploadedFiles.map((file, index) => (
                       <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
@@ -159,13 +159,13 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
 
           <TabsContent value="links" className="space-y-4">
             <Card>
-              <CardHeader>
+              <CardHeader className="px-0">
                 <CardTitle>Reference Links (Optional)</CardTitle>
                 <CardDescription>
                   Add website URLs, competitor sites, or reference materials for analysis context
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 px-0">
                 {(stepData.referenceLinks || ['']).map((link, index) => (
                   <div key={index} className="flex gap-2">
                     <div className="flex-1">
@@ -206,10 +206,10 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
             {/* Valid Links Summary */}
             {validLinks.length > 0 && (
               <Card>
-                <CardHeader>
+                <CardHeader className="px-0">
                   <CardTitle>Reference Links ({validLinks.length})</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-0">
                   <div className="space-y-2">
                     {validLinks.map((link, index) => (
                       <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
@@ -226,13 +226,13 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
 
         {/* Guidelines */}
         <Card>
-          <CardHeader>
+          <CardHeader className="px-0">
             <CardTitle className="flex items-center space-x-2">
               <AlertCircle className="h-5 w-5" />
               <span>Guidelines</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <h4 className="font-medium mb-2">Files:</h4>
