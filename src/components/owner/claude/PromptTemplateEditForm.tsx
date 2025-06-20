@@ -4,10 +4,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ClaudePromptExample, useUpdatePromptExample } from '@/hooks/useClaudePromptExamples';
 import { CategoryType } from '@/types/promptTypes';
 import { useToast } from '@/hooks/use-toast';
+import { ContextualField } from '@/types/figmant';
 import { EditFormHeader } from './edit-form/EditFormHeader';
 import { BasicInfoFields } from './edit-form/BasicInfoFields';
 import { PromptContentFields } from './edit-form/PromptContentFields';
 import { MetadataFields } from './edit-form/MetadataFields';
+import { ContextualFieldsSection } from './ContextualFieldsSection';
 
 interface EditedTemplateData {
   title: string;
@@ -21,6 +23,7 @@ interface EditedTemplateData {
   business_domain: string;
   is_template: boolean;
   is_active: boolean;
+  metadata?: Record<string, any>;
 }
 
 interface PromptTemplateEditFormProps {
@@ -50,8 +53,24 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
     use_case_context: template.use_case_context || '',
     business_domain: template.business_domain || '',
     is_template: template.is_template,
-    is_active: template.is_active
+    is_active: template.is_active,
+    metadata: template.metadata || {}
   });
+
+  const [contextualFields, setContextualFields] = useState<ContextualField[]>(
+    (template.metadata?.contextual_fields as ContextualField[]) || []
+  );
+
+  const handleContextualFieldsUpdate = (fields: ContextualField[]) => {
+    setContextualFields(fields);
+    setEditedTemplate(prev => ({
+      ...prev,
+      metadata: {
+        ...prev.metadata,
+        contextual_fields: fields
+      }
+    }));
+  };
 
   const handleSave = async () => {
     console.log('💾 Saving template changes for:', template.id);
@@ -119,7 +138,7 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
         isSaving={updateTemplateMutation.isPending}
       />
       
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <BasicInfoFields
           editedPrompt={editedTemplate}
           setEditedPrompt={setEditedTemplate}
@@ -133,6 +152,11 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
         <MetadataFields
           editedPrompt={editedTemplate}
           setEditedPrompt={setEditedTemplate}
+        />
+
+        <ContextualFieldsSection
+          contextualFields={contextualFields}
+          onUpdateFields={handleContextualFieldsUpdate}
         />
       </CardContent>
     </Card>

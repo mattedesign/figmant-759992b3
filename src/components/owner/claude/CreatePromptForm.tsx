@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
+import { ContextualField } from '@/types/figmant';
+import { ContextualFieldsSection } from './ContextualFieldsSection';
 
 const CATEGORIES = [
   { value: 'master', label: 'Master Analysis' },
@@ -34,6 +36,19 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
   onCancel,
   isSaving
 }) => {
+  const [contextualFields, setContextualFields] = useState<ContextualField[]>([]);
+
+  const handleContextualFieldsUpdate = (fields: ContextualField[]) => {
+    setContextualFields(fields);
+    setNewPrompt(prev => ({
+      ...prev,
+      metadata: {
+        ...prev.metadata,
+        contextual_fields: fields
+      }
+    }));
+  };
+
   const isFormValid = newPrompt.title && newPrompt.display_name && newPrompt.original_prompt && newPrompt.claude_response && newPrompt.category;
 
   return (
@@ -44,7 +59,7 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
           Add a new prompt template for improved Claude responses
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="title">Title *</Label>
@@ -138,6 +153,11 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
             rows={4}
           />
         </div>
+
+        <ContextualFieldsSection
+          contextualFields={contextualFields}
+          onUpdateFields={handleContextualFieldsUpdate}
+        />
         
         <div className="flex justify-end space-x-2">
           <Button variant="outline" onClick={onCancel}>
