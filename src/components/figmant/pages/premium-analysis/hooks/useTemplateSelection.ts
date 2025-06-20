@@ -17,12 +17,14 @@ export const useTemplateSelection = (selectedType: string) => {
       return {
         id: figmantTemplate.id,
         title: figmantTemplate.displayName,
+        displayName: figmantTemplate.displayName,
         category: figmantTemplate.category,
         original_prompt: figmantTemplate.prompt_template,
         credit_cost: getAnalysisCost(figmantTemplate.id),
         is_premium: isPremiumAnalysis(figmantTemplate.id),
         best_for: figmantTemplate.best_for,
-        analysis_focus: figmantTemplate.analysis_focus
+        analysis_focus: figmantTemplate.analysis_focus,
+        contextual_fields: figmantTemplate.contextual_fields
       };
     }
     
@@ -34,6 +36,7 @@ export const useTemplateSelection = (selectedType: string) => {
         return {
           id: premiumTemplate.id,
           title: premiumTemplate.title,
+          displayName: premiumTemplate.title,
           category: premiumTemplate.category,
           original_prompt: premiumTemplate.original_prompt,
           credit_cost: getAnalysisCost(premiumTemplate.id),
