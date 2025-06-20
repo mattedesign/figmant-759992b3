@@ -9,10 +9,10 @@ import { useClaudeSettings } from '@/hooks/useClaudeSettings';
 import { ConnectionStatus } from '@/types/claude';
 import { CreatePromptForm } from './CreatePromptForm';
 import { TemplateMigrationHelper } from './TemplateMigrationHelper';
+import { PromptTemplateItem } from './PromptTemplateItem';
 
 // Lazy load the heavy components
 const ClaudeHeader = React.lazy(() => import('./ClaudeHeader').then(module => ({ default: module.ClaudeHeader })));
-const PromptTemplateList = React.lazy(() => import('./PromptTemplateList'));
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center py-8">
@@ -23,7 +23,7 @@ const LoadingSpinner = () => (
 export const ClaudePromptManager: React.FC = () => {
   const { isOwner, loading } = useAuth();
   const { data: claudeSettings, isLoading: settingsLoading } = useClaudeSettings();
-  const { data: promptTemplates = [], isLoading: templatesLoading } = useClaudePromptExamples();
+  const { data: promptTemplates = [], isLoading: templatesLoading, refetch } = useClaudePromptExamples();
   const createPromptMutation = useCreatePromptExample();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newPrompt, setNewPrompt] = useState<Partial<ClaudePromptExample>>({
@@ -130,15 +130,18 @@ export const ClaudePromptManager: React.FC = () => {
     });
   };
 
-  // Group prompt templates by category
-  const groupedTemplates = promptTemplates.reduce((acc, template) => {
-    const category = template.category;
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(template);
-    return acc;
-  }, {} as Record<string, typeof promptTemplates>);
+  const handleView = (template: ClaudePromptExample) => {
+    console.log('View template:', template.id);
+  };
+  
+  const handleDelete = (template: ClaudePromptExample) => {
+    console.log('Delete template:', template.id);
+  };
+  
+  const handleEditSuccess = () => {
+    console.log('Edit success - refreshing templates');
+    refetch();
+  };
 
   const connectionStatus = getConnectionStatus();
 
@@ -180,9 +183,26 @@ export const ClaudePromptManager: React.FC = () => {
         />
       )}
       
-      <Suspense fallback={<LoadingSpinner />}>
-        <PromptTemplateList groupedTemplates={groupedTemplates} />
-      </Suspense>
+      {/* TEMPLATES LIST */}
+      <div className="space-y-4">
+        {templatesLoading ? (
+          <LoadingSpinner />
+        ) : promptTemplates.length > 0 ? (
+          promptTemplates.map((template) => (
+            <PromptTemplateItem
+              key={template.id}
+              template={template}
+              onView={handleView}
+              onDelete={handleDelete}
+              onEditSuccess={handleEditSuccess}
+            />
+          ))
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            No prompt templates found. Create your first template to get started.
+          </div>
+        )}
+      </div>
     </div>
   );
 };
