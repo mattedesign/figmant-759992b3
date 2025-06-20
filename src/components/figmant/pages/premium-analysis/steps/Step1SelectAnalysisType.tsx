@@ -98,6 +98,16 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                   <span className="text-sm font-medium text-blue-600">
                     3 credits
                   </span>
+                  {/* Show contextual fields indicator if template has them */}
+                  {template.metadata && 
+                   typeof template.metadata === 'object' && 
+                   template.metadata !== null &&
+                   Array.isArray((template.metadata as any).contextual_fields) &&
+                   (template.metadata as any).contextual_fields.length > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      Customizable
+                    </Badge>
+                  )}
                 </div>
               </CardContent>
             </Card>

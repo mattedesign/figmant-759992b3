@@ -30,10 +30,13 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
       </div>
       
       <div className="max-w-2xl mx-auto">
-        {/* If no template is selected or no contextual fields, show a message */}
+        {/* If no template is selected, show a message */}
         {!selectedTemplate ? (
           <Card>
-            <CardContent className="text-center p-0">
+            <CardHeader>
+              <CardTitle>No Template Selected</CardTitle>
+            </CardHeader>
+            <CardContent>
               <p className="text-muted-foreground">
                 Please select an analysis template first to configure project details.
               </p>
@@ -41,15 +44,24 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
           </Card>
         ) : !selectedTemplate.contextual_fields || selectedTemplate.contextual_fields.length === 0 ? (
           <Card>
-            <CardContent className="p-0">
+            <CardHeader>
+              <CardTitle>Ready to Proceed</CardTitle>
+            </CardHeader>
+            <CardContent>
               <p className="text-muted-foreground">
-                You can proceed to the next step to upload your files for analysis.
+                This template doesn't require additional configuration. You can proceed to upload your files for analysis.
               </p>
             </CardContent>
           </Card>
         ) : (
           <Card>
-            <CardContent className="space-y-4 p-0">
+            <CardHeader>
+              <CardTitle>Configure {selectedTemplate.title}</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Please provide the following information to customize your analysis:
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
               {selectedTemplate.contextual_fields.map((field) => (
                 <ContextualFieldRenderer
                   key={field.id}

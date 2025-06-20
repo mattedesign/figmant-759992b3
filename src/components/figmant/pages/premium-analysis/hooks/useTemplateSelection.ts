@@ -26,6 +26,8 @@ export const useTemplateSelection = (selectedType: string) => {
           contextualFields = Array.isArray(metadata.contextual_fields) ? metadata.contextual_fields : [];
         }
         
+        console.log(`Template contextual fields:`, contextualFields);
+        
         return {
           id: template.id,
           title: template.title,
