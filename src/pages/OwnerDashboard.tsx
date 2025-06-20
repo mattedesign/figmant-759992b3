@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Navigation } from '@/components/layout/Navigation';
 import { OwnerDashboardErrorBoundary } from '@/components/owner/OwnerDashboardErrorBoundary';
@@ -26,11 +27,13 @@ const tabToSectionMap: Record<string, string> = {
   'prompt-manager': 'admin',
   // New standardized mappings
   'competitor-analysis': 'competitor-analysis',
+  'wizard-analysis': 'wizard-analysis',
   'premium-analysis': 'premium-analysis',
   templates: 'templates',
   credits: 'credits',
   admin: 'admin',
   // Legacy mappings for backward compatibility
+  wizard: 'wizard-analysis',
   'revenue-analysis': 'premium-analysis',
   preferences: 'settings',
 };
@@ -50,9 +53,9 @@ const OwnerDashboard = () => {
   const validTabs = [
     'design', 'all-analysis', 'insights', 'prompts', 'integrations', 'batch', 'history', 'legacy', 
     'users', 'plans', 'claude', 'settings', 'prompt-manager',
-    'competitor-analysis', 'premium-analysis', 'templates', 'credits', 'admin',
+    'competitor-analysis', 'wizard-analysis', 'premium-analysis', 'templates', 'credits', 'admin',
     // Legacy tabs for backward compatibility
-    'revenue-analysis', 'preferences'
+    'wizard', 'revenue-analysis', 'preferences'
   ];
   console.log('Current tab:', activeTab, 'Current section:', activeSection);
 
@@ -91,6 +94,11 @@ const OwnerDashboard = () => {
         // For admin, prefer 'users' first
         if (sectionTabs.includes('users')) {
           firstTab = 'users';
+        }
+      } else if (migratedSection === 'wizard-analysis') {
+        // For wizard analysis, prefer 'wizard-analysis' tab
+        if (sectionTabs.includes('wizard-analysis')) {
+          firstTab = 'wizard-analysis';
         }
       }
       

@@ -55,8 +55,12 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
         // UC-024 - AI Competitor Analysis
         return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
       
+      case 'wizard-analysis':
+        // Direct to stepped wizard process
+        return <WizardPage />;
+      
       case 'premium-analysis':
-        // UC-018 - E-commerce Revenue Impact
+        // UC-018 - E-commerce Revenue Impact (tabbed interface)
         return <PremiumAnalysisPage />;
       
       case 'templates':
@@ -77,9 +81,12 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       // Legacy routes - maintain backward compatibility during transition
       case 'chat':
       case 'analysis':
-      case 'wizard':
         // These now redirect to competitor-analysis
         return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
+      
+      case 'wizard':
+        // This now redirects to wizard-analysis
+        return <WizardPage />;
       
       case 'revenue-analysis':
         // This now redirects to premium-analysis
@@ -111,7 +118,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   };
 
   // Determine if we need scrolling based on the active section
-  const needsScrolling = activeSection === 'premium-analysis' || activeSection === 'wizard';
+  const needsScrolling = activeSection === 'premium-analysis' || activeSection === 'wizard-analysis';
 
   if (isMobile) {
     return (

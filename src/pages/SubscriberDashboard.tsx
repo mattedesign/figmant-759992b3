@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Navigation } from '@/components/layout/Navigation';
 import { SubscriberDashboardErrorBoundary } from '@/components/subscriber/SubscriberDashboardErrorBoundary';
@@ -19,12 +20,14 @@ const tabToSectionMap: Record<string, string> = {
   legacy: 'dashboard',
   // New standardized mappings
   'competitor-analysis': 'competitor-analysis',
+  'wizard-analysis': 'wizard-analysis',
   'premium-analysis': 'premium-analysis',
   templates: 'templates',
   credits: 'credits',
   settings: 'settings',
   'help-support': 'help-support',
   // Legacy mappings for backward compatibility
+  wizard: 'wizard-analysis',
   'revenue-analysis': 'premium-analysis',
   preferences: 'settings',
 };
@@ -43,9 +46,9 @@ const SubscriberDashboard = () => {
   // Valid tab options - including hidden tabs for direct access
   const validTabs = [
     'design', 'all-analysis', 'insights', 'prompts', 'integrations', 'batch', 'history', 'legacy',
-    'competitor-analysis', 'premium-analysis', 'templates', 'credits', 'settings', 'help-support',
+    'competitor-analysis', 'wizard-analysis', 'premium-analysis', 'templates', 'credits', 'settings', 'help-support',
     // Legacy tabs for backward compatibility
-    'revenue-analysis', 'preferences'
+    'wizard', 'revenue-analysis', 'preferences'
   ];
   console.log('Current tab:', activeTab, 'Current section:', activeSection);
 
@@ -79,6 +82,11 @@ const SubscriberDashboard = () => {
           firstTab = 'design';
         } else if (sectionTabs.includes('all-analysis')) {
           firstTab = 'all-analysis';
+        }
+      } else if (migratedSection === 'wizard-analysis') {
+        // For wizard analysis, prefer 'wizard-analysis' tab
+        if (sectionTabs.includes('wizard-analysis')) {
+          firstTab = 'wizard-analysis';
         }
       }
       

@@ -8,6 +8,7 @@ import {
   Settings, 
   HelpCircle, 
   Shield,
+  Wand2,
   LucideIcon
 } from 'lucide-react';
 
@@ -34,6 +35,13 @@ export const navigationConfig = {
       icon: BarChart3, 
       priority: 1,
       description: 'UC-024 - AI-powered competitor insights'
+    },
+    { 
+      id: 'wizard-analysis', 
+      label: 'Wizard Analysis', 
+      icon: Wand2, 
+      priority: 1,
+      description: 'Step-by-step guided analysis workflow'
     },
     { 
       id: 'premium-analysis', 
