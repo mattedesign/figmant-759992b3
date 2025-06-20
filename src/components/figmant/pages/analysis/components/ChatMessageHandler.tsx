@@ -1,0 +1,127 @@
+
+import React, { ReactNode } from 'react';
+import { ChatMessage } from '@/components/design/DesignChatInterface';
+import { useChatStateContext } from './ChatStateProvider';
+
+interface ChatMessageHandlerProps {
+  children: (handlers: MessageHandlers) => ReactNode;
+}
+
+interface MessageHandlers {
+  handleSendMessage: () => Promise<void>;
+  handleKeyPress: (e: React.KeyboardEvent) => void;
+  canSend: boolean;
+}
+
+export const ChatMessageHandler: React.FC<ChatMessageHandlerProps> = ({ children }) => {
+  const {
+    message,
+    setMessage,
+    attachments,
+    setAttachments,
+    messages,
+    setMessages,
+    analyzeWithClaude,
+    getCurrentTemplate,
+    isSessionInitialized,
+    saveMessageAttachments,
+    toast
+  } = useChatStateContext();
+
+  const handleSendMessage = async () => {
+    if (!message.trim() && attachments.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No content to analyze",
+        description: "Please enter a message or attach files/URLs.",
+      });
+      return;
+    }
+
+    console.log('🚀 MESSAGE HANDLER - Sending message with attachments:', {
+      messageLength: message.length,
+      attachmentsCount: attachments.length,
+    });
+
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: message,
+      timestamp: new Date(),
+      attachments: attachments.length > 0 ? attachments : undefined
+    };
+
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setMessage('');
+
+    // Save message attachments to persistent storage
+    if (isSessionInitialized && userMessage.attachments) {
+      saveMessageAttachments(userMessage);
+      
+      toast({
+        title: "Attachments Saved",
+        description: "Your files and links have been saved to this chat session.",
+      });
+    }
+
+    try {
+      const template = getCurrentTemplate();
+      
+      const analysisAttachments = attachments.map(att => ({
+        id: att.id,
+        type: att.type,
+        name: att.name,
+        uploadPath: att.uploadPath,
+        url: att.url
+      }));
+
+      const result = await analyzeWithClaude({
+        message,
+        attachments: analysisAttachments,
+        template
+      });
+
+      const assistantMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: result.analysis,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+
+      // Clear attachments after successful analysis
+      setAttachments([]);
+
+    } catch (error) {
+      console.error('Analysis error:', error);
+      
+      const errorMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: `Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, errorMessage]);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const canSend = message.trim().length > 0 || attachments.length > 0;
+
+  const handlers: MessageHandlers = {
+    handleSendMessage,
+    handleKeyPress,
+    canSend
+  };
+
+  return <>{children(handlers)}</>;
+};
