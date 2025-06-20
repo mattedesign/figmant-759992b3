@@ -354,7 +354,7 @@ export const UnifiedChatContainer: React.FC = () => {
 
       {/* Analysis Assets Panel */}
       {isAssetsPanelVisible && (
-        <div className="flex-shrink-0 w-80">
+        <div className="flex-shrink-0 w-72">
           <AnalysisNavigationSidebar
             messages={messages}
             attachments={attachments}
