@@ -17,6 +17,7 @@ interface SidebarNavigationProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
   isCollapsed: boolean;
+  onToggleCollapse: (collapsed: boolean) => void;
   isOwner?: boolean;
 }
 
@@ -24,6 +25,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   activeSection,
   onSectionChange,
   isCollapsed,
+  onToggleCollapse,
   isOwner = false
 }) => {
   const [activeTab, setActiveTab] = useState('menu');
