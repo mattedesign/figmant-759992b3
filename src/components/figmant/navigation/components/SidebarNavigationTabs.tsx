@@ -20,26 +20,32 @@ export const SidebarNavigationTabs: React.FC<SidebarNavigationTabsProps> = ({
       }}
     >
       <TabsList 
-        className="grid w-full grid-cols-2 h-8"
+        className="grid w-full grid-cols-2 h-12"
         style={{
-          borderRadius: '8px',
-          background: '#F5F5F5',
+          borderRadius: '20px',
+          background: '#E5E7EB',
           border: 'none',
           boxShadow: 'none',
-          padding: '2px'
+          padding: '4px'
         }}
       >
         <TabsTrigger 
           value="menu" 
-          className="text-sm font-medium h-full rounded-md m-0.5 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:shadow-none"
+          className="text-base font-semibold h-full rounded-2xl data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:shadow-none"
           onClick={() => onTabChange('menu')}
+          style={{
+            margin: '2px'
+          }}
         >
-          Menu
+          Analysis
         </TabsTrigger>
         <TabsTrigger 
           value="recent" 
-          className="text-sm font-medium h-full rounded-md m-0.5 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:shadow-none"
+          className="text-base font-semibold h-full rounded-2xl data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:shadow-none"
           onClick={() => onTabChange('recent')}
+          style={{
+            margin: '2px'
+          }}
         >
           Recent
         </TabsTrigger>
