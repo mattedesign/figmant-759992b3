@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown } from 'lucide-react';
@@ -42,10 +43,10 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
       key={item.id}
       variant="ghost"
       className={cn(
-        "w-full justify-start text-left h-10 px-2",
+        "w-full justify-start text-left h-10 px-2 group",
         activeSection === item.id
           ? "bg-white text-[#3D4A5C] rounded-[12px] shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
-          : "hover:bg-white hover:text-[#3D4A5C] hover:rounded-[12px] hover:shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
+          : "hover:bg-[#1812E9] hover:text-[#3D4A5C] hover:rounded-[12px] hover:shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
       )}
       style={{
         display: 'flex',
@@ -59,63 +60,25 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           ? 'rgba(10, 169, 255, 0.16)' 
           : 'var(--Surface-01, #FCFCFC)'
       }}
-      onMouseEnter={e => {
-        if (activeSection !== item.id) {
-          e.currentTarget.style.background = '#1812E9';
-          e.currentTarget.style.borderRadius = '12px';
-        }
-      }}
-      onMouseLeave={e => {
-        if (activeSection !== item.id) {
-          e.currentTarget.style.background = 'var(--Surface-01, #FCFCFC)';
-        }
-      }}
       onClick={() => onSectionChange(item.id)}
     >
       <div className={cn(
         "w-8 h-8 mr-1 rounded-[8px] flex items-center justify-center transition-all",
-        activeSection === item.id ? "bg-white" : "bg-[var(--Surface-03,#F1F1F1)]"
-      )}
-      style={{
-        transition: 'all 0.2s ease'
-      }}
-      onMouseEnter={e => {
-        if (activeSection !== item.id) {
-          e.currentTarget.style.background = '#FFF';
-          e.currentTarget.style.borderRadius = '8px';
-        }
-      }}
-      onMouseLeave={e => {
-        if (activeSection !== item.id) {
-          e.currentTarget.style.background = 'var(--Surface-03, #F1F1F1)';
-        }
-      }}
-      >
+        activeSection === item.id ? "bg-white" : "bg-[var(--Surface-03,#F1F1F1)] group-hover:bg-white"
+      )}>
         <item.icon className={cn(
           "h-4 w-4 transition-all",
-          activeSection === item.id ? "text-[#1812E9] fill-current" : "text-[#455468]"
-        )}
-        style={{
-          transition: 'all 0.2s ease'
-        }}
-        onMouseEnter={e => {
-          if (activeSection !== item.id) {
-            e.currentTarget.style.color = '#1812E9';
-            e.currentTarget.style.fill = 'currentColor';
-          }
-        }}
-        onMouseLeave={e => {
-          if (activeSection !== item.id) {
-            e.currentTarget.style.color = '#455468';
-            e.currentTarget.style.fill = '';
-          }
-        }}
-        />
+          activeSection === item.id 
+            ? "text-[#1812E9] fill-current" 
+            : "text-[#455468] group-hover:text-[#1812E9] group-hover:fill-current"
+        )} />
       </div>
       <span
         className={cn(
           "flex-1 text-left transition-all",
-          activeSection === item.id ? "text-[#1812E9] font-medium" : "text-[#455468] font-medium"
+          activeSection === item.id 
+            ? "text-[#1812E9] font-medium" 
+            : "text-[#455468] font-medium group-hover:text-white"
         )}
         style={activeSection === item.id ? {
           overflow: 'hidden',
@@ -146,16 +109,6 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           alignItems: 'center',
           height: '100%',
           transition: 'all 0.2s ease'
-        }}
-        onMouseEnter={e => {
-          if (activeSection !== item.id) {
-            e.currentTarget.style.color = '#fff';
-          }
-        }}
-        onMouseLeave={e => {
-          if (activeSection !== item.id) {
-            e.currentTarget.style.color = 'var(--Text-Primary, #121212)';
-          }
         }}
       >
         {item.label}
