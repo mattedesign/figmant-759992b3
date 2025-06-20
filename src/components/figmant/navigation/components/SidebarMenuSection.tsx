@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -64,7 +63,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
                   color: '#1812E9',
                   textOverflow: 'ellipsis',
                   fontFamily: '"Instrument Sans"',
-                  fontSize: isMobile ? '14px' : '12px',
+                  fontSize: '13px',
                   fontStyle: 'normal',
                   fontWeight: '500',
                   lineHeight: isMobile ? '20px' : '16px',
@@ -82,7 +81,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
                   color: '#6B7280',
                   textOverflow: 'ellipsis',
                   fontFamily: '"Instrument Sans"',
-                  fontSize: isMobile ? '14px' : '12px',
+                  fontSize: '13px',
                   fontStyle: 'normal',
                   fontWeight: '500',
                   lineHeight: isMobile ? '20px' : '16px',
