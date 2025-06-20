@@ -57,56 +57,144 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
     metadata: template.metadata || {}
   });
 
-  // Extract contextual fields from metadata with proper type checking
+  // Extract contextual fields from metadata with proper type checking and defaults
   const getContextualFieldsFromMetadata = (metadata: any): ContextualField[] => {
-    console.log('🔍 STEP 1 DEBUG - getContextualFieldsFromMetadata called with:', metadata);
-    
     if (!metadata || typeof metadata !== 'object') {
-      console.log('🔍 STEP 1 DEBUG - No metadata or invalid metadata type');
-      return [];
+      return getDefaultContextualFields(template.category);
     }
     if (!Array.isArray(metadata.contextual_fields)) {
-      console.log('🔍 STEP 1 DEBUG - contextual_fields is not an array:', metadata.contextual_fields);
-      return [];
+      return getDefaultContextualFields(template.category);
     }
     
-    console.log('🔍 STEP 1 DEBUG - Found contextual_fields array:', metadata.contextual_fields);
-    return metadata.contextual_fields as ContextualField[];
+    const fields = metadata.contextual_fields as ContextualField[];
+    return fields.length > 0 ? fields : getDefaultContextualFields(template.category);
+  };
+
+  // Determine if a template should have contextual fields based on category
+  const shouldHaveContextualFields = (category: string): boolean => {
+    return ['competitor', 'ecommerce_revenue', 'ab_testing', 'copy_messaging', 'visual_hierarchy'].includes(category);
+  };
+
+  // Provide default contextual fields for categories that should have them
+  const getDefaultContextualFields = (category: string): ContextualField[] => {
+    if (!shouldHaveContextualFields(category)) {
+      return [];
+    }
+
+    switch (category) {
+      case 'competitor':
+        return [
+          {
+            id: 'competitor_urls',
+            label: 'Competitor URLs',
+            type: 'textarea',
+            placeholder: 'Enter competitor website URLs (one per line)',
+            required: true,
+            description: 'List of competitor websites to analyze'
+          },
+          {
+            id: 'industry_focus',
+            label: 'Industry Focus',
+            type: 'text',
+            placeholder: 'e.g., SaaS, E-commerce, Healthcare',
+            required: false,
+            description: 'Specific industry context for analysis'
+          }
+        ];
+      case 'ecommerce_revenue':
+        return [
+          {
+            id: 'current_conversion_rate',
+            label: 'Current Conversion Rate (%)',
+            type: 'number',
+            placeholder: '2.5',
+            required: false,
+            description: 'Current website conversion rate for baseline comparison'
+          },
+          {
+            id: 'target_audience',
+            label: 'Target Audience',
+            type: 'text',
+            placeholder: 'Demographics and psychographics',
+            required: false,
+            description: 'Description of target customer segment'
+          }
+        ];
+      case 'ab_testing':
+        return [
+          {
+            id: 'test_hypothesis',
+            label: 'Test Hypothesis',
+            type: 'textarea',
+            placeholder: 'We believe that changing X will improve Y because...',
+            required: true,
+            description: 'Clear hypothesis for the A/B test'
+          },
+          {
+            id: 'success_metric',
+            label: 'Primary Success Metric',
+            type: 'select',
+            placeholder: 'Select metric',
+            required: true,
+            options: ['Conversion Rate', 'Click-through Rate', 'Time on Page', 'Bounce Rate', 'Revenue per Visitor'],
+            description: 'Main metric to measure test success'
+          }
+        ];
+      case 'copy_messaging':
+        return [
+          {
+            id: 'brand_voice',
+            label: 'Brand Voice',
+            type: 'select',
+            placeholder: 'Select tone',
+            required: false,
+            options: ['Professional', 'Friendly', 'Casual', 'Authoritative', 'Playful', 'Urgent'],
+            description: 'Desired tone and voice for messaging'
+          },
+          {
+            id: 'key_benefits',
+            label: 'Key Benefits to Highlight',
+            type: 'textarea',
+            placeholder: 'List main value propositions',
+            required: false,
+            description: 'Primary benefits or features to emphasize'
+          }
+        ];
+      case 'visual_hierarchy':
+        return [
+          {
+            id: 'primary_action',
+            label: 'Primary Call-to-Action',
+            type: 'text',
+            placeholder: 'Sign Up, Buy Now, Learn More, etc.',
+            required: false,
+            description: 'Main action you want users to take'
+          },
+          {
+            id: 'content_priority',
+            label: 'Content Priority Order',
+            type: 'textarea',
+            placeholder: 'List content elements in order of importance',
+            required: false,
+            description: 'Hierarchy of information importance'
+          }
+        ];
+      default:
+        return [];
+    }
   };
 
   const [contextualFields, setContextualFields] = useState<ContextualField[]>(
     getContextualFieldsFromMetadata(template.metadata)
   );
 
-  // STEP 1 DEBUG: Add debug logging
+  // Update contextual fields when template changes
   useEffect(() => {
-    console.log('🔍 STEP 1 DEBUG - ContextualFields State:', contextualFields);
-    console.log('🔍 STEP 1 DEBUG - Template Metadata:', template.metadata);
-    console.log('🔍 STEP 1 DEBUG - Component Rendering:', {
-      templateId: template.id,
-      hasContextualFields: contextualFields.length > 0,
-      metadataExists: !!template.metadata
-    });
-
-    // STEP 2 DEBUG: Metadata analysis
-    const debugMetadata = () => {
-      console.log('🔍 METADATA ANALYSIS:');
-      console.log('Raw metadata:', template.metadata);
-      
-      if (template.metadata && typeof template.metadata === 'object') {
-        const metadata = template.metadata as Record<string, any>;
-        console.log('Metadata keys:', Object.keys(metadata));
-        console.log('contextual_fields exists:', 'contextual_fields' in metadata);
-        console.log('contextual_fields value:', metadata.contextual_fields);
-        console.log('contextual_fields is array:', Array.isArray(metadata.contextual_fields));
-      }
-    };
-
-    debugMetadata();
-  }, [template, contextualFields]);
+    const fields = getContextualFieldsFromMetadata(template.metadata);
+    setContextualFields(fields);
+  }, [template.metadata, template.category]);
 
   const handleContextualFieldsUpdate = (fields: ContextualField[]) => {
-    console.log('🔍 STEP 1 DEBUG - handleContextualFieldsUpdate called with:', fields);
     setContextualFields(fields);
     setEditedTemplate(prev => ({
       ...prev,
@@ -182,9 +270,6 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
     onCancel();
   };
 
-  // STEP 1 DEBUG: Add render logging
-  console.log('🔍 EDIT FORM RENDERING:', template.id);
-
   return (
     <Card className="border-2 border-blue-200 bg-blue-50">
       <EditFormHeader
@@ -210,26 +295,24 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
           setEditedPrompt={setEditedTemplate}
         />
 
-        {/* STEP 1 DEBUG: Make contextual fields visible */}
-        <div className="border-8 border-red-500 bg-yellow-100 p-6 m-4">
-          <div className="bg-red-600 text-white p-2 mb-4 rounded">
-            🚨 DEBUG: CONTEXTUAL FIELDS SECTION - THIS SHOULD BE VISIBLE
+        {/* Contextual Fields Section - Enhanced Layout */}
+        <div className="border-t pt-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Dynamic Form Fields</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Configure fields that users will fill when using this template for personalized analysis
+            </p>
+            {shouldHaveContextualFields(template.category) && contextualFields.length === 0 && (
+              <p className="text-sm text-amber-600 mt-2 bg-amber-50 p-2 rounded border border-amber-200">
+                ⚠️ This template category typically includes contextual fields. Consider adding some to enhance user experience.
+              </p>
+            )}
           </div>
+          
           <ContextualFieldsSection
             contextualFields={contextualFields}
             onUpdateFields={handleContextualFieldsUpdate}
           />
-          
-          {/* Debug data display */}
-          <div className="mt-4 bg-white p-3 rounded border-2 border-blue-500">
-            <h4 className="font-bold text-blue-700">Debug Data:</h4>
-            <p><strong>Fields Count:</strong> {contextualFields.length}</p>
-            <p><strong>Template ID:</strong> {template.id}</p>
-            <p><strong>Has Metadata:</strong> {template.metadata ? 'Yes' : 'No'}</p>
-            <pre className="text-xs mt-2 bg-gray-100 p-2 rounded max-h-32 overflow-auto">
-              {JSON.stringify(contextualFields, null, 2)}
-            </pre>
-          </div>
         </div>
       </CardContent>
     </Card>
