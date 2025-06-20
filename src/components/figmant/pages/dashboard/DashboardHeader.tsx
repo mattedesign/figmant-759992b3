@@ -1,134 +1,206 @@
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Calendar } from 'lucide-react';
-import { format } from 'date-fns';
-import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { RefreshCw, TrendingUp, Users, Zap, BarChart3 } from 'lucide-react';
+import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 
 interface DashboardHeaderProps {
   dataStats: any;
-  lastUpdated?: Date | null;
-  onRefresh?: () => void;
-  isRefreshing?: boolean;
+  lastUpdated: Date | null;
+  onRefresh: () => void;
+  isRefreshing: boolean;
 }
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
-  lastUpdated
+  dataStats,
+  lastUpdated,
+  onRefresh,
+  isRefreshing
 }) => {
-  const { profile } = useAuth();
-  const currentDate = new Date();
-  const formattedDate = format(currentDate, 'EEEE, MMMM d');
+  const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
 
-  // Get time-based greeting
-  const getGreeting = () => {
-    const hour = currentDate.getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+  const getHeaderClasses = () => {
+    if (isMobile) {
+      return "space-y-4";
+    }
+    if (isTablet) {
+      return "space-y-4";
+    }
+    return "space-y-6";
   };
 
-  // Get time-based image
-  const getTimeBasedImage = () => {
-    const hour = currentDate.getHours();
-    const minute = currentDate.getMinutes();
-    const timeInMinutes = hour * 60 + minute;
-
-    // 6am to 8am (360 to 480 minutes)
-    if (timeInMinutes >= 360 && timeInMinutes <= 480) {
-      return {
-        src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/zr6geoc2i_Sunrise.svg',
-        alt: 'Sunrise'
-      };
+  const getTitleClasses = () => {
+    if (isMobile) {
+      return "text-xl font-bold text-gray-900";
     }
-    // 8:01am to 5:00pm (481 to 1020 minutes)
-    if (timeInMinutes >= 481 && timeInMinutes <= 1020) {
-      return {
-        src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/km8946rzr_Day.svg',
-        alt: 'Day'
-      };
+    if (isTablet) {
+      return "text-2xl font-bold text-gray-900";
     }
-    // 5:01pm to 7:30pm (1021 to 1170 minutes)
-    if (timeInMinutes >= 1021 && timeInMinutes <= 1170) {
-      return {
-        src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/3yi4dyxol_Sunset.svg',
-        alt: 'Sunset'
-      };
-    }
-    // 7:31pm to 8:45pm (1171 to 1245 minutes)
-    if (timeInMinutes >= 1171 && timeInMinutes <= 1245) {
-      return {
-        src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/q6hty7yfd_Dusk.svg',
-        alt: 'Dusk'
-      };
-    }
-    // 8:46pm to 5:59am (1246+ minutes or 0-359 minutes) - Good evening period
-    return {
-      src: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-17/jv746fkjt_Night2.svg',
-      alt: 'Night'
-    };
+    return "text-3xl font-bold text-gray-900";
   };
 
-  // Extract first name from full_name or use a fallback with debugging
-  const getFirstName = () => {
-    console.log('DashboardHeader - Profile data:', profile);
-    console.log('DashboardHeader - Profile full_name:', profile?.full_name);
-    console.log('DashboardHeader - Profile email:', profile?.email);
-
-    // Return early if no profile data is loaded yet
-    if (!profile) {
-      console.log('DashboardHeader - No profile data yet, showing loading state');
-      return null; // This will trigger loading state
+  const getSubtitleClasses = () => {
+    if (isMobile) {
+      return "text-sm text-gray-600";
     }
-
-    if (profile.full_name && profile.full_name.trim()) {
-      const firstName = profile.full_name.split(' ')[0].trim();
-      console.log('DashboardHeader - Extracted firstName from full_name:', firstName);
-      return firstName || 'there';
-    }
-    // If no full_name, try to extract from email
-    if (profile.email) {
-      const emailName = profile.email.split('@')[0];
-      console.log('DashboardHeader - Extracted emailName:', emailName);
-      // Capitalize first letter and return if it looks like a name
-      if (emailName && emailName.length > 0) {
-        const capitalizedName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
-        console.log('DashboardHeader - Capitalized email name:', capitalizedName);
-        return capitalizedName;
-      }
-    }
-    console.log('DashboardHeader - Falling back to "there"');
-    return 'there';
+    return "text-gray-600";
   };
 
-  const firstName = getFirstName();
-  const timeBasedImage = getTimeBasedImage();
+  const getStatsGridClasses = () => {
+    if (isMobile) {
+      return "grid grid-cols-2 gap-3";
+    }
+    if (isTablet) {
+      return "grid grid-cols-2 lg:grid-cols-4 gap-4";
+    }
+    return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6";
+  };
+
+  const getStatCardClasses = () => {
+    if (isMobile) {
+      return "bg-white p-3 rounded-lg border border-gray-200 shadow-sm";
+    }
+    return "bg-white p-4 rounded-lg border border-gray-200 shadow-sm";
+  };
+
+  const getStatValueClasses = () => {
+    if (isMobile) {
+      return "text-lg font-bold text-gray-900";
+    }
+    if (isTablet) {
+      return "text-xl font-bold text-gray-900";
+    }
+    return "text-2xl font-bold text-gray-900";
+  };
+
+  const getStatLabelClasses = () => {
+    if (isMobile) {
+      return "text-xs text-gray-600";
+    }
+    return "text-sm text-gray-600";
+  };
+
+  const getIconSize = () => {
+    if (isMobile) {
+      return "h-4 w-4";
+    }
+    return "h-5 w-5";
+  };
+
+  // Format numbers for mobile display
+  const formatNumber = (num: number) => {
+    if (isMobile && num >= 1000) {
+      return `${(num / 1000).toFixed(1)}k`;
+    }
+    return num.toLocaleString();
+  };
+
+  const formatTime = (date: Date | null) => {
+    if (!date) return 'Never';
+    if (isMobile) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return date.toLocaleString();
+  };
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-[12px] pt-2">
-      <div className="flex items-center gap-4 h-full">
-        {/* Time-based Image - fills height of container */}
-        <div className="flex-shrink-0 h-full flex items-center">
-          <img 
-            src={timeBasedImage.src}
-            alt={timeBasedImage.alt}
-            className="h-full max-h-16 w-auto object-contain"
-          />
+    <div className={getHeaderClasses()}>
+      {/* Header with title and refresh */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className={getTitleClasses()}>
+            Dashboard
+          </h1>
+          <p className={getSubtitleClasses()}>
+            {isMobile ? 'Analytics overview' : 'Your comprehensive analytics and performance overview'}
+          </p>
         </div>
         
-        <div>
-          <div className="text-sm text-gray-500 mb-1">{formattedDate}</div>
-          {firstName === null ? (
-            // Loading state while profile is being fetched
-            <h1 className="text-[24px] text-gray-900">
-              <span className="font-normal">{getGreeting()}</span>...
-            </h1>
-          ) : (
-            <h1 className="text-[24px] text-gray-900">
-              <span className="font-normal">{getGreeting()}</span>, <span className="font-bold">{firstName}</span>
-            </h1>
+        <div className="flex items-center gap-2">
+          {lastUpdated && !isMobile && (
+            <span className="text-xs text-gray-500">
+              Last updated: {formatTime(lastUpdated)}
+            </span>
           )}
+          <Button
+            variant="outline"
+            size={isMobile ? "sm" : "default"}
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`${getIconSize()} ${isRefreshing ? 'animate-spin' : ''}`} />
+            {!isMobile && 'Refresh'}
+          </Button>
         </div>
       </div>
+
+      {/* Stats Grid - Responsive layout */}
+      <div className={getStatsGridClasses()}>
+        <div className={getStatCardClasses()}>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className={getStatValueClasses()}>
+                {formatNumber(dataStats?.totalAnalyses || 0)}
+              </div>
+              <div className={getStatLabelClasses()}>
+                {isMobile ? 'Analyses' : 'Total Analyses'}
+              </div>
+            </div>
+            <BarChart3 className={`${getIconSize()} text-blue-600`} />
+          </div>
+        </div>
+
+        <div className={getStatCardClasses()}>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className={getStatValueClasses()}>
+                {Math.round(dataStats?.activityScore || 0)}%
+              </div>
+              <div className={getStatLabelClasses()}>
+                {isMobile ? 'Success' : 'Success Rate'}
+              </div>
+            </div>
+            <TrendingUp className={`${getIconSize()} text-green-600`} />
+          </div>
+        </div>
+
+        <div className={getStatCardClasses()}>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className={getStatValueClasses()}>
+                {formatNumber(dataStats?.totalInsights || 0)}
+              </div>
+              <div className={getStatLabelClasses()}>
+                {isMobile ? 'Insights' : 'Insights Generated'}
+              </div>
+            </div>
+            <Zap className={`${getIconSize()} text-yellow-600`} />
+          </div>
+        </div>
+
+        <div className={getStatCardClasses()}>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className={getStatValueClasses()}>
+                {formatNumber(dataStats?.activeUsers || 1)}
+              </div>
+              <div className={getStatLabelClasses()}>
+                {isMobile ? 'Users' : 'Active Users'}
+              </div>
+            </div>
+            <Users className={`${getIconSize()} text-purple-600`} />
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile last updated info */}
+      {isMobile && lastUpdated && (
+        <div className="text-xs text-gray-500 text-center">
+          Last updated: {formatTime(lastUpdated)}
+        </div>
+      )}
     </div>
   );
 };

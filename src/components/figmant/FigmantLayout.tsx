@@ -68,10 +68,10 @@ export const FigmantLayout: React.FC = () => {
 
   if (isMobile) {
     return (
-      <div className="h-screen flex flex-col w-full overflow-hidden p-3" style={{ background: 'transparent' }}>
+      <div className="h-screen flex flex-col w-full overflow-hidden p-2 sm:p-3" style={{ background: 'transparent' }}>
         {/* Mobile Header with Navigation */}
-        <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between rounded-t-lg">
-          <h1 className="text-xl font-bold text-gray-900">figmant</h1>
+        <div className="flex-shrink-0 bg-white border-b border-gray-200 px-3 sm:px-4 py-3 flex items-center justify-between rounded-t-lg">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900">figmant</h1>
           <MobileNavigation 
             activeSection={activeSection}
             onSectionChange={setActiveSection}
@@ -93,9 +93,9 @@ export const FigmantLayout: React.FC = () => {
     );
   }
 
-  // Desktop layout with responsive sidebar behavior
+  // Desktop and Tablet layout with responsive sidebar behavior
   return (
-    <div className="h-screen flex w-full gap-4 overflow-hidden p-3" style={{ background: 'transparent' }}>
+    <div className={`h-screen flex w-full gap-2 sm:gap-4 overflow-hidden p-2 sm:p-3 ${isTablet ? 'gap-2' : ''}`} style={{ background: 'transparent' }}>
       <div className="flex-shrink-0">
         <FigmantSidebar 
           activeSection={activeSection}

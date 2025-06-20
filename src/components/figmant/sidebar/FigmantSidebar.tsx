@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -5,6 +6,7 @@ import { SidebarHeader } from './SidebarHeader';
 import { SidebarNavigation } from '../navigation/components/SidebarNavigation';
 import { SidebarCredits } from './SidebarCredits';
 import { SidebarUserProfile } from './SidebarUserProfile';
+import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 
 interface FigmantSidebarProps {
   activeSection: string;
@@ -20,6 +22,8 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   const { isOwner, profile, user, subscription, signOut } = useAuth();
   const { credits, creditsLoading } = useUserCredits();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
 
   // Listen for parent layout's responsive state changes
   useEffect(() => {
@@ -58,17 +62,67 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
     onCollapsedChange?.(collapsed);
   };
 
+  const getSidebarClasses = () => {
+    const baseClasses = "flex flex-col transition-all duration-300 overflow-hidden";
+    const widthClasses = isCollapsed ? 'w-16' : (isTablet ? 'w-64' : 'w-72');
+    return `${baseClasses} ${widthClasses}`;
+  };
+
+  const getSidebarStyle = () => {
+    return { 
+      height: 'calc(100vh - 24px)', // Account for the 12px padding on top and bottom
+      borderRadius: isTablet ? '16px' : '20px',
+      border: '1px solid var(--Stroke-01, #ECECEC)',
+      background: 'var(--Surface-01, #FCFCFC)'
+    };
+  };
+
+  const getUserProfileClasses = () => {
+    if (isTablet) {
+      return "flex-shrink-0 px-3 py-2 border-b border-gray-200/30";
+    }
+    return "flex-shrink-0 px-4 py-3 border-b border-gray-200/30";
+  };
+
+  const getUserProfileCardClasses = () => {
+    if (isTablet) {
+      return "flex items-center gap-2 p-2 rounded-lg";
+    }
+    return "flex items-center gap-3 p-2 rounded-lg";
+  };
+
+  const getAvatarClasses = () => {
+    if (isTablet) {
+      return "w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0";
+    }
+    return "w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0";
+  };
+
+  const getAvatarTextClasses = () => {
+    if (isTablet) {
+      return "text-xs font-medium text-gray-600";
+    }
+    return "text-sm font-medium text-gray-600";
+  };
+
+  const getUserNameClasses = () => {
+    if (isTablet) {
+      return "text-sm font-medium text-gray-900 truncate";
+    }
+    return "text-sm font-medium text-gray-900 truncate";
+  };
+
+  const getUserEmailClasses = () => {
+    if (isTablet) {
+      return "text-xs text-gray-500 truncate";
+    }
+    return "text-xs text-gray-500 truncate";
+  };
+
   return (
     <div 
-      className={`flex flex-col transition-all duration-300 overflow-hidden ${
-        isCollapsed ? 'w-16' : 'w-72'
-      }`}
-      style={{ 
-        height: 'calc(100vh - 24px)', // Account for the 12px padding on top and bottom
-        borderRadius: '20px',
-        border: '1px solid var(--Stroke-01, #ECECEC)',
-        background: 'var(--Surface-01, #FCFCFC)'
-      }}
+      className={getSidebarClasses()}
+      style={getSidebarStyle()}
     >
       <SidebarHeader 
         isCollapsed={isCollapsed}
@@ -77,25 +131,25 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
       
       {/* User Profile Section - Positioned after header when NOT collapsed */}
       {!isCollapsed && (
-        <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200/30">
+        <div className={getUserProfileClasses()}>
           <div 
-            className="flex items-center gap-3 p-2 rounded-lg"
+            className={getUserProfileCardClasses()}
             style={{
-              borderRadius: '11px',
+              borderRadius: isTablet ? '8px' : '11px',
               border: '1px solid rgba(10, 12, 17, 0.10)',
               background: '#FFF'
             }}
           >
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-medium text-gray-600">
+            <div className={getAvatarClasses()}>
+              <span className={getAvatarTextClasses()}>
                 {profile?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900 truncate">
+              <div className={getUserNameClasses()}>
                 {profile?.full_name || user?.email?.split('@')[0] || 'User'}
               </div>
-              <div className="text-xs text-gray-500 truncate">
+              <div className={getUserEmailClasses()}>
                 {profile?.email || user?.email || 'user@example.com'}
               </div>
             </div>
@@ -125,20 +179,6 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
             currentBalance={currentBalance}
             totalPurchased={totalPurchased}
             creditsLoading={creditsLoading}
-          />
-        </div>
-      )}
-
-      {/* Keep the original user profile at bottom for collapsed state only */}
-      {isCollapsed && (
-        <div className="flex-shrink-0">
-          <SidebarUserProfile 
-            isOwner={isOwner}
-            profile={profile}
-            user={user}
-            subscription={subscription}
-            signOut={signOut}
-            isCollapsed={isCollapsed}
           />
         </div>
       )}
