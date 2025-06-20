@@ -73,3 +73,6 @@ verify_jwt = false
 
 [functions.test-stripe-webhook]
 verify_jwt = false
+
+[functions.figmant-chat-analysis]
+verify_jwt = true
