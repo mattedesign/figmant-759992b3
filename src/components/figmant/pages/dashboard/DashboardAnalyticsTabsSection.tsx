@@ -2,7 +2,7 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, Users, DollarSign, Activity, FileText, Briefcase } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Activity, FileText, Briefcase, BarChart3 } from 'lucide-react';
 import { 
   RevenueImpactTracker,
   AIAnalysisPerformanceDashboard,
@@ -12,6 +12,7 @@ import {
   ExecutiveSummaryGenerator,
   BusinessCaseBuilder
 } from './widgets';
+import { AdvancedDataVisualization } from '../../analytics/advanced/AdvancedDataVisualization';
 
 interface DashboardAnalyticsTabsSectionProps {
   dataStats: any;
@@ -37,8 +38,12 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="revenue-impact" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+        <Tabs defaultValue="advanced-viz" className="w-full">
+          <TabsList className="grid w-full grid-cols-7">
+            <TabsTrigger value="advanced-viz" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Advanced Charts
+            </TabsTrigger>
             <TabsTrigger value="revenue-impact" className="flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
               Revenue Impact
@@ -64,6 +69,10 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
               Business Cases
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="advanced-viz" className="mt-6">
+            <AdvancedDataVisualization realData={realData} />
+          </TabsContent>
 
           <TabsContent value="revenue-impact" className="mt-6">
             <div className="space-y-6">
