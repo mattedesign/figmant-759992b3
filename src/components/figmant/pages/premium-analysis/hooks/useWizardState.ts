@@ -2,13 +2,13 @@
 import { useState } from 'react';
 import { StepData } from '../types';
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 6;
 
 export const useWizardState = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [stepData, setStepData] = useState<StepData>({
     selectedType: '',
-    projectName: '',
+    projectName: 'Untitled Analysis', // Set default project name
     analysisGoals: '',
     contextualData: {},
     uploadedFiles: [],
@@ -34,17 +34,15 @@ export const useWizardState = () => {
       case 1:
         return !!stepData.selectedType;
       case 2:
-        return !!stepData.projectName?.trim();
-      case 3:
         return !!stepData.analysisGoals?.trim();
-      case 4:
-        // For step 4, we no longer require static fields - just check if there are contextual fields to fill
+      case 3:
+        // For step 3, we no longer require static fields - just check if there are contextual fields to fill
         return true; // Always allow proceeding since contextual fields are optional or template-specific
-      case 5:
+      case 4:
         return stepData.uploadedFiles && stepData.uploadedFiles.length > 0;
-      case 6:
+      case 5:
         return true; // Custom prompt is optional
-      case 7:
+      case 6:
         return false; // Processing step - no next
       default:
         return false;
