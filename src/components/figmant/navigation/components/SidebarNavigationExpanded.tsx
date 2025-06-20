@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -40,8 +41,8 @@ export const SidebarNavigationExpanded: React.FC<SidebarNavigationExpandedProps>
               boxShadow: '0px 1px 1.9px 0px var(--Shade-7-10, rgba(50, 50, 50, 0.10)) inset'
             }}
           >
-            <TabsTrigger value="menu" className="text-xs">Menu</TabsTrigger>
-            <TabsTrigger value="history" className="text-xs">History</TabsTrigger>
+            <TabsTrigger value="menu" className="text-sm">Menu</TabsTrigger>
+            <TabsTrigger value="history" className="text-sm">History</TabsTrigger>
           </TabsList>
         </div>
 
