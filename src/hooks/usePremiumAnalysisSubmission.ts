@@ -3,11 +3,10 @@ import { useMutation } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { PremiumAnalysisRequest } from './premium-analysis/types';
 import { PremiumAnalysisService } from './premium-analysis/premiumAnalysisService';
-import { useAccessValidationService } from './premium-analysis/accessValidationService';
+import { AccessValidationService } from './premium-analysis/accessValidationService';
 
 export const usePremiumAnalysisSubmission = () => {
   const { toast } = useToast();
-  const accessValidationService = useAccessValidationService();
   const premiumAnalysisService = new PremiumAnalysisService();
 
   return useMutation({
@@ -15,6 +14,9 @@ export const usePremiumAnalysisSubmission = () => {
       console.log('🔍 PREMIUM ANALYSIS SUBMISSION - Starting mutation...');
 
       try {
+        // Create validation service instance
+        const accessValidationService = new AccessValidationService();
+        
         // Validate user access and deduct credits
         await accessValidationService.validateAndDeductCredits(selectedPrompt);
 
@@ -27,8 +29,6 @@ export const usePremiumAnalysisSubmission = () => {
         return result;
       } catch (error) {
         console.error('🔍 Error in analysis processing:', error);
-        // If analysis fails after credits are deducted, we let the failed analysis consume the credits
-        // This is consistent with how most SaaS products handle failed requests
         throw error;
       }
     },
