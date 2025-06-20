@@ -17,7 +17,12 @@ export const AnalysisDetailModal: React.FC<AnalysisDetailModalProps> = ({
   onClose,
   analysis
 }) => {
-  if (!analysis) return null;
+  console.log('Modal props:', { isOpen, analysis: !!analysis });
+
+  if (!analysis) {
+    console.log('No analysis provided to modal');
+    return null;
+  }
 
   const getAnalysisIcon = () => {
     return analysis.type === 'chat' ? MessageSquare : FileText;
@@ -40,7 +45,12 @@ export const AnalysisDetailModal: React.FC<AnalysisDetailModalProps> = ({
   const Icon = getAnalysisIcon();
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      console.log('Dialog onOpenChange:', open);
+      if (!open) {
+        onClose();
+      }
+    }}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
