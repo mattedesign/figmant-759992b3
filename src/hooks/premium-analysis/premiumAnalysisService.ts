@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { PremiumAnalysisRequest, PremiumAnalysisResult, AnalysisResults } from './types';
 import { buildContextPrompt } from './contextPromptBuilder';
 import { FileUploadService } from './fileUploadService';
+import { AccessValidationService } from './accessValidationService';
 
 export class PremiumAnalysisService {
   async executeAnalysis(request: PremiumAnalysisRequest): Promise<PremiumAnalysisResult> {
@@ -111,6 +112,10 @@ export class PremiumAnalysisService {
   ): Promise<string> {
     console.log('🔍 Preparing analysis results for database...');
     
+    // Get actual credit cost used
+    const accessValidationService = new AccessValidationService();
+    const creditCost = await accessValidationService.getPromptCreditCost(selectedPrompt.id);
+    
     const analysisResults: AnalysisResults = {
       response: claudeResponse.analysis || claudeResponse.response,
       premium_analysis_data: JSON.parse(JSON.stringify(stepData)), // Ensure proper JSON serialization
@@ -125,7 +130,7 @@ export class PremiumAnalysisService {
       // Store premium analysis metadata within analysis_results instead of separate metadata column
       is_premium: true,
       premium_type: selectedPrompt.category,
-      credits_used: 5
+      credits_used: creditCost // Use dynamic credit cost instead of hardcoded 5
     };
 
     // Convert AnalysisResults to a plain object that Supabase can accept as Json
