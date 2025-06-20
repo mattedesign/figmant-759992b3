@@ -43,20 +43,20 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   }, [location.state, setActiveSection]);
 
   const renderContent = () => {
-    // Apply migration to current activeSection
+    // Apply migration to current activeSection for backward compatibility
     const currentSection = migrateNavigationRoute(activeSection);
     
     switch (currentSection) {
+      // New standardized navigation IDs - MVP Priority Order
       case 'dashboard':
         return <DashboardPage />;
       
-      // Competitor Analysis (UC-024) - MVP Priority 1
       case 'competitor-analysis':
-        // Route legacy chat/analysis/wizard to this unified component
+        // UC-024 - AI Competitor Analysis (MVP Priority 1)
         return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
       
-      // Revenue Analysis (UC-018) - MVP Priority 2  
       case 'revenue-analysis':
+        // UC-018 - E-commerce Revenue Impact (MVP Priority 2)
         return <PremiumAnalysisPage />;
       
       case 'templates':
@@ -68,23 +68,31 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       case 'settings':
         return <PreferencesPage />;
       
-      // Legacy routes - maintain backward compatibility
+      case 'help-support':
+        return <PreferencesPage />;
+      
+      case 'admin':
+        return <AdminPage initialTab={activeSection} />;
+      
+      // Legacy routes - maintain backward compatibility during transition
       case 'chat':
       case 'analysis':
       case 'wizard':
+        // These now redirect to competitor-analysis
         return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
       
       case 'premium-analysis':
+        // This now redirects to revenue-analysis
         return <PremiumAnalysisPage />;
       
       case 'preferences':
+        // This now redirects to settings
         return <PreferencesPage />;
       
       case 'search':
         return <SearchPage />;
         
-      // Admin routes
-      case 'admin':
+      // Admin sub-routes
       case 'users':
       case 'claude':
       case 'plans':
@@ -97,8 +105,8 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
         return <PreferencesPage />;
       
       default:
-        // Default to competitor analysis for new users
-        return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
+        // Default to dashboard for unknown routes
+        return <DashboardPage />;
     }
   };
 
