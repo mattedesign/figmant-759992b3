@@ -50,7 +50,7 @@ export const SidebarNavigationExpanded: React.FC<SidebarNavigationExpandedProps>
           <TabsContent value="menu" className="mt-0 h-full">
             <div className="h-full flex flex-col">
               {/* Main Navigation - Fixed height, no scroll */}
-              <div className="flex-none px-4 pb-4">
+              <div className="flex-none px-4 pt-6 pb-4">
                 <div className="space-y-1">
                   {mainItems.map((item) => (
                     <Button
