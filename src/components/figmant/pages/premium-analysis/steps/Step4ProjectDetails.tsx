@@ -6,6 +6,8 @@ import { FormField } from '../components/FormField';
 import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTemplateSelection } from '../hooks/useTemplateSelection';
+import { ContextualFieldRenderer } from '../components/ContextualFieldRenderer';
 
 export const Step4ProjectDetails: React.FC<StepProps> = ({ 
   stepData, 
@@ -13,8 +15,20 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
   currentStep, 
   totalSteps 
 }) => {
+  const { selectedTemplate } = useTemplateSelection(stepData.selectedType);
+
   const handleFieldChange = (field: string, value: any) => {
     setStepData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleContextualFieldChange = (fieldId: string, value: any) => {
+    setStepData(prev => ({ 
+      ...prev, 
+      contextualData: {
+        ...prev.contextualData,
+        [fieldId]: value
+      }
+    }));
   };
 
   const addStakeholder = () => {
@@ -63,7 +77,7 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
       />
 
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Desired Outcome */}
+        {/* Base Fields */}
         <FormField
           id="desiredOutcome"
           type="textarea"
@@ -73,7 +87,6 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
           onChange={(value) => handleFieldChange('desiredOutcome', value)}
         />
 
-        {/* Improvement Metric */}
         <FormField
           id="improvementMetric"
           type="input"
@@ -83,7 +96,28 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
           onChange={(value) => handleFieldChange('improvementMetric', value)}
         />
 
-        {/* Deadline */}
+        {/* Contextual Fields based on selected template */}
+        {selectedTemplate?.contextual_fields && selectedTemplate.contextual_fields.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Template-Specific Details</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Additional information needed for {selectedTemplate.displayName}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {selectedTemplate.contextual_fields.map((field) => (
+                <ContextualFieldRenderer
+                  key={field.id}
+                  field={field}
+                  value={stepData.contextualData?.[field.id] || ''}
+                  onChange={(value) => handleContextualFieldChange(field.id, value)}
+                />
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
         <FormField
           id="deadline"
           type="input"

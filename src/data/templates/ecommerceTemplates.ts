@@ -3,79 +3,95 @@ import { FigmantPromptTemplate } from '@/types/figmant';
 
 export const ecommerceTemplates: FigmantPromptTemplate[] = [
   {
-    id: 'ecommerce_revenue',
-    name: 'E-commerce Revenue Optimization',
-    displayName: 'E-commerce Revenue',
-    description: 'Specialized analysis for e-commerce conversion and revenue optimization',
+    id: 'uc018_ecommerce_revenue',
+    name: 'E-commerce Revenue Impact',
+    displayName: 'E-commerce Revenue Impact Analysis',
+    description: 'Predict revenue impact of design changes before implementation',
     category: 'ecommerce_revenue',
-    requires_context: true,
-    best_for: ['E-commerce sites', 'Product pages', 'Checkout optimization'],
-    example_use_cases: ['Product page optimization', 'Cart abandonment reduction', 'Checkout flow improvement'],
+    prompt_template: `Analyze this e-commerce design for revenue optimization potential.
+
+Business Context:
+- Product category: {productCategory}
+- Average order value: {averageOrderValue}
+- Current conversion rate: {currentConversionRate}
+- Monthly traffic: {monthlyTraffic}
+- Target revenue goal: {revenueGoal}
+- Primary revenue model: {revenueModel}
+- Peak selling season: {peakSeason}
+
+Analyze for:
+1. Revenue impact predictions with confidence intervals
+2. Conversion funnel optimization opportunities
+3. Average order value improvement strategies  
+4. Cart abandonment reduction tactics
+5. Mobile commerce optimization
+6. Seasonal/promotional design considerations
+
+Provide ROI projections and implementation timeline recommendations.`,
     analysis_focus: [
-      'Product presentation',
-      'Trust and security signals',
-      'Checkout flow optimization',
-      'Cross-sell and upsell opportunities',
-      'Mobile commerce experience'
+      'Revenue impact prediction',
+      'Conversion optimization',
+      'AOV improvement',
+      'Cart abandonment reduction',
+      'Mobile commerce'
     ],
-    prompt_template: `You are an e-commerce conversion optimization expert. Analyze this design specifically for revenue generation, conversion rate optimization, and customer lifetime value improvement.
-
-**E-COMMERCE REVENUE OPTIMIZATION FRAMEWORK:**
-
-**1. PRODUCT PRESENTATION & DISCOVERY**
-- Evaluate product imagery quality and quantity
-- Assess product information completeness
-- Review pricing strategy presentation
-- Analyze product comparison features
-- Check search and filtering functionality
-
-**2. TRUST & SECURITY SIGNALS**
-- Evaluate security badges and certifications
-- Assess customer review integration
-- Review return policy visibility
-- Analyze payment option diversity
-- Check testimonial and social proof placement
-
-**3. CART & CHECKOUT OPTIMIZATION**
-- Analyze cart visibility and persistence
-- Evaluate checkout flow steps and friction
-- Review guest checkout availability
-- Assess form optimization and auto-fill
-- Check error handling and validation
-
-**4. CONVERSION PSYCHOLOGY TACTICS**
-- Evaluate urgency and scarcity implementation
-- Assess personalization and recommendations
-- Review abandoned cart recovery design
-- Analyze cross-sell and upsell placement
-- Check loyalty program integration
-
-**5. MOBILE COMMERCE EXPERIENCE**
-- Evaluate mobile product browsing
-- Assess mobile checkout optimization
-- Review touch target sizing
-- Analyze mobile payment options
-- Check mobile-specific features
-
-**6. REVENUE OPTIMIZATION OPPORTUNITIES**
-- Identify average order value improvement areas
-- Evaluate subscription or recurring revenue potential
-- Assess bundle and package opportunities
-- Review pricing strategy optimization
-- Check retention and repeat purchase design
-
-**CONTEXT INTEGRATION:**
-If current metrics, conversion goals, or business model information is provided, tailor recommendations specifically to those objectives.
-
-**OUTPUT FORMAT:**
-- Revenue Impact Assessment
-- Conversion Funnel Analysis
-- Trust Factor Evaluation
-- Mobile Commerce Scorecard
-- Quick Revenue Wins
-- Long-term Growth Strategies
-- A/B Testing Priorities
-
-Focus on measurable revenue impact and conversion rate improvements.`
+    best_for: [
+      'E-commerce managers optimizing conversion',
+      'Product teams planning redesigns',
+      'Marketing teams validating investments'
+    ],
+    contextual_fields: [
+      {
+        id: 'productCategory',
+        label: 'Product Category',
+        type: 'select',
+        required: true,
+        options: ['Fashion/Apparel', 'Electronics', 'Home & Garden', 'Beauty & Health', 'Sports & Outdoors', 'Books & Media', 'Food & Beverage', 'Other'],
+        description: 'Select your primary product category'
+      },
+      {
+        id: 'averageOrderValue',
+        label: 'Average Order Value',
+        type: 'number',
+        required: true,
+        placeholder: '75.00',
+        description: 'Current average order value in USD'
+      },
+      {
+        id: 'currentConversionRate',
+        label: 'Current Conversion Rate',
+        type: 'number',
+        placeholder: '2.5',
+        description: 'Current conversion rate as a percentage'
+      },
+      {
+        id: 'monthlyTraffic',
+        label: 'Monthly Traffic',
+        type: 'number',
+        placeholder: '50000',
+        description: 'Average monthly website visitors'
+      },
+      {
+        id: 'revenueGoal',
+        label: 'Revenue Goal',
+        type: 'text',
+        placeholder: 'Increase monthly revenue by 20%',
+        description: 'Specific revenue improvement target'
+      },
+      {
+        id: 'revenueModel',
+        label: 'Revenue Model',
+        type: 'select',
+        options: ['One-time purchases', 'Subscription', 'Marketplace', 'B2B sales', 'Mixed model'],
+        description: 'Primary way you generate revenue'
+      },
+      {
+        id: 'peakSeason',
+        label: 'Peak Selling Season',
+        type: 'select',
+        options: ['Holiday season (Nov-Dec)', 'Back to school (Aug-Sep)', 'Spring (Mar-May)', 'Summer (Jun-Aug)', 'Year-round', 'Other'],
+        description: 'When do you see highest sales volume?'
+      }
+    ]
   }
 ];

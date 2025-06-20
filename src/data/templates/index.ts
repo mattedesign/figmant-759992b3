@@ -1,49 +1,24 @@
-
-import { FigmantPromptTemplate } from '@/types/figmant';
-import { masterTemplates } from './masterTemplates';
-import { competitorTemplates } from './competitorTemplates';
-import { visualTemplates } from './visualTemplates';
-import { contentTemplates } from './contentTemplates';
-import { ecommerceTemplates } from './ecommerceTemplates';
-import { testingTemplates } from './testingTemplates';
-import { accessibilityTemplates } from './accessibilityTemplates';
-import { deviceTemplates } from './deviceTemplates';
-import { seasonalTemplates } from './seasonalTemplates';
+import { visualHierarchyTemplates } from './visualHierarchyTemplates';
+import { copyMessagingTemplates } from './copyMessagingTemplates';
+import { abTestingTemplates } from './abTestingTemplates';
 import { designSystemTemplates } from './designSystemTemplates';
+import { accessibilityTemplates } from './accessibilityTemplates';
+import { crossDeviceTemplates } from './crossDeviceTemplates';
+import { seasonalTemplates } from './seasonalTemplates';
+import { FigmantPromptTemplate } from '@/types/figmant';
+export * from './competitorAnalysisTemplates';
+export * from './ecommerceTemplates';
+import { competitorAnalysisTemplates } from './competitorAnalysisTemplates';
+import { ecommerceTemplates } from './ecommerceTemplates';
 
-// Combine all templates into a single array
 export const figmantPromptTemplates: FigmantPromptTemplate[] = [
-  ...masterTemplates,
-  ...competitorTemplates,
-  ...visualTemplates,
-  ...contentTemplates,
-  ...ecommerceTemplates,
-  ...testingTemplates,
+  ...visualHierarchyTemplates,
+  ...copyMessagingTemplates,
+  ...abTestingTemplates,
+  ...designSystemTemplates,
   ...accessibilityTemplates,
-  ...deviceTemplates,
+  ...crossDeviceTemplates,
   ...seasonalTemplates,
-  ...designSystemTemplates
+  ...competitorAnalysisTemplates,
+  ...ecommerceTemplates
 ];
-
-// Template utility functions
-export const getFigmantTemplate = (id: string): FigmantPromptTemplate | undefined => {
-  return figmantPromptTemplates.find(template => template.id === id);
-};
-
-export const getFigmantTemplatesByCategory = (category: string): FigmantPromptTemplate[] => {
-  return figmantPromptTemplates.filter(template => template.category === category);
-};
-
-// Export individual template collections for specific use cases
-export {
-  masterTemplates,
-  competitorTemplates,
-  visualTemplates,
-  contentTemplates,
-  ecommerceTemplates,
-  testingTemplates,
-  accessibilityTemplates,
-  deviceTemplates,
-  seasonalTemplates,
-  designSystemTemplates
-};

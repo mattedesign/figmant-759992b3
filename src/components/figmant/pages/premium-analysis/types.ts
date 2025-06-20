@@ -28,6 +28,7 @@ export interface StepData {
   uploadedFiles?: File[];
   analysisResults?: any;
   attachments?: any[];
+  contextualData?: Record<string, any>; // New field for template-specific data
   [key: string]: any;
 }
 

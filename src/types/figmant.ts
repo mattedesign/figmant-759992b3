@@ -1,3 +1,4 @@
+
 export interface FigmantPromptTemplate {
   id: string;
   name: string;
@@ -9,6 +10,22 @@ export interface FigmantPromptTemplate {
   requires_context?: boolean;
   best_for?: string[];
   example_use_cases?: string[];
+  contextual_fields?: ContextualField[];
+}
+
+export interface ContextualField {
+  id: string;
+  label: string;
+  type: 'text' | 'textarea' | 'select' | 'number' | 'date' | 'url' | 'email';
+  placeholder?: string;
+  required?: boolean;
+  options?: string[]; // For select fields
+  description?: string;
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+  };
 }
 
 export interface FigmantPromptVariables {
@@ -21,6 +38,7 @@ export interface FigmantPromptVariables {
   currentMetrics?: string;
   testHypothesis?: string;
   conversionGoals?: string;
+  [key: string]: any; // Allow dynamic fields
 }
 
 export interface EnhancedAnalysisConfig {
