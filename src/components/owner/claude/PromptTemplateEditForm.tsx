@@ -188,6 +188,14 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
     getContextualFieldsFromMetadata(template.metadata)
   );
 
+  // ADD THESE DEBUG LINES RIGHT AFTER contextualFields STATE:
+  console.log('🚨 CONTEXTUAL FIELDS DEBUG:');
+  console.log('- Template ID:', template.id);
+  console.log('- Template metadata:', template.metadata);
+  console.log('- Contextual fields array:', contextualFields);
+  console.log('- Fields count:', contextualFields.length);
+  console.log('- getContextualFieldsFromMetadata result:', getContextualFieldsFromMetadata(template.metadata));
+
   // Update contextual fields when template changes
   useEffect(() => {
     const fields = getContextualFieldsFromMetadata(template.metadata);
@@ -295,24 +303,50 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
           setEditedPrompt={setEditedTemplate}
         />
 
-        {/* Contextual Fields Section - Enhanced Layout */}
-        <div className="border-t pt-6">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Dynamic Form Fields</h3>
-            <p className="text-sm text-gray-600 mt-1">
-              Configure fields that users will fill when using this template for personalized analysis
-            </p>
-            {shouldHaveContextualFields(template.category) && contextualFields.length === 0 && (
-              <p className="text-sm text-amber-600 mt-2 bg-amber-50 p-2 rounded border border-amber-200">
-                ⚠️ This template category typically includes contextual fields. Consider adding some to enhance user experience.
-              </p>
-            )}
-          </div>
+        {/* SUPER VISIBLE DEBUG SECTION */}
+        <div 
+          style={{
+            backgroundColor: '#ff0000',
+            color: 'white',
+            padding: '30px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            margin: '20px 0'
+          }}
+        >
+          ⚠️ CONTEXTUAL FIELDS DEBUG SECTION ⚠️
+          <br />
+          Template: {template.id} | Fields: {contextualFields.length}
+        </div>
+
+        {/* CONTEXTUAL FIELDS SECTION */}
+        <div style={{
+          border: '5px solid orange',
+          backgroundColor: '#ffffcc',
+          padding: '20px',
+          minHeight: '300px'
+        }}>
+          <h3 style={{ color: 'red', fontSize: '20px', marginBottom: '20px' }}>
+            CONTEXTUAL FIELDS COMPONENT:
+          </h3>
           
           <ContextualFieldsSection
             contextualFields={contextualFields}
             onUpdateFields={handleContextualFieldsUpdate}
           />
+          
+          <div style={{
+            backgroundColor: 'white',
+            padding: '10px',
+            marginTop: '20px',
+            border: '2px solid blue'
+          }}>
+            <strong>Debug Info:</strong>
+            <br />• Fields Count: {contextualFields.length}
+            <br />• Has Metadata: {template.metadata ? 'YES' : 'NO'}
+            <br />• Component Rendered: YES
+          </div>
         </div>
       </CardContent>
     </Card>
