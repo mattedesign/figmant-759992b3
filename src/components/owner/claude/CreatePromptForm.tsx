@@ -1,30 +1,19 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
 import { ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
-import { ContextualField } from '@/types/figmant';
-import { ContextualFieldsSection } from './ContextualFieldsSection';
-
-const CATEGORIES = [
-  { value: 'master', label: 'Master Analysis' },
-  { value: 'competitor', label: 'Competitor Analysis' },
-  { value: 'visual_hierarchy', label: 'Visual Hierarchy' },
-  { value: 'copy_messaging', label: 'Copy & Messaging' },
-  { value: 'ecommerce_revenue', label: 'E-commerce Revenue' },
-  { value: 'ab_testing', label: 'A/B Testing' },
-  { value: 'premium', label: 'Premium Analysis' },
-  { value: 'general', label: 'General Analysis' }
-] as const;
+import { CATEGORY_OPTIONS } from '@/types/promptTypes';
+import { CreditCard } from 'lucide-react';
 
 interface CreatePromptFormProps {
   newPrompt: Partial<ClaudePromptExample>;
   setNewPrompt: React.Dispatch<React.SetStateAction<Partial<ClaudePromptExample>>>;
-  onSave: () => void;
+  onSave: () => Promise<void>;
   onCancel: () => void;
   isSaving: boolean;
 }
@@ -36,135 +25,152 @@ export const CreatePromptForm: React.FC<CreatePromptFormProps> = ({
   onCancel,
   isSaving
 }) => {
-  const [contextualFields, setContextualFields] = useState<ContextualField[]>([]);
-
-  const handleContextualFieldsUpdate = (fields: ContextualField[]) => {
-    setContextualFields(fields);
-    setNewPrompt(prev => ({
-      ...prev,
-      metadata: {
-        ...prev.metadata,
-        contextual_fields: fields
-      }
-    }));
-  };
-
-  const isFormValid = newPrompt.title && newPrompt.display_name && newPrompt.original_prompt && newPrompt.claude_response && newPrompt.category;
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>Create New Prompt Template</CardTitle>
         <CardDescription>
-          Add a new prompt template for improved Claude responses
+          Add a new AI prompt template that users can select for their analyses
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
+          <div>
+            <Label htmlFor="title">Title</Label>
             <Input
               id="title"
+              placeholder="Template Title"
               value={newPrompt.title || ''}
-              onChange={(e) => setNewPrompt({ ...newPrompt, title: e.target.value })}
-              placeholder="e.g., Master UX Analysis Template"
+              onChange={(e) => setNewPrompt(prev => ({ ...prev, title: e.target.value }))}
             />
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="display_name">Display Name *</Label>
+          <div>
+            <Label htmlFor="display_name">Display Name</Label>
             <Input
               id="display_name"
+              placeholder="User-friendly display name"
               value={newPrompt.display_name || ''}
-              onChange={(e) => setNewPrompt({ ...newPrompt, display_name: e.target.value })}
-              placeholder="e.g., Master UX Analysis"
+              onChange={(e) => setNewPrompt(prev => ({ ...prev, display_name: e.target.value }))}
             />
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="category">Category *</Label>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="category">Category</Label>
             <Select
-              value={newPrompt.category}
-              onValueChange={(value) => setNewPrompt({ ...newPrompt, category: value as any })}
+              value={newPrompt.category || ''}
+              onValueChange={(value) => setNewPrompt(prev => ({ ...prev, category: value as any }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {CATEGORIES.map(cat => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
+                {CATEGORY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="use_case_context">Use Case Context</Label>
+          <div>
+            <Label htmlFor="credit_cost" className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              Credit Cost per Analysis
+            </Label>
             <Input
-              id="use_case_context"
-              value={newPrompt.use_case_context || ''}
-              onChange={(e) => setNewPrompt({ ...newPrompt, use_case_context: e.target.value })}
-              placeholder="e.g., E-commerce landing page analysis"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="business_domain">Business Domain</Label>
-            <Input
-              id="business_domain"
-              value={newPrompt.business_domain || ''}
-              onChange={(e) => setNewPrompt({ ...newPrompt, business_domain: e.target.value })}
-              placeholder="e.g., E-commerce, SaaS, Healthcare"
+              id="credit_cost"
+              type="number"
+              min="1"
+              max="100"
+              placeholder="3"
+              value={newPrompt.credit_cost || 3}
+              onChange={(e) => setNewPrompt(prev => ({ 
+                ...prev, 
+                credit_cost: parseInt(e.target.value) || 3 
+              }))}
             />
           </div>
         </div>
-        
-        <div className="space-y-2">
+
+        <div>
           <Label htmlFor="description">Description</Label>
           <Textarea
             id="description"
+            placeholder="Brief description of what this template analyzes"
             value={newPrompt.description || ''}
-            onChange={(e) => setNewPrompt({ ...newPrompt, description: e.target.value })}
-            placeholder="Brief description of what this prompt is used for..."
+            onChange={(e) => setNewPrompt(prev => ({ ...prev, description: e.target.value }))}
             rows={2}
           />
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="original_prompt">Prompt Template *</Label>
-          <Textarea
-            id="original_prompt"
-            value={newPrompt.original_prompt || ''}
-            onChange={(e) => setNewPrompt({ ...newPrompt, original_prompt: e.target.value })}
-            placeholder="Enter the optimized prompt template here..."
-            rows={6}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="use_case_context">Use Case Context</Label>
+            <Input
+              id="use_case_context"
+              placeholder="e.g., E-commerce checkout optimization"
+              value={newPrompt.use_case_context || ''}
+              onChange={(e) => setNewPrompt(prev => ({ ...prev, use_case_context: e.target.value }))}
+            />
+          </div>
+          <div>
+            <Label htmlFor="business_domain">Business Domain</Label>
+            <Input
+              id="business_domain"
+              placeholder="e.g., E-commerce, SaaS, Healthcare"
+              value={newPrompt.business_domain || ''}
+              onChange={(e) => setNewPrompt(prev => ({ ...prev, business_domain: e.target.value }))}
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="effectiveness_rating">Effectiveness Rating (1-10)</Label>
+          <Input
+            id="effectiveness_rating"
+            type="number"
+            min="1"
+            max="10"
+            placeholder="5"
+            value={newPrompt.effectiveness_rating || 5}
+            onChange={(e) => setNewPrompt(prev => ({ 
+              ...prev, 
+              effectiveness_rating: parseInt(e.target.value) || 5 
+            }))}
           />
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="claude_response">Expected Response Pattern *</Label>
+
+        <div>
+          <Label htmlFor="original_prompt">Prompt Template</Label>
+          <Textarea
+            id="original_prompt"
+            placeholder="Enter the AI prompt template. Use variables like {projectName} for dynamic content."
+            value={newPrompt.original_prompt || ''}
+            onChange={(e) => setNewPrompt(prev => ({ ...prev, original_prompt: e.target.value }))}
+            rows={6}
+            className="font-mono"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="claude_response">Expected Response Format</Label>
           <Textarea
             id="claude_response"
+            placeholder="Describe the expected response format or provide an example response"
             value={newPrompt.claude_response || ''}
-            onChange={(e) => setNewPrompt({ ...newPrompt, claude_response: e.target.value })}
-            placeholder="Example of the type of response this prompt should generate..."
+            onChange={(e) => setNewPrompt(prev => ({ ...prev, claude_response: e.target.value }))}
             rows={4}
           />
         </div>
 
-        <ContextualFieldsSection
-          contextualFields={contextualFields}
-          onUpdateFields={handleContextualFieldsUpdate}
-        />
-        
-        <div className="flex justify-end space-x-2">
+        <div className="flex gap-2 justify-end">
           <Button variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button onClick={onSave} disabled={isSaving || !isFormValid}>
-            {isSaving ? 'Creating...' : 'Create Prompt'}
+          <Button onClick={onSave} disabled={isSaving}>
+            {isSaving ? 'Creating...' : 'Create Template'}
           </Button>
         </div>
       </CardContent>

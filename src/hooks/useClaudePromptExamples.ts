@@ -21,6 +21,7 @@ export interface ClaudePromptExample {
   created_by?: string;
   created_at: string;
   updated_at: string;
+  credit_cost?: number;
 }
 
 export interface ClaudePromptVariation {
@@ -148,6 +149,10 @@ export const useUpdatePromptExample = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['claude-prompt-examples'] });
+      toast({
+        title: "Success",
+        description: "Prompt template updated successfully",
+      });
     },
     onError: (error: any) => {
       toast({

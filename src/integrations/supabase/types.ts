@@ -320,6 +320,7 @@ export type Database = {
           claude_response: string
           created_at: string
           created_by: string | null
+          credit_cost: number
           description: string | null
           display_name: string
           effectiveness_rating: number | null
@@ -339,6 +340,7 @@ export type Database = {
           claude_response: string
           created_at?: string
           created_by?: string | null
+          credit_cost?: number
           description?: string | null
           display_name: string
           effectiveness_rating?: number | null
@@ -358,6 +360,7 @@ export type Database = {
           claude_response?: string
           created_at?: string
           created_by?: string | null
+          credit_cost?: number
           description?: string | null
           display_name?: string
           effectiveness_rating?: number | null
