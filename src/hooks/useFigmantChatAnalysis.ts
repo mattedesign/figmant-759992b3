@@ -31,10 +31,17 @@ export const useFigmantChatAnalysis = () => {
 
   return useMutation({
     mutationFn: async ({ message, attachments, template }: AnalysisRequest): Promise<AnalysisResponse> => {
-      // Add debugging at the very beginning
-      console.log('🔥 CHAT ANALYSIS - Function called with:', { message, attachments, template });
+      // Enhanced logging at the very beginning
+      console.log('🔥 API CALL - useFigmantChatAnalysis called with:', {
+        userId: user?.id,
+        messageLength: message?.length || 0,
+        attachmentCount: attachments?.length || 0,
+        templateCategory: template?.category || 'none',
+        timestamp: new Date().toISOString()
+      });
       
       if (!user?.id) {
+        console.error('🔥 API CALL - User not authenticated');
         throw new Error('User not authenticated');
       }
 
@@ -47,6 +54,7 @@ export const useFigmantChatAnalysis = () => {
 
       // Validate that we have either a message or attachments
       if (!message.trim() && (!attachments || attachments.length === 0)) {
+        console.error('🔥 API CALL - No content provided');
         throw new Error('Please provide a message or attach files for analysis.');
       }
 
@@ -67,21 +75,31 @@ export const useFigmantChatAnalysis = () => {
 
       // Check user access and process credits
       console.log('🔍 FIGMANT CHAT - Checking user access...');
-      const hasAccess = await checkUserAccess();
-      if (!hasAccess) {
-        console.error('🔍 FIGMANT CHAT - User does not have access');
-        throw new Error('You need credits to perform analysis. Please purchase credits to continue.');
+      try {
+        const hasAccess = await checkUserAccess();
+        if (!hasAccess) {
+          console.error('🔍 FIGMANT CHAT - User does not have access');
+          throw new Error('You need credits to perform analysis. Please purchase credits to continue.');
+        }
+        console.log('🔍 FIGMANT CHAT - User has access confirmed');
+      } catch (accessError) {
+        console.error('🔍 FIGMANT CHAT - Access check failed:', accessError);
+        throw new Error('Failed to verify access. Please try again.');
       }
-      console.log('🔍 FIGMANT CHAT - User has access confirmed');
 
       // Process credits (1 credit for regular chat analysis)
       console.log('🔍 FIGMANT CHAT - Processing credits...');
-      const creditsProcessed = await deductAnalysisCredits(1, 'Figmant chat analysis');
-      if (!creditsProcessed) {
-        console.error('🔍 FIGMANT CHAT - Failed to process credits');
-        throw new Error('Unable to process chat analysis. Please check your credit balance.');
+      try {
+        const creditsProcessed = await deductAnalysisCredits(1, 'Figmant chat analysis');
+        if (!creditsProcessed) {
+          console.error('🔍 FIGMANT CHAT - Failed to process credits');
+          throw new Error('Unable to process chat analysis. Please check your credit balance.');
+        }
+        console.log('🔍 FIGMANT CHAT - Credits processed successfully');
+      } catch (creditError) {
+        console.error('🔍 FIGMANT CHAT - Credit processing failed:', creditError);
+        throw new Error('Failed to process credits. Please try again.');
       }
-      console.log('🔍 FIGMANT CHAT - Credits processed successfully');
 
       // Process attachments if any
       const processedAttachments = attachments?.map(attachment => ({
@@ -91,28 +109,56 @@ export const useFigmantChatAnalysis = () => {
         url: attachment.url
       })) || [];
 
-      console.log('🔍 FIGMANT CHAT - Calling Claude AI function...');
+      console.log('🔍 FIGMANT CHAT - Calling Claude AI function with timeout protection...');
       
-      // Add debugging before the supabase call
-      console.log('🔥 CHAT ANALYSIS - About to call supabase function...');
-      
-      // Call Claude AI function
-      const { data: claudeResponse, error: claudeError } = await supabase.functions.invoke('claude-ai', {
+      // Add timeout handling
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          console.error('🔥 API CALL - Analysis timeout after 30 seconds');
+          reject(new Error('Analysis timeout - please try again'));
+        }, 30000);
+      });
+
+      // Wrap supabase call with timeout
+      const analysisPromise = supabase.functions.invoke('claude-ai', {
         body: {
-          message: analysisMessage, // Use the validated/generated message
+          message: analysisMessage,
           attachments: processedAttachments,
           requestType: 'figmant_chat_analysis',
           analysisType: 'chat',
-          template: template || null
+          template: template || null,
+          user_id: user.id
         }
       });
+
+      console.log('🔥 API CALL - Starting race between analysis and timeout...');
+
+      let claudeResponse, claudeError;
+      try {
+        const result = await Promise.race([analysisPromise, timeoutPromise]);
+        claudeResponse = result.data;
+        claudeError = result.error;
+        console.log('🔥 API CALL - Analysis completed within timeout');
+      } catch (raceError) {
+        console.error('🔥 API CALL - Promise race failed:', raceError);
+        throw raceError;
+      }
 
       if (claudeError) {
         console.error('🔍 FIGMANT CHAT - Claude AI error:', claudeError);
         throw new Error(`Analysis failed: ${claudeError.message}`);
       }
 
-      console.log('🔍 FIGMANT CHAT - Claude AI response received successfully');
+      if (!claudeResponse) {
+        console.error('🔍 FIGMANT CHAT - No response data from Claude AI');
+        throw new Error('Analysis failed: No response received from AI service');
+      }
+
+      console.log('🔍 FIGMANT CHAT - Claude AI response received successfully:', {
+        hasResponse: !!claudeResponse.response,
+        hasAnalysis: !!claudeResponse.analysis,
+        confidenceScore: claudeResponse.confidence_score
+      });
 
       // Save to chat history
       try {
@@ -139,6 +185,7 @@ export const useFigmantChatAnalysis = () => {
         }
       } catch (saveError) {
         console.error('🔍 FIGMANT CHAT - Error saving analysis:', saveError);
+        // Don't throw here, as the analysis was successful
       }
 
       console.log('🔍 FIGMANT CHAT - Analysis completed successfully');
@@ -152,11 +199,15 @@ export const useFigmantChatAnalysis = () => {
     },
 
     onSuccess: (data) => {
-      console.log('🔍 FIGMANT CHAT - Analysis completed successfully');
+      console.log('🔍 FIGMANT CHAT - Analysis mutation completed successfully');
     },
 
     onError: (error: any) => {
-      console.error('🔍 FIGMANT CHAT - Analysis mutation error:', error);
+      console.error('🔍 FIGMANT CHAT - Analysis mutation error:', {
+        error: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString()
+      });
     }
   });
 };
