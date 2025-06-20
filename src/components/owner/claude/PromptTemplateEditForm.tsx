@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ClaudePromptExample, useUpdatePromptExample } from '@/hooks/useClaudePromptExamples';
 import { CategoryType } from '@/types/promptTypes';
@@ -59,8 +59,18 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
 
   // Extract contextual fields from metadata with proper type checking
   const getContextualFieldsFromMetadata = (metadata: any): ContextualField[] => {
-    if (!metadata || typeof metadata !== 'object') return [];
-    if (!Array.isArray(metadata.contextual_fields)) return [];
+    console.log('🔍 STEP 1 DEBUG - getContextualFieldsFromMetadata called with:', metadata);
+    
+    if (!metadata || typeof metadata !== 'object') {
+      console.log('🔍 STEP 1 DEBUG - No metadata or invalid metadata type');
+      return [];
+    }
+    if (!Array.isArray(metadata.contextual_fields)) {
+      console.log('🔍 STEP 1 DEBUG - contextual_fields is not an array:', metadata.contextual_fields);
+      return [];
+    }
+    
+    console.log('🔍 STEP 1 DEBUG - Found contextual_fields array:', metadata.contextual_fields);
     return metadata.contextual_fields as ContextualField[];
   };
 
@@ -68,7 +78,35 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
     getContextualFieldsFromMetadata(template.metadata)
   );
 
+  // STEP 1 DEBUG: Add debug logging
+  useEffect(() => {
+    console.log('🔍 STEP 1 DEBUG - ContextualFields State:', contextualFields);
+    console.log('🔍 STEP 1 DEBUG - Template Metadata:', template.metadata);
+    console.log('🔍 STEP 1 DEBUG - Component Rendering:', {
+      templateId: template.id,
+      hasContextualFields: contextualFields.length > 0,
+      metadataExists: !!template.metadata
+    });
+
+    // STEP 2 DEBUG: Metadata analysis
+    const debugMetadata = () => {
+      console.log('🔍 METADATA ANALYSIS:');
+      console.log('Raw metadata:', template.metadata);
+      
+      if (template.metadata && typeof template.metadata === 'object') {
+        const metadata = template.metadata as Record<string, any>;
+        console.log('Metadata keys:', Object.keys(metadata));
+        console.log('contextual_fields exists:', 'contextual_fields' in metadata);
+        console.log('contextual_fields value:', metadata.contextual_fields);
+        console.log('contextual_fields is array:', Array.isArray(metadata.contextual_fields));
+      }
+    };
+
+    debugMetadata();
+  }, [template, contextualFields]);
+
   const handleContextualFieldsUpdate = (fields: ContextualField[]) => {
+    console.log('🔍 STEP 1 DEBUG - handleContextualFieldsUpdate called with:', fields);
     setContextualFields(fields);
     setEditedTemplate(prev => ({
       ...prev,
@@ -144,6 +182,9 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
     onCancel();
   };
 
+  // STEP 1 DEBUG: Add render logging
+  console.log('🔍 EDIT FORM RENDERING:', template.id);
+
   return (
     <Card className="border-2 border-blue-200 bg-blue-50">
       <EditFormHeader
@@ -169,10 +210,27 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
           setEditedPrompt={setEditedTemplate}
         />
 
-        <ContextualFieldsSection
-          contextualFields={contextualFields}
-          onUpdateFields={handleContextualFieldsUpdate}
-        />
+        {/* STEP 1 DEBUG: Make contextual fields visible */}
+        <div className="border-8 border-red-500 bg-yellow-100 p-6 m-4">
+          <div className="bg-red-600 text-white p-2 mb-4 rounded">
+            🚨 DEBUG: CONTEXTUAL FIELDS SECTION - THIS SHOULD BE VISIBLE
+          </div>
+          <ContextualFieldsSection
+            contextualFields={contextualFields}
+            onUpdateFields={handleContextualFieldsUpdate}
+          />
+          
+          {/* Debug data display */}
+          <div className="mt-4 bg-white p-3 rounded border-2 border-blue-500">
+            <h4 className="font-bold text-blue-700">Debug Data:</h4>
+            <p><strong>Fields Count:</strong> {contextualFields.length}</p>
+            <p><strong>Template ID:</strong> {template.id}</p>
+            <p><strong>Has Metadata:</strong> {template.metadata ? 'Yes' : 'No'}</p>
+            <pre className="text-xs mt-2 bg-gray-100 p-2 rounded max-h-32 overflow-auto">
+              {JSON.stringify(contextualFields, null, 2)}
+            </pre>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
