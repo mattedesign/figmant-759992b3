@@ -3,6 +3,7 @@ import React from 'react';
 import { DesignChatInterface } from '@/components/design/DesignChatInterface';
 import { useCompetitorChatHandler } from './hooks/useCompetitorChatHandler';
 import { AnalysisLoadingIndicator } from './components/AnalysisLoadingIndicator';
+import { UpgradeSuggestion } from './components/UpgradeSuggestion';
 import { AlertCircle, CheckCircle, Zap } from 'lucide-react';
 
 export const CompetitorAnalysisPage: React.FC = () => {
@@ -41,6 +42,9 @@ export const CompetitorAnalysisPage: React.FC = () => {
         isVisible={isAnalyzing}
         className="mx-4 mt-4 mb-2"
       />
+      
+      {/* Upgrade Suggestion */}
+      <UpgradeSuggestion className="mx-4 mt-4" />
       
       <div className="flex-1 min-h-0">
         <DesignChatInterface
