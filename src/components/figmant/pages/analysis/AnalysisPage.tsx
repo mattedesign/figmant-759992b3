@@ -8,14 +8,19 @@ import { Bug } from 'lucide-react';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { useAnalyzeWithClaude } from '@/hooks/useAnalyzeWithClaude';
 import { useLocation } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
 
 export const AnalysisPage: React.FC = () => {
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>();
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
   const chatState = useChatState();
   const { data: promptTemplates = [], isLoading } = useFigmantPromptTemplates();
   const analyzeWithClaude = useAnalyzeWithClaude();
   const location = useLocation();
+  const { toast } = useToast();
 
   // Handle navigation from sidebar - detect hash or query params for template selection
   useEffect(() => {
@@ -52,6 +57,172 @@ export const AnalysisPage: React.FC = () => {
       default:
         // For other sections or unknown sections, keep current template
         break;
+    }
+  };
+
+  const handleFileUpload = async (files: FileList) => {
+    console.log('🎯 ANALYSIS PAGE - File upload:', files.length);
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const newAttachment: ChatAttachment = {
+        id: crypto.randomUUID(),
+        type: file.type.startsWith('image/') ? 'image' : 'file',
+        name: file.name,
+        url: URL.createObjectURL(file),
+        status: 'uploaded',
+        file: file
+      };
+
+      chatState.setAttachments(prev => [...prev, newAttachment]);
+    }
+
+    toast({
+      title: "Files Added",
+      description: `${files.length} file(s) added for analysis.`,
+    });
+  };
+
+  const handleAddUrl = async () => {
+    if (!urlInput.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Invalid URL",
+        description: "Please enter a valid URL.",
+      });
+      return;
+    }
+
+    console.log('🎯 ANALYSIS PAGE - Adding URL:', urlInput);
+
+    // Validate URL format
+    let formattedUrl = urlInput.trim();
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      formattedUrl = `https://${formattedUrl}`;
+    }
+
+    try {
+      const urlObj = new URL(formattedUrl);
+      const hostname = urlObj.hostname;
+
+      // Check if URL already exists
+      const urlExists = chatState.attachments.some(att => att.url === formattedUrl);
+      if (urlExists) {
+        toast({
+          variant: "destructive",
+          title: "URL Already Added",
+          description: `${hostname} is already in your attachments.`,
+        });
+        return;
+      }
+
+      // Create new URL attachment with processing status
+      const newAttachment: ChatAttachment = {
+        id: crypto.randomUUID(),
+        type: 'url',
+        name: hostname,
+        url: formattedUrl,
+        status: 'processing',
+        metadata: {
+          screenshots: {
+            desktop: { success: false, url: formattedUrl },
+            mobile: { success: false, url: formattedUrl }
+          }
+        }
+      };
+
+      console.log('Creating new URL attachment with screenshot capture:', newAttachment);
+      chatState.setAttachments(prev => [...prev, newAttachment]);
+      
+      setUrlInput('');
+      setShowUrlInput(false);
+      
+      toast({
+        title: "Website Added",
+        description: `${hostname} has been added. Capturing screenshots...`,
+      });
+
+      // Capture screenshots in the background
+      try {
+        console.log('📸 Starting screenshot capture for:', formattedUrl);
+        
+        const screenshotResults = await ScreenshotCaptureService.captureCompetitorSet(
+          [formattedUrl],
+          true, // include desktop
+          true  // include mobile
+        );
+
+        console.log('📸 Screenshot capture results:', screenshotResults);
+
+        // Update the attachment with screenshot data
+        chatState.setAttachments(prev => prev.map(att => {
+          if (att.id === newAttachment.id) {
+            return {
+              ...att,
+              status: 'uploaded',
+              metadata: {
+                ...att.metadata,
+                screenshots: {
+                  desktop: screenshotResults.desktop?.[0] || { success: false, url: formattedUrl, error: 'Desktop screenshot failed' },
+                  mobile: screenshotResults.mobile?.[0] || { success: false, url: formattedUrl, error: 'Mobile screenshot failed' }
+                }
+              }
+            };
+          }
+          return att;
+        }));
+
+        const desktopSuccess = screenshotResults.desktop?.[0]?.success;
+        const mobileSuccess = screenshotResults.mobile?.[0]?.success;
+
+        if (desktopSuccess || mobileSuccess) {
+          toast({
+            title: "Screenshots Captured",
+            description: `Successfully captured ${desktopSuccess && mobileSuccess ? 'desktop and mobile' : desktopSuccess ? 'desktop' : 'mobile'} screenshots for ${hostname}.`,
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Screenshot Capture Failed",
+            description: `Unable to capture screenshots for ${hostname}. The website will still be analyzed.`,
+          });
+        }
+
+      } catch (screenshotError) {
+        console.error('📸 Screenshot capture error:', screenshotError);
+        
+        // Update attachment status to show error but keep it functional
+        chatState.setAttachments(prev => prev.map(att => {
+          if (att.id === newAttachment.id) {
+            return {
+              ...att,
+              status: 'uploaded', // Still functional for analysis
+              metadata: {
+                ...att.metadata,
+                screenshots: {
+                  desktop: { success: false, url: formattedUrl, error: 'Screenshot service unavailable' },
+                  mobile: { success: false, url: formattedUrl, error: 'Screenshot service unavailable' }
+                }
+              }
+            };
+          }
+          return att;
+        }));
+
+        toast({
+          variant: "destructive",
+          title: "Screenshot Capture Failed",
+          description: `Unable to capture screenshots for ${hostname}. The website will still be analyzed.`,
+        });
+      }
+
+    } catch (error) {
+      console.error('URL validation error:', error);
+      toast({
+        variant: "destructive",
+        title: "Invalid URL",
+        description: "Please enter a valid website URL.",
+      });
     }
   };
 
@@ -131,6 +302,15 @@ export const AnalysisPage: React.FC = () => {
     setSelectedTemplate(templateId);
   };
 
+  const handleToggleUrlInput = () => {
+    setShowUrlInput(!showUrlInput);
+  };
+
+  const handleCancelUrl = () => {
+    setShowUrlInput(false);
+    setUrlInput('');
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Debug Toggle Button */}
@@ -162,6 +342,15 @@ export const AnalysisPage: React.FC = () => {
             selectedTemplate={selectedTemplate}
             onTemplateSelect={handleTemplateSelect}
             isAnalyzing={analyzeWithClaude.isPending}
+            // Restored URL functionality props
+            showUrlInput={showUrlInput}
+            urlInput={urlInput}
+            setUrlInput={setUrlInput}
+            onToggleUrlInput={handleToggleUrlInput}
+            onAddUrl={handleAddUrl}
+            onCancelUrl={handleCancelUrl}
+            onFileUpload={handleFileUpload}
+            setAttachments={chatState.setAttachments}
           />
         </div>
 

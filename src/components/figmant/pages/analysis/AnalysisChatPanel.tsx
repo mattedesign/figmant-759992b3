@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Paperclip, Info, MessageCircle } from 'lucide-react';
 import { TemplateQuickSelector } from './components/TemplateQuickSelector';
+import { ChatInputContainer } from './components/ChatInputContainer';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { FigmantPromptTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
 
@@ -22,6 +23,15 @@ interface AnalysisChatPanelProps {
   selectedTemplate?: string;
   onTemplateSelect: (templateId: string) => void;
   isAnalyzing?: boolean;
+  // New props for restored functionality
+  showUrlInput?: boolean;
+  urlInput?: string;
+  setUrlInput?: (url: string) => void;
+  onToggleUrlInput?: () => void;
+  onAddUrl?: () => void;
+  onCancelUrl?: () => void;
+  onFileUpload?: (files: FileList) => void;
+  setAttachments?: (attachments: ChatAttachment[] | ((prev: ChatAttachment[]) => ChatAttachment[])) => void;
 }
 
 export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
@@ -36,9 +46,31 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
   promptTemplates,
   selectedTemplate,
   onTemplateSelect,
-  isAnalyzing = false
+  isAnalyzing = false,
+  showUrlInput = false,
+  urlInput = '',
+  setUrlInput = () => {},
+  onToggleUrlInput = () => {},
+  onAddUrl = () => {},
+  onCancelUrl = () => {},
+  onFileUpload = () => {},
+  setAttachments = () => {}
 }) => {
   const activeTemplate = promptTemplates.find(t => t.id === selectedTemplate);
+
+  const handleFileUpload = (files: FileList) => {
+    console.log('🎯 ANALYSIS CHAT PANEL - File upload requested:', files.length);
+    onFileUpload(files);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      onSendMessage();
+    }
+  };
+
+  const canSend = (message.trim().length > 0 || attachments.length > 0) && !isAnalyzing;
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
@@ -174,85 +206,29 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         )}
       </div>
 
-      {/* Attachments Display */}
-      {attachments.length > 0 && (
-        <div className="flex-none p-4 bg-white border-t border-gray-200">
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700">Ready to Analyze:</h4>
-            <div className="flex gap-2 flex-wrap">
-              {attachments.map((attachment) => (
-                <div
-                  key={attachment.id}
-                  className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2 text-sm"
-                >
-                  <Paperclip className="h-3 w-3 text-gray-500" />
-                  <span className="truncate max-w-32">
-                    {attachment.name || attachment.url}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onRemoveAttachment(attachment.id)}
-                    className="h-4 w-4 p-0 hover:bg-gray-200"
-                  >
-                    ×
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Input Area */}
-      <div className="flex-none p-4 bg-white border-t border-gray-200">
-        <div className="flex items-end gap-2">
-          <div className="flex-1">
-            <Textarea
-              placeholder={
-                activeTemplate 
-                  ? `Describe your design and ask for ${activeTemplate.displayName.toLowerCase()}...`
-                  : "Upload your design and describe what you'd like to analyze..."
-              }
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="min-h-[80px] resize-none"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                  e.preventDefault();
-                  onSendMessage();
-                }
-              }}
-            />
-          </div>
-          
-          <div className="flex flex-col gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onAddAttachment}
-              className="w-10 h-10 p-0"
-              title="Add files or URLs"
-            >
-              <Paperclip className="h-4 w-4" />
-            </Button>
-            
-            <Button
-              onClick={onSendMessage}
-              disabled={(!message.trim() && attachments.length === 0) || isAnalyzing}
-              size="sm"
-              className="w-10 h-10 p-0"
-              title="Send message"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        
-        {/* Quick Tips */}
-        <div className="mt-2 text-xs text-muted-foreground">
-          <span>Tip: Upload images, paste URLs, or describe your design. Press Cmd/Ctrl + Enter to send.</span>
-        </div>
+      {/* Restored Input Area with all functionality */}
+      <div className="flex-none">
+        <ChatInputContainer
+          message={message}
+          setMessage={setMessage}
+          onSendMessage={onSendMessage}
+          onKeyPress={handleKeyPress}
+          selectedPromptTemplate={activeTemplate || null}
+          canSend={canSend}
+          isAnalyzing={isAnalyzing}
+          onFileUpload={handleFileUpload}
+          onToggleUrlInput={onToggleUrlInput}
+          onTemplateSelect={onTemplateSelect}
+          availableTemplates={promptTemplates}
+          onViewTemplate={(template) => console.log('View template:', template)}
+          attachments={attachments}
+          onRemoveAttachment={onRemoveAttachment}
+          showUrlInput={showUrlInput}
+          urlInput={urlInput}
+          setUrlInput={setUrlInput}
+          onAddUrl={onAddUrl}
+          onCancelUrl={onCancelUrl}
+        />
       </div>
     </div>
   );

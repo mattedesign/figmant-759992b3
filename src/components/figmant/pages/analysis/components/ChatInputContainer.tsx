@@ -1,11 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Send, Plus, Globe, Upload, X } from 'lucide-react';
 import { FigmantPromptTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
-import { AttachmentDisplay } from './AttachmentDisplay';
-import { MessageTextArea } from './MessageTextArea';
-import { ChatInputControls } from './ChatInputControls';
-import { URLInputSection } from './URLInputSection';
+import { URLInputHandler } from './URLInputHandler';
+import { AttachmentPreviewList } from './AttachmentPreviewList';
 
 interface ChatInputContainerProps {
   message: string;
@@ -33,15 +34,11 @@ export const ChatInputContainer: React.FC<ChatInputContainerProps> = ({
   message,
   setMessage,
   onSendMessage,
-  onKeyPress,
   selectedPromptTemplate,
   canSend,
   isAnalyzing,
   onFileUpload,
   onToggleUrlInput,
-  onTemplateSelect,
-  availableTemplates,
-  onViewTemplate,
   attachments,
   onRemoveAttachment,
   showUrlInput,
@@ -50,100 +47,121 @@ export const ChatInputContainer: React.FC<ChatInputContainerProps> = ({
   onAddUrl,
   onCancelUrl
 }) => {
-  // New state for modern interface
-  const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
-  const [showTemplateMenu, setShowTemplateMenu] = useState(false);
-  const [showModeMenu, setShowModeMenu] = useState(false);
-  const [chatMode, setChatMode] = useState<'chat' | 'analyze'>('analyze');
-
-  // Ensure Master UX template is selected by default
-  useEffect(() => {
-    if (!selectedPromptTemplate && availableTemplates.length > 0) {
-      const masterTemplate = availableTemplates.find(template => 
-        template.displayName?.toLowerCase().includes('master') || 
-        template.title?.toLowerCase().includes('master')
-      );
-      if (masterTemplate) {
-        onTemplateSelect(masterTemplate.id);
-      } else if (availableTemplates[0]) {
-        // Fallback to first template if no Master template found
-        onTemplateSelect(availableTemplates[0].id);
-      }
-    }
-  }, [selectedPromptTemplate, availableTemplates, onTemplateSelect]);
-
-  const handleAttachmentAction = (type: 'screenshot' | 'link' | 'camera') => {
-    setShowAttachmentMenu(false);
-    switch (type) {
-      case 'screenshot':
-        // Trigger existing file upload
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/*,.pdf,.sketch,.fig,.xd';
-        fileInput.multiple = true;
-        fileInput.onchange = (e) => {
-          const target = e.target as HTMLInputElement;
-          if (target.files) {
-            onFileUpload(target.files);
-          }
-        };
-        fileInput.click();
-        break;
-      case 'link':
-        onToggleUrlInput();
-        break;
-      case 'camera':
-        // Future camera functionality
-        break;
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      onFileUpload(files);
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey && canSend && !isAnalyzing) {
+      e.preventDefault();
+      onSendMessage();
+    }
+  };
+
+  const handleAttachmentAdd = (attachment: ChatAttachment) => {
+    // This will be handled by the parent component's state
+    console.log('Adding attachment:', attachment);
+  };
+
+  const handleAttachmentUpdate = (id: string, updates: Partial<ChatAttachment>) => {
+    // This will be handled by the parent component's state
+    console.log('Updating attachment:', id, updates);
+  };
+
   return (
-    <div className="flex flex-col items-start gap-6 p-3 rounded-3xl border border-[#ECECEC] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13),0px_2px_0px_0px_#FFF_inset,0px_8px_16px_-12px_rgba(0,0,0,0.08)] backdrop-blur-md lg:gap-6 md:gap-4 sm:gap-3 sm:p-2">
-      
-      {/* ATTACHMENT DISPLAY SECTION */}
-      <AttachmentDisplay 
-        attachments={attachments}
-        onRemoveAttachment={onRemoveAttachment}
-      />
-
-      {/* TEXT INPUT AREA */}
-      <MessageTextArea
-        message={message}
-        setMessage={setMessage}
-        onKeyPress={onKeyPress}
-        selectedPromptTemplate={selectedPromptTemplate}
-        chatMode={chatMode}
-        isAnalyzing={isAnalyzing}
-      />
-
-      {/* ACTIONS BAR */}
-      <ChatInputControls
-        showAttachmentMenu={showAttachmentMenu}
-        setShowAttachmentMenu={setShowAttachmentMenu}
-        onAttachmentAction={handleAttachmentAction}
-        showTemplateMenu={showTemplateMenu}
-        setShowTemplateMenu={setShowTemplateMenu}
-        selectedPromptTemplate={selectedPromptTemplate}
-        availableTemplates={availableTemplates}
-        onTemplateSelect={onTemplateSelect}
-        showModeMenu={showModeMenu}
-        setShowModeMenu={setShowModeMenu}
-        chatMode={chatMode}
-        setChatMode={setChatMode}
-        onSendMessage={onSendMessage}
-        canSend={canSend}
-        isAnalyzing={isAnalyzing}
-      />
-
-      {/* URL INPUT SECTION (if active) */}
-      <URLInputSection
+    <div className="border-t border-gray-200 bg-white">
+      {/* URL Input Handler */}
+      <URLInputHandler
         showUrlInput={showUrlInput}
-        urlInput={urlInput}
-        setUrlInput={setUrlInput}
-        onAddUrl={onAddUrl}
-        onCancelUrl={onCancelUrl}
+        onClose={onCancelUrl}
+        attachments={attachments}
+        onAttachmentAdd={handleAttachmentAdd}
+        onAttachmentUpdate={handleAttachmentUpdate}
       />
+
+      {/* Attachment Preview */}
+      {attachments.length > 0 && (
+        <div className="px-4 py-3 border-b border-gray-100">
+          <AttachmentPreviewList
+            attachments={attachments}
+            onRemoveAttachment={onRemoveAttachment}
+          />
+        </div>
+      )}
+
+      {/* Main Input Area */}
+      <div className="p-4">
+        <div className="flex items-end gap-3">
+          {/* Attachment Menu */}
+          <div className="flex gap-2">
+            <input
+              type="file"
+              id="file-upload"
+              className="hidden"
+              multiple
+              accept="image/*,application/pdf"
+              onChange={handleFileUpload}
+              disabled={isAnalyzing}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => document.getElementById('file-upload')?.click()}
+              disabled={isAnalyzing}
+              className="flex items-center gap-2"
+            >
+              <Upload className="h-4 w-4" />
+              File
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onToggleUrlInput}
+              disabled={isAnalyzing}
+              className="flex items-center gap-2"
+            >
+              <Globe className="h-4 w-4" />
+              URL
+            </Button>
+          </div>
+
+          {/* Text Input */}
+          <div className="flex-1">
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={
+                selectedPromptTemplate
+                  ? `Ask for ${selectedPromptTemplate.displayName.toLowerCase()}...`
+                  : "Describe your design and ask for analysis..."
+              }
+              className="min-h-[60px] resize-none"
+              onKeyDown={handleKeyPress}
+              disabled={isAnalyzing}
+            />
+          </div>
+
+          {/* Send Button */}
+          <Button
+            onClick={onSendMessage}
+            disabled={!canSend || isAnalyzing}
+            size="sm"
+            className="px-4"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Context Info */}
+        {selectedPromptTemplate && (
+          <div className="mt-2 text-xs text-muted-foreground">
+            Using template: <span className="font-medium">{selectedPromptTemplate.displayName}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
