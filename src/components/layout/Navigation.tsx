@@ -17,14 +17,21 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
   const getTitle = () => {
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get('mode');
+    const tab = searchParams.get('tab');
     
     if (location.pathname === '/owner') {
       return 'Owner Dashboard';
     }
     if (location.pathname === '/dashboard') {
+      if (tab === 'wizard-analysis') {
+        return 'Wizard Analysis';
+      }
       return isOwner ? 'Subscriber View' : 'Dashboard';
     }
     if (location.pathname === '/figmant' || location.pathname === '/') {
+      if (tab === 'wizard-analysis') {
+        return 'Wizard Analysis';
+      }
       // Check if we're in wizard mode for premium analysis
       if (mode === 'wizard') {
         return 'Premium Analysis Wizard';
