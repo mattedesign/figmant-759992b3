@@ -1,15 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  LayoutDashboard, 
-  MessageSquare, 
-  Wand2, 
-  CreditCard, 
-  Settings, 
-  HelpCircle,
-  Shield
-} from 'lucide-react';
+import { navigationConfig } from '@/config/navigation';
 
 interface SidebarNavigationCollapsedProps {
   onSectionChange: (section: string) => void;
@@ -20,21 +12,10 @@ export const SidebarNavigationCollapsed: React.FC<SidebarNavigationCollapsedProp
   onSectionChange,
   isOwner = false
 }) => {
-  const mainMenuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'chat', label: 'Chat Analysis', icon: MessageSquare },
-    { id: 'wizard', label: 'Analysis Wizard', icon: Wand2 },
-  ];
-
-  const supportItems = [
-    { id: 'credits', label: 'Credits', icon: CreditCard },
-    { id: 'preferences', label: 'Preferences', icon: Settings },
-    { id: 'support', label: 'Help & Support', icon: HelpCircle },
-  ];
-
-  const adminItems = isOwner ? [
-    { id: 'admin', label: 'Admin Panel', icon: Shield },
-  ] : [];
+  // Use unified navigation configuration
+  const mainMenuItems = navigationConfig.mainItems;
+  const supportItems = navigationConfig.supportItems;
+  const adminItems = isOwner ? navigationConfig.adminItems : [];
 
   const allItems = [...mainMenuItems, ...supportItems, ...adminItems];
 
@@ -47,6 +28,7 @@ export const SidebarNavigationCollapsed: React.FC<SidebarNavigationCollapsedProp
           size="icon"
           onClick={() => onSectionChange(item.id)}
           className="w-10 h-10 p-0 hover:bg-transparent active:bg-transparent focus:bg-transparent border-none shadow-none"
+          title={item.label}
         >
           <item.icon 
             className="h-5 w-5"

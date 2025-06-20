@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { migrateNavigationRoute } from '@/utils/navigationMigration';
 import { DashboardPage } from './pages/DashboardPage';
 import { AnalysisPage } from './pages/AnalysisPage';
 import { ChatPage } from './pages/ChatPage';
@@ -36,51 +37,73 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   // Handle navigation state from premium analysis, template selection, or admin access
   useEffect(() => {
     if (location.state?.activeSection) {
-      setActiveSection(location.state.activeSection);
+      const migratedSection = migrateNavigationRoute(location.state.activeSection);
+      setActiveSection(migratedSection);
     }
   }, [location.state, setActiveSection]);
 
   const renderContent = () => {
-    switch (activeSection) {
+    // Apply migration to current activeSection
+    const currentSection = migrateNavigationRoute(activeSection);
+    
+    switch (currentSection) {
       case 'dashboard':
         return <DashboardPage />;
-      case 'chat':
+      
+      // Competitor Analysis (UC-024) - MVP Priority 1
+      case 'competitor-analysis':
+        // Route legacy chat/analysis/wizard to this unified component
         return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
-      case 'wizard':
-        return <WizardPage />;
-      case 'analysis':
-        return <AnalysisPage selectedTemplate={location.state?.selectedTemplate} />;
-      case 'premium-analysis':
+      
+      // Revenue Analysis (UC-018) - MVP Priority 2  
+      case 'revenue-analysis':
         return <PremiumAnalysisPage />;
-      case 'prompts':
+      
       case 'templates':
         return <TemplatesPage />;
-      case 'search':
-        return <SearchPage />;
+      
       case 'credits':
         return <CreditsPage />;
+      
+      case 'settings':
+        return <PreferencesPage />;
+      
+      // Legacy routes - maintain backward compatibility
+      case 'chat':
+      case 'analysis':
+      case 'wizard':
+        return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
+      
+      case 'premium-analysis':
+        return <PremiumAnalysisPage />;
+      
       case 'preferences':
         return <PreferencesPage />;
-      // All admin-related sections now route to the unified admin page
+      
+      case 'search':
+        return <SearchPage />;
+        
+      // Admin routes
       case 'admin':
       case 'users':
-      case 'settings':
       case 'claude':
       case 'plans':
       case 'products':
       case 'assets':
       case 'prompt-manager':
         return <AdminPage initialTab={activeSection} />;
+      
       case 'support':
-        // For now, redirect to preferences or show a support page
         return <PreferencesPage />;
+      
       default:
-        return <AnalysisPage selectedTemplate={location.state?.selectedTemplate} />;
+        // Default to competitor analysis for new users
+        return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
     }
   };
 
   // Determine if we need scrolling based on the active section
-  const needsScrolling = activeSection === 'premium-analysis' || activeSection === 'wizard';
+  const needsScrolling = activeSection === 'revenue-analysis' || activeSection === 'wizard';
 
   if (isMobile) {
     return (

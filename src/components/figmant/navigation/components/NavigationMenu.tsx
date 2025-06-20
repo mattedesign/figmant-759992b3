@@ -1,23 +1,9 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  Home,
-  BarChart3, 
-  Star, 
-  FileText, 
-  Settings,
-  Search,
-  Shield
-} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-
-interface NavigationSection {
-  id: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
+import { navigationConfig, getNavigationItemsByPriority } from '@/config/navigation';
 
 interface NavigationMenuProps {
   activeSection: string;
@@ -30,24 +16,18 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
 }) => {
   const { isOwner } = useAuth();
 
-  const mainSections: NavigationSection[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'analysis', label: 'Analysis', icon: BarChart3 },
-    { id: 'premium-analysis', label: 'Premium Analysis', icon: Star },
-    { id: 'templates', label: 'Templates', icon: FileText },
-    { id: 'search', label: 'Search', icon: Search },
-    { id: 'preferences', label: 'Preferences', icon: Settings },
-  ];
-
-  // Add admin section for owners - this should match desktop exactly
-  if (isOwner) {
-    mainSections.push({ id: 'admin', label: 'Admin', icon: Shield });
-  }
+  // Mobile shows priority 1 items only to maintain clean interface
+  const mainSections = getNavigationItemsByPriority(1);
+  
+  // Add admin section for owners
+  const adminSections = isOwner ? navigationConfig.adminItems : [];
+  
+  const allSections = [...mainSections, ...adminSections];
 
   return (
     <div className="flex-1 overflow-y-auto p-4">
       <div className="space-y-1">
-        {mainSections.map((section) => (
+        {allSections.map((section) => (
           <Button
             key={section.id}
             variant="ghost"

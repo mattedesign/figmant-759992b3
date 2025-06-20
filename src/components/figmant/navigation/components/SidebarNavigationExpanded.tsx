@@ -1,19 +1,11 @@
 
 import React from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { 
-  LayoutDashboard, 
-  MessageSquare, 
-  Wand2, 
-  CreditCard, 
-  Settings, 
-  HelpCircle,
-  Shield
-} from 'lucide-react';
 import { SidebarNavigationTabs } from './SidebarNavigationTabs';
 import { SidebarMenuSection } from './SidebarMenuSection';
 import { SidebarRecentAnalyses } from '../../sidebar/components/SidebarRecentAnalyses';
 import { SavedChatAnalysis } from '@/hooks/useChatAnalysisHistory';
+import { navigationConfig } from '@/config/navigation';
 
 interface SidebarNavigationExpandedProps {
   activeTab: string;
@@ -32,21 +24,24 @@ export const SidebarNavigationExpanded: React.FC<SidebarNavigationExpandedProps>
   isOwner = false,
   allAnalyses
 }) => {
-  const mainMenuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'chat', label: 'Chat Analysis', icon: MessageSquare },
-    { id: 'wizard', label: 'Analysis Wizard', icon: Wand2 },
-  ];
+  // Use unified navigation configuration
+  const mainMenuItems = navigationConfig.mainItems.map(item => ({
+    id: item.id,
+    label: item.label,
+    icon: item.icon
+  }));
 
-  const supportItems = [
-    { id: 'credits', label: 'Credits', icon: CreditCard },
-    { id: 'preferences', label: 'Preferences', icon: Settings },
-    { id: 'support', label: 'Help & Support', icon: HelpCircle },
-  ];
+  const supportItems = navigationConfig.supportItems.map(item => ({
+    id: item.id,
+    label: item.label,
+    icon: item.icon
+  }));
 
-  const adminItems = isOwner ? [
-    { id: 'admin', label: 'Admin Panel', icon: Shield },
-  ] : [];
+  const adminItems = isOwner ? navigationConfig.adminItems.map(item => ({
+    id: item.id,
+    label: item.label,
+    icon: item.icon
+  })) : [];
 
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: 'white' }}>
