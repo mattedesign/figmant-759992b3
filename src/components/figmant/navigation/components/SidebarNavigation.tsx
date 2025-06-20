@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -147,23 +148,23 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           }}
         >
           <TabsList 
-            className="grid w-full grid-cols-2 h-8"
+            className="grid w-full grid-cols-2 h-8 p-0"
             style={{
               borderRadius: '8px',
-              background: 'rgba(28, 34, 43, 0.05)',
+              background: '#F5F5F5',
               border: 'none',
               boxShadow: 'none'
             }}
           >
             <TabsTrigger 
               value="menu" 
-              className="text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-[0px_1px_1px_0px_rgba(11,19,36,0.10),0px_1px_3px_0px_rgba(11,19,36,0.10)] data-[state=active]:rounded-[6px] data-[state=inactive]:bg-transparent data-[state=inactive]:shadow-none"
+              className="text-sm font-medium h-full rounded-md data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:shadow-none"
             >
               Menu
             </TabsTrigger>
             <TabsTrigger 
               value="recent" 
-              className="text-sm font-medium data-[state=active]:bg-white data-[state=active]:shadow-[0px_1px_1px_0px_rgba(11,19,36,0.10),0px_1px_3px_0px_rgba(11,19,36,0.10)] data-[state=active]:rounded-[6px] data-[state=inactive]:bg-transparent data-[state=inactive]:shadow-none"
+              className="text-sm font-medium h-full rounded-md data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:shadow-none"
             >
               Recent
             </TabsTrigger>
@@ -301,3 +302,4 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     </div>
   );
 };
+
