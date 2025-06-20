@@ -4,16 +4,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 export const PremiumAnalysisPage: React.FC = () => {
   const isMobile = useIsMobile();
-  
-  console.log('💎 PREMIUM ANALYSIS PAGE - Rendering:', { isMobile });
 
   return (
     <div className="h-full flex flex-col min-h-0 overflow-hidden">
-      {/* Debug info - remove after fixing */}
-      <div className="bg-purple-100 p-2 text-xs text-purple-800 border-b">
-        DEBUG: PremiumAnalysisPage - Mobile: {isMobile ? 'YES' : 'NO'}
-      </div>
-      
       <div className={`${isMobile ? 'px-4 pt-4 pb-3' : 'px-6 pt-6 pb-3'} bg-transparent flex-shrink-0`}>
         <div className="flex items-center justify-between">
           <div>
@@ -30,10 +23,6 @@ export const PremiumAnalysisPage: React.FC = () => {
       <div className="flex-1 min-h-0 overflow-auto">
         {/* Premium Analysis Content */}
         <div className="h-full flex flex-col items-center justify-center p-6">
-          <div className="bg-orange-100 p-2 text-xs text-orange-800 border-b mb-4 w-full max-w-md">
-            DEBUG: PremiumContainer - Mobile: {isMobile ? 'YES' : 'NO'} | Should show premium content
-          </div>
-          
           <div className="text-center max-w-md w-full">
             {/* Premium Icon */}
             <div className="mb-6">
