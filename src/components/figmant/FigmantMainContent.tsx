@@ -47,16 +47,16 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
     const currentSection = migrateNavigationRoute(activeSection);
     
     switch (currentSection) {
-      // New standardized navigation IDs - MVP Priority Order
+      // New standardized navigation IDs
       case 'dashboard':
         return <DashboardPage />;
       
       case 'competitor-analysis':
-        // UC-024 - AI Competitor Analysis (MVP Priority 1)
+        // UC-024 - AI Competitor Analysis
         return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
       
-      case 'revenue-analysis':
-        // UC-018 - E-commerce Revenue Impact (MVP Priority 2)
+      case 'premium-analysis':
+        // UC-018 - E-commerce Revenue Impact
         return <PremiumAnalysisPage />;
       
       case 'templates':
@@ -81,8 +81,8 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
         // These now redirect to competitor-analysis
         return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
       
-      case 'premium-analysis':
-        // This now redirects to revenue-analysis
+      case 'revenue-analysis':
+        // This now redirects to premium-analysis
         return <PremiumAnalysisPage />;
       
       case 'preferences':
@@ -111,7 +111,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   };
 
   // Determine if we need scrolling based on the active section
-  const needsScrolling = activeSection === 'revenue-analysis' || activeSection === 'wizard';
+  const needsScrolling = activeSection === 'premium-analysis' || activeSection === 'wizard';
 
   if (isMobile) {
     return (

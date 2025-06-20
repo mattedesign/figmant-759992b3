@@ -16,7 +16,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
 }) => {
   const { isOwner } = useAuth();
 
-  // Mobile shows priority 1 items only to maintain clean interface
+  // Show all priority 1 items consistently across devices
   const mainSections = navigationConfig.mainItems.filter(item => item.priority === 1);
   
   // Add admin section for owners

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Navigation } from '@/components/layout/Navigation';
 import { SubscriberDashboardErrorBoundary } from '@/components/subscriber/SubscriberDashboardErrorBoundary';
@@ -20,13 +19,13 @@ const tabToSectionMap: Record<string, string> = {
   legacy: 'dashboard',
   // New standardized mappings
   'competitor-analysis': 'competitor-analysis',
-  'revenue-analysis': 'revenue-analysis',
+  'premium-analysis': 'premium-analysis',
   templates: 'templates',
   credits: 'credits',
-  settings: 'settings', // Updated from 'preferences'
+  settings: 'settings',
   'help-support': 'help-support',
   // Legacy mappings for backward compatibility
-  'premium-analysis': 'revenue-analysis',
+  'revenue-analysis': 'premium-analysis',
   preferences: 'settings',
 };
 
@@ -44,9 +43,9 @@ const SubscriberDashboard = () => {
   // Valid tab options - including hidden tabs for direct access
   const validTabs = [
     'design', 'all-analysis', 'insights', 'prompts', 'integrations', 'batch', 'history', 'legacy',
-    'competitor-analysis', 'revenue-analysis', 'templates', 'credits', 'settings', 'help-support',
+    'competitor-analysis', 'premium-analysis', 'templates', 'credits', 'settings', 'help-support',
     // Legacy tabs for backward compatibility
-    'premium-analysis', 'preferences'
+    'revenue-analysis', 'preferences'
   ];
   console.log('Current tab:', activeTab, 'Current section:', activeSection);
 

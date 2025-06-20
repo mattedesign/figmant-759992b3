@@ -10,8 +10,8 @@ export const navigationMigrations = {
   'analysis': 'competitor-analysis',
   'wizard': 'competitor-analysis',
   
-  // Premium analysis -> Revenue Analysis
-  'premium-analysis': 'revenue-analysis',
+  // Revenue analysis -> Premium Analysis (new standardized name)
+  'revenue-analysis': 'premium-analysis',
   
   // Preferences -> Settings
   'preferences': 'settings',

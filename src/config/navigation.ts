@@ -2,7 +2,7 @@
 import { 
   Home, 
   BarChart3, 
-  TrendingUp, 
+  Star, 
   FileText, 
   CreditCard, 
   Settings, 
@@ -36,10 +36,10 @@ export const navigationConfig = {
       description: 'UC-024 - AI-powered competitor insights'
     },
     { 
-      id: 'revenue-analysis', 
-      label: 'Revenue Analysis', 
-      icon: TrendingUp, 
-      priority: 2,
+      id: 'premium-analysis', 
+      label: 'Premium Analysis', 
+      icon: Star, 
+      priority: 1,
       description: 'UC-018 - E-commerce revenue impact predictions'
     },
     { 
