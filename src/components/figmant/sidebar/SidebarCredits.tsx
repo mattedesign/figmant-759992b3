@@ -68,7 +68,7 @@ export const SidebarCredits: React.FC<SidebarCreditsProps> = ({
     return "text-xs text-gray-600";
   };
 
-  const getButtonSize = () => {
+  const getButtonSize = (): "sm" | "default" | "lg" | "icon" => {
     if (isTablet) {
       return "sm";
     }

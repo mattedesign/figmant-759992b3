@@ -30,7 +30,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
     return "text-xl font-bold text-gray-900";
   };
 
-  const getButtonSize = () => {
+  const getButtonSize = (): "sm" | "default" | "lg" | "icon" => {
     if (isTablet) {
       return "sm";
     }
