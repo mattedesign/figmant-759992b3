@@ -1,9 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { SidebarHeader } from './SidebarHeader';
-import { SidebarUserSection } from './components/SidebarUserSection';
 import { SidebarNavigation } from '../navigation/components/SidebarNavigation';
 import { SidebarCredits } from './SidebarCredits';
 import { SidebarUserProfile } from './SidebarUserProfile';
@@ -88,7 +86,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
               background: '#FFF'
             }}
           >
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-sm font-medium text-gray-600">
                 {profile?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
               </span>
@@ -105,7 +103,8 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
         </div>
       )}
       
-      <div className="flex-1 overflow-y-auto">
+      {/* Navigation - Takes remaining space, no overflow issues */}
+      <div className="flex-1 min-h-0 overflow-hidden">
         <SidebarNavigation 
           activeSection={activeSection}
           onSectionChange={onSectionChange}

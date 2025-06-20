@@ -1,19 +1,19 @@
 
 import React from 'react';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { SidebarNavigationTabs } from './SidebarNavigationTabs';
-import { SidebarMenuSection } from './SidebarMenuSection';
-import { SidebarRecentAnalyses } from '../../sidebar/components/SidebarRecentAnalyses';
-import { SavedChatAnalysis } from '@/hooks/useChatAnalysisHistory';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { navigationConfig } from '@/config/navigation';
+import { cn } from '@/lib/utils';
 
 interface SidebarNavigationExpandedProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   activeSection: string;
   onSectionChange: (section: string) => void;
-  isOwner?: boolean;
-  allAnalyses: SavedChatAnalysis[];
+  isOwner: boolean;
+  allAnalyses: any[];
 }
 
 export const SidebarNavigationExpanded: React.FC<SidebarNavigationExpandedProps> = ({
@@ -21,63 +21,140 @@ export const SidebarNavigationExpanded: React.FC<SidebarNavigationExpandedProps>
   onTabChange,
   activeSection,
   onSectionChange,
-  isOwner = false,
+  isOwner,
   allAnalyses
 }) => {
-  // Use unified navigation configuration
-  const mainMenuItems = navigationConfig.mainItems.map(item => ({
-    id: item.id,
-    label: item.label,
-    icon: item.icon
-  }));
-
-  const supportItems = navigationConfig.supportItems.map(item => ({
-    id: item.id,
-    label: item.label,
-    icon: item.icon
-  }));
-
-  const adminItems = isOwner ? navigationConfig.adminItems.map(item => ({
-    id: item.id,
-    label: item.label,
-    icon: item.icon
-  })) : [];
+  const mainItems = navigationConfig.mainItems;
+  const supportItems = navigationConfig.supportItems;
+  const adminItems = isOwner ? navigationConfig.adminItems : [];
 
   return (
-    <div className="flex flex-col h-full" style={{ backgroundColor: 'white' }}>
-      <Tabs value={activeTab} onValueChange={onTabChange} className="flex flex-col h-full">
-        <SidebarNavigationTabs activeTab={activeTab} onTabChange={onTabChange} />
-        
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <TabsContent value="menu" className="h-full m-0 p-4 space-y-6">
-            <SidebarMenuSection
-              items={mainMenuItems}
-              activeSection={activeSection}
-              onSectionChange={onSectionChange}
-            />
+    <div className="flex-1 flex flex-col min-h-0">
+      <Tabs value={activeTab} onValueChange={onTabChange} className="flex-1 flex flex-col min-h-0">
+        <div className="flex-none px-4 pt-4 pb-2">
+          <TabsList className="grid w-full grid-cols-2 h-10">
+            <TabsTrigger value="menu" className="text-xs">Menu</TabsTrigger>
+            <TabsTrigger value="history" className="text-xs">History</TabsTrigger>
+          </TabsList>
+        </div>
 
-            <SidebarMenuSection
-              title="Support"
-              items={supportItems}
-              activeSection={activeSection}
-              onSectionChange={onSectionChange}
-            />
+        <div className="flex-1 min-h-0">
+          <TabsContent value="menu" className="mt-0 h-full">
+            <div className="h-full flex flex-col">
+              {/* Main Navigation - Fixed height, no scroll */}
+              <div className="flex-none px-4 pb-4">
+                <div className="space-y-1">
+                  {mainItems.map((item) => (
+                    <Button
+                      key={item.id}
+                      variant="ghost"
+                      onClick={() => onSectionChange(item.id)}
+                      className={cn(
+                        "w-full justify-start h-10 px-3 transition-colors",
+                        activeSection === item.id 
+                          ? "bg-blue-50 text-blue-700 hover:bg-blue-100" 
+                          : "hover:bg-gray-100"
+                      )}
+                    >
+                      <item.icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                      <span className="flex-1 text-left truncate text-sm">{item.label}</span>
+                      {item.id === 'competitor-analysis' && (
+                        <Badge variant="secondary" className="ml-2 text-xs bg-blue-100 text-blue-700">
+                          New
+                        </Badge>
+                      )}
+                    </Button>
+                  ))}
+                </div>
+              </div>
 
-            {adminItems.length > 0 && (
-              <SidebarMenuSection
-                title="Admin"
-                items={adminItems}
-                activeSection={activeSection}
-                onSectionChange={onSectionChange}
-              />
-            )}
+              {/* Support Items - Fixed height, no scroll */}
+              {supportItems.length > 0 && (
+                <div className="flex-none px-4 pb-4">
+                  <div className="text-xs font-medium text-gray-500 mb-2 px-3">Support</div>
+                  <div className="space-y-1">
+                    {supportItems.map((item) => (
+                      <Button
+                        key={item.id}
+                        variant="ghost"
+                        onClick={() => onSectionChange(item.id)}
+                        className={cn(
+                          "w-full justify-start h-10 px-3 transition-colors",
+                          activeSection === item.id 
+                            ? "bg-blue-50 text-blue-700 hover:bg-blue-100" 
+                            : "hover:bg-gray-100"
+                        )}
+                      >
+                        <item.icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                        <span className="flex-1 text-left truncate text-sm">{item.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Admin Items - Fixed height, no scroll */}
+              {adminItems.length > 0 && (
+                <div className="flex-none px-4">
+                  <div className="text-xs font-medium text-gray-500 mb-2 px-3">Admin</div>
+                  <div className="space-y-1">
+                    {adminItems.map((item) => (
+                      <Button
+                        key={item.id}
+                        variant="ghost"
+                        onClick={() => onSectionChange(item.id)}
+                        className={cn(
+                          "w-full justify-start h-10 px-3 transition-colors",
+                          activeSection === item.id 
+                            ? "bg-blue-50 text-blue-700 hover:bg-blue-100" 
+                            : "hover:bg-gray-100"
+                        )}
+                      >
+                        <item.icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                        <span className="flex-1 text-left truncate text-sm">{item.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </TabsContent>
-          
-          <TabsContent value="recent" className="h-full m-0 flex flex-col">
-            <SidebarRecentAnalyses
-              analysisHistory={allAnalyses}
-              onSectionChange={onSectionChange}
-            />
+
+          <TabsContent value="history" className="mt-0 h-full">
+            <div className="h-full flex flex-col">
+              <div className="flex-none px-4 pb-2">
+                <div className="text-sm font-medium text-gray-900">Recent Analysis</div>
+                <div className="text-xs text-gray-500">Last 10 analyses</div>
+              </div>
+              
+              {/* History content with controlled scroll */}
+              <ScrollArea className="flex-1">
+                <div className="px-4 space-y-2">
+                  {allAnalyses.slice(0, 10).map((analysis, index) => (
+                    <div
+                      key={`${analysis.type}-${analysis.id}`}
+                      className="p-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors cursor-pointer"
+                    >
+                      <div className="text-sm font-medium text-gray-900 mb-1 truncate">
+                        {analysis.title || analysis.displayTitle}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(analysis.created_at).toLocaleDateString()}
+                      </div>
+                      <div className="text-xs text-blue-600 mt-1">
+                        {analysis.analysisType || analysis.type}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {allAnalyses.length === 0 && (
+                    <div className="text-center text-gray-500 text-sm py-8">
+                      No analyses found
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
           </TabsContent>
         </div>
       </Tabs>

@@ -5,7 +5,6 @@ import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SidebarNavigationCollapsed } from './SidebarNavigationCollapsed';
 import { SidebarNavigationExpanded } from './SidebarNavigationExpanded';
-import { navigationConfig } from '@/config/navigation';
 
 interface SidebarNavigationProps {
   activeSection: string;
@@ -56,21 +55,25 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   // On mobile, force expanded view (mobile navigation is handled differently)
   if (isMobile || (!isCollapsed)) {
     return (
-      <SidebarNavigationExpanded
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        activeSection={activeSection}
-        onSectionChange={onSectionChange}
-        isOwner={isOwner}
-        allAnalyses={allAnalyses}
-      />
+      <div className="h-full flex flex-col overflow-hidden">
+        <SidebarNavigationExpanded
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          activeSection={activeSection}
+          onSectionChange={onSectionChange}
+          isOwner={isOwner}
+          allAnalyses={allAnalyses}
+        />
+      </div>
     );
   }
 
   return (
-    <SidebarNavigationCollapsed
-      onSectionChange={onSectionChange}
-      isOwner={isOwner}
-    />
+    <div className="h-full flex flex-col overflow-hidden">
+      <SidebarNavigationCollapsed
+        onSectionChange={onSectionChange}
+        isOwner={isOwner}
+      />
+    </div>
   );
 };
