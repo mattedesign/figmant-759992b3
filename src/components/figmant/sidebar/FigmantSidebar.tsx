@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { SidebarHeader } from './SidebarHeader';
 import { SidebarUserSection } from './components/SidebarUserSection';
-import { SidebarNavigation } from './SidebarNavigation';
+import { SidebarNavigation } from '../navigation/components/SidebarNavigation';
 import { SidebarCredits } from './SidebarCredits';
 import { SidebarUserProfile } from './SidebarUserProfile';
 
