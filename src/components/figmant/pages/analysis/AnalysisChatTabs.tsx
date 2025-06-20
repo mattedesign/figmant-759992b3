@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { 
@@ -38,7 +39,7 @@ export const AnalysisChatTabs: React.FC<AnalysisChatTabsProps> = ({
         className="grid w-full grid-cols-2"
         style={{
           borderRadius: '8px',
-          background: 'var(--action-background-neutral-light_active, rgba(28, 34, 43, 0.05))'
+          background: '#E3F5FF'
         }}
       >
         <TabsTrigger 
