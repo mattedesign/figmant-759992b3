@@ -2,12 +2,9 @@
 import React, { useEffect } from 'react';
 import { DashboardHeader } from './dashboard/DashboardHeader';
 import { DashboardAnalyticsTabsSection } from './dashboard/DashboardAnalyticsTabsSection';
-import { DashboardCreditUsageSection } from './dashboard/DashboardCreditUsageSection';
-import { DashboardAnalysisPerformanceSection } from './dashboard/DashboardAnalysisPerformanceSection';
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
 import { useToast } from '@/hooks/use-toast';
-import { transformForPerformanceWidget } from './dashboard/utils/widgetDataTransformers';
 
 export const DashboardPage: React.FC = () => {
   const {
@@ -62,9 +59,6 @@ export const DashboardPage: React.FC = () => {
     return <EnhancedDashboardSkeleton />;
   }
 
-  // Transform raw data for widgets
-  const performanceWidgetData = transformForPerformanceWidget(rawAnalysisData || []);
-
   return (
     <div className="h-full overflow-y-auto">
       <div className="container mx-auto space-y-8 2xl:max-w-none 2xl:px-8 px-0 py-0 pt-6">
@@ -81,12 +75,6 @@ export const DashboardPage: React.FC = () => {
           analysisData={memoizedAnalysisData}
           realData={realData}
         />
-
-        {/* Secondary widgets row - Credit Usage & Analysis Performance */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <DashboardCreditUsageSection userCredits={userCredits} />
-          <DashboardAnalysisPerformanceSection analysisData={performanceWidgetData} />
-        </div>
       </div>
     </div>
   );
