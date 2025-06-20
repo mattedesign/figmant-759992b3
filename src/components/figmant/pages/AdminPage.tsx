@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertTriangle } from 'lucide-react';
-import { ClaudePromptManager } from '@/components/owner/claude/ClaudePromptManager';
+import { EnhancedPromptTemplateManager } from '@/components/owner/claude/EnhancedPromptTemplateManager';
 import { UserManagement } from '@/components/owner/UserManagement';
 import { AdminSettings } from '@/components/owner/AdminSettings';
 import { ClaudeSettings } from '@/components/owner/ClaudeSettings';
@@ -61,51 +61,53 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-shrink-0 max-w-7xl mx-auto w-full p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
-          <p className="text-gray-600 mt-1">Manage your application settings, users, and system configuration</p>
+    <div className="h-full flex flex-col bg-gray-50">
+      <div className="flex-shrink-0 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto w-full p-6">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
+            <p className="text-gray-600 mt-1">Manage your application settings, users, and system configuration</p>
+          </div>
+          
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-6 bg-gray-100">
+              <TabsTrigger value="dashboard" className="data-[state=active]:bg-white">Dashboard</TabsTrigger>
+              <TabsTrigger value="users" className="data-[state=active]:bg-white">Users</TabsTrigger>
+              <TabsTrigger value="prompts" className="data-[state=active]:bg-white">Prompts</TabsTrigger>
+              <TabsTrigger value="claude" className="data-[state=active]:bg-white">Claude AI</TabsTrigger>
+              <TabsTrigger value="plans" className="data-[state=active]:bg-white">Plans</TabsTrigger>
+              <TabsTrigger value="assets" className="data-[state=active]:bg-white">Assets</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-6">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="prompts">Prompts</TabsTrigger>
-            <TabsTrigger value="claude">Claude AI</TabsTrigger>
-            <TabsTrigger value="plans">Plans</TabsTrigger>
-            <TabsTrigger value="assets">Assets</TabsTrigger>
-          </TabsList>
-        </Tabs>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto w-full px-6 pb-6">
+        <div className="max-w-7xl mx-auto w-full p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsContent value="dashboard" className="space-y-6">
+            <TabsContent value="dashboard" className="space-y-6 mt-0">
               <AdminSettings />
             </TabsContent>
 
-            <TabsContent value="users" className="space-y-6">
+            <TabsContent value="users" className="space-y-6 mt-0">
               <UserManagement />
               <RegistrationDebugPanel />
               <SpecificUserDebugPanel />
             </TabsContent>
 
-            <TabsContent value="prompts" className="space-y-6">
-              <ClaudePromptManager />
+            <TabsContent value="prompts" className="space-y-6 mt-0">
+              <EnhancedPromptTemplateManager />
             </TabsContent>
 
-            <TabsContent value="claude" className="space-y-6">
+            <TabsContent value="claude" className="space-y-6 mt-0">
               <ClaudeSettings />
             </TabsContent>
 
-            <TabsContent value="plans" className="space-y-6">
+            <TabsContent value="plans" className="space-y-6 mt-0">
               <SubscriptionPlansManager />
             </TabsContent>
 
-            <TabsContent value="assets" className="space-y-6">
+            <TabsContent value="assets" className="space-y-6 mt-0">
               <AdminAssetDashboard />
             </TabsContent>
           </Tabs>
