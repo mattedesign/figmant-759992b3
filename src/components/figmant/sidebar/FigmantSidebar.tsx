@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -75,34 +76,6 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
         onToggleCollapse={handleToggleCollapse}
       />
       
-      {/* User Profile Section - Positioned after header when NOT collapsed */}
-      {!isCollapsed && (
-        <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200/30">
-          <div 
-            className="flex items-center gap-3 p-2 rounded-lg"
-            style={{
-              borderRadius: '11px',
-              border: '1px solid rgba(10, 12, 17, 0.10)',
-              background: '#FFF'
-            }}
-          >
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-medium text-gray-600">
-                {profile?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900 truncate">
-                {profile?.full_name || user?.email?.split('@')[0] || 'User'}
-              </div>
-              <div className="text-xs text-gray-500 truncate">
-                {profile?.email || user?.email || 'user@example.com'}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      
       {/* Navigation - Takes remaining space, no overflow issues */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <SidebarNavigation 
@@ -126,6 +99,34 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
             totalPurchased={totalPurchased}
             creditsLoading={creditsLoading}
           />
+        </div>
+      )}
+
+      {/* User Profile Section - Now at the bottom */}
+      {!isCollapsed && (
+        <div className="flex-shrink-0 px-4 py-3 border-t border-gray-200/30">
+          <div 
+            className="flex items-center gap-3 p-2 rounded-lg"
+            style={{
+              borderRadius: '11px',
+              border: '1px solid rgba(10, 12, 17, 0.10)',
+              background: '#FFF'
+            }}
+          >
+            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-medium text-gray-600">
+                {profile?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-gray-900 truncate">
+                {profile?.full_name || user?.email?.split('@')[0] || 'User'}
+              </div>
+              <div className="text-xs text-gray-500 truncate">
+                {profile?.email || user?.email || 'user@example.com'}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
