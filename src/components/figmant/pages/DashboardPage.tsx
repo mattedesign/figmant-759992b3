@@ -1,5 +1,4 @@
 
-
 import React, { useEffect } from 'react';
 import { DashboardHeader } from './dashboard/DashboardHeader';
 import { InsightsSection } from './dashboard/InsightsSection';
@@ -7,6 +6,7 @@ import { PatternAnalysisSection } from './dashboard/PatternAnalysisSection';
 import { DashboardAnalyticsTabsSection } from './dashboard/DashboardAnalyticsTabsSection';
 import { DashboardCreditUsageSection } from './dashboard/DashboardCreditUsageSection';
 import { DashboardAnalysisPerformanceSection } from './dashboard/DashboardAnalysisPerformanceSection';
+import { RecentAnalysesWidget } from './dashboard/RecentAnalysesWidget';
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
 import { useToast } from '@/hooks/use-toast';
@@ -85,12 +85,16 @@ export const DashboardPage: React.FC = () => {
         {/* Analytics Dashboard Section */}
         <DashboardAnalyticsTabsSection dataStats={memoizedDataStats} analysisData={memoizedAnalysisData} />
         
-        {/* Main Content - Single Column Layout */}
+        {/* Main Content - Three Column Layout */}
         <div className="space-y-8">
-          {/* Pattern Analysis (1/3) and Insights (2/3) Side by Side */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Pattern Analysis (1/4), Recent Analyses (1/4), and Insights (2/4) */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div className="lg:col-span-1">
               <PatternAnalysisSection />
+            </div>
+            
+            <div className="lg:col-span-1">
+              <RecentAnalysesWidget />
             </div>
             
             <div className="lg:col-span-2">
@@ -107,4 +111,3 @@ export const DashboardPage: React.FC = () => {
     </div>
   );
 };
-
