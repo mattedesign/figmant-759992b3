@@ -51,11 +51,6 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
         </Card>
       ) : (
         <Card>
-          <CardHeader className="p-0">
-            <p className="text-sm text-muted-foreground">
-              {selectedTemplate.description}
-            </p>
-          </CardHeader>
           <CardContent className="space-y-4 p-0">
             {selectedTemplate.contextual_fields.map((field) => (
               <ContextualFieldRenderer
