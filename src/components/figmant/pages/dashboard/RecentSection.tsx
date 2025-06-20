@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
 import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
-import { AnalysisDetailView } from '@/components/design/analysis/AnalysisDetailView';
+import { AnalysisDetailView } from '@/components/figmant/pages/analysis/AnalysisDetailView';
 
 export const RecentSection: React.FC = () => {
   const [selectedAnalysis, setSelectedAnalysis] = useState<any>(null);
