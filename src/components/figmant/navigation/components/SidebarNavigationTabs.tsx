@@ -37,7 +37,25 @@ export const SidebarNavigationTabs: React.FC<SidebarNavigationTabsProps> = ({
           className="text-base font-semibold h-full rounded-2xl data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:shadow-none"
           onClick={() => onTabChange('menu')}
           style={{
-            margin: '2px'
+            margin: '2px',
+            ...(activeTab === 'menu' ? {
+              display: 'flex',
+              padding: '8px 12px',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '8px',
+              flex: '1 0 0',
+              borderRadius: '8px',
+              background: 'var(--Surface-01, #FCFCFC)',
+              boxShadow: '0px 1.25px 3px 0px var(--Shade-7-10, rgba(50, 50, 50, 0.10)), 0px 1.25px 1px 0px #FFF inset',
+              color: 'var(--Text-Primary, #121212)',
+              fontFamily: '"Instrument Sans"',
+              fontSize: '13px',
+              fontStyle: 'normal',
+              fontWeight: '600',
+              lineHeight: '16px',
+              letterSpacing: '-0.13px'
+            } : {})
           }}
         >
           Analysis
@@ -47,7 +65,25 @@ export const SidebarNavigationTabs: React.FC<SidebarNavigationTabsProps> = ({
           className="text-base font-semibold h-full rounded-2xl data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:shadow-none"
           onClick={() => onTabChange('recent')}
           style={{
-            margin: '2px'
+            margin: '2px',
+            ...(activeTab === 'recent' ? {
+              display: 'flex',
+              padding: '8px 12px',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '8px',
+              flex: '1 0 0',
+              borderRadius: '8px',
+              background: 'var(--Surface-01, #FCFCFC)',
+              boxShadow: '0px 1.25px 3px 0px var(--Shade-7-10, rgba(50, 50, 50, 0.10)), 0px 1.25px 1px 0px #FFF inset',
+              color: 'var(--Text-Primary, #121212)',
+              fontFamily: '"Instrument Sans"',
+              fontSize: '13px',
+              fontStyle: 'normal',
+              fontWeight: '600',
+              lineHeight: '16px',
+              letterSpacing: '-0.13px'
+            } : {})
           }}
         >
           Recent
