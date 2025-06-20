@@ -29,6 +29,13 @@ export const ChatMessageHandler: React.FC<ChatMessageHandlerProps> = ({ children
   } = useChatStateContext();
 
   const handleSendMessage = async () => {
+    console.log('🔥 CHAT MESSAGE HANDLER - Send button clicked!');
+    console.log('🔥 CHAT MESSAGE HANDLER - Current state:', {
+      messageLength: message.length,
+      attachmentsCount: attachments.length,
+      hasAnalyzeFunction: !!analyzeWithClaude
+    });
+
     if (!message.trim() && attachments.length === 0) {
       toast({
         variant: "destructive",
@@ -76,6 +83,8 @@ export const ChatMessageHandler: React.FC<ChatMessageHandlerProps> = ({ children
         url: att.url
       }));
 
+      console.log('🔥 CHAT MESSAGE HANDLER - About to call analyzeWithClaude...');
+      
       const result = await analyzeWithClaude({
         message,
         attachments: analysisAttachments,
@@ -95,7 +104,7 @@ export const ChatMessageHandler: React.FC<ChatMessageHandlerProps> = ({ children
       setAttachments([]);
 
     } catch (error) {
-      console.error('Analysis error:', error);
+      console.error('🔥 CHAT MESSAGE HANDLER - Analysis error:', error);
       
       const errorMessage: ChatMessage = {
         id: crypto.randomUUID(),

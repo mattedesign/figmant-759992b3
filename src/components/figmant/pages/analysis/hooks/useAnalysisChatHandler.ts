@@ -17,6 +17,9 @@ export const useAnalysisChatHandler = (
   const analysisQuery = useFigmantChatAnalysis();
 
   const handleSendMessage = async () => {
+    // Add debugging at the beginning of handleSendMessage
+    console.log('🔥 SEND MESSAGE - Button clicked, starting analysis...');
+    
     if (!message.trim() && attachments.length === 0) {
       toast({
         variant: "destructive",

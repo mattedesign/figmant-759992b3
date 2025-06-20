@@ -31,6 +31,9 @@ export const useFigmantChatAnalysis = () => {
 
   return useMutation({
     mutationFn: async ({ message, attachments, template }: AnalysisRequest): Promise<AnalysisResponse> => {
+      // Add debugging at the very beginning
+      console.log('🔥 CHAT ANALYSIS - Function called with:', { message, attachments, template });
+      
       if (!user?.id) {
         throw new Error('User not authenticated');
       }
@@ -89,6 +92,9 @@ export const useFigmantChatAnalysis = () => {
       })) || [];
 
       console.log('🔍 FIGMANT CHAT - Calling Claude AI function...');
+      
+      // Add debugging before the supabase call
+      console.log('🔥 CHAT ANALYSIS - About to call supabase function...');
       
       // Call Claude AI function
       const { data: claudeResponse, error: claudeError } = await supabase.functions.invoke('claude-ai', {
