@@ -94,13 +94,11 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                 <CardDescription className="text-sm">
                   {template.description}
                 </CardDescription>
-                {template.credit_cost && (
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="text-sm font-medium text-blue-600">
-                      {template.credit_cost} credits
-                    </span>
-                  </div>
-                )}
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-sm font-medium text-blue-600">
+                    3 credits
+                  </span>
+                </div>
               </CardContent>
             </Card>
           ))}
