@@ -41,7 +41,9 @@ export const useFigmantPromptTemplates = () => {
         isActive: item.is_active,
         createdAt: item.created_at,
         updatedAt: item.updated_at,
-        metadata: item.metadata // Include metadata in the transformation
+        metadata: item.metadata && typeof item.metadata === 'object' && item.metadata !== null 
+          ? item.metadata as Record<string, any>
+          : {} // Default to empty object if metadata is not a valid object
       }));
     }
   });
