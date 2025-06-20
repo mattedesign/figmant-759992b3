@@ -32,7 +32,7 @@ export const SidebarNavigationCollapsed: React.FC<SidebarNavigationCollapsedProp
         >
           <item.icon 
             className="h-5 w-5"
-            style={{ color: '#6B7280' }}
+            color="#6B7280"
           />
         </Button>
       ))}
