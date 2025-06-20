@@ -96,7 +96,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                 </CardDescription>
                 <div className="mt-3 flex items-center justify-between">
                   <span className="text-sm font-medium text-blue-600">
-                    3 credits
+                    {template.metadata?.credit_cost || 3} credits
                   </span>
                   {/* Show contextual fields indicator if template has them */}
                   {template.metadata && 
