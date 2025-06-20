@@ -42,7 +42,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
-      {/* Header with Template Selection */}
+      {/* Enhanced Header with Template Selection */}
       <div className="flex-none p-4 bg-white border-b border-gray-200">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">Analysis Chat</h2>
