@@ -90,7 +90,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           color: '#1812E9',
           textOverflow: 'ellipsis',
           fontFamily: '"Instrument Sans"',
-          fontSize: '14px',
+          fontSize: '13px',
           fontStyle: 'normal',
           fontWeight: 500,
           lineHeight: 'auto',
