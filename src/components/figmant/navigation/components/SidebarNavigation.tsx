@@ -44,7 +44,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       "w-full justify-start text-left h-10 px-2 transition-all duration-200",
       isActive
         ? "bg-white text-[#3D4A5C] rounded-[12px] shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
-        : "text-[#455468] hover:bg-[#1812E9] hover:text-white hover:rounded-[12px]"
+        : "text-[#455468] hover:bg-[#1812E9] hover:text-white hover:rounded-[12px] focus:bg-[#1812E9] focus:text-white focus:rounded-[12px] focus-visible:bg-[#1812E9] focus-visible:text-white focus-visible:rounded-[12px]"
     );
   };
 
@@ -53,7 +53,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       "h-4 w-4 mr-3 transition-all duration-200",
       isActive 
         ? "text-[#1812E9]" 
-        : "text-[#455468] group-hover:text-white"
+        : "text-[#455468] group-hover:text-white group-focus:text-white group-focus-visible:text-white"
     );
   };
 
