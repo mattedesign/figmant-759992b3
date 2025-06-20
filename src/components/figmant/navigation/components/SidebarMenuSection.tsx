@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -78,7 +79,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
                   alignItems: 'center',
                   alignSelf: 'stretch',
                   overflow: 'hidden',
-                  color: '#6B7280',
+                  color: '#121212',
                   textOverflow: 'ellipsis',
                   fontFamily: '"Instrument Sans"',
                   fontSize: '13px',
@@ -105,7 +106,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           onMouseLeave={(e) => {
             // Only apply hover effects on non-touch devices
             if (!isMobile && activeSection !== item.id) {
-              e.currentTarget.style.color = '#6B7280';
+              e.currentTarget.style.color = '#121212';
               e.currentTarget.style.backgroundColor = 'transparent';
               // Reset icon container styles
               const iconContainer = e.currentTarget.querySelector('.icon-container') as HTMLElement;
@@ -152,7 +153,8 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: '8px',
-                    borderRadius: isMobile ? '10px' : '8px'
+                    borderRadius: isMobile ? '10px' : '8px',
+                    color: '#121212'
                   }
             }
           >
