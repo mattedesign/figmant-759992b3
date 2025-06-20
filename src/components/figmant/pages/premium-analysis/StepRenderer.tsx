@@ -5,22 +5,10 @@ import { Step4ProjectDetails } from './steps/Step4ProjectDetails';
 import { Step5UploadFiles } from './steps/Step5UploadFiles';
 import { Step6CustomPrompt } from './steps/Step6CustomPrompt';
 import { Step7Processing } from './steps/Step7Processing';
-import { StepHeader } from './components/StepHeader';
 import { StepProps } from './types';
 
 export const StepRenderer: React.FC<StepProps> = (props) => {
-  const { currentStep, totalSteps } = props;
-
-  const getStepTitle = () => {
-    switch (currentStep) {
-      case 1: return 'Select Analysis Type';
-      case 2: return 'Project Details';
-      case 3: return 'Upload Files';
-      case 4: return 'Custom Prompt';
-      case 5: return 'Processing Analysis';
-      default: return 'Premium Analysis';
-    }
-  };
+  const { currentStep } = props;
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -41,11 +29,6 @@ export const StepRenderer: React.FC<StepProps> = (props) => {
 
   return (
     <div className="space-y-8">
-      <StepHeader
-        title={getStepTitle()}
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-      />
       {renderStepContent()}
     </div>
   );
