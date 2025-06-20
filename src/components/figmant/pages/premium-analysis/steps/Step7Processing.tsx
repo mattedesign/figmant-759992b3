@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { CheckCircle, AlertCircle, Loader2, Download, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { usePremiumAnalysisSubmission } from '@/hooks/usePremiumAnalysisSubmission';
-import { figmantPromptTemplates } from '@/data/figmantPromptTemplates';
+import { useTemplateSelection } from '../hooks/useTemplateSelection';
 import { StepProps } from '../types';
 
 export const Step7Processing: React.FC<StepProps> = ({ 
@@ -19,6 +19,7 @@ export const Step7Processing: React.FC<StepProps> = ({
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const { toast } = useToast();
   const premiumAnalysisMutation = usePremiumAnalysisSubmission();
+  const { selectedTemplate } = useTemplateSelection(stepData.selectedType);
 
   useEffect(() => {
     // Start the analysis when component mounts
@@ -41,19 +42,14 @@ export const Step7Processing: React.FC<StepProps> = ({
         });
       }, 500);
 
-      // Find the selected prompt template
-      const selectedPrompt = figmantPromptTemplates.find(
-        template => template.id === stepData.selectedType
-      );
-
-      if (!selectedPrompt) {
-        throw new Error('Selected analysis type not found');
+      if (!selectedTemplate) {
+        throw new Error('Selected analysis template not found');
       }
 
       // Execute premium analysis
       const result = await premiumAnalysisMutation.mutateAsync({
         stepData,
-        selectedPrompt
+        selectedPrompt: selectedTemplate
       });
       
       clearInterval(progressInterval);
@@ -125,7 +121,7 @@ export const Step7Processing: React.FC<StepProps> = ({
             <span>Premium Analysis Status</span>
           </CardTitle>
           <CardDescription>
-            Project: {stepData.projectName} | Type: {stepData.selectedType}
+            Project: {stepData.projectName} | Type: {selectedTemplate?.displayName || stepData.selectedType}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -189,16 +185,36 @@ export const Step7Processing: React.FC<StepProps> = ({
           <CardTitle>Project Summary</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div><strong>Analysis Type:</strong> {stepData.selectedType}</div>
+          <div><strong>Analysis Type:</strong> {selectedTemplate?.displayName || stepData.selectedType}</div>
           <div><strong>Goals:</strong> {stepData.analysisGoals}</div>
-          {stepData.desiredOutcome && <div><strong>Desired Outcome:</strong> {stepData.desiredOutcome}</div>}
-          {stepData.improvementMetric && <div><strong>Key Metric:</strong> {stepData.improvementMetric}</div>}
-          {stepData.deadline && <div><strong>Deadline:</strong> {stepData.deadline}</div>}
+          {stepData.contextualData && Object.keys(stepData.contextualData).length > 0 && (
+            <div>
+              <strong>Project Details:</strong>
+              <ul className="list-disc list-inside ml-4 mt-1">
+                {Object.entries(stepData.contextualData).map(([key, value]) => {
+                  if (value && value.toString().trim()) {
+                    // Find the field definition to get a readable label
+                    const field = selectedTemplate?.contextual_fields?.find((f: any) => f.id === key);
+                    const fieldLabel = field?.label || key;
+                    return (
+                      <li key={key}>
+                        <strong>{fieldLabel}:</strong> {value.toString()}
+                      </li>
+                    );
+                  }
+                  return null;
+                })}
+              </ul>
+            </div>
+          )}
           {stepData.uploadedFiles?.length && (
             <div><strong>Files:</strong> {stepData.uploadedFiles.length} uploaded</div>
           )}
           {stepData.stakeholders?.length && (
             <div><strong>Stakeholders:</strong> {stepData.stakeholders.length} added</div>
+          )}
+          {stepData.customPrompt && (
+            <div><strong>Custom Instructions:</strong> {stepData.customPrompt.substring(0, 100)}...</div>
           )}
         </CardContent>
       </Card>

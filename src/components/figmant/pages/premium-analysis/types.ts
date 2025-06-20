@@ -24,3 +24,9 @@ export interface Stakeholder {
   role: string;
   title?: string;
 }
+
+export interface AnalysisType {
+  id: string;
+  title: string;
+  icon: React.ComponentType<any>;
+}
