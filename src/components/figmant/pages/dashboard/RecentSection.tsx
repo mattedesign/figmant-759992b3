@@ -32,6 +32,7 @@ export const RecentSection: React.FC = () => {
     .slice(0, 3);
 
   const handleAnalysisClick = (analysis: any) => {
+    console.log('Analysis clicked:', analysis);
     setSelectedAnalysis(analysis);
     setIsModalOpen(true);
   };
@@ -55,10 +56,10 @@ export const RecentSection: React.FC = () => {
             recentAnalyses.map((analysis, index) => (
               <div 
                 key={`${analysis.type}-${analysis.id}`}
-                className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
+                className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer transition-colors"
                 onClick={() => handleAnalysisClick(analysis)}
               >
-                <span className="text-sm text-gray-700 flex-1 pointer-events-none">
+                <span className="text-sm text-gray-700 flex-1">
                   {analysis.displayTitle}
                 </span>
               </div>
