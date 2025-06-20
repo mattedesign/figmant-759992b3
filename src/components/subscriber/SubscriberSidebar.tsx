@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { sectionConfig } from './config/sectionConfig';
+import { navigationConfig } from '@/config/navigation';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -18,7 +18,14 @@ export const SubscriberSidebar = ({ activeTab, onTabChange }: SubscriberSidebarP
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { user, profile } = useAuth();
 
-  const config = sectionConfig.workspace;
+  // Use unified navigation configuration
+  const visibleItems = navigationConfig.mainItems.map(item => ({
+    id: item.id,
+    label: item.label,
+    icon: item.icon,
+    badge: item.id === 'competitor-analysis' ? 'New' : undefined,
+    disabled: false
+  }));
 
   const getInitials = () => {
     if (profile?.full_name) {
@@ -29,8 +36,6 @@ export const SubscriberSidebar = ({ activeTab, onTabChange }: SubscriberSidebarP
     }
     return 'U';
   };
-
-  const visibleItems = config.items.filter(item => !['batch', 'history', 'legacy'].includes(item.id));
 
   const onToggleCollapse = () => setIsCollapsed(!isCollapsed);
 
@@ -87,7 +92,7 @@ export const SubscriberSidebar = ({ activeTab, onTabChange }: SubscriberSidebarP
   return (
     <div className="w-64 h-full bg-card border-r border-border flex flex-col overflow-hidden transition-all duration-300">
       <div className="flex-none p-4 border-b border-border flex items-center justify-between">
-        <h2 className="text-lg font-semibold">{config.title}</h2>
+        <h2 className="text-lg font-semibold">Workspace</h2>
         <Button
           variant="ghost"
           size="sm"

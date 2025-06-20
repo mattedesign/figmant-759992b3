@@ -4,28 +4,34 @@ import { Button } from '@/components/ui/button';
 import { BarChart3, Users, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import { navigationConfig } from '@/config/navigation';
 
 interface IconSidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
 }
 
-const sections = [{
-  id: 'workspace',
-  label: 'Workspace',
-  icon: BarChart3,
-  activeColor: '#1812E9'
-}, {
-  id: 'users',
-  label: 'Users',
-  icon: Users,
-  activeColor: '#20BF88'
-}, {
-  id: 'settings',
-  label: 'Settings',
-  icon: Settings,
-  activeColor: '#E9408C'
-}];
+// Owner-specific sections with unified navigation for main items
+const sections = [
+  {
+    id: 'workspace',
+    label: 'Workspace',
+    icon: BarChart3,
+    activeColor: '#1812E9'
+  },
+  {
+    id: 'users',
+    label: 'Users',
+    icon: Users,
+    activeColor: '#20BF88'
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: Settings,
+    activeColor: '#E9408C'
+  }
+];
 
 export const IconSidebar = ({
   activeSection,
