@@ -26,20 +26,10 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  console.log('📊 ANALYSIS CONTAINER - State:', { 
-    isMobile, 
-    analysesCount: analyses.length, 
-    isLoading 
-  });
-
   // Loading state
   if (isLoading) {
     return (
       <div className="h-full flex flex-col">
-        {/* Debug info during loading */}
-        <div className="bg-yellow-100 p-2 text-xs text-yellow-800 border-b mb-4 w-full">
-          DEBUG: Container LOADING - Mobile: {isMobile ? 'YES' : 'NO'} | Should show "Start your analysis"
-        </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
@@ -53,11 +43,6 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
   // ALWAYS show "Start your analysis" content for both mobile and desktop
   return (
     <div className="h-full flex flex-col">
-      {/* Debug info - YELLOW BAR - should be very visible */}
-      <div className="bg-yellow-100 p-2 text-xs text-yellow-800 border-b mb-4 w-full z-50">
-        DEBUG: Container - Mobile: {isMobile ? 'YES' : 'NO'} | Should show "Start your analysis" | Template: {selectedTemplate?.name || 'None'}
-      </div>
-      
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         <div className="text-center max-w-md w-full">
           {/* Icon and Header */}
@@ -101,7 +86,6 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
           <div className="space-y-2 mb-6">
             <button 
               onClick={() => {
-                console.log('🔄 Navigating to chat with upload');
                 navigate('/figmant', { 
                   state: { 
                     activeSection: 'chat',
@@ -115,7 +99,6 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
             </button>
             <button 
               onClick={() => {
-                console.log('🔄 Navigating to chat with URL');
                 navigate('/figmant', { 
                   state: { 
                     activeSection: 'chat',
@@ -129,7 +112,6 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
             </button>
             <button 
               onClick={() => {
-                console.log('🔄 Navigating to templates');
                 navigate('/figmant', { 
                   state: { 
                     activeSection: 'templates'
@@ -159,7 +141,6 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
                 </div>
                 <button 
                   onClick={() => {
-                    console.log('🔄 Navigating to chat with master template');
                     navigate('/figmant', { 
                       state: { 
                         activeSection: 'chat',
@@ -178,7 +159,6 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
                 className="w-full p-2 border border-gray-300 rounded text-sm"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
-                    console.log('🔄 Enter pressed - navigating to chat');
                     navigate('/figmant', { 
                       state: { 
                         activeSection: 'chat',
