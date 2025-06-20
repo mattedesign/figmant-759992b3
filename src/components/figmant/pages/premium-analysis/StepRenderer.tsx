@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { StepProps } from './types';
 import { Step1SelectAnalysisType } from './steps/Step1SelectAnalysisType';
 import { Step2ProjectName } from './steps/Step2ProjectName';
 import { Step3AnalysisGoals } from './steps/Step3AnalysisGoals';
@@ -8,43 +7,54 @@ import { Step4ProjectDetails } from './steps/Step4ProjectDetails';
 import { Step5UploadFiles } from './steps/Step5UploadFiles';
 import { Step6CustomPrompt } from './steps/Step6CustomPrompt';
 import { Step7Processing } from './steps/Step7Processing';
+import { StepHeader } from './components/StepHeader';
+import { StepProps } from './types';
 
 export const StepRenderer: React.FC<StepProps> = (props) => {
-  const { currentStep, onNextStep, onPreviousStep } = props;
+  const { currentStep, totalSteps } = props;
 
-  const stepProps = {
-    ...props,
-    onNextStep,
-    onPreviousStep
+  const getStepTitle = () => {
+    switch (currentStep) {
+      case 1: return 'Select Analysis Type';
+      case 2: return 'Project Information';
+      case 3: return 'Analysis Goals';
+      case 4: return 'Project Details';
+      case 5: return 'Upload Files';
+      case 6: return 'Custom Prompt';
+      case 7: return 'Processing Analysis';
+      default: return 'Premium Analysis';
+    }
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return <Step1SelectAnalysisType {...props} />;
+      case 2:
+        return <Step2ProjectName {...props} />;
+      case 3:
+        return <Step3AnalysisGoals {...props} />;
+      case 4:
+        return <Step4ProjectDetails {...props} />;
+      case 5:
+        return <Step5UploadFiles {...props} />;
+      case 6:
+        return <Step6CustomPrompt {...props} />;
+      case 7:
+        return <Step7Processing {...props} />;
+      default:
+        return <div>Invalid step</div>;
+    }
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {(() => {
-        switch (currentStep) {
-          case 1:
-            return <Step1SelectAnalysisType {...stepProps} />;
-          case 2:
-            return <Step2ProjectName {...stepProps} />;
-          case 3:
-            return <Step3AnalysisGoals {...stepProps} />;
-          case 4:
-            return <Step4ProjectDetails {...stepProps} />;
-          case 5:
-            return <Step5UploadFiles {...stepProps} />;
-          case 6:
-            return <Step6CustomPrompt {...stepProps} />;
-          case 7:
-            return <Step7Processing {...stepProps} />;
-          default:
-            return (
-              <div className="text-center py-12">
-                <h2 className="text-2xl font-bold mb-4">Step {currentStep}</h2>
-                <p className="text-gray-600">More content coming soon...</p>
-              </div>
-            );
-        }
-      })()}
+    <div className="space-y-8">
+      <StepHeader
+        title={getStepTitle()}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+      />
+      {renderStepContent()}
     </div>
   );
 };

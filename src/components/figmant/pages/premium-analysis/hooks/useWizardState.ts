@@ -23,17 +23,20 @@ export const useWizardState = () => {
   const { mutateAsync: saveWizardAnalysis } = useWizardAnalysisSave();
   const { toast } = useToast();
 
-  const totalSteps = 6; // Updated to match the actual number of steps
+  const totalSteps = 7; // Include processing step
 
   const handleNextStep = useCallback(async () => {
     console.log('🎯 handleNextStep called - currentStep:', currentStep, 'totalSteps:', totalSteps);
     
-    if (currentStep < totalSteps) {
+    if (currentStep < 6) {
       console.log('🎯 Moving to next step:', currentStep + 1);
       setCurrentStep(prev => prev + 1);
-    } else {
-      console.log('🎯 Starting analysis - final step reached');
-      // Save the completed wizard analysis
+    } else if (currentStep === 6) {
+      console.log('🎯 Starting analysis - moving to processing step');
+      // Move to step 7 (processing step) immediately
+      setCurrentStep(7);
+      
+      // Then start the analysis in the background
       try {
         await saveWizardAnalysis({
           stepData,
@@ -52,6 +55,7 @@ export const useWizardState = () => {
           title: "Save Failed",
           description: "Could not save your wizard analysis.",
         });
+        // Stay on step 7 to show error state
       }
     }
   }, [currentStep, totalSteps, stepData, saveWizardAnalysis, toast]);
@@ -90,6 +94,9 @@ export const useWizardState = () => {
         break;
       case 6:
         canProceed = true; // Custom prompt step is optional, always allow proceed - this triggers the analysis
+        break;
+      case 7:
+        canProceed = false; // Processing step - user can't proceed manually
         break;
       default:
         canProceed = true;
