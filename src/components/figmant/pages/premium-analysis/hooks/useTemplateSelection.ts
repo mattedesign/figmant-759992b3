@@ -10,7 +10,25 @@ export const useTemplateSelection = (selectedType: string) => {
   const selectedTemplate = useMemo(() => {
     console.log(`Looking for template with ID: ${selectedType}`);
     
-    // First try to find in figmant templates (our enhanced local templates)
+    // First try to find in premium prompts from database (these can have contextual fields)
+    if (premiumPrompts?.length > 0) {
+      const premiumTemplate = premiumPrompts.find(prompt => prompt.id === selectedType);
+      if (premiumTemplate) {
+        console.log(`Found template in premium prompts: ${premiumTemplate.title}`);
+        return {
+          id: premiumTemplate.id,
+          title: premiumTemplate.title,
+          displayName: premiumTemplate.title,
+          category: premiumTemplate.category,
+          original_prompt: premiumTemplate.original_prompt,
+          credit_cost: getAnalysisCost(premiumTemplate.id),
+          is_premium: isPremiumAnalysis(premiumTemplate.id),
+          contextual_fields: premiumTemplate.metadata?.contextual_fields || []
+        };
+      }
+    }
+    
+    // Fallback to figmant templates (static templates without contextual fields)
     const figmantTemplate = figmantPromptTemplates.find(template => template.id === selectedType);
     if (figmantTemplate) {
       console.log(`Found template in figmant templates: ${figmantTemplate.name}`);
@@ -24,25 +42,8 @@ export const useTemplateSelection = (selectedType: string) => {
         is_premium: isPremiumAnalysis(figmantTemplate.id),
         best_for: figmantTemplate.best_for,
         analysis_focus: figmantTemplate.analysis_focus,
-        contextual_fields: figmantTemplate.contextual_fields
+        contextual_fields: figmantTemplate.contextual_fields || []
       };
-    }
-    
-    // Fallback to premium prompts from database
-    if (premiumPrompts?.length > 0) {
-      const premiumTemplate = premiumPrompts.find(prompt => prompt.id === selectedType);
-      if (premiumTemplate) {
-        console.log(`Found template in premium prompts: ${premiumTemplate.title}`);
-        return {
-          id: premiumTemplate.id,
-          title: premiumTemplate.title,
-          displayName: premiumTemplate.title,
-          category: premiumTemplate.category,
-          original_prompt: premiumTemplate.original_prompt,
-          credit_cost: getAnalysisCost(premiumTemplate.id),
-          is_premium: isPremiumAnalysis(premiumTemplate.id)
-        };
-      }
     }
     
     console.log(`Template not found in either source`);
