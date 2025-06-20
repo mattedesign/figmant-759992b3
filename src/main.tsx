@@ -4,8 +4,6 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App.tsx";
 import "./index.css";
-import { ThemeProvider } from "./contexts/ThemeContext.tsx";
-import { AuthProvider } from "./contexts/AuthContext.tsx";
 
 const queryClient = new QueryClient();
 
@@ -17,11 +15,7 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </ThemeProvider>
+      <App />
     </QueryClientProvider>
   </StrictMode>,
 );

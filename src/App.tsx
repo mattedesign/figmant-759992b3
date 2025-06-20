@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   BrowserRouter as Router,
@@ -18,14 +19,14 @@ import { AuthGuard } from '@/components/auth/AuthGuard';
 import ProfilePage from './pages/ProfilePage';
 import { EnhancedProfileSync } from '@/components/auth/EnhancedProfileSync';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { QueryClient } from '@/components/QueryClient';
-import { AuthProvider } from '@/components/AuthProvider';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Toaster } from '@/components/Toaster';
 
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <QueryClient>
+      <ThemeProvider>
         <AuthProvider>
           <EnhancedProfileSync />
           <div className="min-h-screen bg-gray-50">
@@ -110,7 +111,7 @@ const App: React.FC = () => {
           </div>
           <Toaster />
         </AuthProvider>
-      </QueryClient>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 };
