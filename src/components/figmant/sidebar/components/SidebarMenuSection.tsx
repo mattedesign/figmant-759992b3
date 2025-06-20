@@ -61,7 +61,8 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
       }}
       onMouseEnter={e => {
         if (activeSection !== item.id) {
-          e.currentTarget.style.background = 'var(--Surface-03, #F1F1F1)';
+          e.currentTarget.style.background = '#1812E9';
+          e.currentTarget.style.borderRadius = '12px';
         }
       }}
       onMouseLeave={e => {
@@ -72,17 +73,48 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
       onClick={() => onSectionChange(item.id)}
     >
       <div className={cn(
-        "w-8 h-8 mr-1 rounded-[8px] flex items-center justify-center",
+        "w-8 h-8 mr-1 rounded-[8px] flex items-center justify-center transition-all",
         activeSection === item.id ? "bg-white" : "bg-[var(--Surface-03,#F1F1F1)]"
-      )}>
+      )}
+      style={{
+        transition: 'all 0.2s ease'
+      }}
+      onMouseEnter={e => {
+        if (activeSection !== item.id) {
+          e.currentTarget.style.background = '#FFF';
+          e.currentTarget.style.borderRadius = '8px';
+        }
+      }}
+      onMouseLeave={e => {
+        if (activeSection !== item.id) {
+          e.currentTarget.style.background = 'var(--Surface-03, #F1F1F1)';
+        }
+      }}
+      >
         <item.icon className={cn(
-          "h-4 w-4",
+          "h-4 w-4 transition-all",
           activeSection === item.id ? "text-[#1812E9] fill-current" : "text-[#455468]"
-        )} />
+        )}
+        style={{
+          transition: 'all 0.2s ease'
+        }}
+        onMouseEnter={e => {
+          if (activeSection !== item.id) {
+            e.currentTarget.style.color = '#1812E9';
+            e.currentTarget.style.fill = 'currentColor';
+          }
+        }}
+        onMouseLeave={e => {
+          if (activeSection !== item.id) {
+            e.currentTarget.style.color = '#455468';
+            e.currentTarget.style.fill = '';
+          }
+        }}
+        />
       </div>
       <span
         className={cn(
-          "flex-1 text-left",
+          "flex-1 text-left transition-all",
           activeSection === item.id ? "text-[#1812E9] font-medium" : "text-[#455468] font-medium"
         )}
         style={activeSection === item.id ? {
@@ -97,7 +129,8 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           letterSpacing: '-0.12px',
           display: 'flex',
           alignItems: 'center',
-          height: '100%'
+          height: '100%',
+          transition: 'all 0.2s ease'
         } : {
           overflow: 'hidden',
           color: 'var(--Text-Primary, #121212)',
@@ -111,7 +144,18 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           textAlign: 'left',
           display: 'flex',
           alignItems: 'center',
-          height: '100%'
+          height: '100%',
+          transition: 'all 0.2s ease'
+        }}
+        onMouseEnter={e => {
+          if (activeSection !== item.id) {
+            e.currentTarget.style.color = '#fff';
+          }
+        }}
+        onMouseLeave={e => {
+          if (activeSection !== item.id) {
+            e.currentTarget.style.color = 'var(--Text-Primary, #121212)';
+          }
         }}
       >
         {item.label}
