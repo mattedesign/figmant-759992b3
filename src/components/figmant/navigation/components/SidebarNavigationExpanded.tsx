@@ -41,8 +41,28 @@ export const SidebarNavigationExpanded: React.FC<SidebarNavigationExpandedProps>
               boxShadow: '0px 1px 1.9px 0px var(--Shade-7-10, rgba(50, 50, 50, 0.10)) inset'
             }}
           >
-            <TabsTrigger value="menu" className="text-sm">Menu</TabsTrigger>
-            <TabsTrigger value="history" className="text-sm">History</TabsTrigger>
+            <TabsTrigger 
+              value="menu" 
+              className="text-sm"
+              style={activeTab === 'menu' ? {
+                borderRadius: '8px',
+                background: 'var(--Surface-01, #FCFCFC)',
+                boxShadow: '0px 1.25px 3px 0px var(--Shade-7-10, rgba(50, 50, 50, 0.10)), 0px 1.25px 1px 0px #FFF inset'
+              } : {}}
+            >
+              Menu
+            </TabsTrigger>
+            <TabsTrigger 
+              value="history" 
+              className="text-sm"
+              style={activeTab === 'history' ? {
+                borderRadius: '8px',
+                background: 'var(--Surface-01, #FCFCFC)',
+                boxShadow: '0px 1.25px 3px 0px var(--Shade-7-10, rgba(50, 50, 50, 0.10)), 0px 1.25px 1px 0px #FFF inset'
+              } : {}}
+            >
+              History
+            </TabsTrigger>
           </TabsList>
         </div>
 
