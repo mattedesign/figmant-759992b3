@@ -1,65 +1,50 @@
 
 import { useMemo } from 'react';
 import { useClaudePromptExamplesByCategory } from '@/hooks/useClaudePromptExamplesByCategory';
-import { figmantPromptTemplates } from '@/data/figmantPromptTemplates';
 import { isPremiumAnalysis, getAnalysisCost } from '@/hooks/premium-analysis/creditCostManager';
 import { ContextualField } from '@/types/figmant';
 
 export const useTemplateSelection = (selectedType: string) => {
   const { data: premiumPrompts } = useClaudePromptExamplesByCategory('premium');
+  const { data: allPrompts } = useClaudePromptExamplesByCategory('all');
 
   const selectedTemplate = useMemo(() => {
     console.log(`Looking for template with ID: ${selectedType}`);
     
-    // First try to find in premium prompts from database (these can have contextual fields)
-    if (premiumPrompts?.length > 0) {
-      const premiumTemplate = premiumPrompts.find(prompt => prompt.id === selectedType);
-      if (premiumTemplate) {
-        console.log(`Found template in premium prompts: ${premiumTemplate.title}`);
+    // Get all available prompts from database
+    const availablePrompts = [...(premiumPrompts || []), ...(allPrompts || [])];
+    
+    if (availablePrompts.length > 0) {
+      const template = availablePrompts.find(prompt => prompt.id === selectedType);
+      if (template) {
+        console.log(`Found template in database: ${template.title}`);
         
         // Safely extract contextual_fields from metadata with proper type checking
         let contextualFields: ContextualField[] = [];
-        if (premiumTemplate.metadata && typeof premiumTemplate.metadata === 'object' && premiumTemplate.metadata !== null) {
-          const metadata = premiumTemplate.metadata as Record<string, any>;
+        if (template.metadata && typeof template.metadata === 'object' && template.metadata !== null) {
+          const metadata = template.metadata as Record<string, any>;
           contextualFields = Array.isArray(metadata.contextual_fields) ? metadata.contextual_fields : [];
         }
         
         return {
-          id: premiumTemplate.id,
-          title: premiumTemplate.title,
-          displayName: premiumTemplate.title,
-          category: premiumTemplate.category,
-          original_prompt: premiumTemplate.original_prompt,
-          credit_cost: getAnalysisCost(premiumTemplate.id),
-          is_premium: isPremiumAnalysis(premiumTemplate.id),
-          contextual_fields: contextualFields
+          id: template.id,
+          title: template.title,
+          displayName: template.display_name || template.title,
+          category: template.category,
+          original_prompt: template.original_prompt,
+          credit_cost: getAnalysisCost(template.id),
+          is_premium: isPremiumAnalysis(template.id),
+          contextual_fields: contextualFields,
+          description: template.description,
+          effectiveness_rating: template.effectiveness_rating
         };
       }
     }
     
-    // Fallback to figmant templates (static templates without contextual fields)
-    const figmantTemplate = figmantPromptTemplates.find(template => template.id === selectedType);
-    if (figmantTemplate) {
-      console.log(`Found template in figmant templates: ${figmantTemplate.name}`);
-      return {
-        id: figmantTemplate.id,
-        title: figmantTemplate.displayName,
-        displayName: figmantTemplate.displayName,
-        category: figmantTemplate.category,
-        original_prompt: figmantTemplate.prompt_template,
-        credit_cost: getAnalysisCost(figmantTemplate.id),
-        is_premium: isPremiumAnalysis(figmantTemplate.id),
-        best_for: figmantTemplate.best_for,
-        analysis_focus: figmantTemplate.analysis_focus,
-        contextual_fields: figmantTemplate.contextual_fields || []
-      };
-    }
-    
-    console.log(`Template not found in either source`);
-    console.log(`Available figmant template IDs: ${figmantPromptTemplates.map(t => t.id).join(', ')}`);
-    console.log(`Available premium prompt IDs: ${(premiumPrompts || []).map(p => p.id).join(', ')}`);
+    console.log(`Template not found in database`);
+    console.log(`Available prompt IDs: ${availablePrompts.map(p => p.id).join(', ')}`);
     return null;
-  }, [selectedType, premiumPrompts]);
+  }, [selectedType, premiumPrompts, allPrompts]);
 
   return { selectedTemplate, premiumPrompts };
 };

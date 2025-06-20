@@ -8,6 +8,7 @@ import { useClaudePromptExamples, useCreatePromptExample, ClaudePromptExample } 
 import { useClaudeSettings } from '@/hooks/useClaudeSettings';
 import { ConnectionStatus } from '@/types/claude';
 import { CreatePromptForm } from './CreatePromptForm';
+import { TemplateMigrationHelper } from './TemplateMigrationHelper';
 
 // Lazy load the heavy components
 const ClaudeHeader = React.lazy(() => import('./ClaudeHeader').then(module => ({ default: module.ClaudeHeader })));
@@ -150,12 +151,17 @@ export const ClaudePromptManager: React.FC = () => {
       <Suspense fallback={<LoadingSpinner />}>
         <ClaudeHeader connectionStatus={connectionStatus} />
       </Suspense>
+
+      {/* Migration Helper - only show if no templates exist */}
+      {promptTemplates.length === 0 && (
+        <TemplateMigrationHelper />
+      )}
       
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold">Prompt Templates</h2>
           <p className="text-sm text-muted-foreground">
-            Manage AI prompt templates for enhanced analysis quality
+            Manage AI prompt templates for enhanced analysis quality ({promptTemplates.length} templates)
           </p>
         </div>
         <Button onClick={() => setShowCreateForm(true)} disabled={showCreateForm}>

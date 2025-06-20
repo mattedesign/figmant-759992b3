@@ -1,30 +1,12 @@
 
-import { visualHierarchyTemplates } from './visualHierarchyTemplates';
-import { copyMessagingTemplates } from './copyMessagingTemplates';
-import { abTestingTemplates } from './abTestingTemplates';
-import { designSystemTemplates } from './designSystemTemplates';
-import { accessibilityTemplates } from './accessibilityTemplates';
-import { crossDeviceTemplates } from './crossDeviceTemplates';
-import { seasonalTemplates } from './seasonalTemplates';
 import { FigmantPromptTemplate } from '@/types/figmant';
-export * from './competitorAnalysisTemplates';
-export * from './ecommerceTemplates';
-import { competitorAnalysisTemplates } from './competitorAnalysisTemplates';
-import { ecommerceTemplates } from './ecommerceTemplates';
 
-export const figmantPromptTemplates: FigmantPromptTemplate[] = [
-  ...visualHierarchyTemplates,
-  ...copyMessagingTemplates,
-  ...abTestingTemplates,
-  ...designSystemTemplates,
-  ...accessibilityTemplates,
-  ...crossDeviceTemplates,
-  ...seasonalTemplates,
-  ...competitorAnalysisTemplates,
-  ...ecommerceTemplates
-];
+// Legacy hardcoded templates - now deprecated in favor of database templates
+// All templates should now be managed through the admin panel in the database
+export const figmantPromptTemplates: FigmantPromptTemplate[] = [];
 
-// Utility function to get a template by ID
+// Utility function to get a template by ID - now returns null as all templates come from database
 export const getFigmantTemplate = (templateId: string): FigmantPromptTemplate | null => {
-  return figmantPromptTemplates.find(template => template.id === templateId) || null;
+  console.warn('getFigmantTemplate is deprecated. Use database templates via useClaudePromptExamples hook instead.');
+  return null;
 };

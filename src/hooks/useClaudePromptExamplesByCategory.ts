@@ -6,12 +6,18 @@ export const useClaudePromptExamplesByCategory = (category: string) => {
   return useQuery({
     queryKey: ['claude-prompt-examples', category],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('claude_prompt_examples')
         .select('*')
-        .eq('category', category)
         .eq('is_active', true)
         .order('effectiveness_rating', { ascending: false });
+      
+      // If category is 'all', don't filter by category
+      if (category !== 'all') {
+        query = query.eq('category', category);
+      }
+      
+      const { data, error } = await query;
       
       if (error) {
         console.error('Error fetching claude prompt examples:', error);
