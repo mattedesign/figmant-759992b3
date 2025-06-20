@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useClaudePromptExamplesByCategory } from '@/hooks/useClaudePromptExamplesByCategory';
 import { figmantPromptTemplates } from '@/data/figmantPromptTemplates';
 import { isPremiumAnalysis, getAnalysisCost } from '@/hooks/premium-analysis/creditCostManager';
+import { ContextualField } from '@/types/figmant';
 
 export const useTemplateSelection = (selectedType: string) => {
   const { data: premiumPrompts } = useClaudePromptExamplesByCategory('premium');
@@ -15,6 +16,14 @@ export const useTemplateSelection = (selectedType: string) => {
       const premiumTemplate = premiumPrompts.find(prompt => prompt.id === selectedType);
       if (premiumTemplate) {
         console.log(`Found template in premium prompts: ${premiumTemplate.title}`);
+        
+        // Safely extract contextual_fields from metadata with proper type checking
+        let contextualFields: ContextualField[] = [];
+        if (premiumTemplate.metadata && typeof premiumTemplate.metadata === 'object' && premiumTemplate.metadata !== null) {
+          const metadata = premiumTemplate.metadata as Record<string, any>;
+          contextualFields = Array.isArray(metadata.contextual_fields) ? metadata.contextual_fields : [];
+        }
+        
         return {
           id: premiumTemplate.id,
           title: premiumTemplate.title,
@@ -23,7 +32,7 @@ export const useTemplateSelection = (selectedType: string) => {
           original_prompt: premiumTemplate.original_prompt,
           credit_cost: getAnalysisCost(premiumTemplate.id),
           is_premium: isPremiumAnalysis(premiumTemplate.id),
-          contextual_fields: premiumTemplate.metadata?.contextual_fields || []
+          contextual_fields: contextualFields
         };
       }
     }
