@@ -5,7 +5,6 @@ import { DashboardAnalyticsTabsSection } from './dashboard/DashboardAnalyticsTab
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
 
 export const DashboardPage: React.FC = () => {
   const {
@@ -35,8 +34,6 @@ export const DashboardPage: React.FC = () => {
     userCredits
   } = useDashboardOptimized();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
 
   // Performance measurement
   useEffect(() => {
@@ -62,20 +59,9 @@ export const DashboardPage: React.FC = () => {
     return <EnhancedDashboardSkeleton />;
   }
 
-  // Responsive container classes
-  const getContainerClasses = () => {
-    if (isMobile) {
-      return "container mx-auto space-y-4 px-3 py-4 max-w-full";
-    }
-    if (isTablet) {
-      return "container mx-auto space-y-6 px-4 py-5 max-w-full";
-    }
-    return "container mx-auto space-y-8 2xl:max-w-none 2xl:px-8 px-0 py-0 pt-6";
-  };
-
   return (
     <div className="h-full overflow-y-auto">
-      <div className={getContainerClasses()}>
+      <div className="container mx-auto space-y-8 2xl:max-w-none 2xl:px-8 px-0 py-0 pt-6">
         <DashboardHeader 
           dataStats={memoizedDataStats} 
           lastUpdated={lastUpdated ? new Date(lastUpdated) : null} 

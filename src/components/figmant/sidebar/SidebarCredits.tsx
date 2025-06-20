@@ -1,9 +1,9 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Coins, Plus } from 'lucide-react';
-import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
+import { Progress } from '@/components/ui/progress';
+import { Loader2 } from 'lucide-react';
+import { CreditPurchaseModal } from '@/components/modals/CreditPurchaseModal';
 
 interface SidebarCreditsProps {
   currentBalance: number;
@@ -16,110 +16,52 @@ export const SidebarCredits: React.FC<SidebarCreditsProps> = ({
   totalPurchased,
   creditsLoading
 }) => {
-  const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
+  const [showCreditModal, setShowCreditModal] = useState(false);
+  const progressPercentage = totalPurchased > 0 ? (currentBalance / totalPurchased) * 100 : 0;
 
-  const getContainerClasses = () => {
-    if (isTablet) {
-      return "p-3 border-t border-gray-200/30";
-    }
-    return "p-4 border-t border-gray-200/30";
+  const handleBuyMoreCredits = () => {
+    setShowCreditModal(true);
   };
 
-  const getCardClasses = () => {
-    if (isTablet) {
-      return "bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200/50";
-    }
-    return "bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200/50";
-  };
-
-  const getHeaderClasses = () => {
-    if (isTablet) {
-      return "pb-2";
-    }
-    return "pb-3";
-  };
-
-  const getTitleClasses = () => {
-    if (isTablet) {
-      return "text-sm font-semibold text-gray-900 flex items-center gap-2";
-    }
-    return "text-sm font-semibold text-gray-900 flex items-center gap-2";
-  };
-
-  const getContentClasses = () => {
-    if (isTablet) {
-      return "pt-0 space-y-2";
-    }
-    return "pt-0 space-y-3";
-  };
-
-  const getBalanceClasses = () => {
-    if (isTablet) {
-      return "text-lg font-bold text-blue-700";
-    }
-    return "text-xl font-bold text-blue-700";
-  };
-
-  const getStatClasses = () => {
-    if (isTablet) {
-      return "text-xs text-gray-600";
-    }
-    return "text-xs text-gray-600";
-  };
-
-  const getButtonSize = (): "sm" | "default" | "lg" | "icon" => {
-    if (isTablet) {
-      return "sm";
-    }
-    return "sm";
-  };
-
-  const getIconSize = () => {
-    if (isTablet) {
-      return "h-3 w-3";
-    }
-    return "h-4 w-4";
-  };
-
-  if (creditsLoading) {
-    return (
-      <div className={getContainerClasses()}>
-        <div className="animate-pulse">
-          <div className={`h-16 ${isTablet ? 'h-14' : ''} bg-gray-200 rounded-lg`}></div>
-        </div>
-      </div>
-    );
-  }
+  console.log('SidebarCredits props:', { currentBalance, totalPurchased, creditsLoading });
 
   return (
-    <div className={getContainerClasses()}>
-      <Card className={getCardClasses()}>
-        <CardHeader className={getHeaderClasses()}>
-          <h3 className={getTitleClasses()}>
-            <Coins className={getIconSize()} />
-            Credits
-          </h3>
-        </CardHeader>
-        <CardContent className={getContentClasses()}>
-          <div className="space-y-1">
-            <div className={getBalanceClasses()}>
-              {currentBalance.toLocaleString()}
-            </div>
-            <div className={getStatClasses()}>
-              {totalPurchased.toLocaleString()} total purchased
-            </div>
+    <>
+      <div className="p-4 border-t border-gray-200/30">
+        <div className="bg-gray-50/80 rounded-lg p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-900">Credits</span>
+            <span className="text-sm font-medium text-gray-900">
+              {creditsLoading ? (
+                <div className="flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span>...</span>
+                </div>
+              ) : (
+                `${currentBalance || 0}/${totalPurchased || 0}`
+              )}
+            </span>
           </div>
           
+          <Progress 
+            value={progressPercentage} 
+            className="h-2"
+          />
+          
           <Button 
-            size={getButtonSize()}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={handleBuyMoreCredits}
+            className="w-full bg-white text-gray-900 border border-gray-200 hover:bg-gray-50"
+            variant="outline"
           >
-            <Plus className={getIconSize()} />
-            {isTablet ? 'Buy' : 'Buy Credits'}
+            Buy More
           </Button>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </div>
+
+      <CreditPurchaseModal 
+        isOpen={showCreditModal}
+        onClose={() => setShowCreditModal(false)}
+      />
+    </>
   );
 };

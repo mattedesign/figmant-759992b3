@@ -35,24 +35,19 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
         <Button 
           variant="ghost" 
           size={isSmallMobile ? "default" : "sm"} 
-          className={`${isSmallMobile ? "h-10 w-10 p-0" : "h-9 w-9 p-0"} touch-manipulation`}
+          className={isSmallMobile ? "h-10 w-10 p-0" : "h-8 w-8 p-0"}
         >
           <Menu className={isSmallMobile ? "h-5 w-5" : "h-4 w-4"} />
         </Button>
       </SheetTrigger>
-      <SheetContent 
-        side="left" 
-        className={`${isSmallMobile ? 'w-80' : 'w-72'} p-0 safe-left`}
-      >
+      <SheetContent side="left" className="w-72 p-0 safe-left">
         <div className="flex flex-col h-full">
           <MobileNavigationHeader />
           {/* Main navigation sections - should match desktop exactly */}
-          <div className="flex-1 overflow-y-auto">
-            <NavigationMenu 
-              activeSection={activeSection}
-              onSectionChange={handleSectionChange}
-            />
-          </div>
+          <NavigationMenu 
+            activeSection={activeSection}
+            onSectionChange={handleSectionChange}
+          />
           {/* User profile section - only profile actions, no duplicate navigation */}
           <UserProfileSection onNavigate={handleNavigationClose} />
         </div>

@@ -1,12 +1,21 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { BarChart3, TrendingUp, Activity, Zap } from 'lucide-react';
-import { RevenueImpactTracker } from './widgets/revenue-tracker/RevenueImpactTracker';
-import { AnalyticsMetricsGrid } from '../../analytics/components/AnalyticsMetricsGrid';
-import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
+import { TrendingUp, BarChart3, Target, Zap } from 'lucide-react';
+
+// Import advanced analytics components
+import { ConfidenceScoreDistribution } from '../../analytics/advanced/ConfidenceScoreDistribution';
+import { UserEngagementPatterns } from '../../analytics/advanced/UserEngagementPatterns';
+import { ProcessingPerformanceMetrics } from '../../analytics/advanced/ProcessingPerformanceMetrics';
+import { ROIProjectionsChart } from '../../analytics/advanced/ROIProjectionsChart';
+import { ClaudeAnalysisVolumeChart } from '../../analytics/advanced/ClaudeAnalysisVolumeChart';
+import { CompetitiveAdvantageRadar } from '../../analytics/advanced/CompetitiveAdvantageRadar';
+import { RevenueImpactWaterfall } from '../../analytics/advanced/RevenueImpactWaterfall';
+import { ImplementationTimelineGantt } from '../../analytics/advanced/ImplementationTimelineGantt';
+
+// Import executive dashboard - fixed path
+import { ExecutiveDashboardWidget } from './widgets/ExecutiveDashboardWidget';
 
 interface DashboardAnalyticsTabsSectionProps {
   dataStats: any;
@@ -23,204 +32,181 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
   dataStats,
   analysisData,
   realData,
-  className
+  className = ""
 }) => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
+  const [activeTab, setActiveTab] = useState('executive');
 
-  const getCardClasses = () => {
-    if (isMobile) {
-      return "w-full shadow-sm";
-    }
-    return "w-full";
+  const handleExportData = (componentName: string) => {
+    console.log(`Exporting data for ${componentName}...`);
+    // Implementation for exporting specific component data
   };
 
-  const getHeaderClasses = () => {
-    if (isMobile) {
-      return "pb-3";
-    }
-    return "";
-  };
-
-  const getTitleClasses = () => {
-    if (isMobile) {
-      return "text-lg font-semibold";
-    }
-    return "text-lg font-semibold";
-  };
-
-  const getTabsListClasses = () => {
-    if (isMobile) {
-      return "grid w-full grid-cols-2 h-auto";
-    }
-    if (isTablet) {
-      return "grid w-full grid-cols-4 h-auto";
-    }
-    return "grid w-full grid-cols-4";
-  };
-
-  const getTabTriggerClasses = () => {
-    if (isMobile) {
-      return "flex flex-col items-center gap-1 py-3 px-2 text-xs";
-    }
-    if (isTablet) {
-      return "flex flex-col items-center gap-1 py-3 px-3 text-sm";
-    }
-    return "flex flex-col items-center gap-2 py-3";
-  };
-
-  const getIconSize = () => {
-    if (isMobile) {
-      return "h-4 w-4";
-    }
-    return "h-5 w-5";
-  };
-
-  const getContentPadding = () => {
-    if (isMobile) {
-      return "p-3";
-    }
-    if (isTablet) {
-      return "p-4";
-    }
-    return "p-6";
-  };
-
-  // Mobile-specific tab arrangement
-  const mobileTabsFirst = [
+  const tabConfig = [
     {
-      id: 'overview',
-      label: 'Overview',
-      icon: BarChart3,
-      badge: null
-    },
-    {
-      id: 'revenue',
-      label: 'Revenue',
+      id: 'executive',
+      label: 'Executive Summary',
       icon: TrendingUp,
-      badge: 'ROI'
-    }
-  ];
-
-  const mobileTabsSecond = [
-    {
-      id: 'performance',
-      label: 'Performance',
-      icon: Activity,
-      badge: 'Live'
-    },
-    {
-      id: 'insights',
-      label: 'Insights',
-      icon: Zap,
-      badge: 'AI'
-    }
-  ];
-
-  const allTabs = [
-    {
-      id: 'overview',
-      label: 'Overview',
-      icon: BarChart3,
-      badge: null
-    },
-    {
-      id: 'revenue',
-      label: 'Revenue Impact',
-      icon: TrendingUp,
-      badge: 'ROI'
+      description: 'Business intelligence and ROI projections',
+      premium: true
     },
     {
       id: 'performance',
-      label: 'Performance',
-      icon: Activity,
-      badge: 'Live'
+      label: 'AI Performance',
+      icon: Zap,
+      description: 'Claude analysis metrics and accuracy',
+      premium: false
     },
     {
-      id: 'insights',
-      label: 'AI Insights',
-      icon: Zap,
-      badge: 'AI'
+      id: 'business',
+      label: 'Business Impact',
+      icon: Target,
+      description: 'Revenue projections and competitive analysis',
+      premium: true
+    },
+    {
+      id: 'analytics',
+      label: 'Advanced Analytics',
+      icon: BarChart3,
+      description: 'Detailed usage patterns and insights',
+      premium: true
     }
   ];
-
-  const tabs = isMobile ? [...mobileTabsFirst, ...mobileTabsSecond] : allTabs;
 
   return (
-    <div className={className}>
-      <Card className={getCardClasses()}>
-        <CardHeader className={getHeaderClasses()}>
-          <CardTitle className={getTitleClasses()}>
-            {isMobile ? 'Analytics' : 'Business Intelligence Dashboard'}
-          </CardTitle>
+    <section className={className}>
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl font-bold flex items-center gap-3">
+                <BarChart3 className="h-6 w-6 text-blue-600" />
+                Business Intelligence Dashboard
+              </CardTitle>
+              <p className="text-gray-600 mt-1">
+                Real-time AI performance with calculated business impact projections
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Badge className="bg-green-100 text-green-800">
+                Live Data
+              </Badge>
+              {realData && (
+                <Badge className="bg-blue-100 text-blue-800">
+                  {realData.designAnalysis?.length || 0} Analyses
+                </Badge>
+              )}
+            </div>
+          </div>
         </CardHeader>
         
-        <CardContent className={getContentPadding()}>
+        <CardContent className="w-full">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className={getTabsListClasses()}>
-              {tabs.map((tab) => {
-                const IconComponent = tab.icon;
-                return (
-                  <TabsTrigger 
-                    key={tab.id}
-                    value={tab.id} 
-                    className={getTabTriggerClasses()}
-                  >
-                    <div className="flex items-center gap-1">
-                      <IconComponent className={getIconSize()} />
-                      {tab.badge && (
-                        <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
-                          {tab.badge}
-                        </Badge>
-                      )}
-                    </div>
-                    <span className={isMobile ? 'text-xs' : 'text-sm'}>{tab.label}</span>
-                  </TabsTrigger>
-                );
-              })}
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-4">
+              {tabConfig.map((tab) => (
+                <TabsTrigger
+                  key={tab.id}
+                  value={tab.id}
+                  className="flex items-center gap-2 relative"
+                >
+                  <tab.icon className="h-4 w-4" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  {tab.premium && (
+                    <Badge className="absolute -top-1 -right-1 bg-amber-500 text-white text-xs px-1 py-0">
+                      Pro
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              ))}
             </TabsList>
 
-            <div className="mt-4 sm:mt-6">
-              <TabsContent value="overview" className="mt-0">
-                <AnalyticsMetricsGrid dataStats={dataStats} className="w-full" />
-              </TabsContent>
+            {/* Executive Summary Tab */}
+            <TabsContent value="executive" className="space-y-6 mt-6">
+              <ExecutiveDashboardWidget 
+                realData={realData}
+                className="w-full"
+              />
+            </TabsContent>
 
-              <TabsContent value="revenue" className="mt-0">
-                <RevenueImpactTracker 
-                  analysisData={analysisData}
+            {/* AI Performance Tab */}
+            <TabsContent value="performance" className="space-y-6 mt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <ConfidenceScoreDistribution 
                   realData={realData}
-                  className="w-full"
+                  onExport={() => handleExportData('confidence-distribution')}
                 />
-              </TabsContent>
+                <ClaudeAnalysisVolumeChart 
+                  realData={realData}
+                  onExport={() => handleExportData('analysis-volume')}
+                />
+                <ProcessingPerformanceMetrics 
+                  realData={realData}
+                  onExport={() => handleExportData('performance-metrics')}
+                />
+                <UserEngagementPatterns 
+                  realData={realData}
+                  onExport={() => handleExportData('engagement-patterns')}
+                />
+              </div>
+            </TabsContent>
 
-              <TabsContent value="performance" className="mt-0">
-                <div className="text-center py-8">
-                  <Activity className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Performance Analytics
-                  </h3>
-                  <p className="text-gray-600">
-                    {isMobile ? 'Coming soon' : 'Real-time performance metrics and analytics coming soon'}
-                  </p>
-                </div>
-              </TabsContent>
+            {/* Business Impact Tab */}
+            <TabsContent value="business" className="space-y-6 mt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <ROIProjectionsChart 
+                  realData={realData}
+                  onExport={() => handleExportData('roi-projections')}
+                  className="lg:col-span-2"
+                />
+                <RevenueImpactWaterfall 
+                  realData={realData}
+                  onExport={() => handleExportData('revenue-waterfall')}
+                  className="lg:col-span-2"
+                />
+                <CompetitiveAdvantageRadar 
+                  realData={realData}
+                  onExport={() => handleExportData('competitive-analysis')}
+                />
+                <ImplementationTimelineGantt 
+                  realData={realData}
+                  onExport={() => handleExportData('implementation-timeline')}
+                />
+              </div>
+            </TabsContent>
 
-              <TabsContent value="insights" className="mt-0">
-                <div className="text-center py-8">
-                  <Zap className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    AI Insights
-                  </h3>
-                  <p className="text-gray-600">
-                    {isMobile ? 'Coming soon' : 'AI-powered insights and recommendations coming soon'}
-                  </p>
+            {/* Advanced Analytics Tab */}
+            <TabsContent value="analytics" className="space-y-6 mt-6">
+              <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <UserEngagementPatterns 
+                    realData={realData}
+                    onExport={() => handleExportData('engagement-detailed')}
+                  />
+                  <ProcessingPerformanceMetrics 
+                    realData={realData}
+                    onExport={() => handleExportData('performance-detailed')}
+                  />
                 </div>
-              </TabsContent>
-            </div>
+                
+                <RevenueImpactWaterfall 
+                  realData={realData}
+                  onExport={() => handleExportData('revenue-analysis')}
+                />
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <CompetitiveAdvantageRadar 
+                    realData={realData}
+                    onExport={() => handleExportData('competitive-detailed')}
+                  />
+                  <ImplementationTimelineGantt 
+                    realData={realData}
+                    onExport={() => handleExportData('timeline-detailed')}
+                  />
+                </div>
+              </div>
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
-    </div>
+    </section>
   );
 };

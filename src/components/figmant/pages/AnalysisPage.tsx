@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { AnalysisPageContainer } from './analysis/AnalysisPageContainer';
-import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AnalysisPageProps {
   selectedTemplate?: any;
@@ -9,42 +9,17 @@ interface AnalysisPageProps {
 
 export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) => {
   const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
-
-  const getHeaderClasses = () => {
-    if (isMobile) {
-      return "px-3 pt-4 pb-3 bg-transparent flex-shrink-0";
-    }
-    if (isTablet) {
-      return "px-4 pt-5 pb-3 bg-transparent flex-shrink-0";
-    }
-    return "px-6 pt-6 pb-3 bg-transparent flex-shrink-0";
-  };
-
-  const getTitleClasses = () => {
-    if (isMobile) {
-      return "text-xl font-bold text-gray-900";
-    }
-    return "text-2xl font-bold text-gray-900";
-  };
-
-  const getSubtitleClasses = () => {
-    if (isMobile) {
-      return "text-gray-600 mt-1 text-sm";
-    }
-    return "text-gray-600 mt-1";
-  };
 
   return (
     <div className="h-full flex flex-col min-h-0 overflow-hidden">
-      <div className={getHeaderClasses()}>
+      <div className={`${isMobile ? 'px-4 pt-4 pb-3' : 'px-6 pt-6 pb-3'} bg-transparent flex-shrink-0`}>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className={getTitleClasses()}>
+            <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900`}>
               Analysis Management
             </h1>
-            <p className={getSubtitleClasses()}>
-              {isMobile ? 'Manage analysis history' : 'View and manage your design analysis history'}
+            <p className={`text-gray-600 mt-1 ${isMobile ? 'text-sm' : ''}`}>
+              View and manage your design analysis history
             </p>
           </div>
         </div>

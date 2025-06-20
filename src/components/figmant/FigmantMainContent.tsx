@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { migrateNavigationRoute } from '@/utils/navigationMigration';
 import { DashboardPage } from './pages/DashboardPage';
 import { AnalysisPage } from './pages/AnalysisPage';
@@ -33,7 +33,6 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
 }) => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
 
   // Handle navigation state from premium analysis, template selection, or admin access
   useEffect(() => {
@@ -132,7 +131,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   }
 
   return (
-    <div style={{ background: 'transparent' }} className={`h-full ${needsScrolling ? 'overflow-y-auto' : 'overflow-hidden'} ${isTablet ? 'rounded-lg' : ''}`}>
+    <div style={{ background: 'transparent' }} className="h-full overflow-y-auto">
       <div className="h-full">
         {renderContent()}
       </div>
