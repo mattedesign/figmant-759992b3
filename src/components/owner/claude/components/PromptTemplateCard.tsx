@@ -15,11 +15,15 @@ import { CATEGORY_OPTIONS } from '@/types/promptTypes';
 interface PromptTemplateCardProps {
   template: ClaudePromptExample;
   onDelete?: (id: string) => void;
+  onView?: (template: ClaudePromptExample) => void;
+  onEditSuccess?: () => void;
 }
 
 export const PromptTemplateCard: React.FC<PromptTemplateCardProps> = ({
   template,
-  onDelete
+  onDelete,
+  onView,
+  onEditSuccess
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTemplate, setEditedTemplate] = useState({
@@ -42,6 +46,9 @@ export const PromptTemplateCard: React.FC<PromptTemplateCardProps> = ({
         updates: editedTemplate
       });
       setIsEditing(false);
+      if (onEditSuccess) {
+        onEditSuccess();
+      }
     } catch (error) {
       console.error('Failed to update template:', error);
     }
