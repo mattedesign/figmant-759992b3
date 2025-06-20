@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown } from 'lucide-react';
@@ -84,9 +83,22 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
       <span
         className={cn(
           "flex-1 text-left",
-          activeSection === item.id ? "text-[#3D4A5C] font-semibold" : "text-[#455468] font-medium"
+          activeSection === item.id ? "text-[#1812E9] font-medium" : "text-[#455468] font-medium"
         )}
-        style={{
+        style={activeSection === item.id ? {
+          overflow: 'hidden',
+          color: '#1812E9',
+          textOverflow: 'ellipsis',
+          fontFamily: '"Instrument Sans"',
+          fontSize: '14px',
+          fontStyle: 'normal',
+          fontWeight: 500,
+          lineHeight: 'auto',
+          letterSpacing: '-0.12px',
+          display: 'flex',
+          alignItems: 'center',
+          height: '100%'
+        } : {
           overflow: 'hidden',
           color: 'var(--Text-Primary, #121212)',
           textOverflow: 'ellipsis',
