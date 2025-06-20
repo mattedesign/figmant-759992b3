@@ -23,3 +23,8 @@ export const figmantPromptTemplates: FigmantPromptTemplate[] = [
   ...competitorAnalysisTemplates,
   ...ecommerceTemplates
 ];
+
+// Utility function to get a template by ID
+export const getFigmantTemplate = (templateId: string): FigmantPromptTemplate | null => {
+  return figmantPromptTemplates.find(template => template.id === templateId) || null;
+};
