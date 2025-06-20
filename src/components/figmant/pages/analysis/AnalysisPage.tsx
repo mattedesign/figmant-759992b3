@@ -24,26 +24,36 @@ export const AnalysisPage: React.FC = () => {
       const urlParams = new URLSearchParams(location.search);
       const sectionId = urlParams.get('section') || hash;
 
-      switch (sectionId) {
-        case 'design':
-          setSelectedTemplate(undefined);
-          break;
-        case 'competitor-analysis':
-          setSelectedTemplate('uc024_competitor_analysis');
-          break;
-        case 'conversion-optimization':
-          setSelectedTemplate('conversion_optimization');
-          break;
-        case 'visual-hierarchy':
-          setSelectedTemplate('visual_hierarchy');
-          break;
-        default:
-          break;
-      }
+      console.log('🎯 ANALYSIS PAGE - Navigation detected:', { sectionId, hash, search: location.search });
+
+      handleSectionChange(sectionId);
     };
 
     handleNavigation();
   }, [location]);
+
+  // Handle section changes from sidebar navigation
+  const handleSectionChange = (sectionId: string) => {
+    console.log('🎯 ANALYSIS PAGE - Section change:', sectionId);
+    
+    switch (sectionId) {
+      case 'design':
+        setSelectedTemplate(undefined); // General analysis
+        break;
+      case 'competitor-analysis':
+        setSelectedTemplate('uc024_competitor_analysis');
+        break;
+      case 'conversion-optimization':
+        setSelectedTemplate('conversion_optimization');
+        break;
+      case 'visual-hierarchy':
+        setSelectedTemplate('visual_hierarchy');
+        break;
+      default:
+        // For other sections or unknown sections, keep current template
+        break;
+    }
+  };
 
   const handleSendMessage = async () => {
     if ((!chatState.message.trim() && chatState.attachments.length === 0) || analyzeWithClaude.isPending) return;
@@ -63,7 +73,7 @@ export const AnalysisPage: React.FC = () => {
       // Get active template
       const activeTemplate = promptTemplates.find(t => t.id === selectedTemplate);
 
-      console.log('Sending message with template context:', {
+      console.log('🎯 ANALYSIS PAGE - Sending message with template context:', {
         message: chatState.message,
         attachments: chatState.attachments,
         selectedTemplate,
@@ -92,7 +102,7 @@ export const AnalysisPage: React.FC = () => {
       chatState.setAttachments([]);
 
     } catch (error) {
-      console.error('Analysis failed:', error);
+      console.error('❌ ANALYSIS PAGE - Analysis failed:', error);
       
       // Add error message
       const errorMessage: ChatMessage = {
@@ -117,8 +127,8 @@ export const AnalysisPage: React.FC = () => {
   };
 
   const handleTemplateSelect = (templateId: string) => {
+    console.log('🎯 ANALYSIS PAGE - Template selected:', templateId);
     setSelectedTemplate(templateId);
-    console.log('Selected template:', templateId);
   };
 
   return (
@@ -147,13 +157,10 @@ export const AnalysisPage: React.FC = () => {
             attachments={chatState.attachments}
             onSendMessage={handleSendMessage}
             onAddAttachment={() => console.log('Adding attachment...')}
-            onRemoveAttachment={(id: string) => {
-              const updatedAttachments = chatState.attachments.filter(att => att.id !== id);
-              chatState.setAttachments(updatedAttachments);
-            }}
+            onRemoveAttachment={handleRemoveAttachment}
             promptTemplates={promptTemplates}
             selectedTemplate={selectedTemplate}
-            onTemplateSelect={setSelectedTemplate}
+            onTemplateSelect={handleTemplateSelect}
             isAnalyzing={analyzeWithClaude.isPending}
           />
         </div>
