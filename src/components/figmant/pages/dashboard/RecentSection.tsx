@@ -58,8 +58,10 @@ export const RecentSection: React.FC = () => {
                 className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
                 onClick={() => handleAnalysisClick(analysis)}
               >
-                <Star className="h-4 w-4 text-gray-400" />
-                <span className="text-sm text-gray-700">{analysis.displayTitle}</span>
+                <Star className="h-4 w-4 text-gray-400 pointer-events-none" />
+                <span className="text-sm text-gray-700 flex-1 pointer-events-none">
+                  {analysis.displayTitle}
+                </span>
               </div>
             ))
           ) : (
