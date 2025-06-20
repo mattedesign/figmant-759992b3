@@ -31,14 +31,18 @@ export const RecentSection: React.FC = () => {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 3);
 
-  const handleAnalysisClick = (event: React.MouseEvent, analysis: any) => {
-    // Prevent any bubbling, default behavior, or navigation
+  const handleAnalysisClick = (event: React.MouseEvent<HTMLButtonElement>, analysis: any) => {
+    // Aggressively prevent any navigation or bubbling
     event.preventDefault();
     event.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation();
     
-    console.log('Analysis clicked in RecentSection:', analysis);
+    console.log('Analysis clicked in RecentSection - preventing navigation:', analysis);
     setSelectedAnalysis(analysis);
     setShowModal(true);
+    
+    // Additional safety: return false to prevent any default behavior
+    return false;
   };
 
   const handleCloseModal = () => {
@@ -63,9 +67,31 @@ export const RecentSection: React.FC = () => {
             recentAnalyses.map((analysis, index) => (
               <button
                 key={`${analysis.type}-${analysis.id}`}
-                className="w-full flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer transition-colors text-left"
+                className="w-full flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer transition-colors text-left border-0 bg-transparent"
                 onClick={(e) => handleAnalysisClick(e, analysis)}
+                onMouseDown={(e) => {
+                  // Prevent any mouse down events from propagating
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
                 type="button"
+                style={{ 
+                  all: 'unset',
+                  display: 'flex',
+                  width: '100%',
+                  alignItems: 'center',
+                  padding: '0.5rem',
+                  borderRadius: '0.375rem',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.15s ease-in-out',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgb(249 250 251)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
               >
                 <span className="text-sm text-gray-700 flex-1">
                   {analysis.displayTitle}
