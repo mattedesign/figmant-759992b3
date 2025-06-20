@@ -12,7 +12,7 @@ import { TemplateMigrationHelper } from './TemplateMigrationHelper';
 
 // Lazy load the heavy components
 const ClaudeHeader = React.lazy(() => import('./ClaudeHeader').then(module => ({ default: module.ClaudeHeader })));
-const PromptTemplateList = React.lazy(() => import('./PromptTemplateList').then(module => ({ default: module.PromptTemplateList })));
+const PromptTemplateList = React.lazy(() => import('./PromptTemplateList'));
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center py-8">
