@@ -31,7 +31,12 @@ export const RecentSection: React.FC = () => {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 3);
 
-  const handleAnalysisClick = (analysis: any) => {
+  const handleAnalysisClick = (event: React.MouseEvent, analysis: any) => {
+    // Prevent any bubbling or default behavior
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    
     console.log('Analysis clicked in RecentSection:', analysis);
     console.log('Setting modal open to true');
     setSelectedAnalysis(analysis);
@@ -58,20 +63,16 @@ export const RecentSection: React.FC = () => {
         <div className="space-y-2">
           {recentAnalyses.length > 0 ? (
             recentAnalyses.map((analysis, index) => (
-              <div 
+              <button
                 key={`${analysis.type}-${analysis.id}`}
-                className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer transition-colors"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log('Click event triggered for analysis:', analysis.id);
-                  handleAnalysisClick(analysis);
-                }}
+                className="w-full flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer transition-colors text-left"
+                onClick={(e) => handleAnalysisClick(e, analysis)}
+                type="button"
               >
                 <span className="text-sm text-gray-700 flex-1">
                   {analysis.displayTitle}
                 </span>
-              </div>
+              </button>
             ))
           ) : (
             ["Analysis of something", "Analysis of something", "Analysis of something"].map((item, index) => (
