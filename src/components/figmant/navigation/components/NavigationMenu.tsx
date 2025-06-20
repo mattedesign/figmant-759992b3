@@ -57,7 +57,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
                 ? "bg-gray-100 text-gray-900 rounded-[12px]"
                 : section.id === 'admin' 
                   ? "border border-orange-200 bg-orange-50 text-orange-700 rounded-[12px] hover:bg-orange-100"
-                  : "hover:bg-gray-50 hover:rounded-[12px]"
+                  : "hover:bg-gray-50 hover:rounded-[12px] text-gray-700"
             )}
             onClick={() => onSectionChange(section.id)}
           >
