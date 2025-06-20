@@ -1,10 +1,11 @@
 
-export { RevenueImpactTracker } from './RevenueImpactTracker';
-export { BusinessMetricsSection } from './BusinessMetricsSection';
-export { ROICalculatorResults } from './ROICalculatorResults';
-export { SuccessTrackingSection } from './SuccessTrackingSection';
-export { EmptyStateSection } from './EmptyStateSection';
-export type { BusinessMetrics, ROICalculations, SuccessMetric, RevenueAnalysisData } from './types';
-export { RevenueProjectionEngine } from './RevenueProjectionEngine';
-export { calculateROI, calculateTrendAnalysis } from './roiEngine';
+// Export all revenue tracker functionality
+export { calculateROI, generateEcommerceScenario, generateSaaSScenario } from './roiEngine';
+export type { 
+  CalculatedProjections, 
+  EnhancedBusinessMetrics, 
+  IndustryBenchmarks 
+} from './roiEngine';
+export { calculateTrendAnalysis } from './roiEngine';
 export type { ROIProjection, TrendAnalysis } from './roiEngine';
+export type { BusinessMetrics, RevenueAnalysisData } from './types';

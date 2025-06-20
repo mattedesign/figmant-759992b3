@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,8 +14,8 @@ import { CompetitiveAdvantageRadar } from '../../analytics/advanced/CompetitiveA
 import { RevenueImpactWaterfall } from '../../analytics/advanced/RevenueImpactWaterfall';
 import { ImplementationTimelineGantt } from '../../analytics/advanced/ImplementationTimelineGantt';
 
-// Import executive dashboard
-import { ExecutiveDashboardWidget } from '../widgets/ExecutiveDashboardWidget';
+// Import executive dashboard - fixed path
+import { ExecutiveDashboardWidget } from './widgets/ExecutiveDashboardWidget';
 
 interface DashboardAnalyticsTabsSectionProps {
   dataStats: any;

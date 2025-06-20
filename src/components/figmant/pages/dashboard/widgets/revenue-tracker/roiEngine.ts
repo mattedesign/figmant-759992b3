@@ -1,4 +1,3 @@
-
 import { calculateROI as originalCalculateROI, BusinessMetrics, RevenueAnalysisData } from './types';
 
 // Enhanced ROI calculation with industry benchmarks and realistic projections
@@ -26,6 +25,25 @@ export interface CalculatedProjections {
   confidence_adjusted_impact: number;
   competitive_advantage_score: number;
   implementation_timeline_weeks: number;
+  // Add aliases for compatibility
+  monthlyImpact: number;
+  yearlyProjection: number;
+  paybackPeriod: number;
+  confidenceLevel: number;
+}
+
+// Add new interfaces for missing exports
+export interface ROIProjection {
+  monthly_impact: number;
+  annual_impact: number;
+  confidence_score: number;
+  payback_months: number;
+}
+
+export interface TrendAnalysis {
+  trend_direction: 'up' | 'down' | 'stable';
+  confidence_level: number;
+  projected_growth: number;
 }
 
 // Industry-specific benchmarks based on real market data
@@ -117,7 +135,34 @@ export const calculateROI = (
     payback_period_months,
     confidence_adjusted_impact: confidenceAdjustedImpact * 100,
     competitive_advantage_score,
-    implementation_timeline_weeks
+    implementation_timeline_weeks,
+    // Add aliases for compatibility
+    monthlyImpact: monthly_revenue_impact,
+    yearlyProjection: annual_revenue_impact,
+    paybackPeriod: payback_period_months,
+    confidenceLevel: realConfidence * 100
+  };
+};
+
+// Add missing function exports
+export const calculateTrendAnalysis = (projections: CalculatedProjections[]): TrendAnalysis => {
+  if (projections.length < 2) {
+    return {
+      trend_direction: 'stable',
+      confidence_level: 50,
+      projected_growth: 0
+    };
+  }
+
+  const latest = projections[projections.length - 1];
+  const previous = projections[projections.length - 2];
+  
+  const growth = ((latest.monthly_revenue_impact - previous.monthly_revenue_impact) / previous.monthly_revenue_impact) * 100;
+  
+  return {
+    trend_direction: growth > 5 ? 'up' : growth < -5 ? 'down' : 'stable',
+    confidence_level: Math.min(latest.confidenceLevel, 95),
+    projected_growth: growth
   };
 };
 
