@@ -5,6 +5,7 @@ import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { SidebarNavigationCollapsed } from './SidebarNavigationCollapsed';
 import { SidebarNavigationExpanded } from './SidebarNavigationExpanded';
+import { navigationConfig } from '@/config/navigation';
 
 interface SidebarNavigationProps {
   activeSection: string;
