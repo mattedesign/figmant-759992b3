@@ -43,16 +43,13 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
       <SheetContent side="left" className="w-72 p-0 safe-left">
         <div className="flex flex-col h-full">
           <MobileNavigationHeader />
+          {/* Main navigation sections - should match desktop exactly */}
           <NavigationMenu 
             activeSection={activeSection}
             onSectionChange={handleSectionChange}
           />
-          {/* Updated: Pass section props to UserProfileSection */}
-          <UserProfileSection 
-            onNavigate={handleNavigationClose}
-            activeSection={activeSection}
-            onSectionChange={handleSectionChange}
-          />
+          {/* User profile section - only profile actions, no duplicate navigation */}
+          <UserProfileSection onNavigate={handleNavigationClose} />
         </div>
       </SheetContent>
     </Sheet>

@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
   Home,
   BarChart3, 
@@ -40,7 +39,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
     { id: 'preferences', label: 'Preferences', icon: Settings },
   ];
 
-  // Add admin section for owners
+  // Add admin section for owners - this should match desktop exactly
   if (isOwner) {
     mainSections.push({ id: 'admin', label: 'Admin', icon: Shield });
   }
@@ -55,64 +54,15 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
             className={cn(
               "w-full justify-start h-12 text-base",
               activeSection === section.id 
-                ? "rounded-[12px] text-[#3D4A5C]"
+                ? "bg-gray-100 text-gray-900 rounded-[12px]"
                 : section.id === 'admin' 
-                  ? "border border-orange-200 bg-orange-50 text-orange-700 rounded-[12px] hover:text-[#3D4A5C]"
-                  : "hover:text-[#3D4A5C] hover:rounded-[12px]"
+                  ? "border border-orange-200 bg-orange-50 text-orange-700 rounded-[12px] hover:bg-orange-100"
+                  : "hover:bg-gray-50 hover:rounded-[12px]"
             )}
-            style={
-              activeSection === section.id 
-                ? {
-                    borderRadius: '12px',
-                    background: 'var(--Surface-03, #F1F1F1)'
-                  }
-                : {}
-            }
-            onMouseEnter={(e) => {
-              if (activeSection !== section.id && section.id !== 'admin') {
-                e.currentTarget.style.borderRadius = '12px';
-                e.currentTarget.style.background = 'var(--Surface-03, #F1F1F1)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (activeSection !== section.id && section.id !== 'admin') {
-                e.currentTarget.style.borderRadius = '';
-                e.currentTarget.style.background = '';
-              }
-            }}
             onClick={() => onSectionChange(section.id)}
           >
-            <section.icon className={cn(
-              "h-5 w-5 mr-1",
-              activeSection === section.id && "text-[#3D4A5C]"
-            )} />
-            <span 
-              className={cn(
-                "flex-1 text-left",
-                activeSection === section.id && "text-[#3D4A5C]"
-              )}
-              style={{
-                overflow: 'hidden',
-                color: 'var(--Text-Primary, #121212)',
-                textOverflow: 'ellipsis',
-                fontFamily: '"Instrument Sans"',
-                fontSize: '12px',
-                fontStyle: 'normal',
-                fontWeight: 500,
-                lineHeight: '16px',
-                letterSpacing: '-0.12px'
-              }}
-            >
-              {section.label}
-            </span>
-            {section.id === 'admin' && (
-              <Badge variant="secondary" className={cn(
-                "ml-auto text-xs",
-                activeSection === section.id ? "bg-[#3D4A5C]/10 text-[#3D4A5C]" : "bg-orange-100 text-orange-700"
-              )}>
-                Owner
-              </Badge>
-            )}
+            <section.icon className="mr-3 h-5 w-5" />
+            {section.label}
           </Button>
         ))}
       </div>
