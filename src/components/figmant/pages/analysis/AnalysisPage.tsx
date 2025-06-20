@@ -6,10 +6,37 @@ import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInter
 import { UserDebugPanel } from '@/components/debug/UserDebugPanel';
 import { Button } from '@/components/ui/button';
 import { Bug } from 'lucide-react';
+import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 
 export const AnalysisPage: React.FC = () => {
   const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>();
   const chatState = useChatState();
+  const { data: promptTemplates = [], isLoading } = useFigmantPromptTemplates();
+
+  const handleSendMessage = () => {
+    console.log('Sending message with:', {
+      message: chatState.message,
+      attachments: chatState.attachments,
+      selectedTemplate
+    });
+    // Add actual message sending logic here
+  };
+
+  const handleAddAttachment = () => {
+    console.log('Adding attachment...');
+    // Add attachment logic here
+  };
+
+  const handleRemoveAttachment = (id: string) => {
+    const updatedAttachments = chatState.attachments.filter(att => att.id !== id);
+    chatState.setAttachments(updatedAttachments);
+  };
+
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    console.log('Selected template:', templateId);
+  };
 
   return (
     <div className="h-full flex flex-col">
@@ -30,16 +57,18 @@ export const AnalysisPage: React.FC = () => {
         {/* Main Chat Panel */}
         <div className={`${showDebugPanel ? 'w-2/3' : 'w-full'} transition-all duration-300`}>
           <AnalysisChatPanel
-            message={chatState.message}
-            setMessage={chatState.setMessage}
             messages={chatState.messages}
             setMessages={chatState.setMessages}
+            message={chatState.message}
+            setMessage={chatState.setMessage}
             attachments={chatState.attachments}
-            setAttachments={chatState.setAttachments}
-            urlInput={chatState.urlInput}
-            setUrlInput={chatState.setUrlInput}
-            showUrlInput={chatState.showUrlInput}
-            setShowUrlInput={chatState.setShowUrlInput}
+            onSendMessage={handleSendMessage}
+            onAddAttachment={handleAddAttachment}
+            onRemoveAttachment={handleRemoveAttachment}
+            promptTemplates={promptTemplates}
+            selectedTemplate={selectedTemplate}
+            onTemplateSelect={handleTemplateSelect}
+            isAnalyzing={false}
           />
         </div>
 
