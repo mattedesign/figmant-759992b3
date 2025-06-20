@@ -27,7 +27,7 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
   // If no template is selected or no contextual fields, show a message
   if (!selectedTemplate) {
     return (
-      <div className="space-y-6">
+      <div>
         <StepHeader 
           title="Project Details"
           currentStep={currentStep}
@@ -35,7 +35,7 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
         />
         <div className="max-w-2xl mx-auto">
           <Card>
-            <CardContent className="p-6 text-center">
+            <CardContent className="text-center">
               <p className="text-muted-foreground">
                 Please select an analysis template first to configure project details.
               </p>
@@ -48,7 +48,7 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
 
   if (!selectedTemplate.contextual_fields || selectedTemplate.contextual_fields.length === 0) {
     return (
-      <div className="space-y-6">
+      <div>
         <StepHeader 
           title="Project Details"
           currentStep={currentStep}
@@ -74,14 +74,14 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div>
       <StepHeader 
         title="Project Details"
         currentStep={currentStep}
         totalSteps={totalSteps}
       />
 
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle>{selectedTemplate.displayName}</CardTitle>
