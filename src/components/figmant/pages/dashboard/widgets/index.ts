@@ -6,3 +6,5 @@ export { AIAnalysisPerformanceDashboard } from './ai-performance/AIAnalysisPerfo
 export { BusinessImpactCalculator } from './business-impact/BusinessImpactCalculator';
 export { CompetitiveIntelligenceTracker } from './competitive-intelligence/CompetitiveIntelligenceTracker';
 export { RevenueProjectionEngine } from './revenue-tracker/RevenueProjectionEngine';
+export { ExecutiveSummaryGenerator } from './executive-summary/ExecutiveSummaryGenerator';
+export { BusinessCaseBuilder } from './business-case/BusinessCaseBuilder';
