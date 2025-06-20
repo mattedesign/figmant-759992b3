@@ -106,7 +106,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           }}
         >
           <div 
-            className={cn("icon-container flex justify-center items-center mr-3 transition-all duration-200")}
+            className={cn("icon-container flex justify-center items-center mr-2 transition-all duration-200")}
             style={
               activeSection === item.id 
                 ? {
