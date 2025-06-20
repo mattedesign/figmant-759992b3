@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown } from 'lucide-react';
@@ -56,10 +55,9 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
         alignItems: 'center',
         alignSelf: 'stretch',
         borderRadius: '12px',
-        background: 'var(--Surface-01, #FCFCFC)',
-        ...(activeSection === item.id ? {
-          background: 'var(--Surface-03, #F1F1F1)'
-        } : {})
+        background: activeSection === item.id 
+          ? 'rgba(10, 169, 255, 0.16)' 
+          : 'var(--Surface-01, #FCFCFC)'
       }}
       onMouseEnter={e => {
         if (activeSection !== item.id) {
