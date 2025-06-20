@@ -43,7 +43,6 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader className="p-0">
-            <CardTitle>{selectedTemplate.displayName}</CardTitle>
             <p className="text-sm text-muted-foreground">
               This template doesn't require additional configuration details.
             </p>
@@ -62,7 +61,6 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
     <div className="max-w-2xl mx-auto">
       <Card>
         <CardHeader className="p-0">
-          <CardTitle>{selectedTemplate.displayName}</CardTitle>
           <p className="text-sm text-muted-foreground">
             {selectedTemplate.description}
           </p>
