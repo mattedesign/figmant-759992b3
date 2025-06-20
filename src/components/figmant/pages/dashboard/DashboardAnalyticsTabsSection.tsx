@@ -89,10 +89,7 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
           </TabsContent>
 
           <TabsContent value="business-impact" className="mt-6">
-            <BusinessImpactCalculator 
-              analysisData={analysisData}
-              realData={realData}
-            />
+            <BusinessImpactCalculator realData={realData} />
           </TabsContent>
 
           <TabsContent value="competitive" className="mt-6">

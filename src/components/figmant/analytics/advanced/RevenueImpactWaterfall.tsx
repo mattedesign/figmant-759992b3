@@ -3,9 +3,9 @@ import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { DollarSign, TrendingUp, Activity } from 'lucide-react';
-import { calculateROI } from '../widgets/revenue-tracker/roiEngine';
+import { calculateROI } from '../../pages/dashboard/widgets/revenue-tracker/roiEngine';
 
 interface RevenueImpactWaterfallProps {
   realData?: {
@@ -205,12 +205,11 @@ export const RevenueImpactWaterfall: React.FC<RevenueImpactWaterfallProps> = ({
             {/* Waterfall bars */}
             <Bar 
               dataKey="impact" 
-              fill="#8884d8"
               onClick={handleCategoryClick}
               cursor="pointer"
             >
               {waterfallData.map((entry, index) => (
-                <Bar key={`bar-${index}`} fill={entry.color} />
+                <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Bar>
             
