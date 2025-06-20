@@ -14,10 +14,14 @@ import { transformForPerformanceWidget } from './dashboard/utils/widgetDataTrans
 
 export const DashboardPage: React.FC = () => {
   const {
-    // Optimized data
+    // Optimized data with real integration
     memoizedAnalysisData,
     memoizedInsightsData,
     memoizedDataStats,
+    
+    // Real data
+    realData,
+    
     // State management
     isLoading,
     isRefreshing,
@@ -74,10 +78,11 @@ export const DashboardPage: React.FC = () => {
           isRefreshing={isRefreshing} 
         />
 
-        {/* PRIMARY FOCUS: Business Intelligence Dashboard - Most prominent position */}
+        {/* PRIMARY FOCUS: Business Intelligence Dashboard with Real Data - Most prominent position */}
         <DashboardAnalyticsTabsSection 
           dataStats={memoizedDataStats} 
           analysisData={memoizedAnalysisData}
+          realData={realData}
         />
 
         {/* Secondary widgets row - Credit Usage & Analysis Performance */}

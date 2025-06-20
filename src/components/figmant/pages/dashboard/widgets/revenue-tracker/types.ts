@@ -13,6 +13,8 @@ export interface ROICalculations {
   roi_percentage: number;
   payback_period: number;
   confidence_score: number;
+  current_monthly_revenue: number;
+  improved_monthly_revenue: number;
 }
 
 export interface SuccessMetric {
@@ -84,6 +86,8 @@ export const calculateROI = (analysisData: RevenueAnalysisData[], businessMetric
     implementation_cost,
     roi_percentage,
     payback_period,
-    confidence_score: avgConfidence
+    confidence_score: avgConfidence,
+    current_monthly_revenue: currentMonthlyRevenue,
+    improved_monthly_revenue: improvedMonthlyRevenue
   };
 };

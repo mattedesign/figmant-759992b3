@@ -1,117 +1,128 @@
 
-import { useCallback } from 'react';
+import { useMemo } from 'react';
 import { useDashboardDataManager } from './useDashboardDataManager';
-import { useDashboardMemoization } from './useDashboardMemoization';
+import { useRealDashboardData } from './useRealDataIntegration';
 import { useDashboardPerformance } from './useDashboardPerformance';
 
 export const useDashboardOptimized = () => {
-  // Get base dashboard data
-  const dashboardData = useDashboardDataManager();
-  
-  // Apply memoization optimizations
-  const memoizedData = useDashboardMemoization(
-    dashboardData.analysisData,
-    dashboardData.insightsData,
-    dashboardData.promptsData,
-    dashboardData.notesData,
-    dashboardData.dataStats
-  );
-  
-  // Apply performance optimizations
   const performance = useDashboardPerformance();
   
-  // Enhanced export functionality
-  const handleExport = useCallback(async () => {
-    performance.startProcessingMeasurement();
-    
-    try {
-      const exportData = {
-        analyses: memoizedData.memoizedAnalysisData,
-        insights: memoizedData.memoizedInsightsData,
-        prompts: memoizedData.memoizedPromptsData,
-        notes: memoizedData.memoizedNotesData,
-        statistics: memoizedData.memoizedDataStats,
-        exportDate: new Date().toISOString(),
-        exportType: 'dashboard_summary'
-      };
-      
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-        type: 'application/json'
-      });
-      
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `dashboard-export-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-    } finally {
-      performance.endProcessingMeasurement();
-    }
-  }, [memoizedData, performance]);
+  // Get real data integration
+  const {
+    analysisMetrics,
+    chatAnalysis,
+    designAnalysis,
+    isLoading: realDataLoading,
+    error: realDataError
+  } = useRealDashboardData();
 
-  // Enhanced search functionality
-  const handleSearch = useCallback((query: string) => {
-    if (!query.trim()) return memoizedData.memoizedAnalysisData;
-    
-    const lowerQuery = query.toLowerCase();
-    return memoizedData.memoizedAnalysisData.filter(analysis =>
-      analysis.title.toLowerCase().includes(lowerQuery) ||
-      analysis.type.toLowerCase().includes(lowerQuery) ||
-      analysis.status.toLowerCase().includes(lowerQuery)
-    );
-  }, [memoizedData.memoizedAnalysisData]);
+  // Get existing dashboard data
+  const {
+    analysisData,
+    insightsData,
+    promptsData,
+    notesData,
+    dataStats,
+    hasAnyData,
+    rawAnalysisData,
+    userCredits,
+    isLoading: dashboardLoading,
+    isRefreshing,
+    error: dashboardError,
+    lastUpdated,
+    refreshAllData,
+    refreshAnalyses,
+    refreshInsights,
+    refreshPrompts,
+    loadingStates,
+    errorStates
+  } = useDashboardDataManager();
 
-  // Enhanced filter functionality
-  const handleFilter = useCallback((filters: any) => {
-    let filtered = memoizedData.memoizedAnalysisData;
-    
-    if (filters.status) {
-      filtered = filtered.filter(analysis => 
-        analysis.status.toLowerCase() === filters.status.toLowerCase()
-      );
-    }
-    
-    if (filters.type) {
-      filtered = filtered.filter(analysis => 
-        analysis.type.toLowerCase().includes(filters.type.toLowerCase())
-      );
-    }
-    
-    if (filters.dateRange) {
-      // Add date filtering logic here
-    }
-    
-    return filtered;
-  }, [memoizedData.memoizedAnalysisData]);
+  // Memoize processed data with real data integration
+  const memoizedAnalysisData = useMemo(() => {
+    // Combine existing analysis data with real metrics
+    return analysisData.map(analysis => ({
+      ...analysis,
+      realMetrics: analysisMetrics.find(metric => 
+        new Date(metric.created_at).toDateString() === new Date().toDateString()
+      )
+    }));
+  }, [analysisData, analysisMetrics]);
+
+  const memoizedInsightsData = useMemo(() => {
+    // Enhance insights with real chat analysis data
+    return insightsData.map(insight => ({
+      ...insight,
+      realChatData: chatAnalysis.slice(0, 5) // Latest 5 chat analyses
+    }));
+  }, [insightsData, chatAnalysis]);
+
+  const memoizedDataStats = useMemo(() => {
+    // Calculate enhanced stats with real data
+    const realSuccessRate = analysisMetrics.length > 0 
+      ? (analysisMetrics.filter(m => m.analysis_success).length / analysisMetrics.length) * 100
+      : dataStats.activityScore;
+
+    const avgProcessingTime = analysisMetrics.length > 0
+      ? analysisMetrics.reduce((sum, m) => sum + (m.processing_time_ms || 0), 0) / analysisMetrics.length
+      : 0;
+
+    return {
+      ...dataStats,
+      realSuccessRate,
+      avgProcessingTime,
+      totalRealAnalyses: designAnalysis.length,
+      avgConfidenceScore: designAnalysis.length > 0
+        ? designAnalysis.reduce((sum, d) => sum + (d.confidence_score || 0), 0) / designAnalysis.length
+        : 0
+    };
+  }, [dataStats, analysisMetrics, designAnalysis]);
+
+  // Combine loading states
+  const isLoading = dashboardLoading || realDataLoading;
+  const error = dashboardError || realDataError;
 
   return {
-    // Original dashboard data
-    ...dashboardData,
+    // Enhanced data with real integration
+    memoizedAnalysisData,
+    memoizedInsightsData,
+    memoizedDataStats,
     
-    // Memoized and optimized data
-    ...memoizedData,
+    // Real data
+    realData: {
+      analysisMetrics,
+      chatAnalysis,
+      designAnalysis
+    },
     
-    // Performance metrics
-    performance,
+    // State management
+    isLoading,
+    isRefreshing,
+    error,
+    lastUpdated,
     
     // Enhanced actions
-    handleExport,
-    handleSearch,
-    handleFilter,
+    refreshAllData,
+    refreshInsights,
     
-    // Raw data for widgets (expose the raw analysis data from dashboardData)
-    rawAnalysisData: dashboardData.rawAnalysisData,
-    userCredits: dashboardData.userCredits,
+    // Loading states
+    loadingStates: {
+      ...loadingStates,
+      realData: realDataLoading
+    },
+    errorStates: {
+      ...errorStates,
+      realData: realDataError
+    },
     
-    // Additional computed properties
-    isDataEmpty: memoizedData.memoizedAnalysisData.length === 0 &&
-                 memoizedData.memoizedInsightsData.length === 0 &&
-                 memoizedData.memoizedPromptsData.length === 0,
+    // Performance
+    performance,
     
-    hasRecentActivity: memoizedData.memoizedDataStats.activityScore > 20
+    // Raw data access for widgets
+    rawAnalysisData,
+    userCredits,
+    
+    // Legacy compatibility
+    hasAnyData
   };
 };

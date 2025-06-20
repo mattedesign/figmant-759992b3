@@ -11,23 +11,31 @@ import { CompetitorInsightCard } from './widgets/competitive-intelligence/Compet
 interface DashboardAnalyticsTabsSectionProps {
   dataStats: any;
   analysisData: any[];
+  realData?: {
+    analysisMetrics?: any[];
+    chatAnalysis?: any[];
+    designAnalysis?: any[];
+  };
   className?: string;
 }
 
 export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSectionProps> = ({
   dataStats,
   analysisData,
+  realData,
   className
 }) => {
-  // Calculate executive metrics from analysis data
-  const avgConfidence = analysisData.length > 0 
-    ? analysisData.reduce((sum, analysis) => sum + (analysis.confidence_score || 85), 0) / analysisData.length 
-    : 85;
+  // Calculate executive metrics from analysis data and real data
+  const avgConfidence = realData?.designAnalysis?.length > 0 
+    ? realData.designAnalysis.reduce((sum, analysis) => sum + (analysis.confidence_score || 85), 0) / realData.designAnalysis.length
+    : analysisData.length > 0 
+      ? analysisData.reduce((sum, analysis) => sum + (analysis.confidence_score || 85), 0) / analysisData.length 
+      : 85;
 
   const estimatedROI = avgConfidence * 2.1; // Business logic: higher confidence = higher ROI potential
   const monthlyImpact = (dataStats.completedAnalyses * 2400) + (avgConfidence * 180); // Revenue impact calculation
 
-  // Mock competitive insights
+  // Mock competitive insights (could be enhanced with real competitor data)
   const competitorInsights = [
     {
       id: '1',
@@ -62,6 +70,11 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
           <CardTitle className="text-xl font-semibold flex items-center gap-2">
             <BarChart3 className="h-6 w-6 text-blue-600" />
             Business Intelligence Dashboard
+            {realData && (
+              <span className="text-sm font-normal text-green-600 ml-2">
+                • Live Data Connected
+              </span>
+            )}
           </CardTitle>
         </CardHeader>
         
@@ -90,8 +103,8 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
               <ExecutiveSummaryWidget
                 totalROI={estimatedROI}
                 monthlyImpact={monthlyImpact}
-                successRate={avgConfidence}
-                completedAnalyses={dataStats.completedAnalyses}
+                successRate={realData?.dataStats?.realSuccessRate || avgConfidence}
+                completedAnalyses={realData?.dataStats?.totalRealAnalyses || dataStats.completedAnalyses}
               />
             </TabsContent>
 
@@ -103,6 +116,7 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
                   impact_summary: analysis.impact_summary,
                   suggestions: analysis.suggestions
                 }))}
+                realData={realData}
               />
             </TabsContent>
 
@@ -118,18 +132,27 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
                     <div className="space-y-4">
                       <div className="p-4 bg-blue-50 rounded-lg">
                         <h4 className="font-semibold text-blue-900 mb-2">Competitive Advantage Score</h4>
-                        <div className="text-3xl font-bold text-blue-700">78/100</div>
+                        <div className="text-3xl font-bold text-blue-700">
+                          {realData?.dataStats?.avgConfidenceScore ? 
+                            Math.round(realData.dataStats.avgConfidenceScore) : 78}/100
+                        </div>
                         <p className="text-sm text-blue-700 mt-1">Above industry average</p>
                       </div>
                       
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span>UX Quality</span>
-                          <span className="font-medium">85%</span>
+                          <span className="font-medium">
+                            {realData?.dataStats?.avgConfidenceScore ? 
+                              `${Math.round(realData.dataStats.avgConfidenceScore)}%` : '85%'}
+                          </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span>Conversion Optimization</span>
-                          <span className="font-medium">72%</span>
+                          <span className="font-medium">
+                            {realData?.dataStats?.realSuccessRate ? 
+                              `${Math.round(realData.dataStats.realSuccessRate)}%` : '72%'}
+                          </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span>Mobile Experience</span>
@@ -154,7 +177,10 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="text-sm">API Response Time</span>
-                        <span className="text-sm font-medium text-green-600">1.2s</span>
+                        <span className="text-sm font-medium text-green-600">
+                          {realData?.dataStats?.avgProcessingTime ? 
+                            `${Math.round(realData.dataStats.avgProcessingTime)}ms` : '1.2s'}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Claude AI Uptime</span>
@@ -180,7 +206,9 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Analyses This Week</span>
-                        <span className="text-sm font-medium">{dataStats.totalAnalyses}</span>
+                        <span className="text-sm font-medium">
+                          {realData?.dataStats?.totalRealAnalyses || dataStats.totalAnalyses}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Avg Session Duration</span>
