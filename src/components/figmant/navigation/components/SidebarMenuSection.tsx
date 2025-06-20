@@ -38,26 +38,68 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           variant="ghost"
           onClick={() => onSectionChange(item.id)}
           className={cn(
-            "w-full justify-start h-10 px-3 transition-all duration-200 border-none shadow-none group",
-            activeSection === item.id
-              ? "text-blue-600 font-medium rounded-lg"
-              : "text-gray-700 hover:bg-gray-50"
+            "w-full justify-start transition-all duration-200 border-none shadow-none group",
+            "hover:bg-transparent"
           )}
           style={
             activeSection === item.id 
-              ? { backgroundColor: '#EBF4FF', color: '#2563EB' }
-              : {}
+              ? {
+                  display: 'flex',
+                  height: '40px',
+                  padding: '0px 12px 0px 4px',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  alignSelf: 'stretch',
+                  overflow: 'hidden',
+                  color: '#1812E9',
+                  textOverflow: 'ellipsis',
+                  fontFamily: '"Instrument Sans"',
+                  fontSize: '12px',
+                  fontStyle: 'normal',
+                  fontWeight: '500',
+                  lineHeight: '16px',
+                  letterSpacing: '-0.12px',
+                  backgroundColor: 'transparent'
+                }
+              : {
+                  display: 'flex',
+                  height: '40px',
+                  padding: '0px 12px 0px 4px',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  alignSelf: 'stretch',
+                  overflow: 'hidden',
+                  color: '#6B7280',
+                  textOverflow: 'ellipsis',
+                  fontFamily: '"Instrument Sans"',
+                  fontSize: '12px',
+                  fontStyle: 'normal',
+                  fontWeight: '500',
+                  lineHeight: '16px',
+                  letterSpacing: '-0.12px',
+                  backgroundColor: 'transparent'
+                }
           }
+          onMouseEnter={(e) => {
+            if (activeSection !== item.id) {
+              e.currentTarget.style.color = '#1812E9';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (activeSection !== item.id) {
+              e.currentTarget.style.color = '#6B7280';
+            }
+          }}
         >
           <item.icon 
             className={cn(
               "h-5 w-5 mr-3",
               activeSection === item.id 
                 ? "text-blue-600" 
-                : "text-gray-500 group-hover:text-gray-700"
+                : "text-gray-500 group-hover:text-blue-600"
             )}
           />
-          <span className="font-medium text-sm">
+          <span className="font-medium text-sm flex-1 text-left">
             {item.label}
           </span>
         </Button>
