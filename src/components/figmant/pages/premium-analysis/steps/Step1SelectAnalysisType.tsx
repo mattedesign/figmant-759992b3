@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { Lightbulb, Target, TrendingUp, Users, Zap, CheckCircle } from 'lucide-react';
+import { CreditCostDisplay } from '../components/CreditCostDisplay';
 
 export const Step1SelectAnalysisType: React.FC<StepProps> = ({ 
   stepData, 
@@ -95,9 +96,10 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                   {template.description}
                 </CardDescription>
                 <div className="mt-3 flex items-center justify-between">
-                  <span className="text-sm font-medium text-blue-600">
-                    {template.metadata?.credit_cost || 3} credits
-                  </span>
+                  <CreditCostDisplay 
+                    templateId={template.id} 
+                    isSelected={stepData.selectedType === template.id}
+                  />
                   {/* Show contextual fields indicator if template has them */}
                   {template.metadata && 
                    typeof template.metadata === 'object' && 
