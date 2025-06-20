@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +9,7 @@ import { CompetitorInsightCard } from './widgets/competitive-intelligence/Compet
 import { AIAnalysisPerformanceDashboard } from './widgets/ai-performance/AIAnalysisPerformanceDashboard';
 import { BusinessImpactCalculator } from './widgets/business-impact/BusinessImpactCalculator';
 import { CompetitiveIntelligenceTracker } from './widgets/competitive-intelligence/CompetitiveIntelligenceTracker';
+import { RevenueProjectionEngine } from './widgets/revenue-tracker/RevenueProjectionEngine';
 
 interface DashboardAnalyticsTabsSectionProps {
   dataStats: any;
@@ -83,7 +83,7 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
         
         <CardContent>
           <Tabs defaultValue="executive" className="w-full">
-            <TabsList className="grid w-full grid-cols-6 mb-6">
+            <TabsList className="grid w-full grid-cols-7 mb-6">
               <TabsTrigger value="executive" className="flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
                 Executive
@@ -91,6 +91,10 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
               <TabsTrigger value="revenue" className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
                 Revenue
+              </TabsTrigger>
+              <TabsTrigger value="projections" className="flex items-center gap-2">
+                <Calculator className="h-4 w-4" />
+                Projections
               </TabsTrigger>
               <TabsTrigger value="performance" className="flex items-center gap-2">
                 <Activity className="h-4 w-4" />
@@ -131,6 +135,10 @@ export const DashboardAnalyticsTabsSection: React.FC<DashboardAnalyticsTabsSecti
                 }))}
                 realData={realData}
               />
+            </TabsContent>
+
+            <TabsContent value="projections" className="space-y-6">
+              <RevenueProjectionEngine realData={realData} />
             </TabsContent>
 
             <TabsContent value="performance" className="space-y-6">

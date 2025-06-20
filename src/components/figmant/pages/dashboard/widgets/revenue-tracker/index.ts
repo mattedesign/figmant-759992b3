@@ -1,4 +1,3 @@
-
 export { RevenueImpactTracker } from './RevenueImpactTracker';
 export { BusinessMetricsSection } from './BusinessMetricsSection';
 export { ROICalculatorResults } from './ROICalculatorResults';
@@ -6,3 +5,6 @@ export { SuccessTrackingSection } from './SuccessTrackingSection';
 export { EmptyStateSection } from './EmptyStateSection';
 export { calculateROI } from './types';
 export type { BusinessMetrics, ROICalculations, SuccessMetric, RevenueAnalysisData } from './types';
+export { RevenueProjectionEngine } from './RevenueProjectionEngine';
+export { calculateROI, calculateTrendAnalysis } from './roiEngine';
+export type { ROIProjection, TrendAnalysis } from './roiEngine';
