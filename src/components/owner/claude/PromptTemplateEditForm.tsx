@@ -40,8 +40,6 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
   const { toast } = useToast();
   const updateTemplateMutation = useUpdatePromptExample();
   
-  console.log('✏️ PromptTemplateEditForm rendering for template:', template.id);
-  
   const [editedTemplate, setEditedTemplate] = useState<EditedTemplateData>({
     title: template.title,
     display_name: template.display_name || template.title,
@@ -188,14 +186,6 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
     getContextualFieldsFromMetadata(template.metadata)
   );
 
-  // ADD THESE DEBUG LINES RIGHT AFTER contextualFields STATE:
-  console.log('🚨 CONTEXTUAL FIELDS DEBUG:');
-  console.log('- Template ID:', template.id);
-  console.log('- Template metadata:', template.metadata);
-  console.log('- Contextual fields array:', contextualFields);
-  console.log('- Fields count:', contextualFields.length);
-  console.log('- getContextualFieldsFromMetadata result:', getContextualFieldsFromMetadata(template.metadata));
-
   // Update contextual fields when template changes
   useEffect(() => {
     const fields = getContextualFieldsFromMetadata(template.metadata);
@@ -214,8 +204,6 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
   };
 
   const handleSave = async () => {
-    console.log('💾 Saving template changes for:', template.id);
-    
     if (!editedTemplate.title.trim()) {
       toast({
         title: "Validation Error",
@@ -257,14 +245,12 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
         updates: updateData
       });
       
-      console.log('✅ Template saved successfully');
       toast({
         title: "Success",
         description: "Prompt template updated successfully",
       });
       onSaveSuccess();
     } catch (error) {
-      console.error('❌ Failed to update template:', error);
       toast({
         title: "Error",
         description: "Failed to update prompt template",
@@ -274,7 +260,6 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
   };
 
   const handleCancel = () => {
-    console.log('❌ Canceling edit for template:', template.id);
     onCancel();
   };
 
@@ -303,51 +288,10 @@ export const PromptTemplateEditForm: React.FC<PromptTemplateEditFormProps> = ({
           setEditedPrompt={setEditedTemplate}
         />
 
-        {/* SUPER VISIBLE DEBUG SECTION */}
-        <div 
-          style={{
-            backgroundColor: '#ff0000',
-            color: 'white',
-            padding: '30px',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            margin: '20px 0'
-          }}
-        >
-          ⚠️ CONTEXTUAL FIELDS DEBUG SECTION ⚠️
-          <br />
-          Template: {template.id} | Fields: {contextualFields.length}
-        </div>
-
-        {/* CONTEXTUAL FIELDS SECTION */}
-        <div style={{
-          border: '5px solid orange',
-          backgroundColor: '#ffffcc',
-          padding: '20px',
-          minHeight: '300px'
-        }}>
-          <h3 style={{ color: 'red', fontSize: '20px', marginBottom: '20px' }}>
-            CONTEXTUAL FIELDS COMPONENT:
-          </h3>
-          
-          <ContextualFieldsSection
-            contextualFields={contextualFields}
-            onUpdateFields={handleContextualFieldsUpdate}
-          />
-          
-          <div style={{
-            backgroundColor: 'white',
-            padding: '10px',
-            marginTop: '20px',
-            border: '2px solid blue'
-          }}>
-            <strong>Debug Info:</strong>
-            <br />• Fields Count: {contextualFields.length}
-            <br />• Has Metadata: {template.metadata ? 'YES' : 'NO'}
-            <br />• Component Rendered: YES
-          </div>
-        </div>
+        <ContextualFieldsSection
+          contextualFields={contextualFields}
+          onUpdateFields={handleContextualFieldsUpdate}
+        />
       </CardContent>
     </Card>
   );
