@@ -31,8 +31,7 @@ export const SidebarNavigationCollapsed: React.FC<SidebarNavigationCollapsedProp
           title={item.label}
         >
           <item.icon 
-            className="h-5 w-5"
-            color="#6B7280"
+            className="h-5 w-5 text-gray-500"
           />
         </Button>
       ))}

@@ -7,13 +7,14 @@ import {
   CreditCard, 
   Settings, 
   HelpCircle, 
-  Shield 
+  Shield,
+  LucideIcon
 } from 'lucide-react';
 
 export interface NavigationItem {
   id: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: LucideIcon;
   priority: number;
   description?: string;
 }
