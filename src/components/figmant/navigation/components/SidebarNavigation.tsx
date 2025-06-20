@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,6 +12,9 @@ import {
   Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
+import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
+import { SidebarRecentAnalyses } from '../../sidebar/components/SidebarRecentAnalyses';
 
 interface SidebarNavigationProps {
   activeSection: string;
@@ -36,6 +40,28 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   signOut
 }) => {
   const [activeTab, setActiveTab] = useState('menu');
+
+  // Fetch analysis history data
+  const { data: chatAnalyses = [], isLoading: chatLoading } = useChatAnalysisHistory();
+  const { data: designAnalyses = [], isLoading: designLoading } = useDesignAnalyses();
+
+  // Combine both types of analyses and sort by date
+  const allAnalyses = [
+    ...designAnalyses.map(a => ({ 
+      ...a, 
+      type: 'design', 
+      displayTitle: a.analysis_results?.title || 'Design Analysis',
+      analysis_type: a.analysis_type || 'design_analysis'
+    })),
+    ...chatAnalyses.map(a => ({ 
+      ...a, 
+      type: 'chat', 
+      displayTitle: 'Chat Analysis',
+      analysis_type: a.analysis_type || 'chat_analysis'
+    }))
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  const isLoading = chatLoading || designLoading;
 
   const mainMenuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -264,10 +290,11 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             )}
           </TabsContent>
           
-          <TabsContent value="recent" className="h-full m-0 p-4">
-            <div className="text-gray-500 text-sm text-center">
-              Recent analyses will appear here
-            </div>
+          <TabsContent value="recent" className="h-full m-0 flex flex-col">
+            <SidebarRecentAnalyses
+              analysisHistory={allAnalyses}
+              onSectionChange={onSectionChange}
+            />
           </TabsContent>
         </div>
       </Tabs>

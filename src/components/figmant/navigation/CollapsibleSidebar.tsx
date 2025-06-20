@@ -37,7 +37,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
       >
         <SidebarHeader 
           isCollapsed={isCollapsed}
-          onToggleCollapse={onToggleCollapse}
+          onToggleCollapse={() => onToggleCollapse()}
         />
         
         <div className="flex-1 overflow-y-auto">

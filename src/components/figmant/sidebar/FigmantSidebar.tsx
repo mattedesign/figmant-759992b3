@@ -112,6 +112,10 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
           isOwner={isOwner}
           isCollapsed={isCollapsed}
           onToggleCollapse={handleToggleCollapse}
+          profile={profile}
+          user={user}
+          subscription={subscription}
+          signOut={signOut}
         />
       </div>
 
