@@ -43,6 +43,9 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
 
   // Determine the badge based on current view
   const getBadge = () => {
+    const searchParams = new URLSearchParams(location.search);
+    const tab = searchParams.get('tab');
+    
     if (location.pathname === '/owner') {
       return (
         <Badge variant="default" className="bg-purple-100 text-purple-800">
@@ -57,15 +60,25 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
         </Badge>
       );
     }
-    // Check for wizard mode
-    const searchParams = new URLSearchParams(location.search);
-    if (searchParams.get('mode') === 'wizard') {
+    
+    // Badge for direct wizard analysis
+    if (tab === 'wizard-analysis') {
       return (
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
           Wizard Mode
         </Badge>
       );
     }
+    
+    // Badge for wizard mode in premium analysis
+    if (searchParams.get('mode') === 'wizard') {
+      return (
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+          Premium Wizard
+        </Badge>
+      );
+    }
+    
     return null;
   };
 
