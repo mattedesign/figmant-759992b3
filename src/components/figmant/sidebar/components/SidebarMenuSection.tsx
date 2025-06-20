@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown } from 'lucide-react';
@@ -73,11 +74,11 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
     >
       <div className={cn(
         "w-8 h-8 mr-1 rounded-[8px] flex items-center justify-center",
-        activeSection === item.id ? "bg-transparent" : "bg-[var(--Surface-03,#F1F1F1)]"
+        activeSection === item.id ? "bg-white" : "bg-[var(--Surface-03,#F1F1F1)]"
       )}>
         <item.icon className={cn(
           "h-4 w-4",
-          activeSection === item.id ? "text-[#3D4A5C]" : "text-[#455468]"
+          activeSection === item.id ? "text-[#1812E9]" : "text-[#455468]"
         )} />
       </div>
       <span
