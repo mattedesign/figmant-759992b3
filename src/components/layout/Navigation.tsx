@@ -13,8 +13,11 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
   const { user, isOwner } = useAuth();
   const location = useLocation();
   
-  // Determine the title based on the current route
+  // Determine the title based on the current route and search params
   const getTitle = () => {
+    const searchParams = new URLSearchParams(location.search);
+    const mode = searchParams.get('mode');
+    
     if (location.pathname === '/owner') {
       return 'Owner Dashboard';
     }
@@ -22,6 +25,10 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
       return isOwner ? 'Subscriber View' : 'Dashboard';
     }
     if (location.pathname === '/figmant' || location.pathname === '/') {
+      // Check if we're in wizard mode for premium analysis
+      if (mode === 'wizard') {
+        return 'Premium Analysis Wizard';
+      }
       return 'figmant';
     }
     return 'Dashboard';
@@ -43,7 +50,15 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
         </Badge>
       );
     }
-    // Removed the "Live" badge for figmant and default routes
+    // Check for wizard mode
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('mode') === 'wizard') {
+      return (
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+          Wizard Mode
+        </Badge>
+      );
+    }
     return null;
   };
 
