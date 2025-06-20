@@ -1,7 +1,10 @@
+
 import { lazy, Suspense } from 'react';
 import { LoadingSpinner } from './LoadingSpinner';
 import { AllAnalysisPageWrapper } from '@/components/design/analysis/AllAnalysisPageWrapper';
 import { AdvancedDesignAnalysisPageContent } from '@/components/design/AdvancedDesignAnalysisPageContent';
+import { PremiumAnalysisWizard } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisWizard';
+import { PremiumAnalysisTabController } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisTabController';
 
 // Lazy load other content components
 const InsightsPage = lazy(() => import('@/components/design/InsightsPage').then(module => ({
@@ -63,12 +66,10 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
             <PromptsPage />
           </Suspense>
         );
+      case 'wizard-analysis':
+        return <PremiumAnalysisWizard />;
       case 'premium-analysis':
-        return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <PremiumAnalysisPage />
-          </Suspense>
-        );
+        return <PremiumAnalysisTabController />;
       case 'integrations':
         return (
           <Suspense fallback={<LoadingSpinner />}>
