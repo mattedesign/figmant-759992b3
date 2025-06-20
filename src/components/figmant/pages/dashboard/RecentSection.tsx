@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Star, Settings } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { AnalysisDetailModal } from './components/AnalysisDetailModal';
@@ -55,10 +55,9 @@ export const RecentSection: React.FC = () => {
             recentAnalyses.map((analysis, index) => (
               <div 
                 key={`${analysis.type}-${analysis.id}`}
-                className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                className="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
                 onClick={() => handleAnalysisClick(analysis)}
               >
-                <Star className="h-4 w-4 text-gray-400 pointer-events-none" />
                 <span className="text-sm text-gray-700 flex-1 pointer-events-none">
                   {analysis.displayTitle}
                 </span>
@@ -66,8 +65,7 @@ export const RecentSection: React.FC = () => {
             ))
           ) : (
             ["Analysis of something", "Analysis of something", "Analysis of something"].map((item, index) => (
-              <div key={index} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded">
-                <Star className="h-4 w-4 text-gray-400" />
+              <div key={index} className="flex items-center p-2 hover:bg-gray-50 rounded">
                 <span className="text-sm text-gray-700">{item}</span>
               </div>
             ))
