@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { StepProps } from '../types';
-import { StepHeader } from '../components/StepHeader';
 import { FormField } from '../components/FormField';
 
 export const Step2ProjectName: React.FC<StepProps> = ({ 
@@ -15,14 +14,12 @@ export const Step2ProjectName: React.FC<StepProps> = ({
   };
 
   return (
-    <div className="space-y-6 flex flex-col items-center">
-      <StepHeader 
-        title="Name that analysis."
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-      />
+    <div className="w-full min-h-full">
+      <div className="w-full">
+        <h2 className="text-3xl font-bold text-center mb-8">Name Your Analysis</h2>
+      </div>
 
-      <div className="w-full max-w-md mx-auto">
+      <div className="max-w-md mx-auto">
         <FormField
           id="projectName"
           type="input"

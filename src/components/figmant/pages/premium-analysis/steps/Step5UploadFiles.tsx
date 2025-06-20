@@ -1,14 +1,10 @@
 
-import React, { useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import React from 'react';
 import { StepProps } from '../types';
-import { StepHeader } from '../components/StepHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Upload, Link, Info } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Upload, File, X, AlertCircle, Globe, Plus, Link } from 'lucide-react';
 
 export const Step5UploadFiles: React.FC<StepProps> = ({ 
   stepData, 
@@ -16,227 +12,152 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
   currentStep, 
   totalSteps 
 }) => {
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const currentFiles = stepData.uploadedFiles || [];
-    const newFiles = [...currentFiles, ...acceptedFiles];
-    setStepData(prev => ({ ...prev, uploadedFiles: newFiles }));
-  }, [stepData.uploadedFiles, setStepData]);
-
-  const removeFile = (index: number) => {
-    const currentFiles = stepData.uploadedFiles || [];
-    const newFiles = currentFiles.filter((_, i) => i !== index);
-    setStepData(prev => ({ ...prev, uploadedFiles: newFiles }));
+  const handleFileUpload = (files: FileList) => {
+    const fileArray = Array.from(files);
+    setStepData(prev => ({ 
+      ...prev, 
+      uploadedFiles: [...(prev.uploadedFiles || []), ...fileArray]
+    }));
   };
 
-  const addReferenceLink = () => {
-    const currentLinks = stepData.referenceLinks || [''];
-    const newLinks = [...currentLinks, ''];
-    setStepData(prev => ({ ...prev, referenceLinks: newLinks }));
+  const handleReferenceLinksChange = (links: string[]) => {
+    setStepData(prev => ({ 
+      ...prev, 
+      referenceLinks: links
+    }));
   };
-
-  const updateReferenceLink = (index: number, value: string) => {
-    const currentLinks = stepData.referenceLinks || [''];
-    const newLinks = currentLinks.map((link, i) => i === index ? value : link);
-    setStepData(prev => ({ ...prev, referenceLinks: newLinks }));
-  };
-
-  const removeReferenceLink = (index: number) => {
-    const currentLinks = stepData.referenceLinks || [''];
-    if (currentLinks.length > 1) {
-      const newLinks = currentLinks.filter((_, i) => i !== index);
-      setStepData(prev => ({ ...prev, referenceLinks: newLinks }));
-    }
-  };
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.svg'],
-      'application/pdf': ['.pdf'],
-      'text/*': ['.txt', '.md'],
-      'application/json': ['.json']
-    },
-    maxSize: 10 * 1024 * 1024 // 10MB
-  });
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const validLinks = (stepData.referenceLinks || []).filter(link => link.trim() !== '');
 
   return (
-    <div>
-      <StepHeader 
-        title="Upload Files & Reference Links"
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-      />
+    <div className="w-full min-h-full">
+      <div className="w-full">
+        <h2 className="text-3xl font-bold text-center mb-8">Upload Files & Reference Links</h2>
+      </div>
 
-      <div className="max-w-2xl mx-auto space-y-6">
-        <Tabs defaultValue="files" className="w-full">
+      <div className="max-w-4xl mx-auto">
+        <Tabs defaultValue="upload" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="files" className="flex items-center gap-2">
+            <TabsTrigger value="upload" className="flex items-center gap-2">
               <Upload className="h-4 w-4" />
               Upload Files
             </TabsTrigger>
-            <TabsTrigger value="links" className="flex items-center gap-2">
-              <Globe className="h-4 w-4" />
+            <TabsTrigger value="reference" className="flex items-center gap-2">
+              <Link className="h-4 w-4" />
               Reference Links
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="files" className="space-y-4">
+          <TabsContent value="upload" className="mt-6">
             <Card>
-              <CardHeader className="px-0">
+              <CardHeader>
                 <CardTitle>File Upload (Optional)</CardTitle>
-                <CardDescription>
+                <p className="text-sm text-muted-foreground">
                   Upload design files, mockups, or reference materials to enhance your analysis
-                </CardDescription>
+                </p>
               </CardHeader>
-              <CardContent className="px-0">
-                <div
-                  {...getRootProps()}
-                  className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                    isDragActive 
-                      ? 'border-primary bg-primary/5' 
-                      : 'border-gray-300 hover:border-primary hover:bg-gray-50'
-                  }`}
-                >
-                  <input {...getInputProps()} />
+              <CardContent>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                   <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  {isDragActive ? (
-                    <p className="text-lg font-medium">Drop files here...</p>
-                  ) : (
-                    <div>
-                      <p className="text-lg font-medium mb-2">
-                        Drag & drop files here, or click to select
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Supports: Images, PDFs, Text files, JSON (Max 10MB per file)
-                      </p>
+                  <p className="text-lg font-medium mb-2">Drag & drop files here, or click to select</p>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Supports: Images, PDFs, Text files, JSON (Max 10MB per file)
+                  </p>
+                  <Button variant="outline">
+                    Choose Files
+                  </Button>
+                </div>
+                
+                {stepData.uploadedFiles && stepData.uploadedFiles.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="font-medium mb-2">Uploaded Files:</h4>
+                    <div className="space-y-2">
+                      {stepData.uploadedFiles.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                          <span className="text-sm">{file.name}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              const newFiles = stepData.uploadedFiles?.filter((_, i) => i !== index) || [];
+                              setStepData(prev => ({ ...prev, uploadedFiles: newFiles }));
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
                     </div>
-                  )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="reference" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Reference Links (Optional)</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Add URLs to competitor websites, design inspiration, or related resources
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {(stepData.referenceLinks || ['']).map((link, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="url"
+                        placeholder="https://example.com"
+                        value={link}
+                        onChange={(e) => {
+                          const newLinks = [...(stepData.referenceLinks || [''])];
+                          newLinks[index] = e.target.value;
+                          handleReferenceLinksChange(newLinks);
+                        }}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {index > 0 && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            const newLinks = stepData.referenceLinks?.filter((_, i) => i !== index) || [];
+                            handleReferenceLinksChange(newLinks);
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      const newLinks = [...(stepData.referenceLinks || ['']), ''];
+                      handleReferenceLinksChange(newLinks);
+                    }}
+                  >
+                    Add Another Link
+                  </Button>
                 </div>
               </CardContent>
             </Card>
-
-            {/* Uploaded Files List */}
-            {stepData.uploadedFiles && stepData.uploadedFiles.length > 0 && (
-              <Card>
-                <CardHeader className="px-0">
-                  <CardTitle>Uploaded Files ({stepData.uploadedFiles.length})</CardTitle>
-                </CardHeader>
-                <CardContent className="px-0">
-                  <div className="space-y-3">
-                    {stepData.uploadedFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <File className="h-5 w-5 text-gray-400" />
-                          <div>
-                            <p className="font-medium text-sm">{file.name}</p>
-                            <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeFile(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="links" className="space-y-4">
-            <Card>
-              <CardHeader className="px-0">
-                <CardTitle>Reference Links (Optional)</CardTitle>
-                <CardDescription>
-                  Add website URLs, competitor sites, or reference materials for analysis context
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 px-0">
-                {(stepData.referenceLinks || ['']).map((link, index) => (
-                  <div key={index} className="flex gap-2">
-                    <div className="flex-1">
-                      <Label htmlFor={`link-${index}`} className="sr-only">
-                        Reference Link {index + 1}
-                      </Label>
-                      <Input
-                        id={`link-${index}`}
-                        placeholder="https://example.com or competitor website"
-                        value={link}
-                        onChange={(e) => updateReferenceLink(index, e.target.value)}
-                      />
-                    </div>
-                    {(stepData.referenceLinks || []).length > 1 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeReferenceLink(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={addReferenceLink}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Another Link
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Valid Links Summary */}
-            {validLinks.length > 0 && (
-              <Card>
-                <CardHeader className="px-0">
-                  <CardTitle>Reference Links ({validLinks.length})</CardTitle>
-                </CardHeader>
-                <CardContent className="px-0">
-                  <div className="space-y-2">
-                    {validLinks.map((link, index) => (
-                      <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                        <Link className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm truncate">{link}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </TabsContent>
         </Tabs>
 
-        {/* Guidelines */}
-        <Card>
-          <CardHeader className="px-0">
-            <CardTitle className="flex items-center space-x-2">
-              <AlertCircle className="h-5 w-5" />
-              <span>Guidelines</span>
+        {/* Guidelines Section */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              Guidelines
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <h4 className="font-medium mb-2">Files:</h4>
-                <ul className="space-y-1 text-sm text-gray-600">
+                <ul className="text-sm text-gray-600 space-y-1">
                   <li>• Design files, mockups, wireframes</li>
                   <li>• Brand guidelines, style guides</li>
                   <li>• Requirements, research findings</li>
@@ -245,7 +166,7 @@ export const Step5UploadFiles: React.FC<StepProps> = ({
               </div>
               <div>
                 <h4 className="font-medium mb-2">Reference Links:</h4>
-                <ul className="space-y-1 text-sm text-gray-600">
+                <ul className="text-sm text-gray-600 space-y-1">
                   <li>• Competitor websites</li>
                   <li>• Design inspiration sites</li>
                   <li>• Current website/app versions</li>

@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { StepProps } from '../types';
-import { StepHeader } from '../components/StepHeader';
 import { FormField } from '../components/FormField';
 
 export const Step3AnalysisGoals: React.FC<StepProps> = ({ 
@@ -15,18 +14,16 @@ export const Step3AnalysisGoals: React.FC<StepProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <StepHeader 
-        title="Any specific feedback you would like?"
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-      />
+    <div className="w-full min-h-full">
+      <div className="w-full">
+        <h2 className="text-3xl font-bold text-center mb-8">Analysis Goals & Context</h2>
+      </div>
 
       <div className="max-w-2xl mx-auto">
         <FormField
           id="analysisGoals"
           type="textarea"
-          label="Analysis Goals & Context"
+          label="What specific feedback would you like?"
           placeholder="e.g. Create a user-friendly mobile app to help people track their daily water intake"
           value={stepData.analysisGoals}
           onChange={handleAnalysisGoalsChange}

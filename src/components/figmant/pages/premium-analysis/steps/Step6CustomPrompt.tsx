@@ -2,7 +2,6 @@
 import React from 'react';
 import { Plus, FileText } from 'lucide-react';
 import { StepProps } from '../types';
-import { StepHeader } from '../components/StepHeader';
 import { FormField } from '../components/FormField';
 import { ActionButton } from '../components/ActionButton';
 
@@ -27,12 +26,10 @@ export const Step6CustomPrompt: React.FC<StepProps> = ({
   };
 
   return (
-    <div>
-      <StepHeader 
-        title="Prompts us..."
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-      />
+    <div className="w-full min-h-full">
+      <div className="w-full">
+        <h2 className="text-3xl font-bold text-center mb-8">Custom Prompts</h2>
+      </div>
 
       <div className="max-w-2xl mx-auto space-y-6">
         <FormField
