@@ -148,23 +148,24 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           }}
         >
           <TabsList 
-            className="grid w-full grid-cols-2 h-8 p-0"
+            className="grid w-full grid-cols-2 h-8"
             style={{
               borderRadius: '8px',
               background: '#F5F5F5',
               border: 'none',
-              boxShadow: 'none'
+              boxShadow: 'none',
+              padding: '2px'
             }}
           >
             <TabsTrigger 
               value="menu" 
-              className="text-sm font-medium h-full rounded-md data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:shadow-none"
+              className="text-sm font-medium h-full rounded-md m-0.5 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:shadow-none"
             >
               Menu
             </TabsTrigger>
             <TabsTrigger 
               value="recent" 
-              className="text-sm font-medium h-full rounded-md data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:shadow-none"
+              className="text-sm font-medium h-full rounded-md m-0.5 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-500 data-[state=inactive]:shadow-none"
             >
               Recent
             </TabsTrigger>
