@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { SidebarHeader } from '../SidebarHeader';
-import { SidebarNavigation } from '../SidebarNavigation';
+import { SidebarNavigation } from '../../navigation/components/SidebarNavigation';
 import { SidebarCredits } from '../SidebarCredits';
-import { SidebarUserProfile } from '../SidebarUserProfile';
 import { UserProfileDropdown } from './UserProfileDropdown';
 
 interface SidebarLayoutProps {
@@ -67,11 +66,6 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
           onSectionChange={onSectionChange}
           isOwner={isOwner}
           isCollapsed={isCollapsed}
-          onToggleCollapse={onToggleCollapse}
-          profile={profile}
-          user={user}
-          subscription={subscription}
-          signOut={signOut}
         />
       </div>
 
