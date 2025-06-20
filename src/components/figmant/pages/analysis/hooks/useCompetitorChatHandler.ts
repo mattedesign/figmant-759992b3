@@ -9,9 +9,18 @@ export const useCompetitorChatHandler = () => {
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisStage, setAnalysisStage] = useState<'idle' | 'sending' | 'processing' | 'analyzing' | 'complete'>('idle');
   
   const { toast } = useToast();
   const chatAnalysis = useFigmantChatAnalysis();
+
+  const showProgressToast = (stage: string, description: string) => {
+    toast({
+      title: stage,
+      description: description,
+      duration: 2000,
+    });
+  };
 
   const handleSendMessage = useCallback(async () => {
     console.log('🔥 COMPETITOR CHAT - Send button clicked!', {
@@ -29,6 +38,7 @@ export const useCompetitorChatHandler = () => {
     }
 
     setIsAnalyzing(true);
+    setAnalysisStage('sending');
 
     try {
       // Create user message immediately
@@ -49,7 +59,17 @@ export const useCompetitorChatHandler = () => {
       setMessage('');
       setAttachments([]);
 
+      // Show progress feedback
+      showProgressToast("Sending Message", "Preparing your competitor analysis request...");
+      
+      setAnalysisStage('processing');
       console.log('🔥 COMPETITOR CHAT - Calling analysis API...');
+
+      // Simulate processing delay for UX
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setAnalysisStage('analyzing');
+      showProgressToast("Processing", "Analyzing competitor data with AI...");
 
       // Call the analysis API
       const result = await chatAnalysis.mutateAsync({
@@ -59,6 +79,8 @@ export const useCompetitorChatHandler = () => {
       });
 
       console.log('🔥 COMPETITOR CHAT - Analysis result:', result);
+
+      setAnalysisStage('complete');
 
       // Add AI response
       const aiMessage: ChatMessage = {
@@ -71,8 +93,9 @@ export const useCompetitorChatHandler = () => {
       setMessages(prev => [...prev, aiMessage]);
 
       toast({
-        title: "Competitor Analysis Complete",
-        description: "Your competitor analysis has been generated.",
+        title: "Analysis Complete",
+        description: "Your competitor analysis has been generated successfully.",
+        duration: 4000,
       });
 
     } catch (error) {
@@ -92,9 +115,11 @@ export const useCompetitorChatHandler = () => {
         variant: "destructive",
         title: "Analysis Failed",
         description: error instanceof Error ? error.message : 'Unknown error occurred',
+        duration: 5000,
       });
     } finally {
       setIsAnalyzing(false);
+      setAnalysisStage('idle');
     }
   }, [message, attachments, chatAnalysis, toast]);
 
@@ -115,6 +140,7 @@ export const useCompetitorChatHandler = () => {
     attachments,
     setAttachments,
     isAnalyzing,
+    analysisStage,
     handleSendMessage,
     handleKeyPress,
     canSend
