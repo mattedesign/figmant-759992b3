@@ -16,7 +16,13 @@ const TabsList = React.forwardRef<
       "inline-flex h-10 items-center justify-center rounded-md p-1 text-muted-foreground",
       className
     )}
-    style={{ backgroundColor: "#E3F5FF" }}
+    style={{
+      borderRadius: '12px',
+      border: '1px solid var(--Stroke-02, #E2E2E2)',
+      background: 'var(--Surface-03, #F1F1F1)',
+      boxShadow: '0px 1px 1.9px 0px var(--Shade-7-10, rgba(50, 50, 50, 0.10)) inset',
+      ...props.style
+    }}
     {...props}
   />
 ))

@@ -21,16 +21,6 @@ export const SidebarNavigationTabs: React.FC<SidebarNavigationTabsProps> = ({
     >
       <TabsList 
         className="grid w-full grid-cols-2 h-12"
-        style={{
-          display: 'flex',
-          padding: '4px',
-          alignItems: 'center',
-          flex: '1 0 0',
-          borderRadius: '12px',
-          border: '1px solid var(--Stroke-02, #E2E2E2)',
-          background: 'var(--Surface-03, #F1F1F1)',
-          boxShadow: '0px 1px 1.9px 0px var(--Shade-7-10, rgba(50, 50, 50, 0.10)) inset'
-        }}
       >
         <TabsTrigger 
           value="menu" 

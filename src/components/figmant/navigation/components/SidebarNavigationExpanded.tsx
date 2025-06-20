@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,12 +33,6 @@ export const SidebarNavigationExpanded: React.FC<SidebarNavigationExpandedProps>
         <div className="flex-none px-4 pt-4 pb-2">
           <TabsList 
             className="grid w-full grid-cols-2 h-10"
-            style={{
-              borderRadius: '12px',
-              border: '1px solid var(--Stroke-02, #E2E2E2)',
-              background: 'var(--Surface-03, #F1F1F1)',
-              boxShadow: '0px 1px 1.9px 0px var(--Shade-7-10, rgba(50, 50, 50, 0.10)) inset'
-            }}
           >
             <TabsTrigger 
               value="menu" 
