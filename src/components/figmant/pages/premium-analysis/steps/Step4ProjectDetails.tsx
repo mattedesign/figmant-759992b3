@@ -24,8 +24,10 @@ export const Step4ProjectDetails: React.FC<StepProps> = ({
   };
 
   return (
-    <div className="w-full">
-      <h2 className="text-3xl font-bold text-center mb-8 w-full">Project Details</h2>
+    <div className="w-full min-h-full">
+      <div className="w-full">
+        <h2 className="text-3xl font-bold text-center mb-8">Project Details</h2>
+      </div>
       
       <div className="max-w-2xl mx-auto">
         {/* If no template is selected or no contextual fields, show a message */}
