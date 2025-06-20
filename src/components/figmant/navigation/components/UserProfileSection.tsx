@@ -2,16 +2,20 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Settings, CreditCard, User, LogOut } from 'lucide-react';
+import { Settings, CreditCard, User, LogOut, Shield, LayoutDashboard, UserCog } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 interface UserProfileSectionProps {
   onNavigate: () => void;
+  activeSection?: string;
+  onSectionChange?: (section: string) => void;
 }
 
 export const UserProfileSection: React.FC<UserProfileSectionProps> = ({
-  onNavigate
+  onNavigate,
+  activeSection,
+  onSectionChange
 }) => {
   const { isOwner, user, profile, signOut } = useAuth();
   const navigate = useNavigate();
@@ -31,6 +35,29 @@ export const UserProfileSection: React.FC<UserProfileSectionProps> = ({
   const handleProfileNavigation = (path: string) => {
     navigate(path);
     onNavigate();
+  };
+
+  const handleSectionNavigation = (section: string) => {
+    if (onSectionChange) {
+      onSectionChange(section);
+      onNavigate();
+    } else {
+      // Fallback to direct navigation if section change not available
+      const routeMap: Record<string, string> = {
+        'dashboard': '/figmant',
+        'admin': '/figmant',
+        'owner': '/owner',
+        'subscriber': '/dashboard'
+      };
+      
+      const route = routeMap[section] || '/figmant';
+      if (section === 'admin') {
+        navigate(route, { state: { activeSection: 'admin' } });
+      } else {
+        navigate(route);
+      }
+      onNavigate();
+    }
   };
 
   return (
@@ -53,14 +80,91 @@ export const UserProfileSection: React.FC<UserProfileSectionProps> = ({
         </div>
       </div>
 
-      {/* Profile Actions */}
+      {/* Quick Dashboard Actions */}
+      <div className="space-y-1 mb-4">
+        {isOwner && (
+          <>
+            {/* Main Figmant Dashboard */}
+            <Button
+              variant="ghost"
+              className={`w-full justify-start h-10 text-sm ${
+                activeSection === 'dashboard' ? 'bg-accent text-accent-foreground' : ''
+              }`}
+              onClick={() => handleSectionNavigation('dashboard')}
+            >
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              Main Dashboard
+            </Button>
+            
+            {/* Admin Section */}
+            <Button
+              variant="ghost"
+              className={`w-full justify-start h-10 text-sm ${
+                activeSection === 'admin' ? 'bg-accent text-accent-foreground' : ''
+              }`}
+              onClick={() => handleSectionNavigation('admin')}
+            >
+              <Shield className="mr-2 h-4 w-4" />
+              Admin Panel
+            </Button>
+
+            {/* Legacy Owner Dashboard (External) */}
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-10 text-sm border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
+              onClick={() => handleProfileNavigation('/owner')}
+            >
+              <UserCog className="mr-2 h-4 w-4" />
+              Legacy Owner Dashboard
+            </Button>
+
+            {/* Legacy Subscriber Dashboard (External) */}
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-10 text-sm border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+              onClick={() => handleProfileNavigation('/dashboard')}
+            >
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              Legacy Subscriber Dashboard
+            </Button>
+          </>
+        )}
+        
+        {!isOwner && (
+          <>
+            {/* Main Dashboard for Non-Owners */}
+            <Button
+              variant="ghost"
+              className={`w-full justify-start h-10 text-sm ${
+                activeSection === 'dashboard' ? 'bg-accent text-accent-foreground' : ''
+              }`}
+              onClick={() => handleSectionNavigation('dashboard')}
+            >
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
+
+            {/* Legacy Subscriber Dashboard for Non-Owners */}
+            <Button
+              variant="ghost"
+              className="w-full justify-start h-10 text-sm border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
+              onClick={() => handleProfileNavigation('/dashboard')}
+            >
+              <User className="mr-2 h-4 w-4" />
+              Legacy Dashboard
+            </Button>
+          </>
+        )}
+      </div>
+
+      {/* Profile & Account Actions */}
       <div className="space-y-1">
         <Button
           variant="ghost"
           className="w-full justify-start h-10 text-sm"
           onClick={() => handleProfileNavigation('/profile')}
         >
-          <Settings className="h-4 w-4 mr-3" />
+          <Settings className="mr-2 h-4 w-4" />
           Profile & Settings
         </Button>
         
@@ -69,27 +173,16 @@ export const UserProfileSection: React.FC<UserProfileSectionProps> = ({
           className="w-full justify-start h-10 text-sm"
           onClick={() => handleProfileNavigation('/subscription')}
         >
-          <CreditCard className="h-4 w-4 mr-3" />
+          <CreditCard className="mr-2 h-4 w-4" />
           Subscription
         </Button>
-
-        {isOwner && (
-          <Button
-            variant="ghost"
-            className="w-full justify-start h-10 text-sm"
-            onClick={() => handleProfileNavigation('/dashboard')}
-          >
-            <User className="h-4 w-4 mr-3" />
-            Dashboard
-          </Button>
-        )}
-
+        
         <Button
           variant="ghost"
           className="w-full justify-start h-10 text-sm text-red-600 hover:text-red-700 hover:bg-red-50"
           onClick={handleSignOut}
         >
-          <LogOut className="h-4 w-4 mr-3" />
+          <LogOut className="mr-2 h-4 w-4" />
           Sign Out
         </Button>
       </div>

@@ -47,7 +47,12 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
             activeSection={activeSection}
             onSectionChange={handleSectionChange}
           />
-          <UserProfileSection onNavigate={handleNavigationClose} />
+          {/* Updated: Pass section props to UserProfileSection */}
+          <UserProfileSection 
+            onNavigate={handleNavigationClose}
+            activeSection={activeSection}
+            onSectionChange={handleSectionChange}
+          />
         </div>
       </SheetContent>
     </Sheet>
