@@ -55,7 +55,22 @@ export const SidebarNavigationTabs: React.FC<SidebarNavigationTabsProps> = ({
               fontWeight: '600',
               lineHeight: '16px',
               letterSpacing: '-0.13px'
-            } : {})
+            } : {
+              display: 'flex',
+              padding: '8px 12px',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '8px',
+              flex: '1 0 0',
+              borderRadius: '8px',
+              color: 'var(--Text-Secondary, #7B7B7B)',
+              fontFamily: '"Instrument Sans"',
+              fontSize: '13px',
+              fontStyle: 'normal',
+              fontWeight: '600',
+              lineHeight: '16px',
+              letterSpacing: '-0.13px'
+            })
           }}
         >
           Analysis
@@ -83,7 +98,22 @@ export const SidebarNavigationTabs: React.FC<SidebarNavigationTabsProps> = ({
               fontWeight: '600',
               lineHeight: '16px',
               letterSpacing: '-0.13px'
-            } : {})
+            } : {
+              display: 'flex',
+              padding: '8px 12px',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '8px',
+              flex: '1 0 0',
+              borderRadius: '8px',
+              color: 'var(--Text-Secondary, #7B7B7B)',
+              fontFamily: '"Instrument Sans"',
+              fontSize: '13px',
+              fontStyle: 'normal',
+              fontWeight: '600',
+              lineHeight: '16px',
+              letterSpacing: '-0.13px'
+            })
           }}
         >
           Recent
