@@ -83,22 +83,57 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           onMouseEnter={(e) => {
             if (activeSection !== item.id) {
               e.currentTarget.style.color = '#1812E9';
+              // Apply hover styles to icon container
+              const iconContainer = e.currentTarget.querySelector('.icon-container') as HTMLElement;
+              if (iconContainer) {
+                iconContainer.style.background = '#FFF';
+                iconContainer.style.color = '#1812E9';
+              }
             }
           }}
           onMouseLeave={(e) => {
             if (activeSection !== item.id) {
               e.currentTarget.style.color = '#6B7280';
+              // Reset icon container styles
+              const iconContainer = e.currentTarget.querySelector('.icon-container') as HTMLElement;
+              if (iconContainer) {
+                iconContainer.style.background = '';
+                iconContainer.style.color = '';
+              }
             }
           }}
         >
-          <item.icon 
-            className={cn(
-              "h-5 w-5 mr-3",
+          <div 
+            className={cn("icon-container flex justify-center items-center mr-3 transition-all duration-200")}
+            style={
               activeSection === item.id 
-                ? "text-blue-600" 
-                : "text-gray-500 group-hover:text-blue-600"
-            )}
-          />
+                ? {
+                    display: 'flex',
+                    padding: '8px',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '8px',
+                    borderRadius: '8px',
+                    background: '#FFF',
+                    color: '#1812E9'
+                  }
+                : {
+                    display: 'flex',
+                    padding: '8px',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '8px',
+                    borderRadius: '8px'
+                  }
+            }
+          >
+            <item.icon 
+              className="h-4 w-4"
+              style={{ 
+                color: 'inherit'
+              }}
+            />
+          </div>
           <span className="font-medium text-sm flex-1 text-left">
             {item.label}
           </span>
