@@ -35,7 +35,6 @@ export const RecentSection: React.FC = () => {
     // Prevent any bubbling or default behavior
     event.preventDefault();
     event.stopPropagation();
-    event.stopImmediatePropagation();
     
     console.log('Analysis clicked in RecentSection:', analysis);
     console.log('Setting modal open to true');
