@@ -59,10 +59,7 @@ export const SidebarMenuGroup: React.FC<SidebarMenuGroupProps> = ({
       )}
       
       {(!section.title || !isCollapsed) && (
-        <div 
-          style={getMenuSectionContainerStyles(isFirst)}
-          className="hover:bg-[#1812E9] hover:rounded-[12px] transition-all"
-        >
+        <div style={getMenuSectionContainerStyles(isFirst)}>
           {section.items?.map(item => (
             <SidebarMenuItem
               key={item.id}

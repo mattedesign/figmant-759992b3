@@ -1,12 +1,11 @@
-
 import { cn } from '@/lib/utils';
 
 export const getMenuItemButtonStyles = (isActive: boolean) => {
   return cn(
-    "w-full justify-start text-left h-10 px-2 group",
+    "w-full justify-start text-left h-10 px-2 group hover:bg-[#1812E9] hover:rounded-[12px] transition-all",
     isActive
       ? "bg-white text-[#3D4A5C] rounded-[12px] shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
-      : "hover:bg-[#1812E9] hover:text-[#3D4A5C] hover:rounded-[12px] hover:shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
+      : ""
   );
 };
 
