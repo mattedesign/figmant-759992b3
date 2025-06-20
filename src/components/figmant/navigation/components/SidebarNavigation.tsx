@@ -16,12 +16,14 @@ interface SidebarNavigationProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
   isCollapsed: boolean;
+  isOwner?: boolean;
 }
 
 export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   activeSection,
   onSectionChange,
-  isCollapsed
+  isCollapsed,
+  isOwner = false
 }) => {
   const mainMenuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -35,66 +37,183 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     { id: 'support', label: 'Help & Support', icon: HelpCircle },
   ];
 
-  const adminItems = [
+  const adminItems = isOwner ? [
     { id: 'admin', label: 'Admin Panel', icon: Shield },
-  ];
+  ] : [];
 
-  const getMenuItemStyles = (isActive: boolean) => {
-    return cn(
-      "w-full justify-start text-left h-10 px-2 transition-all duration-200",
-      isActive
-        ? "bg-white text-[#3D4A5C] rounded-[12px] shadow-[0px_1.25px_3px_0px_rgba(50,50,50,0.10),0px_1.25px_1px_0px_#FFF_inset]"
-        : "text-[#455468] hover:bg-[#1812E9] hover:text-white hover:rounded-[12px] focus:bg-[#1812E9] focus:text-white focus:rounded-[12px] focus-visible:bg-[#1812E9] focus-visible:text-white focus-visible:rounded-[12px]"
+  if (isCollapsed) {
+    return (
+      <div className="flex flex-col items-center py-4" style={{ backgroundColor: '#F8F9FA' }}>
+        {/* Main Menu Items - Collapsed */}
+        <div className="flex flex-col items-center space-y-3 mb-6">
+          {mainMenuItems.map((item) => (
+            <Button
+              key={item.id}
+              variant="ghost"
+              size="icon"
+              onClick={() => onSectionChange(item.id)}
+              className="w-12 h-12 p-0 hover:bg-transparent active:bg-transparent focus:bg-transparent border-none shadow-none"
+            >
+              <item.icon 
+                className="h-6 w-6"
+                style={{ color: '#6B7280' }}
+              />
+            </Button>
+          ))}
+        </div>
+
+        {/* Support Items - Collapsed */}
+        <div className="flex flex-col items-center space-y-3 mb-6">
+          {supportItems.map((item) => (
+            <Button
+              key={item.id}
+              variant="ghost"
+              size="icon"
+              onClick={() => onSectionChange(item.id)}
+              className="w-12 h-12 p-0 hover:bg-transparent active:bg-transparent focus:bg-transparent border-none shadow-none"
+            >
+              <item.icon 
+                className="h-6 w-6"
+                style={{ color: '#6B7280' }}
+              />
+            </Button>
+          ))}
+        </div>
+
+        {/* Admin Items - Collapsed */}
+        {adminItems.length > 0 && (
+          <div className="flex flex-col items-center space-y-3">
+            {adminItems.map((item) => (
+              <Button
+                key={item.id}
+                variant="ghost"
+                size="icon"
+                onClick={() => onSectionChange(item.id)}
+                className="w-12 h-12 p-0 hover:bg-transparent active:bg-transparent focus:bg-transparent border-none shadow-none"
+              >
+                <item.icon 
+                  className="h-6 w-6"
+                  style={{ color: '#6B7280' }}
+                />
+              </Button>
+            ))}
+          </div>
+        )}
+      </div>
     );
-  };
-
-  const getIconStyles = (isActive: boolean) => {
-    return cn(
-      "h-4 w-4 mr-3 transition-all duration-200",
-      isActive 
-        ? "text-[#1812E9]" 
-        : "text-[#455468] group-hover:text-white group-focus:text-white group-focus-visible:text-white"
-    );
-  };
-
-  const renderMenuItem = (item: any) => (
-    <Button
-      key={item.id}
-      variant="ghost"
-      className={getMenuItemStyles(activeSection === item.id)}
-      onClick={() => onSectionChange(item.id)}
-    >
-      <item.icon className={getIconStyles(activeSection === item.id)} />
-      {!isCollapsed && (
-        <span className="flex-1 text-left">
-          {item.label}
-        </span>
-      )}
-    </Button>
-  );
+  }
 
   return (
-    <div className="flex flex-col space-y-6 px-3">
-      {/* Main Menu */}
+    <div className="flex flex-col space-y-6 px-4 py-4" style={{ backgroundColor: 'white' }}>
+      {/* Main Menu - Expanded */}
       <div className="space-y-1">
-        {mainMenuItems.map(renderMenuItem)}
+        {mainMenuItems.map((item) => (
+          <Button
+            key={item.id}
+            variant="ghost"
+            onClick={() => onSectionChange(item.id)}
+            className={cn(
+              "w-full justify-start h-10 px-3 transition-all duration-200 border-none shadow-none",
+              activeSection === item.id
+                ? "rounded-lg text-blue-600 font-medium"
+                : "text-gray-700 hover:bg-gray-50"
+            )}
+            style={
+              activeSection === item.id 
+                ? { backgroundColor: '#EBF4FF', color: '#2563EB' }
+                : {}
+            }
+          >
+            <item.icon 
+              className="h-5 w-5 mr-3" 
+              style={{ 
+                color: activeSection === item.id ? '#2563EB' : '#374151'
+              }}
+            />
+            <span className="font-medium text-sm">
+              {item.label}
+            </span>
+          </Button>
+        ))}
       </div>
 
-      {/* Support Section */}
-      <div className="space-y-1 border-t border-gray-200/30 pt-4">
-        {!isCollapsed && (
-          <h3 className="text-sm font-medium text-gray-500 px-2 mb-2">Support</h3>
-        )}
-        {supportItems.map(renderMenuItem)}
+      {/* Support Section - Expanded */}
+      <div className="space-y-1">
+        <h3 
+          className="text-xs font-medium px-3 mb-2 uppercase tracking-wide"
+          style={{ color: '#6B7280' }}
+        >
+          Support
+        </h3>
+        {supportItems.map((item) => (
+          <Button
+            key={item.id}
+            variant="ghost"
+            onClick={() => onSectionChange(item.id)}
+            className={cn(
+              "w-full justify-start h-10 px-3 transition-all duration-200 border-none shadow-none",
+              activeSection === item.id
+                ? "rounded-lg text-blue-600 font-medium"
+                : "text-gray-700 hover:bg-gray-50"
+            )}
+            style={
+              activeSection === item.id 
+                ? { backgroundColor: '#EBF4FF', color: '#2563EB' }
+                : {}
+            }
+          >
+            <item.icon 
+              className="h-5 w-5 mr-3" 
+              style={{ 
+                color: activeSection === item.id ? '#2563EB' : '#374151'
+              }}
+            />
+            <span className="font-medium text-sm">
+              {item.label}
+            </span>
+          </Button>
+        ))}
       </div>
 
-      {/* Admin Section */}
-      <div className="space-y-1 border-t border-gray-200/30 pt-4">
-        {!isCollapsed && (
-          <h3 className="text-sm font-medium text-gray-500 px-2 mb-2">Admin</h3>
-        )}
-        {adminItems.map(renderMenuItem)}
-      </div>
+      {/* Admin Section - Expanded */}
+      {adminItems.length > 0 && (
+        <div className="space-y-1">
+          <h3 
+            className="text-xs font-medium px-3 mb-2 uppercase tracking-wide"
+            style={{ color: '#6B7280' }}
+          >
+            Admin
+          </h3>
+          {adminItems.map((item) => (
+            <Button
+              key={item.id}
+              variant="ghost"
+              onClick={() => onSectionChange(item.id)}
+              className={cn(
+                "w-full justify-start h-10 px-3 transition-all duration-200 border-none shadow-none",
+                activeSection === item.id
+                  ? "rounded-lg text-blue-600 font-medium"
+                  : "text-gray-700 hover:bg-gray-50"
+              )}
+              style={
+                activeSection === item.id 
+                  ? { backgroundColor: '#EBF4FF', color: '#2563EB' }
+                  : {}
+              }
+            >
+              <item.icon 
+                className="h-5 w-5 mr-3" 
+                style={{ 
+                  color: activeSection === item.id ? '#2563EB' : '#374151'
+                }}
+              />
+              <span className="font-medium text-sm">
+                {item.label}
+              </span>
+            </Button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

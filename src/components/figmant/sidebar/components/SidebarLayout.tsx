@@ -43,7 +43,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
       style={{ 
         borderRadius: '20px',
         border: '1px solid var(--Stroke-01, #ECECEC)',
-        background: 'var(--Surface-01, #FCFCFC)'
+        backgroundColor: isCollapsed ? '#F8F9FA' : 'white'
       }}
     >
       <SidebarHeader 

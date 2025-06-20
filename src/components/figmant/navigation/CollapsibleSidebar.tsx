@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { SidebarHeader } from './components/SidebarHeader';
 import { SidebarNavigation } from './components/SidebarNavigation';
 import { SidebarFooter } from './components/SidebarFooter';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CollapsibleSidebarProps {
   activeSection: string;
@@ -19,27 +20,19 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
   isCollapsed,
   onToggleCollapse
 }) => {
+  const { isOwner } = useAuth();
+
   return (
     <TooltipProvider>
       <div 
         className={cn(
-          "h-full transition-all duration-300 ease-in-out",
-          isCollapsed ? "w-16" : ""
+          "h-full transition-all duration-300 ease-in-out flex flex-col",
+          isCollapsed ? "w-20" : "w-64"
         )}
-        style={!isCollapsed ? {
-          display: 'flex',
-          maxWidth: '240px',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexShrink: 0,
+        style={{
           borderRadius: '20px',
           border: '1px solid var(--Stroke-01, #ECECEC)',
-          background: 'var(--Surface-01, #FCFCFC)'
-        } : {
-          borderRadius: '20px',
-          border: '1px solid var(--Stroke-01, #ECECEC)',
-          background: 'var(--Surface-01, #FCFCFC)'
+          backgroundColor: isCollapsed ? '#F8F9FA' : 'white'
         }}
       >
         <SidebarHeader 
@@ -47,11 +40,14 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           onToggleCollapse={onToggleCollapse}
         />
         
-        <SidebarNavigation 
-          activeSection={activeSection}
-          onSectionChange={onSectionChange}
-          isCollapsed={isCollapsed}
-        />
+        <div className="flex-1 overflow-y-auto">
+          <SidebarNavigation 
+            activeSection={activeSection}
+            onSectionChange={onSectionChange}
+            isCollapsed={isCollapsed}
+            isOwner={isOwner}
+          />
+        </div>
 
         <SidebarFooter isCollapsed={isCollapsed} />
       </div>
