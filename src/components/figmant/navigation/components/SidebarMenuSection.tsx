@@ -59,7 +59,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
                   fontWeight: '500',
                   lineHeight: '16px',
                   letterSpacing: '-0.12px',
-                  backgroundColor: 'transparent'
+                  backgroundColor: '#D8F1FF'
                 }
               : {
                   display: 'flex',
@@ -83,6 +83,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           onMouseEnter={(e) => {
             if (activeSection !== item.id) {
               e.currentTarget.style.color = '#1812E9';
+              e.currentTarget.style.backgroundColor = '#D8F1FF';
               // Apply hover styles to icon container
               const iconContainer = e.currentTarget.querySelector('.icon-container') as HTMLElement;
               if (iconContainer) {
@@ -94,6 +95,7 @@ export const SidebarMenuSection: React.FC<SidebarMenuSectionProps> = ({
           onMouseLeave={(e) => {
             if (activeSection !== item.id) {
               e.currentTarget.style.color = '#6B7280';
+              e.currentTarget.style.backgroundColor = 'transparent';
               // Reset icon container styles
               const iconContainer = e.currentTarget.querySelector('.icon-container') as HTMLElement;
               if (iconContainer) {
