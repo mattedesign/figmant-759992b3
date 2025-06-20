@@ -17,6 +17,19 @@ interface PromptTemplateCardProps {
 export const PromptTemplateCard: React.FC<PromptTemplateCardProps> = ({ category, templates }) => {
   const Icon = category.icon;
   
+  // Default handlers for PromptTemplateItem
+  const handleView = (template: ClaudePromptExample) => {
+    console.log('View template:', template.id);
+  };
+  
+  const handleDelete = (template: ClaudePromptExample) => {
+    console.log('Delete template:', template.id);
+  };
+  
+  const handleEditSuccess = () => {
+    console.log('Edit success - refresh needed');
+  };
+  
   return (
     <Card>
       <CardHeader>
@@ -32,7 +45,13 @@ export const PromptTemplateCard: React.FC<PromptTemplateCardProps> = ({ category
         ) : (
           <div className="space-y-3">
             {templates.map(template => (
-              <PromptTemplateItem key={`template-${template.id}`} template={template} />
+              <PromptTemplateItem 
+                key={`template-${template.id}`} 
+                template={template}
+                onView={handleView}
+                onDelete={handleDelete}
+                onEditSuccess={handleEditSuccess}
+              />
             ))}
           </div>
         )}
