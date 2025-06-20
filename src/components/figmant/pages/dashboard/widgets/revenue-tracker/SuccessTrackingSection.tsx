@@ -1,7 +1,7 @@
 
 import React from 'react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Target, CheckCircle } from 'lucide-react';
 import { SuccessMetric } from './types';
 
 interface SuccessTrackingSectionProps {
@@ -11,54 +11,52 @@ interface SuccessTrackingSectionProps {
 export const SuccessTrackingSection: React.FC<SuccessTrackingSectionProps> = ({
   successMetrics
 }) => {
-  if (successMetrics.length === 0) {
-    return null;
-  }
-
-  const suggestions_implemented = successMetrics.length;
-  const total_percentage_improvement = successMetrics.reduce((sum, metric) => 
-    sum + metric.percentage_change, 0) / successMetrics.length;
-
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Target className="h-4 w-4 text-blue-600" />
+      <div className="flex items-center justify-between">
         <h3 className="font-semibold text-sm">Success Tracking</h3>
+        <Badge variant="outline" className="text-xs">
+          Live Metrics
+        </Badge>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Suggestions Implemented</span>
-            <Badge variant="outline">
-              <CheckCircle className="h-3 w-3 mr-1" />
-              {suggestions_implemented}
-            </Badge>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Avg Improvement</span>
-            <span className="text-sm font-semibold text-green-600">
-              +{total_percentage_improvement.toFixed(1)}%
-            </span>
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          {successMetrics.map((metric, index) => (
-            <div key={index} className="flex items-center justify-between text-sm">
-              <span className="capitalize">{metric.metric.replace('_', ' ')}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">
+      <div className="space-y-3">
+        {successMetrics.map((metric, index) => (
+          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center gap-3">
+              {metric.percentage_change > 0 ? (
+                <TrendingUp className="h-4 w-4 text-green-600" />
+              ) : (
+                <TrendingDown className="h-4 w-4 text-red-600" />
+              )}
+              <div>
+                <div className="font-medium text-sm capitalize">
+                  {metric.metric.replace('_', ' ')}
+                </div>
+                <div className="text-xs text-muted-foreground">
                   {metric.before}% → {metric.after}%
-                </span>
-                <Badge variant="secondary" className="text-xs">
-                  +{metric.percentage_change.toFixed(1)}%
-                </Badge>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
+            
+            <div className="text-right">
+              <div className={`text-sm font-semibold ${
+                metric.percentage_change > 0 ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {metric.percentage_change > 0 ? '+' : ''}{metric.percentage_change.toFixed(1)}%
+              </div>
+              <div className="text-xs text-muted-foreground">
+                vs. baseline
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        {successMetrics.length === 0 && (
+          <div className="text-center text-muted-foreground text-sm py-4">
+            No tracked metrics yet. Complete analyses to see success tracking.
+          </div>
+        )}
       </div>
     </div>
   );

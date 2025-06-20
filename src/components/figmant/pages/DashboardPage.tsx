@@ -35,9 +35,7 @@ export const DashboardPage: React.FC = () => {
     rawAnalysisData,
     userCredits
   } = useDashboardOptimized();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
 
   // Performance measurement
   useEffect(() => {
@@ -76,16 +74,19 @@ export const DashboardPage: React.FC = () => {
           isRefreshing={isRefreshing} 
         />
 
+        {/* PRIMARY FOCUS: Business Intelligence Dashboard - Most prominent position */}
+        <DashboardAnalyticsTabsSection 
+          dataStats={memoizedDataStats} 
+          analysisData={memoizedAnalysisData}
+        />
+
         {/* Secondary widgets row - Credit Usage & Analysis Performance */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <DashboardCreditUsageSection userCredits={userCredits} />
           <DashboardAnalysisPerformanceSection analysisData={performanceWidgetData} />
         </div>
-
-        {/* Analytics Dashboard Section */}
-        <DashboardAnalyticsTabsSection dataStats={memoizedDataStats} analysisData={memoizedAnalysisData} />
         
-        {/* Main Content - Three Column Layout */}
+        {/* Supporting Content - Three Column Layout */}
         <div className="space-y-8">
           {/* Pattern Analysis (1/4), Recent Analyses (1/4), and Insights (2/4) */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
