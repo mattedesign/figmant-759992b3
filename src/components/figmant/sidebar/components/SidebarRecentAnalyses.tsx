@@ -2,7 +2,6 @@
 import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SavedChatAnalysis } from '@/hooks/useChatAnalysisHistory';
-import { useNavigate } from 'react-router-dom';
 import { useRecentAnalysisData } from './hooks/useRecentAnalysisData';
 import { RecentAnalysisItem } from './RecentAnalysisItem';
 import { RecentAnalysesEmptyState } from './RecentAnalysesEmptyState';
@@ -16,7 +15,6 @@ export const SidebarRecentAnalyses: React.FC<SidebarRecentAnalysesProps> = ({
   analysisHistory,
   onSectionChange
 }) => {
-  const navigate = useNavigate();
   const { recentAnalyses, isLoading, expandedItems, toggleExpanded } = useRecentAnalysisData(analysisHistory);
 
   const handleToggleExpanded = (analysisId: string, event: React.MouseEvent) => {
@@ -24,38 +22,10 @@ export const SidebarRecentAnalyses: React.FC<SidebarRecentAnalysesProps> = ({
     toggleExpanded(analysisId);
   };
 
+  // This function is now just a placeholder since each item handles its own modal
   const handleAnalysisClick = (analysis: any) => {
-    if (analysis.type === 'chat') {
-      // Navigate to chat page with historical analysis
-      navigate('/figmant', { 
-        state: { 
-          activeSection: 'chat',
-          loadHistoricalAnalysis: analysis.id,
-          historicalData: analysis
-        } 
-      });
-      onSectionChange('chat');
-    } else if (analysis.type === 'wizard') {
-      // Navigate to wizard page with historical analysis
-      navigate('/figmant', { 
-        state: { 
-          activeSection: 'wizard',
-          loadHistoricalAnalysis: analysis.id,
-          historicalData: analysis
-        } 
-      });
-      onSectionChange('wizard');
-    } else {
-      // Navigate to wizard with historical context for design analyses
-      navigate('/figmant', { 
-        state: { 
-          activeSection: 'wizard',
-          loadHistoricalAnalysis: analysis.id,
-          historicalData: analysis
-        } 
-      });
-      onSectionChange('wizard');
-    }
+    // No longer needed as each RecentAnalysisItem handles its own modal
+    console.log('Analysis click handled by individual item:', analysis.id);
   };
 
   return (

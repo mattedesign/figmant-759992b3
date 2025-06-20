@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Settings } from 'lucide-react';
+import { Settings, FileText } from 'lucide-react';
 import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { AnalysisDetailModal } from './components/AnalysisDetailModal';
@@ -32,26 +32,18 @@ export const RecentSection: React.FC = () => {
     .slice(0, 3);
 
   const handleAnalysisClick = (event: React.MouseEvent<HTMLButtonElement>, analysis: any) => {
-    // Aggressively prevent any navigation or bubbling
     event.preventDefault();
     event.stopPropagation();
-    event.nativeEvent.stopImmediatePropagation();
     
-    console.log('Analysis clicked in RecentSection - preventing navigation:', analysis);
+    console.log('Analysis clicked in RecentSection - opening modal:', analysis);
     setSelectedAnalysis(analysis);
     setShowModal(true);
-    
-    // Additional safety: return false to prevent any default behavior
-    return false;
   };
 
   const handleCloseModal = () => {
-    console.log('Closing modal');
     setShowModal(false);
     setSelectedAnalysis(null);
   };
-
-  console.log('RecentSection render - showModal:', showModal, 'selectedAnalysis:', !!selectedAnalysis);
 
   return (
     <>
@@ -69,11 +61,6 @@ export const RecentSection: React.FC = () => {
                 key={`${analysis.type}-${analysis.id}`}
                 className="w-full flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer transition-colors text-left border-0 bg-transparent"
                 onClick={(e) => handleAnalysisClick(e, analysis)}
-                onMouseDown={(e) => {
-                  // Prevent any mouse down events from propagating
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
                 type="button"
                 style={{ 
                   all: 'unset',

@@ -1,12 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, FileText, MessageSquare } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { AnalysisImage } from './AnalysisImage';
-import { AnalysisPreview } from './AnalysisPreview';
-import { AnalysisItemControls } from './AnalysisItemControls';
+import { AnalysisDetailModal } from '../../pages/dashboard/components/AnalysisDetailModal';
 
 interface RecentAnalysisItemProps {
   analysis: any;
@@ -21,78 +19,103 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
   onToggleExpanded,
   onAnalysisClick
 }) => {
-  const analysisId = `${analysis.type}-${analysis.id}`;
-
-  const handleToggleExpanded = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    onToggleExpanded(analysisId, event);
-  };
+  const [showModal, setShowModal] = useState(false);
 
   const handleAnalysisClick = (event: React.MouseEvent) => {
+    event.preventDefault();
     event.stopPropagation();
-    onAnalysisClick(analysis);
+    
+    console.log('Opening analysis modal from sidebar:', analysis);
+    setShowModal(true);
   };
 
-  const handleItemClick = () => {
-    onAnalysisClick(analysis);
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  const analysisId = `${analysis.type}-${analysis.id}`;
+  const Icon = analysis.type === 'chat' ? MessageSquare : FileText;
+  
+  const getConfidenceScore = () => {
+    if (analysis.confidence_score) {
+      return Math.round(analysis.confidence_score * 100);
+    }
+    return analysis.impact_summary?.key_metrics?.overall_score * 10 || 85;
   };
 
   return (
-    <div className="border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors overflow-hidden">
-      {/* Analysis Header - Fully Clickable */}
-      <div 
-        className="p-3 cursor-pointer"
-        onClick={handleItemClick}
-      >
-        <div className="flex items-start gap-3">
-          {/* Analysis Image */}
-          <AnalysisImage analysis={analysis} title={analysis.title} />
-          
-          {/* Analysis Info */}
-          <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-medium text-gray-900 truncate">
-              {analysis.title}
-            </h4>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge variant="secondary" className="text-xs">
-                Score: {analysis.score}/10
-              </Badge>
-            </div>
-            <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-              <Clock className="h-3 w-3" />
-              {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
+    <>
+      <div className="group rounded-lg border border-gray-100 bg-white hover:bg-gray-50 transition-colors">
+        <div
+          className="flex items-center justify-between p-3 cursor-pointer"
+          onClick={handleAnalysisClick}
+        >
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <Icon className="h-4 w-4 text-gray-500 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {analysis.displayTitle}
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <Clock className="h-3 w-3" />
+                  <span>
+                    {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
+                  </span>
+                </div>
+                <Badge variant="secondary" className="text-xs">
+                  {getConfidenceScore()}%
+                </Badge>
+              </div>
             </div>
           </div>
-
-          {/* Controls */}
-          <AnalysisItemControls
-            isExpanded={isExpanded}
-            onToggleExpanded={handleToggleExpanded}
-            onAnalysisClick={handleAnalysisClick}
-            analysisType={analysis.type}
-          />
-        </div>
-      </div>
-
-      {/* Expanded Content */}
-      {isExpanded && (
-        <div className="px-3 pb-3 border-t border-gray-100">
-          <AnalysisPreview analysis={analysis} />
-          <div className="mt-2 flex items-center justify-between">
-            <div className="text-xs text-gray-500">
-              Files: {analysis.fileCount}
-            </div>
+          
+          <div className="flex items-center gap-1 flex-shrink-0">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={handleAnalysisClick}
-              className="h-6 text-xs px-2"
+              className="h-6 w-6 p-0"
+              onClick={(e) => onToggleExpanded(analysisId, e)}
             >
-              {analysis.type === 'chat' ? 'Continue Chat' : 'Open Wizard'}
+              {isExpanded ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
             </Button>
           </div>
         </div>
-      )}
-    </div>
+
+        {isExpanded && (
+          <div className="px-3 pb-3 border-t border-gray-100">
+            <div className="mt-3 space-y-2 text-xs text-gray-600">
+              <div>
+                <span className="font-medium">Type:</span> {analysis.analysis_type || 'General'}
+              </div>
+              <div>
+                <span className="font-medium">Status:</span> {analysis.status || 'Completed'}
+              </div>
+              {analysis.analysis_results && (
+                <div className="mt-2">
+                  <div className="font-medium mb-1">Preview:</div>
+                  <div className="text-xs bg-gray-50 p-2 rounded text-gray-700 line-clamp-3">
+                    {typeof analysis.analysis_results === 'string' 
+                      ? analysis.analysis_results.slice(0, 100) + '...'
+                      : analysis.analysis_results.response?.slice(0, 100) + '...' || 'No preview available'}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Analysis Detail Modal */}
+      <AnalysisDetailModal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        analysis={analysis}
+      />
+    </>
   );
 };
