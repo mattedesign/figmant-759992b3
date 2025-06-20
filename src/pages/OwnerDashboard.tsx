@@ -15,7 +15,6 @@ const tabToSectionMap: Record<string, string> = {
   'all-analysis': 'dashboard',
   insights: 'dashboard',
   prompts: 'templates',
-  'premium-analysis': 'revenue-analysis',
   integrations: 'dashboard',
   batch: 'dashboard',
   history: 'dashboard',
@@ -31,6 +30,10 @@ const tabToSectionMap: Record<string, string> = {
   'revenue-analysis': 'revenue-analysis',
   templates: 'templates',
   credits: 'credits',
+  admin: 'admin',
+  // Legacy mappings for backward compatibility
+  'premium-analysis': 'revenue-analysis',
+  preferences: 'settings',
 };
 
 const OwnerDashboard = () => {
@@ -46,10 +49,11 @@ const OwnerDashboard = () => {
 
   // Valid tab options - including hidden tabs for direct access
   const validTabs = [
-    'design', 'all-analysis', 'insights', 'prompts', 'premium-analysis', 
-    'integrations', 'batch', 'history', 'legacy', 'users', 'plans', 
-    'claude', 'settings', 'prompt-manager',
-    'competitor-analysis', 'revenue-analysis', 'templates', 'credits'
+    'design', 'all-analysis', 'insights', 'prompts', 'integrations', 'batch', 'history', 'legacy', 
+    'users', 'plans', 'claude', 'settings', 'prompt-manager',
+    'competitor-analysis', 'revenue-analysis', 'templates', 'credits', 'admin',
+    // Legacy tabs for backward compatibility
+    'premium-analysis', 'preferences'
   ];
   console.log('Current tab:', activeTab, 'Current section:', activeSection);
 

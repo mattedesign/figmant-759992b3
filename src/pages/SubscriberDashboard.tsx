@@ -14,7 +14,6 @@ const tabToSectionMap: Record<string, string> = {
   'all-analysis': 'dashboard',
   insights: 'dashboard',
   prompts: 'templates',
-  'premium-analysis': 'revenue-analysis',
   integrations: 'dashboard',
   batch: 'dashboard',
   history: 'dashboard',
@@ -24,7 +23,11 @@ const tabToSectionMap: Record<string, string> = {
   'revenue-analysis': 'revenue-analysis',
   templates: 'templates',
   credits: 'credits',
-  settings: 'settings',
+  settings: 'settings', // Updated from 'preferences'
+  'help-support': 'help-support',
+  // Legacy mappings for backward compatibility
+  'premium-analysis': 'revenue-analysis',
+  preferences: 'settings',
 };
 
 const SubscriberDashboard = () => {
@@ -40,9 +43,10 @@ const SubscriberDashboard = () => {
 
   // Valid tab options - including hidden tabs for direct access
   const validTabs = [
-    'design', 'all-analysis', 'insights', 'prompts', 'premium-analysis', 
-    'integrations', 'batch', 'history', 'legacy',
-    'competitor-analysis', 'revenue-analysis', 'templates', 'credits', 'settings'
+    'design', 'all-analysis', 'insights', 'prompts', 'integrations', 'batch', 'history', 'legacy',
+    'competitor-analysis', 'revenue-analysis', 'templates', 'credits', 'settings', 'help-support',
+    // Legacy tabs for backward compatibility
+    'premium-analysis', 'preferences'
   ];
   console.log('Current tab:', activeTab, 'Current section:', activeSection);
 
