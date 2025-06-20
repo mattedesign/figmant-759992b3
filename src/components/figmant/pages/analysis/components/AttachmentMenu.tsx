@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Plus, Camera, Globe, Video } from 'lucide-react';
 
@@ -25,24 +26,24 @@ export const AttachmentMenu: React.FC<AttachmentMenuProps> = ({
       </button>
       
       {showAttachmentMenu && (
-        <div className="absolute bottom-full left-0 mb-2 flex flex-col gap-1 p-2 rounded-xl border border-[#E2E2E2] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13)] backdrop-blur-md z-20">
+        <div className="absolute bottom-full left-0 mb-2 min-w-[180px] flex flex-col gap-1 p-2 rounded-xl border border-[#E2E2E2] bg-[#FCFCFC] shadow-[0px_18px_24px_-20px_rgba(0,0,0,0.13)] backdrop-blur-md z-20">
           <button 
             onClick={() => onAttachmentAction('screenshot')}
-            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
           >
             <Camera className="w-4 h-4" />
             <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">Add Screenshots</span>
           </button>
           <button 
             onClick={() => onAttachmentAction('link')}
-            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
           >
             <Globe className="w-4 h-4" />
             <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">Add A Link</span>
           </button>
           <button 
             onClick={() => onAttachmentAction('camera')}
-            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
           >
             <Video className="w-4 h-4" />
             <span className="font-['Instrument_Sans'] text-[14px] font-medium leading-5 tracking-[-0.14px] text-[#121212]">Use Camera</span>
