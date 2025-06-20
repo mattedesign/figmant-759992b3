@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Send, Paperclip, Info, MessageCircle } from 'lucide-react';
 import { TemplateQuickSelector } from './components/TemplateQuickSelector';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { FigmantPromptTemplate as HookTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
+import { FigmantPromptTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
 
 interface AnalysisChatPanelProps {
   messages: ChatMessage[];
@@ -18,7 +18,7 @@ interface AnalysisChatPanelProps {
   onSendMessage: () => void;
   onAddAttachment: () => void;
   onRemoveAttachment: (id: string) => void;
-  promptTemplates: HookTemplate[];
+  promptTemplates: FigmantPromptTemplate[];
   selectedTemplate?: string;
   onTemplateSelect: (templateId: string) => void;
   isAnalyzing?: boolean;

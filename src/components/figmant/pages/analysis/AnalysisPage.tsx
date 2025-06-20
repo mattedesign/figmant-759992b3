@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AnalysisChatPanel } from './AnalysisChatPanel';
 import { useChatState } from './ChatStateManager';
@@ -7,14 +6,15 @@ import { UserDebugPanel } from '@/components/debug/UserDebugPanel';
 import { Button } from '@/components/ui/button';
 import { Bug } from 'lucide-react';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
+import { useAnalyzeWithClaude } from '@/hooks/useAnalyzeWithClaude';
 import { useLocation } from 'react-router-dom';
 
 export const AnalysisPage: React.FC = () => {
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const chatState = useChatState();
   const { data: promptTemplates = [], isLoading } = useFigmantPromptTemplates();
+  const analyzeWithClaude = useAnalyzeWithClaude();
   const location = useLocation();
 
   // Handle navigation from sidebar - detect hash or query params for template selection
@@ -26,11 +26,9 @@ export const AnalysisPage: React.FC = () => {
 
       switch (sectionId) {
         case 'design':
-          // General analysis chat - no template pre-selected
           setSelectedTemplate(undefined);
           break;
         case 'competitor-analysis':
-          // Pre-select competitor analysis template
           setSelectedTemplate('uc024_competitor_analysis');
           break;
         case 'conversion-optimization':
@@ -48,9 +46,7 @@ export const AnalysisPage: React.FC = () => {
   }, [location]);
 
   const handleSendMessage = async () => {
-    if ((!chatState.message.trim() && chatState.attachments.length === 0) || isAnalyzing) return;
-
-    setIsAnalyzing(true);
+    if ((!chatState.message.trim() && chatState.attachments.length === 0) || analyzeWithClaude.isPending) return;
 
     try {
       // Add user message
@@ -74,21 +70,18 @@ export const AnalysisPage: React.FC = () => {
         activeTemplate: activeTemplate?.displayName
       });
 
-      // TODO: Call your existing analysis function with template context
-      // const result = await analyzeWithClaude({
-      //   message: chatState.message,
-      //   attachments: chatState.attachments,
-      //   template: activeTemplate
-      // });
+      // Call analysis with template support
+      const result = await analyzeWithClaude.mutateAsync({
+        message: chatState.message,
+        attachments: chatState.attachments,
+        template: activeTemplate
+      });
 
-      // Simulate analysis for now
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Add assistant response (placeholder)
+      // Add assistant response
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: `Analysis complete using ${activeTemplate?.displayName || 'General Analysis'}. This is a placeholder response that will be replaced with actual Claude analysis.`,
+        content: result.analysis,
         timestamp: new Date()
       };
 
@@ -110,8 +103,6 @@ export const AnalysisPage: React.FC = () => {
       };
 
       chatState.setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsAnalyzing(false);
     }
   };
 
@@ -155,12 +146,15 @@ export const AnalysisPage: React.FC = () => {
             setMessage={chatState.setMessage}
             attachments={chatState.attachments}
             onSendMessage={handleSendMessage}
-            onAddAttachment={handleAddAttachment}
-            onRemoveAttachment={handleRemoveAttachment}
+            onAddAttachment={() => console.log('Adding attachment...')}
+            onRemoveAttachment={(id: string) => {
+              const updatedAttachments = chatState.attachments.filter(att => att.id !== id);
+              chatState.setAttachments(updatedAttachments);
+            }}
             promptTemplates={promptTemplates}
             selectedTemplate={selectedTemplate}
-            onTemplateSelect={handleTemplateSelect}
-            isAnalyzing={isAnalyzing}
+            onTemplateSelect={setSelectedTemplate}
+            isAnalyzing={analyzeWithClaude.isPending}
           />
         </div>
 

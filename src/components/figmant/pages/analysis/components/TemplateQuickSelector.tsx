@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuGroup, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Target, TrendingUp, Eye, MoreHorizontal, Check, Palette, Users, Shield } from 'lucide-react';
-import { FigmantPromptTemplate } from '@/types/figmant';
+import { FigmantPromptTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
 
 interface TemplateQuickSelectorProps {
   templates: FigmantPromptTemplate[];
@@ -85,9 +85,9 @@ export const TemplateQuickSelector: React.FC<TemplateQuickSelectorProps> = ({
                     <p className="text-xs text-muted-foreground line-clamp-2">
                       {template.description}
                     </p>
-                    {template.best_for && (
+                    {template.metadata?.best_for && (
                       <div className="flex gap-1 mt-1 flex-wrap">
-                        {template.best_for.slice(0, 2).map((use, idx) => (
+                        {template.metadata.best_for.slice(0, 2).map((use: string, idx: number) => (
                           <Badge key={idx} variant="secondary" className="text-xs px-1 py-0">
                             {use}
                           </Badge>
