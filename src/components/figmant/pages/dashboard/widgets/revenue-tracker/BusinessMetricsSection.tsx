@@ -38,13 +38,13 @@ export const BusinessMetricsSection: React.FC<BusinessMetricsSectionProps> = ({
             <Input
               id="traffic"
               type="number"
-              value={businessMetrics.current_traffic}
+              value={businessMetrics.current_traffic || businessMetrics.traffic_volume}
               onChange={(e) => onMetricsUpdate('current_traffic', e.target.value)}
               className="h-8 text-sm"
             />
           ) : (
             <div className="text-lg font-semibold">
-              {businessMetrics.current_traffic.toLocaleString()}
+              {(businessMetrics.current_traffic || businessMetrics.traffic_volume).toLocaleString()}
             </div>
           )}
         </div>
@@ -55,13 +55,13 @@ export const BusinessMetricsSection: React.FC<BusinessMetricsSectionProps> = ({
             <Input
               id="aov"
               type="number"
-              value={businessMetrics.avg_order_value}
+              value={businessMetrics.avg_order_value || businessMetrics.average_order_value}
               onChange={(e) => onMetricsUpdate('avg_order_value', e.target.value)}
               className="h-8 text-sm"
             />
           ) : (
             <div className="text-lg font-semibold">
-              ${businessMetrics.avg_order_value}
+              ${businessMetrics.avg_order_value || businessMetrics.average_order_value}
             </div>
           )}
         </div>
@@ -73,13 +73,13 @@ export const BusinessMetricsSection: React.FC<BusinessMetricsSectionProps> = ({
               id="conversion"
               type="number"
               step="0.1"
-              value={businessMetrics.current_conversion_rate}
+              value={businessMetrics.current_conversion_rate || businessMetrics.conversion_rate}
               onChange={(e) => onMetricsUpdate('current_conversion_rate', e.target.value)}
               className="h-8 text-sm"
             />
           ) : (
             <div className="text-lg font-semibold">
-              {businessMetrics.current_conversion_rate}%
+              {businessMetrics.current_conversion_rate || businessMetrics.conversion_rate}%
             </div>
           )}
         </div>

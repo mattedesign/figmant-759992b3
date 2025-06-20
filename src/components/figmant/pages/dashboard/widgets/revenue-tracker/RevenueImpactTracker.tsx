@@ -15,8 +15,8 @@ import {
   ROICalculations
 } from './index';
 
-// Import the calculateROI function from types.ts (the one that works with our data structure)
-import { calculateROI as calculateROIFromTypes } from './types';
+// Import the calculateROI function from roiCalculations.ts
+import { calculateROI } from './roiCalculations';
 
 interface RevenueImpactTrackerProps {
   analysisData: RevenueAnalysisData[];
@@ -34,6 +34,10 @@ export const RevenueImpactTracker: React.FC<RevenueImpactTrackerProps> = ({
   className
 }) => {
   const [businessMetrics, setBusinessMetrics] = useState<BusinessMetrics>({
+    monthly_revenue: 0,
+    conversion_rate: 2.5,
+    average_order_value: 150,
+    traffic_volume: 10000,
     current_traffic: 10000,
     avg_order_value: 150,
     current_conversion_rate: 2.5
@@ -74,9 +78,9 @@ export const RevenueImpactTracker: React.FC<RevenueImpactTrackerProps> = ({
     }));
   }, [realData]);
 
-  // Calculate ROI based on analysis results using the correct function from types.ts
+  // Calculate ROI based on analysis results
   const roiCalculations = useMemo<ROICalculations>(() => {
-    return calculateROIFromTypes(analysisData, businessMetrics);
+    return calculateROI(analysisData, businessMetrics);
   }, [analysisData, businessMetrics]);
 
   const handleMetricsUpdate = (field: keyof BusinessMetrics, value: string) => {

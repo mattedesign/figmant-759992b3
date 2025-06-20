@@ -30,15 +30,15 @@ export const calculateROI = (
   const improvement_factor = (avgConfidence * avgConversionPotential) / 100;
   const estimated_conversion_improvement = Math.min(improvement_factor * 0.5, 2.0); // Cap at 2% improvement
 
-  // Calculate revenue impact
-  const current_monthly_revenue = businessMetrics.current_traffic * 
-    (businessMetrics.current_conversion_rate / 100) * 
-    businessMetrics.avg_order_value;
+  // Calculate revenue impact using current_traffic or traffic_volume
+  const traffic = businessMetrics.current_traffic || businessMetrics.traffic_volume;
+  const conversionRate = businessMetrics.current_conversion_rate || businessMetrics.conversion_rate;
+  const orderValue = businessMetrics.avg_order_value || businessMetrics.average_order_value;
   
-  const improved_conversion_rate = businessMetrics.current_conversion_rate + estimated_conversion_improvement;
-  const improved_monthly_revenue = businessMetrics.current_traffic * 
-    (improved_conversion_rate / 100) * 
-    businessMetrics.avg_order_value;
+  const current_monthly_revenue = traffic * (conversionRate / 100) * orderValue;
+  
+  const improved_conversion_rate = conversionRate + estimated_conversion_improvement;
+  const improved_monthly_revenue = traffic * (improved_conversion_rate / 100) * orderValue;
   
   const monthly_revenue_impact = improved_monthly_revenue - current_monthly_revenue;
   const annual_revenue_impact = monthly_revenue_impact * 12;
