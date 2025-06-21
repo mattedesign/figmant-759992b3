@@ -5,8 +5,6 @@ import { StepRenderer } from './StepRenderer';
 import { WizardNavigation } from './components/WizardNavigation';
 import { useWizardState } from './hooks/useWizardState';
 import { StepData } from './types';
-import { SelectedTemplateProvider } from '@/contexts/SelectedTemplateContext';
-import { AnalysisPageHeader } from '../analysis/components/AnalysisPageHeader';
 
 export const PremiumAnalysisWizard: React.FC = () => {
   const {
@@ -29,35 +27,31 @@ export const PremiumAnalysisWizard: React.FC = () => {
   };
 
   return (
-    <SelectedTemplateProvider>
-      <div className="h-full flex flex-col max-h-screen">
-        <AnalysisPageHeader title="Premium Analysis Wizard" />
-        
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <ScrollArea className="h-full w-full">
-            <div className="px-0 py-6 min-h-full">
-              <div className="h-full">
-                <StepRenderer 
-                  stepData={stepData} 
-                  setStepData={handleSetStepData} 
-                  currentStep={currentStep} 
-                  totalSteps={totalSteps} 
-                  onNextStep={handleNextStep} 
-                  onPreviousStep={handlePreviousStep} 
-                />
-              </div>
+    <div className="h-full flex flex-col max-h-screen">
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <ScrollArea className="h-full w-full">
+          <div className="px-0 py-6 min-h-full">
+            <div className="h-full">
+              <StepRenderer 
+                stepData={stepData} 
+                setStepData={handleSetStepData} 
+                currentStep={currentStep} 
+                totalSteps={totalSteps} 
+                onNextStep={handleNextStep} 
+                onPreviousStep={handlePreviousStep} 
+              />
             </div>
-          </ScrollArea>
-        </div>
-        
-        <WizardNavigation
-          currentStep={currentStep}
-          totalSteps={totalSteps}
-          onPreviousStep={handlePreviousStep}
-          onNextStep={handleNextStep}
-          canProceed={canProceedToNextStep()}
-        />
+          </div>
+        </ScrollArea>
       </div>
-    </SelectedTemplateProvider>
+      
+      <WizardNavigation
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        onPreviousStep={handlePreviousStep}
+        onNextStep={handleNextStep}
+        canProceed={canProceedToNextStep()}
+      />
+    </div>
   );
 };

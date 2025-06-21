@@ -6,8 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { Lightbulb, Target, TrendingUp, Users, Zap, CheckCircle } from 'lucide-react';
 import { CreditCostDisplay } from '../components/CreditCostDisplay';
-import { useSelectedTemplate } from '@/contexts/SelectedTemplateContext';
-import { supabase } from '@/integrations/supabase/client';
 
 export const Step1SelectAnalysisType: React.FC<StepProps> = ({ 
   stepData, 
@@ -16,25 +14,9 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
   totalSteps 
 }) => {
   const { data: templates = [], isLoading } = useFigmantPromptTemplates();
-  const { setSelectedTemplate } = useSelectedTemplate();
 
-  const handleTemplateSelect = async (templateId: string) => {
+  const handleTemplateSelect = (templateId: string) => {
     setStepData(prev => ({ ...prev, selectedType: templateId }));
-
-    // Fetch credit cost and update context
-    try {
-      const { data } = await supabase
-        .from('claude_prompt_examples')
-        .select('credit_cost')
-        .eq('id', templateId)
-        .single();
-      
-      const creditCost = data?.credit_cost || 3;
-      setSelectedTemplate(templateId, creditCost);
-    } catch (error) {
-      console.error('Error fetching template credit cost:', error);
-      setSelectedTemplate(templateId, 3); // Fallback
-    }
   };
 
   const getIcon = (category: string) => {
@@ -118,6 +100,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                     templateId={template.id} 
                     isSelected={stepData.selectedType === template.id}
                   />
+                  {/* Show contextual fields indicator if template has them */}
                   {template.metadata && 
                    typeof template.metadata === 'object' && 
                    template.metadata !== null &&
