@@ -1,6 +1,7 @@
 
 import { tabMapping } from './tabs/tabMapping';
 import { DesignAnalysisTab } from './tabs/DesignAnalysisTab';
+import { CompetitorAnalysisPage } from '@/components/figmant/pages/analysis/CompetitorAnalysisPage';
 import { PremiumAnalysisWizard } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisWizard';
 import { PremiumAnalysisTabController } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisTabController';
 
@@ -9,7 +10,15 @@ interface TabContentRendererProps {
 }
 
 export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
-  // Handle specific wizard and premium analysis routes directly
+  // Handle specific analysis routes directly
+  if (activeTab === 'competitor-analysis') {
+    return (
+      <div className="h-full w-full">
+        <CompetitorAnalysisPage />
+      </div>
+    );
+  }
+
   if (activeTab === 'wizard-analysis') {
     return (
       <div className="h-full w-full">

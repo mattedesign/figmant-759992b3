@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import { LoadingSpinner } from './LoadingSpinner';
 import { AllAnalysisPageWrapper } from '@/components/design/analysis/AllAnalysisPageWrapper';
 import { AdvancedDesignAnalysisPageContent } from '@/components/design/AdvancedDesignAnalysisPageContent';
+import { CompetitorAnalysisPage } from '@/components/figmant/pages/analysis/CompetitorAnalysisPage';
 import { PremiumAnalysisWizard } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisWizard';
 import { PremiumAnalysisTabController } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisTabController';
 
@@ -65,6 +66,12 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
           <Suspense fallback={<LoadingSpinner />}>
             <PromptsPage />
           </Suspense>
+        );
+      case 'competitor-analysis':
+        return (
+          <div className="h-full w-full">
+            <CompetitorAnalysisPage />
+          </div>
         );
       case 'wizard-analysis':
         return <PremiumAnalysisWizard />;
