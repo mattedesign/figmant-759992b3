@@ -37,7 +37,14 @@ export const createAuthService = () => {
         avatar_url: profileData.avatar_url || null,
         address: profileData.address || null,
         city: profileData.city || null,
-        country: profileData.country || null
+        country: profileData.country || null,
+        bio: profileData.bio || null,
+        website: profileData.website || null,
+        phone_number: profileData.phone_number || null,
+        state: profileData.state || null,
+        postal_code: profileData.postal_code || null,
+        emergency_contact_name: profileData.emergency_contact_name || null,
+        emergency_contact_phone: profileData.emergency_contact_phone || null
       } as UserProfile : null;
 
       return {

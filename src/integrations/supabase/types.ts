@@ -848,44 +848,65 @@ export type Database = {
         Row: {
           address: string | null
           avatar_url: string | null
+          bio: string | null
           city: string | null
           country: string | null
           created_at: string | null
           email: string
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
           full_name: string | null
           id: string
+          phone_number: string | null
+          postal_code: string | null
           provider: string | null
           provider_id: string | null
           role: Database["public"]["Enums"]["user_role"]
+          state: string | null
           updated_at: string | null
+          website: string | null
         }
         Insert: {
           address?: string | null
           avatar_url?: string | null
+          bio?: string | null
           city?: string | null
           country?: string | null
           created_at?: string | null
           email: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           full_name?: string | null
           id: string
+          phone_number?: string | null
+          postal_code?: string | null
           provider?: string | null
           provider_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          state?: string | null
           updated_at?: string | null
+          website?: string | null
         }
         Update: {
           address?: string | null
           avatar_url?: string | null
+          bio?: string | null
           city?: string | null
           country?: string | null
           created_at?: string | null
           email?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
           full_name?: string | null
           id?: string
+          phone_number?: string | null
+          postal_code?: string | null
           provider?: string | null
           provider_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          state?: string | null
           updated_at?: string | null
+          website?: string | null
         }
         Relationships: []
       }

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -74,6 +75,13 @@ export const UserManagement: React.FC = () => {
         address: user.address || null,
         city: user.city || null,
         country: user.country || null,
+        bio: user.bio || null,
+        website: user.website || null,
+        phone_number: user.phone_number || null,
+        state: user.state || null,
+        postal_code: user.postal_code || null,
+        emergency_contact_name: user.emergency_contact_name || null,
+        emergency_contact_phone: user.emergency_contact_phone || null,
         subscriptions: user.subscriptions ? [user.subscriptions] : []
       }));
 

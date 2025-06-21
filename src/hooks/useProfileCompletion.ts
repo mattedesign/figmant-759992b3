@@ -59,8 +59,8 @@ export const useProfileCompletion = () => {
 
     const status: ProfileCompletionStatus = {
       personal: !!(profile.full_name && profile.full_name.trim().length > 0),
-      contact: !!(user.email && user.email.trim().length > 0),
-      address: !!(profile.address || profile.city || profile.country),
+      contact: !!(user.email && user.email.trim().length > 0) && !!(profile.phone_number && profile.phone_number.trim().length > 0),
+      address: !!(profile.address || profile.city || profile.country || profile.state || profile.postal_code),
       security: !!(user.email_confirmed_at), // Basic security - email confirmed
       preferences: true, // Preferences are optional, so consider complete by default
       avatar: !!(profile.avatar_url && profile.avatar_url.trim().length > 0)

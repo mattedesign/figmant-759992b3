@@ -11,6 +11,13 @@ export interface UserProfile {
   address: string | null;
   city: string | null;
   country: string | null;
+  bio: string | null;
+  website: string | null;
+  phone_number: string | null;
+  state: string | null;
+  postal_code: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
 }
 
 export interface Subscription {

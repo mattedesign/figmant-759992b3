@@ -6,7 +6,11 @@ export const createSettingsHandlers = (user: any, toast: any) => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update(data)
+        .update({
+          full_name: data.full_name,
+          bio: data.bio,
+          website: data.website
+        })
         .eq('id', user?.id);
 
       if (error) throw error;
@@ -28,7 +32,11 @@ export const createSettingsHandlers = (user: any, toast: any) => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update(data)
+        .update({
+          phone_number: data.phone_number,
+          emergency_contact_name: data.emergency_contact_name,
+          emergency_contact_phone: data.emergency_contact_phone
+        })
         .eq('id', user?.id);
 
       if (error) throw error;
@@ -50,7 +58,13 @@ export const createSettingsHandlers = (user: any, toast: any) => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update(data)
+        .update({
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          postal_code: data.postal_code,
+          country: data.country
+        })
         .eq('id', user?.id);
 
       if (error) throw error;
