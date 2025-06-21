@@ -125,7 +125,15 @@ export class ProfileService {
 
       if (error) {
         console.error('ProfileService: UPSERT error:', error);
-        return { success: false, errors: [error.message] };
+        
+        // Enhanced error handling with specific error messages
+        if (error.code === '42501') {
+          return { success: false, errors: ['Permission denied. Please ensure you are logged in.'] };
+        } else if (error.code === '23505') {
+          return { success: false, errors: ['Profile already exists for this user.'] };
+        } else {
+          return { success: false, errors: [error.message] };
+        }
       }
 
       if (!updatedProfile) {
@@ -243,6 +251,37 @@ export class ProfileService {
     } catch (error) {
       console.error('ProfileService: Ensure profile exists error:', error);
       return { success: false, error: 'Failed to create profile' };
+    }
+  }
+
+  // Verify profile update success
+  async verifyProfileUpdate(userId: string, expectedData: Partial<ProfileUpdateData>): Promise<boolean> {
+    try {
+      console.log('Verifying profile update for user:', userId);
+      const { profile } = await this.getProfile(userId);
+      
+      if (!profile) {
+        console.log('Profile not found during verification');
+        return false;
+      }
+
+      // Check if the expected data matches what's in the database
+      for (const [key, expectedValue] of Object.entries(expectedData)) {
+        const actualValue = profile[key as keyof UserProfile];
+        if (actualValue !== expectedValue) {
+          console.log(`Profile verification failed for ${key}:`, {
+            expected: expectedValue,
+            actual: actualValue
+          });
+          return false;
+        }
+      }
+
+      console.log('Profile update verified successfully');
+      return true;
+    } catch (error) {
+      console.error('Error verifying profile update:', error);
+      return false;
     }
   }
 }

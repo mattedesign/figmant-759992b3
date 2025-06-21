@@ -20,17 +20,27 @@ export const createEnhancedSettingsHandlers = (user: any, refetchUserData?: () =
         return;
       }
 
-      const result = await profileService.updateProfile(user.id, {
+      const updateData = {
         full_name: data.full_name,
         bio: data.bio,
         website: data.website
-      });
+      };
+
+      const result = await profileService.updateProfile(user.id, updateData);
 
       if (result.success) {
-        toast.success('Profile updated successfully');
-        // Trigger auth context refresh
-        if (refetchUserData) {
-          await refetchUserData();
+        // Verify the update was successful
+        const isVerified = await profileService.verifyProfileUpdate(user.id, updateData);
+        
+        if (isVerified) {
+          toast.success('Profile updated successfully');
+          // Trigger auth context refresh after verification
+          if (refetchUserData) {
+            await refetchUserData();
+          }
+        } else {
+          console.error('Profile update verification failed');
+          toast.error('Profile update could not be verified. Please try again.');
         }
       } else {
         const errorMessage = result.errors?.join(', ') || 'Failed to update profile';
@@ -58,16 +68,25 @@ export const createEnhancedSettingsHandlers = (user: any, refetchUserData?: () =
         return;
       }
 
-      const result = await profileService.updateProfile(user.id, {
+      const updateData = {
         phone_number: data.phone_number,
         emergency_contact_name: data.emergency_contact_name,
         emergency_contact_phone: data.emergency_contact_phone
-      });
+      };
+
+      const result = await profileService.updateProfile(user.id, updateData);
 
       if (result.success) {
-        toast.success('Contact information updated successfully');
-        if (refetchUserData) {
-          await refetchUserData();
+        const isVerified = await profileService.verifyProfileUpdate(user.id, updateData);
+        
+        if (isVerified) {
+          toast.success('Contact information updated successfully');
+          if (refetchUserData) {
+            await refetchUserData();
+          }
+        } else {
+          console.error('Contact update verification failed');
+          toast.error('Contact update could not be verified. Please try again.');
         }
       } else {
         const errorMessage = result.errors?.join(', ') || 'Failed to update contact information';
@@ -95,18 +114,27 @@ export const createEnhancedSettingsHandlers = (user: any, refetchUserData?: () =
         return;
       }
 
-      const result = await profileService.updateProfile(user.id, {
+      const updateData = {
         address: data.address,
         city: data.city,
         state: data.state,
         postal_code: data.postal_code,
         country: data.country
-      });
+      };
+
+      const result = await profileService.updateProfile(user.id, updateData);
 
       if (result.success) {
-        toast.success('Address updated successfully');
-        if (refetchUserData) {
-          await refetchUserData();
+        const isVerified = await profileService.verifyProfileUpdate(user.id, updateData);
+        
+        if (isVerified) {
+          toast.success('Address updated successfully');
+          if (refetchUserData) {
+            await refetchUserData();
+          }
+        } else {
+          console.error('Address update verification failed');
+          toast.error('Address update could not be verified. Please try again.');
         }
       } else {
         const errorMessage = result.errors?.join(', ') || 'Failed to update address';
