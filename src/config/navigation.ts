@@ -2,7 +2,6 @@
 import { 
   Home, 
   BarChart3, 
-  Star, 
   FileText, 
   CreditCard, 
   Settings, 
@@ -42,13 +41,6 @@ export const navigationConfig = {
       icon: Wand2, 
       priority: 1,
       description: 'Step-by-step guided analysis workflow'
-    },
-    { 
-      id: 'premium-analysis', 
-      label: 'Premium Analysis', 
-      icon: Star, 
-      priority: 1,
-      description: 'UC-018 - E-commerce revenue impact predictions'
     },
     { 
       id: 'templates', 
