@@ -39,7 +39,7 @@ export const HistoryTabContent: React.FC<HistoryTabContentProps> = ({
   
   // Get related analyses (same type or similar keywords)
   const getRelatedAnalyses = () => {
-    const currentTitle = analysis.title || '';
+    const currentTitle = analysis.title || analysis.analysis_results?.title || '';
     const currentSummary = analysis.analysis_results?.response || '';
     const searchText = (currentTitle + ' ' + currentSummary).toLowerCase();
     
@@ -47,7 +47,7 @@ export const HistoryTabContent: React.FC<HistoryTabContentProps> = ({
       .filter(a => {
         if (a.type === analysisType) return true;
         
-        const aTitle = (a.title || '').toLowerCase();
+        const aTitle = (a.title || a.analysis_results?.title || '').toLowerCase();
         const aSummary = (a.analysis_results?.response || '').toLowerCase();
         const aText = aTitle + ' ' + aSummary;
         
