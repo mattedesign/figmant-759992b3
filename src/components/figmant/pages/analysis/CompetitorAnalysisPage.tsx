@@ -1,87 +1,84 @@
 
-import React from 'react';
-import { DesignChatInterface } from '@/components/design/DesignChatInterface';
-import { useCompetitorChatHandler } from './hooks/useCompetitorChatHandler';
-import { AnalysisLoadingIndicator } from './components/AnalysisLoadingIndicator';
-import { UpgradeSuggestion } from './components/UpgradeSuggestion';
-import { AlertCircle, CheckCircle, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CompetitorAnalysisPanel } from '@/components/competitor/CompetitorAnalysisPanel';
+import { CompetitorAnalysisData } from '@/hooks/useCompetitorAnalysis';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Target } from 'lucide-react';
 
 export const CompetitorAnalysisPage: React.FC = () => {
-  const {
-    messages,
-    message,
-    setMessage,
-    attachments,
-    setAttachments,
-    isAnalyzing,
-    analysisStage,
-    handleSendMessage,
-    handleKeyPress,
-    canSend
-  } = useCompetitorChatHandler();
+  const [analysisResults, setAnalysisResults] = useState<CompetitorAnalysisData[]>([]);
+  const isMobile = useIsMobile();
 
-  const handleOnSendMessage = (msg: string, attachments: any[]) => {
-    console.log('🔥 COMPETITOR - OnSendMessage called with:', { msg, attachments });
-    // The actual sending is handled by the hook's handleSendMessage
-    handleSendMessage();
+  const handleAnalysisComplete = (results: CompetitorAnalysisData[]) => {
+    setAnalysisResults(results);
+    console.log('Competitor analysis completed:', results);
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-4 border-b bg-white">
-        <div className="flex items-center gap-2">
-          <Zap className="h-6 w-6 text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Competitor Analysis</h1>
+    <div className="h-full flex flex-col min-h-0 overflow-hidden">
+      {/* Header */}
+      <div className={`${isMobile ? 'px-4 pt-4 pb-3' : 'px-6 pt-6 pb-3'} bg-transparent flex-shrink-0 border-b border-gray-200`}>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
+            <Target className="h-5 w-5 text-blue-600" />
+          </div>
+          <div>
+            <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-gray-900`}>
+              Competitor Analysis
+            </h1>
+            <p className={`text-gray-600 mt-1 ${isMobile ? 'text-sm' : ''}`}>
+              Analyze competitor websites to gain market positioning insights
+            </p>
+          </div>
         </div>
-        <p className="text-gray-600 mt-1">Analyze competitor designs and identify opportunities</p>
       </div>
-      
-      {/* Enhanced Loading State */}
-      <AnalysisLoadingIndicator 
-        stage={analysisStage}
-        isVisible={isAnalyzing}
-        className="mx-4 mt-4 mb-2"
-      />
-      
-      {/* Upgrade Suggestion */}
-      <UpgradeSuggestion className="mx-4 mt-4" />
-      
-      <div className="flex-1 min-h-0">
-        <DesignChatInterface
-          messages={messages}
-          isProcessing={isAnalyzing}
-          placeholder="Enter competitor URLs or ask about competitive analysis..."
-          onSendMessage={handleOnSendMessage}
-          className="h-full"
-        />
-      </div>
-      
-      {/* Enhanced Status Footer */}
-      <div className="p-3 border-t bg-gray-50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm">
-            {canSend ? (
-              <>
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-green-700 font-medium">Ready to analyze</span>
-              </>
-            ) : (
-              <>
-                <AlertCircle className="h-4 w-4 text-amber-500" />
-                <span className="text-amber-700">
-                  {isAnalyzing ? 'Analysis in progress...' : 'Enter message or attach URLs'}
-                </span>
-              </>
-            )}
-          </div>
-          <div className="flex items-center gap-4 text-xs text-gray-500">
-            <span>Messages: {messages.length}</span>
-            {isAnalyzing && (
-              <span className="text-blue-600 font-medium">
-                Processing...
-              </span>
-            )}
-          </div>
+
+      {/* Main Content */}
+      <div className="flex-1 min-h-0 overflow-auto">
+        <div className={`${isMobile ? 'p-4' : 'p-6'} space-y-6`}>
+          {/* Competitor Analysis Panel */}
+          <CompetitorAnalysisPanel onAnalysisComplete={handleAnalysisComplete} />
+          
+          {/* Analysis Results */}
+          {analysisResults.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-green-600" />
+                  Analysis Summary
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {analysisResults.length}
+                      </div>
+                      <div className="text-sm text-blue-700">Competitors Analyzed</div>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">
+                        {analysisResults.filter(r => r.status === 'completed').length}
+                      </div>
+                      <div className="text-sm text-green-700">Successful Captures</div>
+                    </div>
+                    <div className="bg-yellow-50 p-4 rounded-lg">
+                      <div className="text-2xl font-bold text-yellow-600">
+                        {analysisResults.filter(r => r.screenshots?.desktop?.success || r.screenshots?.mobile?.success).length}
+                      </div>
+                      <div className="text-sm text-yellow-700">Screenshots Captured</div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-sm text-gray-600">
+                    Analysis completed successfully. Use the chat interface to get AI-powered insights about your competitors' design strategies and market positioning.
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
