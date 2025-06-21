@@ -3,6 +3,7 @@ import { DesignAnalysisTab } from './DesignAnalysisTab';
 import { AllAnalysisTab } from './AllAnalysisTab';
 import { InsightsTab } from './InsightsTab';
 import { PromptsTab } from './PromptsTab';
+import { PremiumAnalysisTab } from './PremiumAnalysisTab';
 import { IntegrationsTab } from './IntegrationsTab';
 import { BatchAnalysisTab } from './BatchAnalysisTab';
 import { AnalysisHistoryTab } from './AnalysisHistoryTab';
@@ -18,6 +19,7 @@ export const tabMapping: Record<string, React.ComponentType> = {
   'all-analysis': AllAnalysisTab,
   insights: InsightsTab,
   prompts: PromptsTab,
+  'premium-analysis': PremiumAnalysisTab,
   integrations: IntegrationsTab,
   batch: BatchAnalysisTab,
   history: AnalysisHistoryTab,

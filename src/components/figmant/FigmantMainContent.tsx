@@ -7,6 +7,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { AnalysisPage } from './pages/AnalysisPage';
 import { ChatPage } from './pages/ChatPage';
 import { WizardPage } from './pages/WizardPage';
+import { PremiumAnalysisPage } from './pages/PremiumAnalysisPage';
 import { TemplatesPage } from './pages/TemplatesPage';
 import { SearchPage } from './pages/SearchPage';
 import { CreditsPage } from './pages/CreditsPage';
@@ -33,7 +34,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   const location = useLocation();
   const isMobile = useIsMobile();
 
-  // Handle navigation state from template selection or admin access
+  // Handle navigation state from premium analysis, template selection, or admin access
   useEffect(() => {
     if (location.state?.activeSection) {
       const migratedSection = migrateNavigationRoute(location.state.activeSection);
@@ -57,6 +58,10 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       case 'wizard-analysis':
         // Direct to stepped wizard process
         return <WizardPage />;
+      
+      case 'premium-analysis':
+        // UC-018 - E-commerce Revenue Impact (tabbed interface)
+        return <PremiumAnalysisPage />;
       
       case 'templates':
         return <TemplatesPage />;
@@ -82,6 +87,10 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       case 'wizard':
         // This now redirects to wizard-analysis
         return <WizardPage />;
+      
+      case 'revenue-analysis':
+        // This now redirects to premium-analysis
+        return <PremiumAnalysisPage />;
       
       case 'preferences':
         // This now redirects to settings
@@ -109,7 +118,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   };
 
   // Determine if we need scrolling based on the active section
-  const needsScrolling = activeSection === 'wizard-analysis';
+  const needsScrolling = activeSection === 'premium-analysis' || activeSection === 'wizard-analysis';
 
   if (isMobile) {
     return (
