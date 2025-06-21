@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { navigationConfig } from '@/config/navigation';
+import { getAllNavigationItems } from '@/config/navigation';
 import { cn } from '@/lib/utils';
 import { SidebarRecentAnalyses } from '../../sidebar/components/SidebarRecentAnalyses';
 import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
@@ -26,9 +26,11 @@ export const SidebarNavigationExpanded: React.FC<SidebarNavigationExpandedProps>
   isOwner,
   allAnalyses
 }) => {
-  const mainItems = navigationConfig.mainItems;
-  const supportItems = navigationConfig.supportItems;
-  const adminItems = isOwner ? navigationConfig.adminItems : [];
+  // Get filtered navigation items (automatically excludes hidden items)
+  const allNavigationItems = getAllNavigationItems();
+  const mainItems = allNavigationItems.filter(item => item.priority === 1);
+  const supportItems = allNavigationItems.filter(item => item.priority === 2 && item.id === 'help-support');
+  const adminItems = isOwner ? allNavigationItems.filter(item => item.priority === 2 && item.id === 'admin') : [];
 
   // Get chat analysis history for the interactive component
   const { data: chatAnalysisHistory = [] } = useChatAnalysisHistory();
