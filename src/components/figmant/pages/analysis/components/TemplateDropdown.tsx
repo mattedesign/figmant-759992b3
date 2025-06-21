@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { FigmantPromptTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
@@ -21,7 +22,7 @@ export const TemplateDropdown: React.FC<TemplateDropdownProps> = ({
   onTemplateSelect,
   isAnalyzing
 }) => {
-  const { setTemplateCreditCost } = useTemplateCreditStore();
+  const { setTemplateCreditCost, currentCreditCost } = useTemplateCreditStore();
 
   // Find Master UX template as default
   const masterTemplate = availableTemplates.find(template => 
@@ -34,28 +35,70 @@ export const TemplateDropdown: React.FC<TemplateDropdownProps> = ({
   const displayName = displayTemplate?.displayName || displayTemplate?.title || 'Master UX Analysis';
 
   const handleTemplateSelection = async (templateId: string) => {
-    onTemplateSelect(templateId);
-    setShowTemplateMenu(false);
-
-    // Fetch and update global credit cost
+    console.log('🎯 TemplateDropdown: Starting template selection process');
+    console.log('🎯 TemplateDropdown: Selected template ID:', templateId);
+    console.log('🎯 TemplateDropdown: Current credit cost before selection:', currentCreditCost);
+    
     try {
+      // Call the parent onTemplateSelect first
+      console.log('🎯 TemplateDropdown: Calling parent onTemplateSelect...');
+      onTemplateSelect(templateId);
+      console.log('🎯 TemplateDropdown: Parent onTemplateSelect completed');
+
+      // Close the dropdown menu
+      setShowTemplateMenu(false);
+      console.log('🎯 TemplateDropdown: Dropdown menu closed');
+
+      // Fetch credit cost from database
+      console.log('🎯 TemplateDropdown: Fetching credit cost from database...');
+      console.log('🎯 TemplateDropdown: Database query: SELECT credit_cost FROM claude_prompt_examples WHERE id =', templateId);
+      
       const { data, error } = await supabase
         .from('claude_prompt_examples')
         .select('credit_cost')
         .eq('id', templateId)
         .single();
       
+      console.log('🎯 TemplateDropdown: Database response received');
+      console.log('🎯 TemplateDropdown: Database data:', data);
+      console.log('🎯 TemplateDropdown: Database error:', error);
+      
       if (error) {
-        console.error('Error fetching credit cost:', error);
-        setTemplateCreditCost(templateId, 3); // Fallback
+        console.error('🎯 TemplateDropdown: Database error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        console.log('🎯 TemplateDropdown: Using fallback credit cost (3)');
+        setTemplateCreditCost(templateId, 3);
+        console.log('🎯 TemplateDropdown: Fallback credit cost set in store');
       } else {
         const creditCost = data.credit_cost || 3;
-        console.log(`Template ${templateId} costs ${creditCost} credits`);
+        console.log('🎯 TemplateDropdown: Extracted credit cost from response:', creditCost);
+        console.log('🎯 TemplateDropdown: Setting credit cost in global store...');
         setTemplateCreditCost(templateId, creditCost);
+        console.log('🎯 TemplateDropdown: Credit cost set in global store');
+        console.log('🎯 TemplateDropdown: Store update details:', {
+          templateId,
+          creditCost,
+          previousCost: currentCreditCost
+        });
       }
+      
+      // Log final state
+      console.log('🎯 TemplateDropdown: Template selection process completed successfully');
+      
     } catch (error) {
-      console.error('Error in handleTemplateSelect:', error);
-      setTemplateCreditCost(templateId, 3); // Fallback
+      console.error('🎯 TemplateDropdown: Unexpected error in handleTemplateSelection:', error);
+      console.log('🎯 TemplateDropdown: Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace'
+      });
+      console.log('🎯 TemplateDropdown: Using fallback credit cost (3) due to error');
+      setTemplateCreditCost(templateId, 3);
+      console.log('🎯 TemplateDropdown: Fallback credit cost set in store due to error');
     }
   };
 
