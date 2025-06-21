@@ -9,6 +9,9 @@ export interface SimpleAttachment {
   url?: string;
   type: 'file' | 'link' | 'image';
   thumbnailUrl?: string;
+  file_path?: string;
+  file_name?: string;
+  metadata?: any;
 }
 
 export interface AnalysisAttachment {
@@ -21,6 +24,7 @@ export interface AnalysisAttachment {
   file_path?: string;
   file_size?: number;
   created_at?: string;
+  metadata?: any;
 }
 
 export interface AnalysisScreenshot {
@@ -32,7 +36,38 @@ export interface AnalysisScreenshot {
   file_path?: string;
   file_size?: number;
   created_at?: string;
+  metadata?: any;
 }
+
+// Enhanced attachment processing with better storage path handling
+const processAttachmentData = (att: any): SimpleAttachment => {
+  return {
+    id: att.id || crypto.randomUUID(),
+    name: att.name || att.file_name || att.link_title || 'Unknown',
+    url: att.url,
+    type: determineAttachmentType(att),
+    thumbnailUrl: att.thumbnailUrl || att.screenshot,
+    file_path: att.file_path || att.uploadPath,
+    file_name: att.file_name || att.name,
+    metadata: att.metadata
+  };
+};
+
+const determineAttachmentType = (att: any): 'file' | 'link' | 'image' => {
+  // Check if it's a URL/link type
+  if (att.url && !att.file_path) return 'link';
+  
+  // Check if it has image-related properties or file types
+  if (att.file_type?.startsWith('image/') || 
+      att.thumbnailUrl || 
+      att.screenshot ||
+      att.metadata?.screenshots) {
+    return 'image';
+  }
+  
+  // Default to file for uploaded content
+  return 'file';
+};
 
 // Extract attachments from Chat Analysis - handles type safety issues
 export const extractAttachmentsFromChatAnalysis = (analysis: SavedChatAnalysis): SimpleAttachment[] => {
@@ -52,13 +87,7 @@ export const extractAttachmentsFromChatAnalysis = (analysis: SavedChatAnalysis):
       if (Array.isArray(possibleAttachments)) {
         possibleAttachments.forEach((att: any) => {
           if (att && typeof att === 'object') {
-            attachments.push({
-              id: att.id || crypto.randomUUID(),
-              name: att.name || att.file_name || 'Unknown',
-              url: att.url,
-              type: att.url ? 'link' : 'file',
-              thumbnailUrl: att.thumbnailUrl || att.screenshot
-            });
+            attachments.push(processAttachmentData(att));
           }
         });
       }
@@ -93,12 +122,7 @@ export const extractAttachmentsFromChatAnalysis = (analysis: SavedChatAnalysis):
       if (metadata.attachments && Array.isArray(metadata.attachments)) {
         metadata.attachments.forEach((att: any) => {
           if (att && typeof att === 'object') {
-            attachments.push({
-              id: att.id || crypto.randomUUID(),
-              name: att.name || 'Attachment',
-              url: att.url,
-              type: att.type || 'file'
-            });
+            attachments.push(processAttachmentData(att));
           }
         });
       }
@@ -118,15 +142,16 @@ export const extractScreenshotsFromChatAnalysis = (analysis: SavedChatAnalysis):
     const attachments = extractAttachmentsFromChatAnalysis(analysis);
     
     attachments.forEach(att => {
-      if (att.type === 'image' || att.thumbnailUrl) {
+      if (att.type === 'image' || att.thumbnailUrl || att.file_path) {
         screenshots.push({
           id: att.id,
           name: att.name,
           url: att.url,
           thumbnailUrl: att.thumbnailUrl,
-          file_name: att.name,
-          file_path: att.url,
-          created_at: new Date().toISOString()
+          file_name: att.file_name || att.name,
+          file_path: att.file_path,
+          created_at: new Date().toISOString(),
+          metadata: att.metadata
         });
       }
     });
@@ -145,13 +170,7 @@ export const extractAttachmentsFromWizardAnalysis = (analysis: any): SimpleAttac
     // Check for batch uploads
     if (analysis.batch_uploads && Array.isArray(analysis.batch_uploads)) {
       analysis.batch_uploads.forEach((upload: any) => {
-        attachments.push({
-          id: upload.id || crypto.randomUUID(),
-          name: upload.file_name || upload.name || 'File',
-          url: upload.url,
-          type: upload.url ? 'link' : 'file',
-          thumbnailUrl: upload.thumbnailUrl
-        });
+        attachments.push(processAttachmentData(upload));
       });
     }
     
@@ -191,15 +210,16 @@ export const extractScreenshotsFromWizardAnalysis = (analysis: any): AnalysisScr
     const attachments = extractAttachmentsFromWizardAnalysis(analysis);
     
     attachments.forEach(att => {
-      if (att.type === 'image' || att.thumbnailUrl) {
+      if (att.type === 'image' || att.thumbnailUrl || att.file_path) {
         screenshots.push({
           id: att.id,
           name: att.name,
           url: att.url,
           thumbnailUrl: att.thumbnailUrl,
-          file_name: att.name,
-          file_path: att.url,
-          created_at: new Date().toISOString()
+          file_name: att.file_name || att.name,
+          file_path: att.file_path,
+          created_at: new Date().toISOString(),
+          metadata: att.metadata
         });
       }
     });
@@ -241,13 +261,7 @@ export const getAttachmentsFromAnalysis = (analysis: any): SimpleAttachment[] =>
       if (Array.isArray(source)) {
         source.forEach((item: any) => {
           if (item && typeof item === 'object') {
-            attachments.push({
-              id: item.id || crypto.randomUUID(),
-              name: item.name || item.file_name || 'File',
-              url: item.url,
-              type: item.url ? 'link' : 'file',
-              thumbnailUrl: item.thumbnailUrl
-            });
+            attachments.push(processAttachmentData(item));
           }
         });
         break; // Use first valid source found
@@ -287,18 +301,27 @@ export const getFirstScreenshot = (analysis: any): string | null => {
   try {
     const attachments = getAttachmentsFromAnalysis(analysis);
     
-    // Look for any attachment with a thumbnail
+    // Look for any attachment with a file_path first (uploaded files)
     for (const attachment of attachments) {
-      if (attachment.thumbnailUrl) {
+      if (attachment.file_path && attachment.type === 'image') {
+        return attachment.file_path;
+      }
+    }
+    
+    // Then look for thumbnails
+    for (const attachment of attachments) {
+      if (attachment.thumbnailUrl && !attachment.thumbnailUrl.startsWith('blob:')) {
         return attachment.thumbnailUrl;
       }
     }
     
-    // For image types, return the URL if it looks like an image
+    // For image types, return the URL if it looks like an image and isn't a blob
     for (const attachment of attachments) {
       if (attachment.type === 'image' || 
           (attachment.url && /\.(jpg|jpeg|png|gif|webp)$/i.test(attachment.url))) {
-        return attachment.url || null;
+        if (attachment.url && !attachment.url.startsWith('blob:')) {
+          return attachment.url;
+        }
       }
     }
   } catch (error) {
@@ -321,15 +344,16 @@ export const getAllScreenshots = (analysis: any): AnalysisScreenshot[] => {
   // Generic fallback
   const attachments = getAttachmentsFromAnalysis(analysis);
   return attachments
-    .filter(att => att.type === 'image' || att.thumbnailUrl)
+    .filter(att => att.type === 'image' || att.thumbnailUrl || att.file_path)
     .map(att => ({
       id: att.id,
       name: att.name,
       url: att.url,
       thumbnailUrl: att.thumbnailUrl,
-      file_name: att.name,
-      file_path: att.url,
-      created_at: new Date().toISOString()
+      file_name: att.file_name || att.name,
+      file_path: att.file_path,
+      created_at: new Date().toISOString(),
+      metadata: att.metadata
     }));
 };
 

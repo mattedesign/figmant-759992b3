@@ -34,28 +34,43 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
       setHasError(false);
       
       try {
-        // First try to get screenshot URL for URL attachments
-        if (attachment.type === 'url') {
-          const screenshotUrl = ImageService.getScreenshotUrl(attachment);
-          if (screenshotUrl) {
-            const isValid = await ImageService.validateImageUrl(screenshotUrl);
-            if (isValid) {
-              setImageUrl(screenshotUrl);
-              setIsLoading(false);
-              return;
-            }
+        console.log('🖼️ ENHANCED IMAGE - Loading attachment:', {
+          id: attachment.id,
+          name: attachment.name,
+          type: attachment.type,
+          url: attachment.url,
+          file_path: attachment.file_path,
+          thumbnailUrl: attachment.thumbnailUrl
+        });
+
+        // Use the enhanced resolution method for analysis attachments
+        const url = ImageService.resolveAnalysisAttachmentUrl(attachment);
+        
+        if (url) {
+          console.log('🖼️ ENHANCED IMAGE - Resolved URL:', url);
+          
+          // Validate the URL before setting it
+          const isValid = await ImageService.validateImageUrl(url);
+          if (isValid) {
+            setImageUrl(url);
+            setIsLoading(false);
+            return;
+          } else {
+            console.log('🖼️ ENHANCED IMAGE - URL validation failed:', url);
           }
         }
 
-        // Fallback to general image URL resolution
-        const url = await ImageService.getBestImageUrl(attachment);
-        if (url) {
-          setImageUrl(url);
+        // If resolution failed, try the fallback method
+        const fallbackUrl = await ImageService.getBestImageUrl(attachment);
+        if (fallbackUrl) {
+          console.log('🖼️ ENHANCED IMAGE - Using fallback URL:', fallbackUrl);
+          setImageUrl(fallbackUrl);
         } else {
+          console.log('🖼️ ENHANCED IMAGE - No valid URL found');
           setHasError(true);
         }
       } catch (error) {
-        console.error('Error loading image:', error);
+        console.error('🖼️ ENHANCED IMAGE - Error loading image:', error);
         setHasError(true);
       } finally {
         setIsLoading(false);
@@ -66,11 +81,13 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
   }, [attachment]);
 
   const handleImageError = () => {
+    console.log('🖼️ ENHANCED IMAGE - Image load error for URL:', imageUrl);
     setHasError(true);
     setIsLoading(false);
   };
 
   const handleImageLoad = () => {
+    console.log('🖼️ ENHANCED IMAGE - Image loaded successfully:', imageUrl);
     setIsLoading(false);
     setHasError(false);
   };

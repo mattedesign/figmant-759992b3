@@ -17,6 +17,7 @@ export interface ScreenshotModalProps {
     file_path?: string;
     file_size?: number;
     created_at?: string;
+    metadata?: any;
   } | null;
   screenshots?: any[];
   currentIndex?: number;
@@ -37,6 +38,16 @@ export const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
 
   const hasMultiple = screenshots.length > 1;
   const currentScreenshot = screenshots.length > 0 ? screenshots[currentIndex] : screenshot;
+
+  // Log the current screenshot data for debugging
+  console.log('📷 SCREENSHOT MODAL - Current screenshot:', {
+    id: currentScreenshot.id,
+    name: currentScreenshot.name,
+    url: currentScreenshot.url,
+    file_path: currentScreenshot.file_path,
+    thumbnailUrl: currentScreenshot.thumbnailUrl,
+    metadata: currentScreenshot.metadata
+  });
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -101,6 +112,11 @@ export const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
           {currentScreenshot.url && (
             <p className="text-xs text-gray-500 mt-1">
               {currentScreenshot.url}
+            </p>
+          )}
+          {currentScreenshot.file_path && (
+            <p className="text-xs text-gray-400 mt-1">
+              Storage: {currentScreenshot.file_path}
             </p>
           )}
         </div>

@@ -26,13 +26,18 @@ export class ImageService {
   static resolveImageUrl(attachment: any): string | null {
     if (!attachment) return null;
 
+    // Handle blob URLs - these are temporary and should be ignored for stored files
+    const skipBlobUrls = true;
+
     // Try different URL properties in order of preference
     const urlCandidates = [
-      attachment.thumbnailUrl,
-      attachment.url,
+      // First try storage paths (most reliable for uploaded files)
       attachment.file_path,
-      attachment.uploadPath
-    ];
+      attachment.uploadPath,
+      // Then try actual URLs (but skip blob URLs for stored content)
+      !skipBlobUrls || !attachment.url?.startsWith('blob:') ? attachment.url : null,
+      !skipBlobUrls || !attachment.thumbnailUrl?.startsWith('blob:') ? attachment.thumbnailUrl : null,
+    ].filter(Boolean);
 
     for (const candidate of urlCandidates) {
       if (candidate && typeof candidate === 'string') {
@@ -52,6 +57,11 @@ export class ImageService {
    */
   static async validateImageUrl(url: string): Promise<boolean> {
     if (!url) return false;
+    
+    // Skip validation for blob URLs as they're likely expired
+    if (url.startsWith('blob:')) {
+      return false;
+    }
     
     return new Promise((resolve) => {
       const img = new Image();
@@ -83,17 +93,18 @@ export class ImageService {
     const isValid = await this.validateImageUrl(primaryUrl);
     if (isValid) return primaryUrl;
     
-    // If primary URL fails, try other options
-    const fallbackUrls = [
-      attachment.url,
+    // If primary URL fails, try other storage-based options
+    const fallbackCandidates = [
       attachment.file_path,
-      attachment.uploadPath
-    ].filter(url => url && url !== primaryUrl);
+      attachment.uploadPath,
+    ].filter(Boolean);
     
-    for (const fallbackUrl of fallbackUrls) {
-      const resolvedUrl = fallbackUrl.startsWith('http') ? fallbackUrl : this.getPublicUrl(fallbackUrl);
-      const isValid = await this.validateImageUrl(resolvedUrl);
-      if (isValid) return resolvedUrl;
+    for (const candidate of fallbackCandidates) {
+      if (candidate && !candidate.startsWith('http')) {
+        const resolvedUrl = this.getPublicUrl(candidate);
+        const isValid = await this.validateImageUrl(resolvedUrl);
+        if (isValid) return resolvedUrl;
+      }
     }
     
     return null;
@@ -108,13 +119,40 @@ export class ImageService {
     const hasMobileScreenshot = attachment.metadata?.screenshots?.mobile?.success;
     
     if (hasDesktopScreenshot) {
-      return attachment.metadata.screenshots.desktop.thumbnailUrl || attachment.metadata.screenshots.desktop.url;
+      const desktop = attachment.metadata.screenshots.desktop;
+      // Prefer storage paths over blob URLs
+      return desktop.file_path || desktop.thumbnailUrl || desktop.url;
     }
     
     if (hasMobileScreenshot) {
-      return attachment.metadata.screenshots.mobile.thumbnailUrl || attachment.metadata.screenshots.mobile.url;
+      const mobile = attachment.metadata.screenshots.mobile;
+      // Prefer storage paths over blob URLs
+      return mobile.file_path || mobile.thumbnailUrl || mobile.url;
     }
     
     return null;
+  }
+
+  /**
+   * Enhanced URL resolution specifically for analysis attachments
+   */
+  static resolveAnalysisAttachmentUrl(attachment: any): string | null {
+    if (!attachment) return null;
+
+    // For URL-type attachments, check for screenshots first
+    if (attachment.type === 'url' || attachment.url) {
+      const screenshotUrl = this.getScreenshotUrl(attachment);
+      if (screenshotUrl) {
+        return screenshotUrl.startsWith('http') ? screenshotUrl : this.getPublicUrl(screenshotUrl);
+      }
+    }
+
+    // For file attachments, prioritize storage paths
+    if (attachment.type === 'file' || attachment.file_path) {
+      return this.resolveImageUrl(attachment);
+    }
+
+    // Fallback to general resolution
+    return this.resolveImageUrl(attachment);
   }
 }
