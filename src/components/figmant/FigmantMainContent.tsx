@@ -13,6 +13,7 @@ import { SearchPage } from './pages/SearchPage';
 import { CreditsPage } from './pages/CreditsPage';
 import { PreferencesPage } from './pages/PreferencesPage';
 import { AdminPage } from './pages/AdminPage';
+import { CompetitorAnalysisPage } from './pages/analysis/CompetitorAnalysisPage';
 
 interface FigmantMainContentProps {
   activeSection: string;
@@ -53,7 +54,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       
       case 'competitor-analysis':
         // UC-024 - AI Competitor Analysis
-        return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
+        return <CompetitorAnalysisPage />;
       
       case 'wizard-analysis':
         // Direct to stepped wizard process
