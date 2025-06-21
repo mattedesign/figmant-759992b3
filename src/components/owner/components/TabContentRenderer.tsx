@@ -3,22 +3,13 @@ import { tabMapping } from './tabs/tabMapping';
 import { DesignAnalysisTab } from './tabs/DesignAnalysisTab';
 import { PremiumAnalysisWizard } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisWizard';
 import { PremiumAnalysisTabController } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisTabController';
-import { CompetitorAnalysisPage } from '@/components/figmant/pages/analysis/CompetitorAnalysisPage';
 
 interface TabContentRendererProps {
   activeTab: string;
 }
 
 export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
-  // Handle specific analysis routes directly
-  if (activeTab === 'competitor-analysis') {
-    return (
-      <div className="h-full w-full">
-        <CompetitorAnalysisPage />
-      </div>
-    );
-  }
-
+  // Handle specific wizard and premium analysis routes directly
   if (activeTab === 'wizard-analysis') {
     return (
       <div className="h-full w-full">

@@ -5,7 +5,6 @@ import { AllAnalysisPageWrapper } from '@/components/design/analysis/AllAnalysis
 import { AdvancedDesignAnalysisPageContent } from '@/components/design/AdvancedDesignAnalysisPageContent';
 import { PremiumAnalysisWizard } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisWizard';
 import { PremiumAnalysisTabController } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisTabController';
-import { CompetitorAnalysisPage } from '@/components/figmant/pages/analysis/CompetitorAnalysisPage';
 
 // Lazy load other content components
 const InsightsPage = lazy(() => import('@/components/design/InsightsPage').then(module => ({
@@ -37,12 +36,6 @@ interface TabContentRendererProps {
 export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
   const renderTabContent = (activeTab: string) => {
     switch (activeTab) {
-      case 'competitor-analysis':
-        return (
-          <div className="h-full w-full">
-            <CompetitorAnalysisPage />
-          </div>
-        );
       case 'design':
         return (
           <div className="p-6 space-y-6 h-full overflow-y-auto">
