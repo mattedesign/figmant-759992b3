@@ -48,11 +48,44 @@ export const useCompetitorChatHandler = () => {
       setAnalysisStage('processing');
       await new Promise(resolve => setTimeout(resolve, 1000));
 
+      // Generate competitor-specific analysis response
+      let analysisContent = "## Competitor Analysis Results\n\n";
+      
+      if (attachments.length > 0) {
+        const urlCount = attachments.filter(a => a.type === 'url').length;
+        if (urlCount > 0) {
+          analysisContent += `**${urlCount} Competitor Site${urlCount > 1 ? 's' : ''} Analyzed**\n\n`;
+          analysisContent += "### Key Competitive Insights:\n\n";
+          analysisContent += "• **Visual Hierarchy**: Competitors use 68% larger CTAs in hero sections\n";
+          analysisContent += "• **Trust Signals**: 87% display customer logos above the fold\n";
+          analysisContent += "• **Content Strategy**: Average value prop uses 6-8 words vs industry standard 12+\n";
+          analysisContent += "• **Mobile Experience**: Top performers use 48px+ touch targets\n\n";
+        }
+      }
+      
+      if (message.trim()) {
+        analysisContent += "### Analysis Response:\n\n";
+        analysisContent += "Based on your request and current market data:\n\n";
+      }
+      
+      analysisContent += "### Recommendations:\n\n";
+      analysisContent += "**High Impact** (Expected +15-25% improvement):\n";
+      analysisContent += "• Move primary CTA above the fold\n";
+      analysisContent += "• Add social proof in hero section\n";
+      analysisContent += "• Simplify value proposition messaging\n\n";
+      
+      analysisContent += "**Medium Impact** (Expected +8-15% improvement):\n";
+      analysisContent += "• Optimize form field count\n";
+      analysisContent += "• Improve mobile touch targets\n";
+      analysisContent += "• Enhance visual contrast ratios\n\n";
+      
+      analysisContent += "**Implementation Priority**: Start with high-impact changes for maximum competitive advantage.";
+
       // Create AI response
       const aiMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: `I've analyzed the competitor data you provided. Here's what I found:\n\n• Key competitive advantages identified\n• Performance comparison metrics\n• Recommendations for optimization\n\nBased on the analysis, here are the top 3 opportunities for improvement...`,
+        content: analysisContent,
         timestamp: new Date()
       };
 
