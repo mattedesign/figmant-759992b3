@@ -14,7 +14,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { currentCreditCost, setTemplateCreditCost } = useTemplateCreditStore();
+  const { currentCreditCost, setTemplateCreditCost, resetCreditCost } = useTemplateCreditStore();
   
   // Force empty analyses to show "Start your analysis" state
   const [analyses] = useState([]); // Always empty for now
@@ -29,6 +29,13 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
     
     return () => clearTimeout(timer);
   }, []);
+
+  // Reset credit cost when leaving the page
+  useEffect(() => {
+    return () => {
+      resetCreditCost();
+    };
+  }, [resetCreditCost]);
 
   const handleTemplateSelect = async (templateId: string) => {
     console.log('Template selected:', templateId);

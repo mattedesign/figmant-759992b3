@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AnalysisPageContainer } from './analysis/AnalysisPageContainer';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTemplateCreditStore } from '@/stores/templateCreditStore';
 
 interface AnalysisPageProps {
   selectedTemplate?: any;
@@ -9,6 +10,14 @@ interface AnalysisPageProps {
 
 export const AnalysisPage: React.FC<AnalysisPageProps> = ({ selectedTemplate }) => {
   const isMobile = useIsMobile();
+  const { resetCreditCost } = useTemplateCreditStore();
+
+  // Reset credit cost when leaving the page
+  useEffect(() => {
+    return () => {
+      resetCreditCost();
+    };
+  }, [resetCreditCost]);
 
   return (
     <div className="h-full flex flex-col min-h-0 overflow-hidden">

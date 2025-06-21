@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { StepProps } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,14 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
 }) => {
   const { data: templates = [], isLoading } = useFigmantPromptTemplates();
   const [selectedTemplateCreditCost, setSelectedTemplateCreditCost] = useState<number>(1);
-  const { setTemplateCreditCost } = useTemplateCreditStore();
+  const { setTemplateCreditCost, resetCreditCost } = useTemplateCreditStore();
+
+  // Reset credit cost when leaving the page
+  useEffect(() => {
+    return () => {
+      resetCreditCost();
+    };
+  }, [resetCreditCost]);
 
   const handleTemplateSelect = async (templateId: string) => {
     setStepData(prev => ({ ...prev, selectedType: templateId }));

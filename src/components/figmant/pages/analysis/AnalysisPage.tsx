@@ -1,15 +1,24 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnalysisChatPanel } from './AnalysisChatPanel';
 import { useChatState } from './ChatStateManager';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { UserDebugPanel } from '@/components/debug/UserDebugPanel';
 import { Button } from '@/components/ui/button';
 import { Bug } from 'lucide-react';
+import { useTemplateCreditStore } from '@/stores/templateCreditStore';
 
 export const AnalysisPage: React.FC = () => {
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const chatState = useChatState();
+  const { resetCreditCost } = useTemplateCreditStore();
+
+  // Reset credit cost when leaving the page
+  useEffect(() => {
+    return () => {
+      resetCreditCost();
+    };
+  }, [resetCreditCost]);
 
   return (
     <div className="h-full flex flex-col">
