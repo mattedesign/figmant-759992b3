@@ -5,21 +5,11 @@ import { UserMenu } from './UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { useTemplateCreditStore } from '@/stores/templateCreditStore';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, Crown, Zap } from 'lucide-react';
 
 interface NavigationProps {
   showSidebarTrigger?: boolean;
 }
-
-const getCreditBadgeStyle = (creditCost: number) => {
-  if (creditCost >= 5) {
-    return "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none";
-  }
-  if (creditCost >= 3) {
-    return "bg-blue-50 text-blue-700 border-blue-200";
-  }
-  return "bg-gray-100 text-gray-700 border-gray-200";
-};
 
 export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
   const { user, isOwner } = useAuth();
@@ -95,6 +85,22 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
     return null;
   };
 
+  const getCreditIcon = () => {
+    if (currentCreditCost >= 5) return <Crown className="h-3 w-3" />;
+    if (currentCreditCost >= 3) return <Zap className="h-3 w-3" />;
+    return <CreditCard className="h-3 w-3" />;
+  };
+
+  const getCreditStyle = () => {
+    if (currentCreditCost >= 5) {
+      return "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none";
+    }
+    if (currentCreditCost >= 3) {
+      return "bg-blue-50 text-blue-700 border-blue-200";
+    }
+    return "bg-gray-100 text-gray-700 border-gray-200";
+  };
+
   return (
     <header className="border-b bg-card flex-shrink-0">
       <div className="container mx-auto px-4 py-4">
@@ -112,9 +118,9 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
           <div className="flex items-center space-x-4">
             {user && (
               <>
-                {/* Dynamic Credit Cost Display from global store */}
-                <Badge className={`flex items-center gap-1 ${getCreditBadgeStyle(currentCreditCost)}`}>
-                  <CreditCard className="h-3 w-3" />
+                {/* Dynamic Credit Cost Display with updated styling */}
+                <Badge className={`flex items-center gap-1 transition-all duration-200 ${getCreditStyle()}`}>
+                  {getCreditIcon()}
                   {currentCreditCost} Credit{currentCreditCost !== 1 ? 's' : ''}
                 </Badge>
                 <UserMenu />
