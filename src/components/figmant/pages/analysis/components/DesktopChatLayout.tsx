@@ -7,6 +7,8 @@ import { AnalysisNavigationSidebar } from './AnalysisNavigationSidebar';
 import { URLInputHandler } from './URLInputHandler';
 import { useChatStateContext } from './ChatStateProvider';
 import { ChatAttachmentHandlers } from './ChatAttachmentHandlers';
+import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
+import { ChatMessage } from '@/components/design/DesignChatInterface';
 
 export const DesktopChatLayout: React.FC = () => {
   const [showUrlInput, setShowUrlInput] = useState(false);
@@ -15,18 +17,74 @@ export const DesktopChatLayout: React.FC = () => {
 
   const {
     messages,
+    setMessages,
     isAnalyzing,
     message,
     setMessage,
     attachments,
+    setAttachments,
     templates,
     setSelectedTemplateId,
     getCurrentTemplate
   } = useChatStateContext();
 
+  const chatAnalysis = useFigmantChatAnalysis();
+
   const handleSendMessage = async () => {
-    // Implementation will be moved here from UnifiedChatContainer
     console.log('🚀 DESKTOP LAYOUT - Send message');
+    
+    if (!message.trim() && attachments.length === 0) {
+      console.log('No content to send');
+      return;
+    }
+
+    try {
+      // Create user message
+      const userMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: message,
+        attachments: attachments.length > 0 ? attachments : undefined,
+        timestamp: new Date()
+      };
+
+      // Add user message to state
+      if (setMessages) {
+        setMessages(prev => [...prev, userMessage]);
+      }
+
+      // Send to analysis API
+      const result = await chatAnalysis.mutateAsync({
+        message,
+        attachments,
+        template: getCurrentTemplate()
+      });
+
+      // Add AI response
+      const aiMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: result.analysis,
+        timestamp: new Date()
+      };
+
+      if (setMessages) {
+        setMessages(prev => [...prev, aiMessage]);
+      }
+
+      // Clear input
+      if (setMessage) {
+        setMessage('');
+      }
+      
+      // Clear attachments if setAttachments is available
+      if (setAttachments) {
+        setAttachments([]);
+      }
+      
+    } catch (error) {
+      console.error('Send message error:', error);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -64,7 +122,7 @@ export const DesktopChatLayout: React.FC = () => {
           <div className="flex-1 min-w-0 relative">
             <AnalysisChatContainer
               messages={messages}
-              isAnalyzing={isAnalyzing}
+              isAnalyzing={isAnalyzing || chatAnalysis.isPending}
               message={message}
               setMessage={setMessage}
               onSendMessage={handleSendMessage}
