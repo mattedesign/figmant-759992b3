@@ -57,9 +57,6 @@ export const BatchAnalysisDashboard = () => {
                     <CardTitle className="flex items-center gap-2">
                       <BarChart3 className="h-5 w-5" />
                       Batch Analysis
-                      {analysis.version_number && analysis.version_number > 1 && (
-                        <Badge variant="outline">v{analysis.version_number}</Badge>
-                      )}
                     </CardTitle>
                     <CardDescription>
                       {analysis.analysis_type} • {formatDistanceToNow(new Date(analysis.created_at))} ago
@@ -96,13 +93,6 @@ export const BatchAnalysisDashboard = () => {
                 {analysis.context_summary && (
                   <div className="mt-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
                     <p className="text-sm text-blue-700">{analysis.context_summary}</p>
-                  </div>
-                )}
-                
-                {analysis.modification_summary && (
-                  <div className="mt-3 p-3 bg-amber-50 rounded-lg border-l-4 border-amber-400">
-                    <p className="text-sm font-medium text-amber-800 mb-1">Modified Analysis</p>
-                    <p className="text-sm text-amber-700">{analysis.modification_summary}</p>
                   </div>
                 )}
               </CardContent>

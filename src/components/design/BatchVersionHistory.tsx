@@ -23,7 +23,7 @@ export const BatchVersionHistory = ({
       <Card>
         <CardContent className="py-8 text-center">
           <GitBranch className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">No version history available</p>
+          <p className="text-muted-foreground">No related analyses available</p>
         </CardContent>
       </Card>
     );
@@ -33,8 +33,8 @@ export const BatchVersionHistory = ({
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
         <GitBranch className="h-5 w-5" />
-        <h3 className="text-lg font-semibold">Analysis Version History</h3>
-        <Badge variant="outline">{versions.length} versions</Badge>
+        <h3 className="text-lg font-semibold">Related Batch Analyses</h3>
+        <Badge variant="outline">{versions.length} analyses</Badge>
       </div>
 
       {versions.map((version, index) => {
@@ -50,7 +50,7 @@ export const BatchVersionHistory = ({
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="text-base flex items-center gap-2">
-                    Version {version.version_number}
+                    Batch Analysis
                     {isLatest && <Badge className="bg-green-600">Latest</Badge>}
                     {isCurrent && <Badge variant="outline">Current</Badge>}
                   </CardTitle>
@@ -70,20 +70,6 @@ export const BatchVersionHistory = ({
               </div>
             </CardHeader>
             <CardContent>
-              {version.modification_summary && (
-                <div className="mb-3 p-3 bg-muted/50 rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <FileText className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Modifications:</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {version.modification_summary}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="font-medium text-muted-foreground">Analysis Type</p>

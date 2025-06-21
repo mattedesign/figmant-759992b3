@@ -38,62 +38,17 @@ export const useEnhancedDesignBatchAnalyses = (batchId?: string) => {
         
         console.log('✅ Fetched batch analyses:', data?.length || 0);
         
-        // Process and repair analyses if needed
-        const processedData = await Promise.all((data || []).map(async (analysis) => {
-          if (!analysis.impact_summary && analysis.analysis_results) {
-            console.log('🔧 Repairing batch analysis:', analysis.id);
-            
-            const repairSuccess = await AnalysisRecoveryService.repairAnalysisRecord(
-              analysis.id, 
-              'batch'
-            );
-            
-            if (repairSuccess) {
-              // Refetch the repaired analysis
-              const { data: repairedAnalysis } = await supabase
-                .from('design_batch_analysis')
-                .select('*')
-                .eq('id', analysis.id)
-                .single();
-              
-              return repairedAnalysis || analysis;
-            }
-            
-            // Create minimal impact summary for display
-            return {
-              ...analysis,
-              impact_summary: {
-                key_metrics: {
-                  overall_score: 7,
-                  improvement_areas: ['Cross-design consistency'],
-                  strengths: ['Comparative analysis completed']
-                },
-                business_impact: {
-                  conversion_potential: 7,
-                  user_engagement_score: 7,
-                  brand_alignment: 7,
-                  competitive_advantage: ['Multiple design options compared']
-                },
-                user_experience: {
-                  usability_score: 7,
-                  accessibility_rating: 6,
-                  pain_points: ['Minor inconsistencies between designs'],
-                  positive_aspects: ['Good design variety', 'Clear comparison']
-                },
-                recommendations: [
-                  {
-                    priority: 'medium' as const,
-                    category: 'Consistency',
-                    description: 'Ensure design consistency across variations',
-                    expected_impact: 'Better user experience consistency'
-                  }
-                ]
-              }
-            };
-          }
-          
-          return analysis;
-        }));
+        // Process analyses without repair attempts for removed columns
+        const processedData = (data || []).map(analysis => {
+          // Create basic structure without deprecated fields
+          return {
+            ...analysis,
+            // Ensure basic required fields exist
+            analysis_results: analysis.analysis_results || { status: 'recovered', type: 'batch_fallback' },
+            prompt_used: analysis.prompt_used || 'Recovered batch analysis',
+            analysis_type: analysis.analysis_type || 'batch_comparative'
+          };
+        });
         
         return processedData as unknown as DesignBatchAnalysis[];
         
@@ -117,34 +72,7 @@ export const useEnhancedDesignBatchAnalyses = (batchId?: string) => {
               ...item,
               analysis_results: { status: 'recovered', type: 'batch_fallback' },
               prompt_used: 'Recovered batch analysis',
-              analysis_type: item.analysis_type || 'batch_comparative',
-              impact_summary: {
-                key_metrics: {
-                  overall_score: 6,
-                  improvement_areas: ['Data recovery completed'],
-                  strengths: ['Analysis preserved']
-                },
-                business_impact: {
-                  conversion_potential: 6,
-                  user_engagement_score: 6,
-                  brand_alignment: 6,
-                  competitive_advantage: ['Batch analysis available']
-                },
-                user_experience: {
-                  usability_score: 6,
-                  accessibility_rating: 6,
-                  pain_points: ['System recovery in progress'],
-                  positive_aspects: ['Data preserved', 'Functionality restored']
-                },
-                recommendations: [
-                  {
-                    priority: 'high' as const,
-                    category: 'Recovery',
-                    description: 'Batch analysis system recovered',
-                    expected_impact: 'Restored batch functionality'
-                  }
-                ]
-              }
+              analysis_type: item.analysis_type || 'batch_comparative'
             })) as unknown as DesignBatchAnalysis[];
           }
         } catch (fallbackError) {

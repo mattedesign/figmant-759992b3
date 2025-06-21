@@ -44,7 +44,7 @@ export const BatchAnalysisOverview = ({
           <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
             <History className="h-5 w-5 text-purple-600" />
             <div>
-              <p className="text-sm font-medium">Versions</p>
+              <p className="text-sm font-medium">Related Analyses</p>
               <p className="text-2xl font-bold">{modificationHistoryLength}</p>
             </div>
           </div>
@@ -54,13 +54,6 @@ export const BatchAnalysisOverview = ({
           <div className="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
             <p className="text-sm font-medium text-blue-800 mb-1">Context Enhanced Analysis</p>
             <p className="text-sm text-blue-700">{selectedVersion.context_summary}</p>
-          </div>
-        )}
-
-        {selectedVersion.modification_summary && (
-          <div className="mb-4 p-3 bg-amber-50 rounded-lg border-l-4 border-amber-400">
-            <p className="text-sm font-medium text-amber-800 mb-1">Modifications in This Version</p>
-            <p className="text-sm text-amber-700">{selectedVersion.modification_summary}</p>
           </div>
         )}
       </CardContent>
