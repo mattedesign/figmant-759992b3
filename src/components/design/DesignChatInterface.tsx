@@ -248,7 +248,10 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
       return;
     }
 
+    // Call the parent's onSendMessage with current state
     onSendMessage(message, attachments);
+    
+    // Clear local state after sending
     setMessage('');
     setAttachments([]);
   }, [message, attachments, onSendMessage, toast]);
