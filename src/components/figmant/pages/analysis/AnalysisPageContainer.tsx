@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AnalysisPageContainerProps {
   selectedTemplate?: any;
@@ -16,6 +17,8 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
   // Force empty analyses to show "Start your analysis" state
   const [analyses] = useState([]); // Always empty for now
   const [isLoading, setIsLoading] = useState(true);
+  const [currentCreditCost, setCurrentCreditCost] = useState<number>(1);
+  const [selectedPromptTemplate, setSelectedPromptTemplate] = useState<string>('');
 
   useEffect(() => {
     // Simulate loading then show empty state
@@ -25,6 +28,34 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
     
     return () => clearTimeout(timer);
   }, []);
+
+  const handleTemplateSelect = async (templateId: string) => {
+    console.log('Template selected:', templateId);
+    
+    // Set the selected template
+    setSelectedPromptTemplate(templateId);
+    
+    // Fetch credit cost from database
+    try {
+      const { data, error } = await supabase
+        .from('claude_prompt_examples')
+        .select('credit_cost')
+        .eq('id', templateId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching credit cost:', error);
+        setCurrentCreditCost(3); // Fallback
+      } else {
+        const creditCost = data.credit_cost || 3;
+        console.log('Credit cost fetched:', creditCost);
+        setCurrentCreditCost(creditCost);
+      }
+    } catch (error) {
+      console.error('Error in handleTemplateSelect:', error);
+      setCurrentCreditCost(3); // Fallback
+    }
+  };
 
   // Loading state
   if (isLoading) {
