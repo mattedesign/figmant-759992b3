@@ -1,32 +1,20 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 export const useUserDebugInfo = () => {
-  const { user } = useAuth();
-  
   return useQuery({
-    queryKey: ['user-debug-info', user?.id],
+    queryKey: ['user-debug-info'],
     queryFn: async () => {
-      if (!user?.email) {
-        console.log('🔍 No authenticated user available for debug check');
-        return { 
-          error: 'No authenticated user', 
-          user: null, 
-          debugInfo: { noAuthenticatedUser: true }
-        };
-      }
-
-      console.log(`🔍 Starting comprehensive user debug check for ${user.email}...`);
+      console.log('🔍 Starting comprehensive user debug check for Mbrown@tfin.com...');
       
       try {
-        // Use the current authenticated user's email
-        console.log(`🔍 Fetching profile for ${user.email}...`);
+        // Use service role level access to bypass RLS for debugging
+        console.log('🔍 Fetching profile for Mbrown@tfin.com...');
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('email', user.email)
+          .eq('email', 'Mbrown@tfin.com')
           .limit(1);
 
         console.log('🔍 Profile query result:', { profiles, profilesError });
@@ -42,18 +30,17 @@ export const useUserDebugInfo = () => {
         }
 
         if (!profiles || profiles.length === 0) {
-          console.log(`🔍 No profile found for ${user.email}`);
+          console.log('🔍 No profile found for Mbrown@tfin.com');
           
           // Try to search for similar emails
-          const emailLocalPart = user.email.split('@')[0];
           const { data: similarProfiles, error: searchError } = await supabase
             .from('profiles')
             .select('email, id, role')
-            .ilike('email', `%${emailLocalPart}%`)
+            .ilike('email', '%mbrown%')
             .limit(5);
 
           return { 
-            error: `No profile found for ${user.email}`, 
+            error: 'No profile found for Mbrown@tfin.com', 
             user: null,
             profilesError: 'User not found in profiles table',
             debugInfo: { 
@@ -67,7 +54,7 @@ export const useUserDebugInfo = () => {
         const targetProfile = profiles[0];
         const targetUserId = targetProfile.id;
 
-        console.log(`🔍 Found user profile for ${user.email}:`, targetProfile);
+        console.log('🔍 Found user profile for Mbrown@tfin.com:', targetProfile);
         console.log('🔍 User ID:', targetUserId);
 
         const debugData = {
@@ -176,26 +163,35 @@ export const useUserDebugInfo = () => {
           debugData.rawQueries.transactionsQuery = { data: null, error: error };
         }
 
-        // Test access function with current user context
+        // Test access function with current user context (not the target user)
         try {
-          console.log('🔍 Testing user access function for current user...');
+          console.log('🔍 Testing user access function for current session...');
           
-          const { data: hasAccess, error: accessError } = await supabase
-            .rpc('user_has_access', { user_id: targetUserId });
-
-          if (accessError) {
-            console.log('🔍 Access check error:', accessError);
-            debugData.errors.accessError = accessError;
+          // Get current authenticated user first
+          const { data: authData, error: authError } = await supabase.auth.getUser();
+          
+          if (authError || !authData.user) {
+            console.log('🔍 No authenticated user for access check');
+            debugData.errors.accessError = { message: 'No authenticated user' };
           } else {
-            console.log('🔍 Current user has access result:', hasAccess);
-            debugData.hasAccess = hasAccess;
+            console.log('🔍 Current authenticated user:', authData.user.id);
+            const { data: hasAccess, error: accessError } = await supabase
+              .rpc('user_has_access', { user_id: authData.user.id });
+
+            if (accessError) {
+              console.log('🔍 Access check error:', accessError);
+              debugData.errors.accessError = accessError;
+            } else {
+              console.log('🔍 Current user has access result:', hasAccess);
+              debugData.hasAccess = hasAccess;
+            }
           }
         } catch (error) {
           console.log('🔍 Access check exception:', error);
           debugData.errors.accessError = error;
         }
 
-        console.log(`🔍 Complete debug data for ${user.email}:`, debugData);
+        console.log('🔍 Complete debug data for Mbrown@tfin.com:', debugData);
         return debugData;
 
       } catch (globalError) {
@@ -207,7 +203,7 @@ export const useUserDebugInfo = () => {
         };
       }
     },
-    enabled: !!user?.email, // Only run when we have an authenticated user
+    enabled: true,
     refetchInterval: false,
     retry: 1,
     staleTime: 0, // Always fetch fresh data for debugging

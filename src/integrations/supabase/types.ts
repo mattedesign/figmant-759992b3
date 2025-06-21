@@ -569,13 +569,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_design_analysis_upload"
-            columns: ["design_upload_id"]
-            isOneToOne: false
-            referencedRelation: "design_uploads"
-            referencedColumns: ["id"]
-          },
         ]
       }
       design_batch_analysis: {
@@ -588,10 +581,14 @@ export type Database = {
           context_summary: string | null
           created_at: string
           id: string
+          impact_summary: Json | null
           key_metrics: Json | null
+          modification_summary: string | null
+          parent_analysis_id: string | null
           prompt_used: string
           recommendations: Json | null
           user_id: string
+          version_number: number | null
           winner_upload_id: string | null
         }
         Insert: {
@@ -603,10 +600,14 @@ export type Database = {
           context_summary?: string | null
           created_at?: string
           id?: string
+          impact_summary?: Json | null
           key_metrics?: Json | null
+          modification_summary?: string | null
+          parent_analysis_id?: string | null
           prompt_used: string
           recommendations?: Json | null
           user_id: string
+          version_number?: number | null
           winner_upload_id?: string | null
         }
         Update: {
@@ -618,18 +619,22 @@ export type Database = {
           context_summary?: string | null
           created_at?: string
           id?: string
+          impact_summary?: Json | null
           key_metrics?: Json | null
+          modification_summary?: string | null
+          parent_analysis_id?: string | null
           prompt_used?: string
           recommendations?: Json | null
           user_id?: string
+          version_number?: number | null
           winner_upload_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "fk_batch_analysis_winner"
-            columns: ["winner_upload_id"]
+            foreignKeyName: "fk_parent_analysis_id"
+            columns: ["parent_analysis_id"]
             isOneToOne: false
-            referencedRelation: "design_uploads"
+            referencedRelation: "design_batch_analysis"
             referencedColumns: ["id"]
           },
         ]
@@ -724,6 +729,7 @@ export type Database = {
       }
       design_uploads: {
         Row: {
+          analysis_goals: string | null
           analysis_preferences: Json | null
           batch_id: string | null
           batch_name: string | null
@@ -733,6 +739,9 @@ export type Database = {
           file_size: number | null
           file_type: string | null
           id: string
+          is_replacement: boolean | null
+          original_batch_id: string | null
+          replaced_upload_id: string | null
           source_type: string
           source_url: string | null
           status: string
@@ -741,6 +750,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          analysis_goals?: string | null
           analysis_preferences?: Json | null
           batch_id?: string | null
           batch_name?: string | null
@@ -750,6 +760,9 @@ export type Database = {
           file_size?: number | null
           file_type?: string | null
           id?: string
+          is_replacement?: boolean | null
+          original_batch_id?: string | null
+          replaced_upload_id?: string | null
           source_type?: string
           source_url?: string | null
           status?: string
@@ -758,6 +771,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          analysis_goals?: string | null
           analysis_preferences?: Json | null
           batch_id?: string | null
           batch_name?: string | null
@@ -767,6 +781,9 @@ export type Database = {
           file_size?: number | null
           file_type?: string | null
           id?: string
+          is_replacement?: boolean | null
+          original_batch_id?: string | null
+          replaced_upload_id?: string | null
           source_type?: string
           source_url?: string | null
           status?: string
@@ -780,6 +797,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_replaced_upload_id"
+            columns: ["replaced_upload_id"]
+            isOneToOne: false
+            referencedRelation: "design_uploads"
             referencedColumns: ["id"]
           },
         ]
@@ -1336,15 +1360,6 @@ export type Database = {
       user_has_access: {
         Args: { user_id: string }
         Returns: boolean
-      }
-      validate_analysis_data_integrity: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          table_name: string
-          issue_type: string
-          count: number
-          details: string
-        }[]
       }
       validate_claude_api_key: {
         Args: { api_key: string }

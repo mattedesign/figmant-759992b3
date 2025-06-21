@@ -50,33 +50,29 @@ const SubscriberDashboard = () => {
     // Legacy tabs for backward compatibility
     'wizard', 'revenue-analysis', 'preferences'
   ];
-  console.log('🔍 SUBSCRIBER DASHBOARD - Current tab:', activeTab, 'Current section:', activeSection);
+  console.log('Current tab:', activeTab, 'Current section:', activeSection);
 
   // Update URL when tab changes
   const handleTabChange = (newTab: string) => {
-    console.log('🔍 SUBSCRIBER DASHBOARD - Tab change requested:', newTab);
+    console.log('Changing tab to:', newTab);
     setActiveTab(newTab);
     const newSection = migrateNavigationRoute(tabToSectionMap[newTab] || 'dashboard');
     setActiveSection(newSection);
     setSearchParams({
       tab: newTab
     });
-    console.log('🔍 SUBSCRIBER DASHBOARD - Tab changed to:', newTab, 'Section:', newSection);
   };
 
   // Handle section change from figmant sidebar
   const handleSectionChange = (newSection: string) => {
-    console.log('🔍 SUBSCRIBER DASHBOARD - Section change requested:', newSection);
+    console.log('Changing section to:', newSection);
     const migratedSection = migrateNavigationRoute(newSection);
-    console.log('🔍 SUBSCRIBER DASHBOARD - Migrated section:', migratedSection);
     setActiveSection(migratedSection);
     
     // Set the first available tab for the section
     const sectionTabs = Object.entries(tabToSectionMap)
       .filter(([_, section]) => migrateNavigationRoute(section) === migratedSection)
       .map(([tab, _]) => tab);
-    
-    console.log('🔍 SUBSCRIBER DASHBOARD - Available tabs for section:', sectionTabs);
     
     if (sectionTabs.length > 0) {
       let firstTab = sectionTabs[0];
@@ -87,11 +83,6 @@ const SubscriberDashboard = () => {
         } else if (sectionTabs.includes('all-analysis')) {
           firstTab = 'all-analysis';
         }
-      } else if (migratedSection === 'competitor-analysis') {
-        // For competitor analysis, prefer 'competitor-analysis' tab
-        if (sectionTabs.includes('competitor-analysis')) {
-          firstTab = 'competitor-analysis';
-        }
       } else if (migratedSection === 'wizard-analysis') {
         // For wizard analysis, prefer 'wizard-analysis' tab
         if (sectionTabs.includes('wizard-analysis')) {
@@ -99,7 +90,6 @@ const SubscriberDashboard = () => {
         }
       }
       
-      console.log('🔍 SUBSCRIBER DASHBOARD - Selected tab:', firstTab);
       setActiveTab(firstTab);
       setSearchParams({
         tab: firstTab
@@ -110,11 +100,11 @@ const SubscriberDashboard = () => {
   // Sync tab state with URL changes and handle invalid tabs
   useEffect(() => {
     const currentTab = searchParams.get('tab') || 'design';
-    console.log('🔍 SUBSCRIBER DASHBOARD - URL tab changed to:', currentTab);
+    console.log('URL tab changed to:', currentTab);
 
     // If the current tab is invalid, redirect to default
     if (!validTabs.includes(currentTab)) {
-      console.log('🔍 SUBSCRIBER DASHBOARD - Invalid tab detected, redirecting to design tab');
+      console.log('Invalid tab detected, redirecting to design tab');
       setActiveTab('design');
       setActiveSection('dashboard');
       setSearchParams({
@@ -124,11 +114,10 @@ const SubscriberDashboard = () => {
       setActiveTab(currentTab);
       const newSection = migrateNavigationRoute(tabToSectionMap[currentTab] || 'dashboard');
       setActiveSection(newSection);
-      console.log('🔍 SUBSCRIBER DASHBOARD - URL sync - Tab:', currentTab, 'Section:', newSection);
     }
   }, [searchParams, setSearchParams]);
 
-  console.log('🔍 SUBSCRIBER DASHBOARD - Rendering with tab:', activeTab, 'section:', activeSection);
+  console.log('Rendering SubscriberDashboard with tab:', activeTab, 'section:', activeSection);
   
   return (
     <SubscriberDashboardErrorBoundary>

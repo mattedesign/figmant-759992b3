@@ -9,8 +9,6 @@ import { useChatStateContext } from './ChatStateProvider';
 import { ChatAttachmentHandlers } from './ChatAttachmentHandlers';
 
 export const DesktopChatLayout: React.FC = () => {
-  console.log('🔍 RENDERING: DesktopChatLayout');
-  
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const [isAssetsPanelVisible, setIsAssetsPanelVisible] = useState(true);
@@ -27,6 +25,7 @@ export const DesktopChatLayout: React.FC = () => {
   } = useChatStateContext();
 
   const handleSendMessage = async () => {
+    // Implementation will be moved here from UnifiedChatContainer
     console.log('🚀 DESKTOP LAYOUT - Send message');
   };
 
@@ -60,9 +59,9 @@ export const DesktopChatLayout: React.FC = () => {
   return (
     <ChatAttachmentHandlers>
       {(attachmentHandlers) => (
-        <div className="flex h-full bg-background overflow-hidden">
-          {/* Main Chat Container - Uses flex layout with constrained height */}
-          <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+        <div className="h-full flex gap-4">
+          {/* Main Chat Container */}
+          <div className="flex-1 min-w-0 relative">
             <AnalysisChatContainer
               messages={messages}
               isAnalyzing={isAnalyzing}
@@ -85,11 +84,24 @@ export const DesktopChatLayout: React.FC = () => {
               attachments={attachments}
               onRemoveAttachment={attachmentHandlers.removeAttachment}
             />
+            
+            {/* URL Input Handler */}
+            {showUrlInput && (
+              <div className="absolute top-0 left-0 right-0 z-10 p-4">
+                <URLInputHandler
+                  showUrlInput={showUrlInput}
+                  onClose={() => setShowUrlInput(false)}
+                  attachments={attachments}
+                  onAttachmentAdd={attachmentHandlers.handleAttachmentAdd}
+                  onAttachmentUpdate={attachmentHandlers.handleAttachmentUpdate}
+                />
+              </div>
+            )}
           </div>
 
           {/* Analysis Assets Panel */}
           {isAssetsPanelVisible && (
-            <div className="w-72 border-l border-border flex-shrink-0 overflow-hidden">
+            <div className="flex-shrink-0 w-72">
               <AnalysisNavigationSidebar
                 messages={messages}
                 attachments={attachments}
@@ -104,26 +116,17 @@ export const DesktopChatLayout: React.FC = () => {
 
           {/* Toggle Button for Assets Panel */}
           {!isAssetsPanelVisible && (
-            <div className="fixed right-4 top-1/2 -translate-y-1/2 z-30">
+            <div className="flex-shrink-0 flex items-start pt-4">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsAssetsPanelVisible(true)}
-                className="h-10 w-10 p-0 bg-background shadow-lg border-border"
+                className="h-8 w-8 p-0"
               >
                 <PanelRightOpen className="h-4 w-4" />
               </Button>
             </div>
           )}
-
-          {/* URL Input Handler - Highest z-index overlay */}
-          <URLInputHandler
-            showUrlInput={showUrlInput}
-            onClose={() => setShowUrlInput(false)}
-            attachments={attachments}
-            onAttachmentAdd={attachmentHandlers.handleAttachmentAdd}
-            onAttachmentUpdate={attachmentHandlers.handleAttachmentUpdate}
-          />
         </div>
       )}
     </ChatAttachmentHandlers>

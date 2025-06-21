@@ -1,75 +1,140 @@
 
-import React from 'react';
-import { AnalysisPage } from './pages/analysis/AnalysisPage';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { migrateNavigationRoute } from '@/utils/navigationMigration';
 import { DashboardPage } from './pages/DashboardPage';
-import { CreditsPage } from './pages/CreditsPage';
-import { TemplatesPage } from './pages/TemplatesPage';
-import { PremiumAnalysisPage } from './pages/PremiumAnalysisPage';
-import { WizardPage } from './pages/WizardPage';
+import { AnalysisPage } from './pages/AnalysisPage';
 import { ChatPage } from './pages/ChatPage';
-import { AnalyticsPage } from './pages/AnalyticsPage';
+import { WizardPage } from './pages/WizardPage';
+import { PremiumAnalysisPage } from './pages/PremiumAnalysisPage';
+import { TemplatesPage } from './pages/TemplatesPage';
+import { SearchPage } from './pages/SearchPage';
+import { CreditsPage } from './pages/CreditsPage';
 import { PreferencesPage } from './pages/PreferencesPage';
 import { AdminPage } from './pages/AdminPage';
 
 interface FigmantMainContentProps {
   activeSection: string;
+  setActiveSection: (section: string) => void;
+  selectedAnalysis: any;
+  onBackToList: () => void;
+  onRightSidebarModeChange: (mode: string) => void;
   isSidebarCollapsed?: boolean;
 }
 
 export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   activeSection,
-  isSidebarCollapsed = false
+  setActiveSection,
+  selectedAnalysis,
+  onBackToList,
+  onRightSidebarModeChange,
+  isSidebarCollapsed = true
 }) => {
-  console.log('🎯 FIGMANT MAIN CONTENT - Rendering section:', activeSection);
+  const location = useLocation();
+  const isMobile = useIsMobile();
+
+  // Handle navigation state from premium analysis, template selection, or admin access
+  useEffect(() => {
+    if (location.state?.activeSection) {
+      const migratedSection = migrateNavigationRoute(location.state.activeSection);
+      setActiveSection(migratedSection);
+    }
+  }, [location.state, setActiveSection]);
 
   const renderContent = () => {
-    switch (activeSection) {
+    // Apply migration to current activeSection for backward compatibility
+    const currentSection = migrateNavigationRoute(activeSection);
+    
+    switch (currentSection) {
+      // New standardized navigation IDs
       case 'dashboard':
         return <DashboardPage />;
       
-      // All analysis-related sections route to AnalysisPage
-      case 'design':
       case 'competitor-analysis':
-      case 'conversion-optimization':
-      case 'visual-hierarchy':
-      case 'all-analysis':
-      case 'insights':
-      case 'prompts':
-      case 'premium-analysis':
-      case 'integrations':
-        return <AnalysisPage />;
+        // UC-024 - AI Competitor Analysis
+        return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
       
-      case 'credits':
-        return <CreditsPage />;
+      case 'wizard-analysis':
+        // Direct to stepped wizard process
+        return <WizardPage />;
+      
+      case 'premium-analysis':
+        // UC-018 - E-commerce Revenue Impact (tabbed interface)
+        return <PremiumAnalysisPage />;
       
       case 'templates':
         return <TemplatesPage />;
       
-      case 'wizard-analysis':
-        return <WizardPage />;
+      case 'credits':
+        return <CreditsPage />;
       
-      case 'chat':
-        return <ChatPage />;
-      
-      case 'analytics':
-        return <AnalyticsPage />;
-      
-      case 'preferences':
       case 'settings':
         return <PreferencesPage />;
       
+      case 'help-support':
+        return <PreferencesPage />;
+      
       case 'admin':
-        return <AdminPage />;
+        return <AdminPage initialTab={activeSection} />;
+      
+      // Legacy routes - maintain backward compatibility during transition
+      case 'chat':
+      case 'analysis':
+        // These now redirect to competitor-analysis
+        return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
+      
+      case 'wizard':
+        // This now redirects to wizard-analysis
+        return <WizardPage />;
+      
+      case 'revenue-analysis':
+        // This now redirects to premium-analysis
+        return <PremiumAnalysisPage />;
+      
+      case 'preferences':
+        // This now redirects to settings
+        return <PreferencesPage />;
+      
+      case 'search':
+        return <SearchPage />;
+        
+      // Admin sub-routes
+      case 'users':
+      case 'claude':
+      case 'plans':
+      case 'products':
+      case 'assets':
+      case 'prompt-manager':
+        return <AdminPage initialTab={activeSection} />;
+      
+      case 'support':
+        return <PreferencesPage />;
       
       default:
-        console.log('🎯 FIGMANT MAIN CONTENT - Unknown section, defaulting to AnalysisPage:', activeSection);
-        return <AnalysisPage />;
+        // Default to dashboard for unknown routes
+        return <DashboardPage />;
     }
   };
 
+  // Determine if we need scrolling based on the active section
+  const needsScrolling = activeSection === 'premium-analysis' || activeSection === 'wizard-analysis';
+
+  if (isMobile) {
+    return (
+      <div className="flex-1 h-full overflow-hidden">
+        <div className={`h-full ${needsScrolling ? 'overflow-y-auto' : 'overflow-hidden'}`}>
+          {renderContent()}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-full w-full overflow-hidden">
-      {renderContent()}
+    <div style={{ background: 'transparent' }} className="h-full overflow-y-auto">
+      <div className="h-full">
+        {renderContent()}
+      </div>
     </div>
   );
 };

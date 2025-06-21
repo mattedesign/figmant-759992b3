@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useToast } from '@/hooks/use-toast';
-import { convertToLegacyAttachments } from '@/utils/attachmentTypeConverter';
 
 interface UseMessageHandlerProps {
   message: string;
@@ -56,13 +55,10 @@ export const useMessageHandler = ({
 
       setMessages([...messages, userMessage]);
 
-      // Convert attachments to legacy format for API compatibility
-      const legacyAttachments = convertToLegacyAttachments(attachments);
-
       // Modify analysis call based on mode
       const analysisParams = {
         message,
-        attachments: legacyAttachments,
+        attachments,
         mode: chatMode,
         template: chatMode === 'analyze' ? selectedPromptTemplate : null
       };

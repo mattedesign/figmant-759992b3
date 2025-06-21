@@ -9,7 +9,6 @@ import { AlertCircle, CheckCircle, Zap } from 'lucide-react';
 export const CompetitorAnalysisPage: React.FC = () => {
   const {
     messages,
-    setMessages,
     message,
     setMessage,
     attachments,
@@ -25,12 +24,6 @@ export const CompetitorAnalysisPage: React.FC = () => {
     console.log('🔥 COMPETITOR - OnSendMessage called with:', { msg, attachments });
     // The actual sending is handled by the hook's handleSendMessage
     handleSendMessage();
-  };
-
-  const handleClearChat = () => {
-    setMessages([]);
-    setMessage('');
-    setAttachments([]);
   };
 
   return (
@@ -59,7 +52,6 @@ export const CompetitorAnalysisPage: React.FC = () => {
           isProcessing={isAnalyzing}
           placeholder="Enter competitor URLs or ask about competitive analysis..."
           onSendMessage={handleOnSendMessage}
-          onClearChat={handleClearChat}
           className="h-full"
         />
       </div>

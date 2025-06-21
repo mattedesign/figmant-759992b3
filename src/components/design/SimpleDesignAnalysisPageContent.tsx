@@ -23,14 +23,9 @@ export const SimpleDesignAnalysisPageContent: React.FC = () => {
     );
   };
 
-  const handleClearChat = () => {
-    setMessages([]);
-  };
-
   return (
     <DesignChatInterface
       onSendMessage={onSendMessage}
-      onClearChat={handleClearChat}
       messages={messages}
       isProcessing={false}
       placeholder="Describe your design or ask for analysis..."

@@ -12,7 +12,11 @@ export interface DesignUpload {
   source_url: string | null;
   batch_id: string | null;
   batch_name: string | null;
+  analysis_goals: string | null;
   analysis_preferences: AnalysisPreferences | null;
+  original_batch_id: string | null;
+  is_replacement: boolean | null;
+  replaced_upload_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -103,6 +107,10 @@ export interface DesignBatchAnalysis {
   confidence_score: number;
   context_summary?: string;
   analysis_settings?: any;
+  parent_analysis_id?: string;
+  modification_summary?: string;
+  version_number?: number;
+  impact_summary?: ImpactSummary;
   created_at: string;
 }
 

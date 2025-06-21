@@ -1,34 +1,47 @@
-import { useState } from 'react';
-import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { useToast } from '@/hooks/use-toast';
 
-type AnalysisStage = 'idle' | 'sending' | 'processing' | 'analyzing' | 'complete';
+import { useState, useCallback } from 'react';
+import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
+import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
+import { useToast } from '@/hooks/use-toast';
 
 export const useCompetitorChatHandler = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisStage, setAnalysisStage] = useState<AnalysisStage>('idle');
+  const [analysisStage, setAnalysisStage] = useState<'idle' | 'sending' | 'processing' | 'analyzing' | 'complete'>('idle');
+  
   const { toast } = useToast();
+  const chatAnalysis = useFigmantChatAnalysis();
 
-  const handleSendMessage = async () => {
+  const showProgressToast = (stage: string, description: string) => {
+    toast({
+      title: stage,
+      description: description,
+      duration: 2000,
+    });
+  };
+
+  const handleSendMessage = useCallback(async () => {
+    console.log('🔥 COMPETITOR CHAT - Send button clicked!', {
+      message: message.trim(),
+      attachmentCount: attachments.length
+    });
+
     if (!message.trim() && attachments.length === 0) {
       toast({
         variant: "destructive",
         title: "No Content",
-        description: "Please enter a message or attach competitor URLs.",
+        description: "Please enter a message or attach competitor URLs before sending.",
       });
       return;
     }
 
     setIsAnalyzing(true);
-    setAnalysisStage('analyzing');
+    setAnalysisStage('sending');
 
     try {
-      console.log('🔄 COMPETITOR CHAT - Starting analysis with enhanced recovery');
-      
-      // Create user message
+      // Create user message immediately
       const userMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'user',
@@ -37,118 +50,87 @@ export const useCompetitorChatHandler = () => {
         timestamp: new Date()
       };
 
+      // Add user message to chat
       setMessages(prev => [...prev, userMessage]);
 
-      // Simulate analysis stages with better error handling
+      // Clear inputs immediately
+      const currentMessage = message;
+      const currentAttachments = [...attachments];
+      setMessage('');
+      setAttachments([]);
+
+      // Show progress feedback
+      showProgressToast("Sending Message", "Preparing your competitor analysis request...");
+      
       setAnalysisStage('processing');
+      console.log('🔥 COMPETITOR CHAT - Calling analysis API...');
+
+      // Simulate processing delay for UX
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setAnalysisStage('analyzing');
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setAnalysisStage('processing');
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      showProgressToast("Processing", "Analyzing competitor data with AI...");
 
-      // Generate enhanced competitor-specific analysis response
-      let analysisContent = "## Competitor Analysis Results\n\n";
-      
-      if (attachments.length > 0) {
-        const urlCount = attachments.filter(a => a.type === 'url').length;
-        if (urlCount > 0) {
-          analysisContent += `**${urlCount} Competitor Site${urlCount > 1 ? 's' : ''} Analyzed**\n\n`;
-          analysisContent += "### Key Competitive Insights:\n\n";
-          analysisContent += "• **Visual Hierarchy**: Competitors use 68% larger CTAs in hero sections\n";
-          analysisContent += "• **Trust Signals**: 87% display customer logos above the fold\n";
-          analysisContent += "• **Content Strategy**: Average value prop uses 6-8 words vs industry standard 12+\n";
-          analysisContent += "• **Mobile Experience**: Top performers use 48px+ touch targets\n\n";
-          
-          // Add performance metrics based on attachments
-          analysisContent += "### Performance Benchmarks:\n\n";
-          analysisContent += "• **Loading Speed**: Top competitors average 2.3s load time\n";
-          analysisContent += "• **Conversion Elements**: 78% use urgency indicators\n";
-          analysisContent += "• **User Flow**: Average 3.2 steps to primary conversion\n\n";
-        }
-      }
-      
-      if (message.trim()) {
-        analysisContent += "### Analysis Response:\n\n";
-        analysisContent += "Based on your request and current market data:\n\n";
-        analysisContent += "Your specific query has been analyzed against competitor benchmarks and industry standards. ";
-        analysisContent += "The analysis shows several optimization opportunities that align with current market leaders.\n\n";
-      }
-      
-      analysisContent += "### Recommendations:\n\n";
-      analysisContent += "**High Impact** (Expected +15-25% improvement):\n";
-      analysisContent += "• Move primary CTA above the fold\n";
-      analysisContent += "• Add social proof in hero section\n";
-      analysisContent += "• Simplify value proposition messaging\n";
-      analysisContent += "• Implement urgency indicators\n\n";
-      
-      analysisContent += "**Medium Impact** (Expected +8-15% improvement):\n";
-      analysisContent += "• Optimize form field count (aim for ≤3 fields)\n";
-      analysisContent += "• Improve mobile touch targets (48px+ minimum)\n";
-      analysisContent += "• Enhance visual contrast ratios (4.5:1 minimum)\n";
-      analysisContent += "• Add loading speed optimizations\n\n";
-      
-      analysisContent += "**Quick Wins** (Expected +3-8% improvement):\n";
-      analysisContent += "• Update button text to action-oriented language\n";
-      analysisContent += "• Add trust badges near conversion points\n";
-      analysisContent += "• Implement exit-intent capture\n\n";
-      
-      analysisContent += "### Implementation Priority\n\n";
-      analysisContent += "Start with high-impact changes for maximum competitive advantage. ";
-      analysisContent += "Focus on above-the-fold optimizations first, as these show immediate results. ";
-      analysisContent += "Consider A/B testing each change to validate performance improvements against your specific audience.";
+      // Call the analysis API
+      const result = await chatAnalysis.mutateAsync({
+        message: currentMessage,
+        attachments: currentAttachments,
+        template: { category: 'competitor' } // Force competitor analysis
+      });
 
-      // Create AI response with enhanced content
+      console.log('🔥 COMPETITOR CHAT - Analysis result:', result);
+
+      setAnalysisStage('complete');
+
+      // Add AI response
       const aiMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: analysisContent,
+        content: result.analysis || result.response || 'Analysis completed successfully.',
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, aiMessage]);
-      setMessage('');
-      setAttachments([]);
 
       toast({
-        title: "Competitor Analysis Complete",
-        description: "Enhanced analysis completed successfully with actionable insights.",
+        title: "Analysis Complete",
+        description: "Your competitor analysis has been generated successfully.",
+        duration: 4000,
       });
 
     } catch (error) {
-      console.error('❌ Competitor analysis failed:', error);
+      console.error('🔥 COMPETITOR CHAT - Error:', error);
       
-      // Enhanced error recovery
+      // Add error message to chat
       const errorMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: `## Analysis Error Recovery\n\n**Issue**: ${error instanceof Error ? error.message : 'Unknown error occurred'}\n\n**Recovery Action**: The system has attempted to recover from this error. You can:\n\n• Try submitting your request again\n• Reduce the number of competitors to analyze\n• Check your internet connection\n• Contact support if the issue persists\n\n**Partial Results**: Based on cached competitor data, here are some general recommendations:\n\n• Focus on mobile-first design (60%+ traffic is mobile)\n• Implement clear value propositions\n• Use social proof and trust signals\n• Optimize page loading speed\n\nPlease try your analysis again for more specific insights.`,
+        content: `I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again or contact support.`,
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, errorMessage]);
-      
+
       toast({
         variant: "destructive",
-        title: "Analysis Failed - Recovery Attempted",
-        description: "The system attempted error recovery. Please try again.",
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        duration: 5000,
       });
     } finally {
       setIsAnalyzing(false);
       setAnalysisStage('idle');
     }
-  };
+  }, [message, attachments, chatAnalysis, toast]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
-  };
+  }, [handleSendMessage]);
 
-  const canSend = (message.trim().length > 0 || attachments.length > 0) && !isAnalyzing;
+  const canSend = !isAnalyzing && (message.trim().length > 0 || attachments.length > 0);
 
   return {
     messages,
