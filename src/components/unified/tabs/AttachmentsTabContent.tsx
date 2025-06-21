@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -334,6 +333,15 @@ export const AttachmentsTabContent: React.FC<AttachmentsTabContentProps> = ({
   
   const analyzedUrls = getAnalyzedUrls(analysis);
 
+  // Helper function to determine proper status
+  const getProperStatus = (status: string): 'active' | 'broken' | 'pending' => {
+    switch (status) {
+      case 'uploaded': return 'active';
+      case 'error': return 'broken';
+      default: return 'pending';
+    }
+  };
+
   // Transform attachments to AttachmentDisplay format
   const fileAttachments: AttachmentDisplay[] = attachments
     .filter(att => att.type === 'file')
@@ -357,7 +365,7 @@ export const AttachmentsTabContent: React.FC<AttachmentsTabContentProps> = ({
         title: att.name,
         description: att.metadata?.description,
         screenshot: att.metadata?.screenshots?.desktop?.screenshot_url,
-        status: (att.status === 'uploaded' ? 'active' : att.status === 'error' ? 'broken' : 'pending'),
+        status: getProperStatus(att.status || 'pending'),
         addedDate: new Date().toISOString(),
         source: 'analysis'
       })),
@@ -366,7 +374,7 @@ export const AttachmentsTabContent: React.FC<AttachmentsTabContentProps> = ({
       .map(url => ({
         url,
         title: new URL(url).hostname,
-        status: 'active',
+        status: 'active' as const,
         addedDate: analysis.created_at,
         source: 'automatic'
       }))
