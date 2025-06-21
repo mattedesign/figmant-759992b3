@@ -1,3 +1,4 @@
+
 // src/components/figmant/pages/AdminPage.tsx
 
 import React, { useState, useEffect } from 'react';
@@ -6,71 +7,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertTriangle } from 'lucide-react';
 
-// Replace owner imports with admin imports
+// Import real admin components
 import { AdminAssetDashboard } from '@/components/admin/AdminAssetDashboard';
 import { RegistrationDebugPanel } from '@/components/debug/RegistrationDebugPanel';
 import { SpecificUserDebugPanel } from '@/components/debug/SpecificUserDebugPanel';
-
-// Temporary placeholder components until we migrate the owner components
-const TemporaryUserManagement = () => (
-  <div className="p-6">
-    <h3 className="text-lg font-semibold mb-4">User Management</h3>
-    <Alert>
-      <AlertDescription>
-        User management functionality will be restored during migration. 
-        Use the legacy /owner dashboard temporarily if needed.
-      </AlertDescription>
-    </Alert>
-  </div>
-);
-
-const TemporaryClaudeSettings = () => (
-  <div className="p-6">
-    <h3 className="text-lg font-semibold mb-4">Claude Settings</h3>
-    <Alert>
-      <AlertDescription>
-        Claude settings will be restored during migration.
-        Use the legacy /owner dashboard temporarily if needed.
-      </AlertDescription>
-    </Alert>
-  </div>
-);
-
-const TemporaryPromptManager = () => (
-  <div className="p-6">
-    <h3 className="text-lg font-semibold mb-4">Prompt Templates</h3>
-    <Alert>
-      <AlertDescription>
-        Prompt template management will be restored during migration.
-        Use the legacy /owner dashboard temporarily if needed.
-      </AlertDescription>
-    </Alert>
-  </div>
-);
-
-const TemporarySubscriptionPlans = () => (
-  <div className="p-6">
-    <h3 className="text-lg font-semibold mb-4">Subscription Plans</h3>
-    <Alert>
-      <AlertDescription>
-        Subscription plan management will be restored during migration.
-        Use the legacy /owner dashboard temporarily if needed.
-      </AlertDescription>
-    </Alert>
-  </div>
-);
-
-const TemporaryAdminSettings = () => (
-  <div className="p-6">
-    <h3 className="text-lg font-semibold mb-4">Admin Settings</h3>
-    <Alert>
-      <AlertDescription>
-        Admin settings will be restored during migration.
-        Use the legacy /owner dashboard temporarily if needed.
-      </AlertDescription>
-    </Alert>
-  </div>
-);
+import { UserDebugPanel } from '@/components/debug/UserDebugPanel';
+import { Settings } from '@/components/dashboard/Settings';
+import { PromptsPage } from '@/components/design/PromptsPage';
+import { SubscriptionPlansManager } from './admin/SubscriptionPlansManager';
 
 interface AdminPageProps {
   initialTab?: string;
@@ -154,7 +98,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
                 <Alert>
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
-                    Admin dashboard consolidation in progress. Some features temporarily available via legacy dashboards.
+                    Admin dashboard with integrated debugging and management tools.
                   </AlertDescription>
                 </Alert>
                 <RegistrationDebugPanel />
@@ -163,19 +107,36 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
             </TabsContent>
 
             <TabsContent value="users" className="m-0 h-full">
-              <TemporaryUserManagement />
+              <div className="p-6 space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold mb-4">User Management</h2>
+                  <p className="text-muted-foreground mb-6">
+                    Debug user accounts, profiles, and access permissions.
+                  </p>
+                </div>
+                <UserDebugPanel />
+                <SpecificUserDebugPanel />
+              </div>
             </TabsContent>
 
             <TabsContent value="claude" className="m-0 h-full">
-              <TemporaryClaudeSettings />
+              <div className="p-6">
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold mb-2">Claude Settings</h2>
+                  <p className="text-muted-foreground">
+                    Configure API keys, analysis preferences, and Claude AI integration settings.
+                  </p>
+                </div>
+                <Settings />
+              </div>
             </TabsContent>
 
             <TabsContent value="prompts" className="m-0 h-full">
-              <TemporaryPromptManager />
+              <PromptsPage />
             </TabsContent>
 
             <TabsContent value="plans" className="m-0 h-full">
-              <TemporarySubscriptionPlans />
+              <SubscriptionPlansManager />
             </TabsContent>
 
             <TabsContent value="assets" className="m-0 h-full">
@@ -183,7 +144,15 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
             </TabsContent>
 
             <TabsContent value="settings" className="m-0 h-full">
-              <TemporaryAdminSettings />
+              <div className="p-6">
+                <div className="mb-6">
+                  <h2 className="text-xl font-semibold mb-2">Admin Settings</h2>
+                  <p className="text-muted-foreground">
+                    Configure system-wide settings, API keys, and administrative preferences.
+                  </p>
+                </div>
+                <Settings />
+              </div>
             </TabsContent>
           </div>
         </Tabs>
