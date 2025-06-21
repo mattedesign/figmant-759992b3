@@ -1,29 +1,12 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-
-// Define the complete interface to match the database structure
-interface DesignBatchAnalysisComplete {
-  id: string;
-  batch_id: string;
-  user_id: string;
-  analysis_type: string;
-  prompt_used: string;
-  analysis_results: any;
-  winner_upload_id?: string;
-  key_metrics?: any;
-  recommendations?: any;
-  confidence_score: number;
-  context_summary?: string;
-  analysis_settings?: any;
-  created_at: string;
-  impact_summary?: any; // Add the missing property
-}
+import { DesignBatchAnalysis } from '@/types/design';
 
 export const useDesignBatchAnalyses = (batchId?: string) => {
   return useQuery({
     queryKey: ['design-batch-analyses', batchId],
-    queryFn: async (): Promise<DesignBatchAnalysisComplete[]> => {
+    queryFn: async (): Promise<DesignBatchAnalysis[]> => {
       let query = supabase.from('design_batch_analysis').select('*');
       
       if (batchId) {
@@ -79,7 +62,7 @@ export const useDesignBatchAnalyses = (batchId?: string) => {
         return analysis;
       });
       
-      return processedData as DesignBatchAnalysisComplete[];
+      return processedData as unknown as DesignBatchAnalysis[];
     },
     enabled: true // Always enabled to fetch all batch analyses
   });
