@@ -61,6 +61,93 @@ export const useWizardState = () => {
     }
   }, [location.state]);
 
+  // Improved step validation logic
+  const canProceedToNextStep = useCallback(() => {
+    switch (currentStep) {
+      case 1: // Analysis Type Selection
+        return wizardData.selectedType !== '' && wizardData.selectedType.length > 0;
+        
+      case 2: // Project Information
+        return wizardData.projectName.trim().length >= 3;
+        
+      case 3: // Analysis Goals
+        return wizardData.analysisGoals.trim().length >= 10;
+        
+      case 4: // Additional Details
+        // At least one field should be filled
+        const hasDesiredOutcome = wizardData.desiredOutcome?.trim().length > 0;
+        const hasImprovementMetric = wizardData.improvementMetric?.trim().length > 0;
+        const hasDeadline = wizardData.deadline?.trim().length > 0;
+        const hasStakeholders = wizardData.stakeholders?.length > 0;
+        
+        return hasDesiredOutcome || hasImprovementMetric || hasDeadline || hasStakeholders;
+        
+      case 5: // File Upload (Optional)
+        return true; // Always allow proceeding from file upload
+        
+      case 6: // Custom Prompt (Optional)
+        return true; // Always allow proceeding from custom prompt
+        
+      case 7: // Review & Submit
+        return !isProcessing;
+        
+      default:
+        return false;
+    }
+  }, [currentStep, wizardData, isProcessing]);
+
+  // Add better data validation
+  const validateWizardData = useCallback(() => {
+    const errors: string[] = [];
+    
+    if (!wizardData.selectedType) {
+      errors.push("Please select an analysis type");
+    }
+    
+    if (wizardData.projectName.trim().length < 3) {
+      errors.push("Project name must be at least 3 characters");
+    }
+    
+    if (wizardData.analysisGoals.trim().length < 10) {
+      errors.push("Analysis goals must be at least 10 characters");
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }, [wizardData]);
+
+  // Add state persistence
+  useEffect(() => {
+    // Save state to sessionStorage to persist during navigation
+    const stateKey = 'figmant_wizard_state';
+    sessionStorage.setItem(stateKey, JSON.stringify({
+      currentStep,
+      wizardData,
+      timestamp: Date.now()
+    }));
+  }, [currentStep, wizardData]);
+
+  // Restore state on component mount
+  useEffect(() => {
+    const stateKey = 'figmant_wizard_state';
+    const savedState = sessionStorage.getItem(stateKey);
+    
+    if (savedState) {
+      try {
+        const parsed = JSON.parse(savedState);
+        // Only restore if less than 1 hour old
+        if (Date.now() - parsed.timestamp < 3600000) {
+          setCurrentStep(parsed.currentStep);
+          setWizardData(parsed.wizardData);
+        }
+      } catch (error) {
+        console.warn('Failed to restore wizard state:', error);
+      }
+    }
+  }, []);
+
   const updateWizardData = useCallback((key: string, value: any) => {
     setWizardData(prev => ({
       ...prev,
@@ -84,35 +171,11 @@ export const useWizardState = () => {
     });
     setHistoricalContext(null);
     setIsProcessing(false);
+    
+    // Clear persisted state
+    const stateKey = 'figmant_wizard_state';
+    sessionStorage.removeItem(stateKey);
   }, []);
-
-  const canProceedToNextStep = useCallback(() => {
-    switch (currentStep) {
-      case 1:
-        return wizardData.selectedType !== '';
-      case 2:
-        return wizardData.projectName.trim() !== '';
-      case 3:
-        return wizardData.analysisGoals.trim() !== '';
-      case 4:
-        const hasAnyDynamicField = Object.keys(wizardData).some(key => {
-          if (!['selectedType', 'projectName', 'analysisGoals', 'stakeholders', 'referenceLinks', 'uploadedFiles', 'customPrompt'].includes(key)) {
-            const value = wizardData[key];
-            return typeof value === 'string' && value.trim() !== '';
-          }
-          return false;
-        });
-        return hasAnyDynamicField || wizardData.desiredOutcome?.trim() !== '';
-      case 5:
-        return true; // File upload is optional
-      case 6:
-        return true; // Custom prompt is optional
-      case 7:
-        return !isProcessing; // Can proceed if not currently processing
-      default:
-        return false;
-    }
-  }, [currentStep, wizardData, isProcessing]);
 
   const handleNextStep = useCallback(() => {
     if (currentStep < 7 && canProceedToNextStep()) {
@@ -146,6 +209,7 @@ export const useWizardState = () => {
     startProcessing,
     stopProcessing,
     canProceedToNextStep,
+    validateWizardData,
     handleNextStep,
     handlePreviousStep,
     totalSteps: 7
