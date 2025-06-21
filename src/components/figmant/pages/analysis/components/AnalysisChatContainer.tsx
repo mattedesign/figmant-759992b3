@@ -55,6 +55,8 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   onShowHistory,
   currentSessionName
 }) => {
+  console.log('🔍 RENDERING: AnalysisChatContainer');
+  
   const selectedTemplate = getCurrentTemplate();
 
   // Only use the hook if setMessages is provided (internal chat management)
@@ -75,7 +77,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   const finalCanSend = canSend !== undefined ? canSend : shouldUseInternalHandler ? hookCanSend : false;
   const analyzing = isAnalyzing || (shouldUseInternalHandler ? hookIsAnalyzing : false);
 
-  console.log('📋 ANALYSIS CHAT CONTAINER - Rendering with bulletproof layout:', {
+  console.log('📋 ANALYSIS CHAT CONTAINER - Bulletproof layout implementation:', {
     messagesCount: messages.length,
     attachmentsCount: attachments.length,
     templatesCount: availableTemplates.length,
@@ -86,8 +88,8 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   });
   
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      {/* Messages Area - Flexible scrollable area */}
+    <div className="h-screen flex flex-col overflow-hidden bg-background">
+      {/* Messages Area - Flexible scrollable area with proper viewport usage */}
       <div className="flex-1 overflow-y-auto scroll-smooth">
         <div className="p-4 space-y-4 min-h-full">
           {messages.length === 0 ? (
@@ -137,7 +139,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         </div>
       </div>
 
-      {/* Input Area - Fixed at bottom, never moves */}
+      {/* Input Area - Fixed at bottom, always visible, never moves */}
       <div className="flex-shrink-0 sticky bottom-0 bg-background border-t border-border z-20">
         <div className="max-w-4xl mx-auto w-full">
           <AnalysisChatInput

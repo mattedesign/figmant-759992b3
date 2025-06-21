@@ -33,7 +33,7 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Handle escape key and prevent body scroll
+  // Handle escape key and prevent body scroll - BULLETPROOF overlay behavior
   useEffect(() => {
     if (!showUrlInput) return;
 
@@ -239,16 +239,16 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
 
   return (
     <>
-      {/* Backdrop - Fixed positioning for true overlay */}
+      {/* Backdrop - Fixed positioning for true overlay that doesn't affect layout flow */}
       <div 
         className="fixed inset-0 bg-black/50 z-40 animate-in fade-in duration-200"
         onClick={handleBackdropClick}
       />
       
-      {/* Overlay Modal - Centered with fixed positioning */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <Card className={`w-full bg-background shadow-2xl border animate-in slide-in-from-bottom-4 duration-200 ${
-          isMobile ? 'max-w-sm' : 'max-w-md'
+      {/* Overlay Modal - Centered with fixed positioning, completely outside document flow */}
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-in slide-in-from-bottom-4 duration-200">
+        <Card className={`w-full bg-background shadow-2xl border ${
+          isMobile ? 'max-w-sm mx-4' : 'max-w-md'
         }`}>
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">

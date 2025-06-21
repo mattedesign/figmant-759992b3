@@ -6,6 +6,8 @@ import { useChatStateContext } from './ChatStateProvider';
 import { ChatAttachmentHandlers } from './ChatAttachmentHandlers';
 
 export const MobileChatLayout: React.FC = () => {
+  console.log('🔍 RENDERING: MobileChatLayout');
+  
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [viewportHeight, setViewportHeight] = useState('100vh');
 
@@ -20,7 +22,7 @@ export const MobileChatLayout: React.FC = () => {
     getCurrentTemplate
   } = useChatStateContext();
 
-  // Handle iOS Safari viewport changes
+  // Handle iOS Safari viewport changes while maintaining layout integrity
   useEffect(() => {
     const handleResize = () => {
       // Use visualViewport API if available (iOS Safari)
@@ -95,7 +97,7 @@ export const MobileChatLayout: React.FC = () => {
           className="flex flex-col overflow-hidden relative bg-background"
           style={{ height: viewportHeight }}
         >
-          {/* Main Chat Container - Mobile optimized with proper flex */}
+          {/* Main Chat Container - Mobile optimized with bulletproof flex layout */}
           <div className="flex-1 min-h-0 overflow-hidden">
             <AnalysisChatContainer
               messages={messages}
@@ -121,7 +123,7 @@ export const MobileChatLayout: React.FC = () => {
             />
           </div>
           
-          {/* URL Input Handler - Rendered as fullscreen overlay on mobile */}
+          {/* URL Input Handler - True overlay with fullscreen positioning */}
           <URLInputHandler
             showUrlInput={showUrlInput}
             onClose={() => setShowUrlInput(false)}

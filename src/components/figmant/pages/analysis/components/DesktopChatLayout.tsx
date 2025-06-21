@@ -9,6 +9,8 @@ import { useChatStateContext } from './ChatStateProvider';
 import { ChatAttachmentHandlers } from './ChatAttachmentHandlers';
 
 export const DesktopChatLayout: React.FC = () => {
+  console.log('🔍 RENDERING: DesktopChatLayout');
+  
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const [isAssetsPanelVisible, setIsAssetsPanelVisible] = useState(true);
@@ -59,8 +61,8 @@ export const DesktopChatLayout: React.FC = () => {
   return (
     <ChatAttachmentHandlers>
       {(attachmentHandlers) => (
-        <div className="h-full flex overflow-hidden bg-background">
-          {/* Main Chat Container - Bulletproof viewport layout */}
+        <div className="h-screen flex overflow-hidden bg-background">
+          {/* Main Chat Container - Bulletproof viewport layout with full height */}
           <div className="flex-1 min-w-0 h-full">
             <AnalysisChatContainer
               messages={messages}
@@ -115,7 +117,7 @@ export const DesktopChatLayout: React.FC = () => {
             </div>
           )}
 
-          {/* URL Input Handler - Rendered as centered overlay portal */}
+          {/* URL Input Handler - True overlay with fixed positioning */}
           <URLInputHandler
             showUrlInput={showUrlInput}
             onClose={() => setShowUrlInput(false)}
