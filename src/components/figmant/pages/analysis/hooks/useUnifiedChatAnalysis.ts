@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
@@ -41,7 +42,7 @@ export const useUnifiedChatAnalysis = () => {
         type: file.type.startsWith('image/') ? 'image' : 'file',
         name: file.name,
         file,
-        status: 'uploaded'
+        status: 'uploading'
       };
       newAttachments.push(attachment);
     }

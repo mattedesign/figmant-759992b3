@@ -1,12 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+
+import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Paperclip, Upload, Link, X, Image, FileText, Globe, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Send, Upload, Link, X, Image, FileText, Globe, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useDropzone } from 'react-dropzone';
-import { FileUploadService } from '@/services/fileUpload';
 import { ScreenshotResult } from '@/services/screenshot/types';
 
 export interface ChatAttachment {
@@ -46,7 +45,7 @@ export interface ChatMessage {
 
 interface DesignChatInterfaceProps {
   onSendMessage: (message: string, attachments: ChatAttachment[]) => void;
-  onClearChat?: () => void; // Made optional
+  onClearChat?: () => void;
   messages: ChatMessage[];
   isAnalyzing?: boolean;
   isProcessing?: boolean;
@@ -83,10 +82,13 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
 
     setAttachments(prev => [...prev, ...newAttachments]);
 
-    // Process uploads
+    // Simulate upload processing
     for (const attachment of newAttachments) {
       try {
-        const uploadPath = await FileUploadService.uploadFile(attachment.file!, attachment.id);
+        // Simulate upload delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const uploadPath = `uploads/${attachment.id}/${attachment.name}`;
         setAttachments(prev => prev.map(att => 
           att.id === attachment.id 
             ? { ...att, status: 'uploaded', uploadPath }
@@ -106,18 +108,28 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
   const handleUrlAdd = useCallback(() => {
     if (!urlInput.trim()) return;
 
-    const newAttachment: ChatAttachment = {
-      id: crypto.randomUUID(),
-      type: 'url',
-      name: new URL(urlInput).hostname,
-      url: urlInput,
-      status: 'uploaded'
-    };
+    try {
+      const url = new URL(urlInput.trim().startsWith('http') ? urlInput.trim() : `https://${urlInput.trim()}`);
+      
+      const newAttachment: ChatAttachment = {
+        id: crypto.randomUUID(),
+        type: 'url',
+        name: url.hostname,
+        url: url.href,
+        status: 'uploaded'
+      };
 
-    setAttachments(prev => [...prev, newAttachment]);
-    setUrlInput('');
-    setShowUrlInput(false);
-  }, [urlInput]);
+      setAttachments(prev => [...prev, newAttachment]);
+      setUrlInput('');
+      setShowUrlInput(false);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Invalid URL",
+        description: "Please enter a valid website URL.",
+      });
+    }
+  }, [urlInput, toast]);
 
   const removeAttachment = useCallback((id: string) => {
     setAttachments(prev => prev.filter(att => att.id !== id));
@@ -181,7 +193,7 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
                   : 'bg-gray-100 text-gray-900'
               }`}
             >
-              <div className="prose prose-sm max-w-none">
+              <div className="prose prose-sm max-w-none whitespace-pre-wrap">
                 {msg.content}
               </div>
               
@@ -350,6 +362,20 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
             <Send className="h-4 w-4" />
           </Button>
         </div>
+        
+        {/* Clear Chat Button */}
+        {onClearChat && messages.length > 0 && (
+          <div className="mt-2 flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClearChat}
+              disabled={disabled || isAnalyzing || isProcessing}
+            >
+              Clear Chat
+            </Button>
+          </div>
+        )}
       </div>
     </Card>
   );
