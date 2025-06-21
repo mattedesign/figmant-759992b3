@@ -1,321 +1,249 @@
 // src/utils/analysisAttachments.ts
-// Complete fixed version with all required exports
+// Simplified version that works with existing SavedChatAnalysis interface
 
 import { SavedChatAnalysis } from '@/hooks/useChatAnalysisHistory';
 
-export interface AnalysisAttachment {
+// Simple interface that matches what we actually need
+export interface SimpleAttachment {
   id: string;
-  file_name?: string;
-  file_type?: string;
-  file_path?: string;
-  file_size?: number;
+  name: string;
   url?: string;
-  link_title?: string;
-  link_description?: string;
-  link_thumbnail?: string;
   type: 'file' | 'link' | 'image';
-  created_at?: string;
-}
-
-export interface AnalysisScreenshot {
-  id: string;
-  file_name?: string;
-  file_path?: string;
-  file_size?: number;
-  url?: string;
-  created_at?: string;
-}
-
-export interface ScreenshotResult {
-  success: boolean;
-  url: string;
-  screenshotUrl?: string;
   thumbnailUrl?: string;
-  error?: string;
 }
 
-// Extract attachments from Chat Analysis
-export const extractAttachmentsFromChatAnalysis = (analysis: SavedChatAnalysis): AnalysisAttachment[] => {
-  const attachments: AnalysisAttachment[] = [];
+// Extract attachments from Chat Analysis - works with existing SavedChatAnalysis type
+export const extractAttachmentsFromChatAnalysis = (analysis: SavedChatAnalysis): SimpleAttachment[] => {
+  const attachments: SimpleAttachment[] = [];
   
   try {
-    // Extract from analysis_results if it contains attachment data
-    if (analysis.analysis_results) {
-      const results = analysis.analysis_results;
+    // Safely check if analysis_results exists and has data
+    if (analysis.analysis_results && typeof analysis.analysis_results === 'object') {
+      const results = analysis.analysis_results as any;
       
-      // Check if attachments are stored directly
-      if (results.attachments && Array.isArray(results.attachments)) {
-        results.attachments.forEach((att: any) => {
-          attachments.push({
-            id: att.id || crypto.randomUUID(),
-            file_name: att.name || att.file_name,
-            file_type: att.type || att.file_type,
-            file_path: att.uploadPath || att.file_path,
-            url: att.url,
-            type: att.type === 'url' ? 'link' : 'file',
-            created_at: att.created_at || analysis.created_at
-          });
+      // Look for attachments in various possible locations
+      const possibleAttachments = results.attachments || 
+                                 results.files || 
+                                 results.uploads || 
+                                 [];
+      
+      if (Array.isArray(possibleAttachments)) {
+        possibleAttachments.forEach((att: any) => {
+          if (att && typeof att === 'object') {
+            attachments.push({
+              id: att.id || crypto.randomUUID(),
+              name: att.name || att.file_name || 'Unknown',
+              url: att.url,
+              type: att.url ? 'link' : 'file',
+              thumbnailUrl: att.thumbnailUrl || att.screenshot
+            });
+          }
         });
       }
       
-      // Check if URLs are mentioned in the response
-      if (results.response && typeof results.response === 'string') {
+      // Extract URLs from response text if present
+      if (typeof results.response === 'string') {
         const urlRegex = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/g;
-        const urls = results.response.match(urlRegex);
-        if (urls) {
-          urls.forEach(url => {
-            attachments.push({
-              id: crypto.randomUUID(),
-              url: url,
-              link_title: new URL(url).hostname,
-              type: 'link',
-              created_at: analysis.created_at
-            });
-          });
-        }
+        const urls = results.response.match(urlRegex) || [];
+        urls.forEach(url => {
+          // Only add if not already in attachments
+          if (!attachments.some(att => att.url === url)) {
+            try {
+              const hostname = new URL(url).hostname;
+              attachments.push({
+                id: crypto.randomUUID(),
+                name: hostname,
+                url: url,
+                type: 'link'
+              });
+            } catch (e) {
+              // Invalid URL, skip
+            }
+          }
+        });
       }
     }
     
-    // Check metadata for attachments
-    if (analysis.metadata) {
+    // Check metadata if it exists (optional property)
+    if (analysis.metadata && typeof analysis.metadata === 'object') {
       const metadata = analysis.metadata as any;
       if (metadata.attachments && Array.isArray(metadata.attachments)) {
         metadata.attachments.forEach((att: any) => {
-          attachments.push({
-            id: att.id || crypto.randomUUID(),
-            file_name: att.name || att.file_name,
-            url: att.url,
-            type: att.type || 'file',
-            created_at: analysis.created_at
-          });
+          if (att && typeof att === 'object') {
+            attachments.push({
+              id: att.id || crypto.randomUUID(),
+              name: att.name || 'Attachment',
+              url: att.url,
+              type: att.type || 'file'
+            });
+          }
         });
       }
     }
   } catch (error) {
-    console.error('Error extracting attachments from chat analysis:', error);
+    console.warn('Error extracting attachments from chat analysis:', error);
   }
   
   return attachments;
 };
 
-// Extract screenshots from Chat Analysis
-export const extractScreenshotsFromChatAnalysis = (analysis: SavedChatAnalysis): AnalysisScreenshot[] => {
-  const screenshots: AnalysisScreenshot[] = [];
-  
-  try {
-    const attachments = extractAttachmentsFromChatAnalysis(analysis);
-    
-    attachments.forEach(att => {
-      // Check if attachment has screenshot metadata
-      if (att.type === 'link' && att.url) {
-        // Simulate screenshot data for URLs
-        screenshots.push({
-          id: crypto.randomUUID(),
-          file_name: `${att.link_title || 'screenshot'}.png`,
-          url: att.url,
-          created_at: att.created_at
-        });
-      }
-      
-      // Check for image files
-      if (att.type === 'image' || (att.file_type && att.file_type.startsWith('image/'))) {
-        screenshots.push({
-          id: att.id,
-          file_name: att.file_name,
-          file_path: att.file_path,
-          file_size: att.file_size,
-          created_at: att.created_at
-        });
-      }
-    });
-  } catch (error) {
-    console.error('Error extracting screenshots from chat analysis:', error);
-  }
-  
-  return screenshots;
-};
-
-// Extract attachments from Wizard Analysis
-export const extractAttachmentsFromWizardAnalysis = (analysis: any): AnalysisAttachment[] => {
-  const attachments: AnalysisAttachment[] = [];
-  
-  try {
-    // Check for batch uploads
-    if (analysis.batch_uploads && Array.isArray(analysis.batch_uploads)) {
-      analysis.batch_uploads.forEach((upload: any) => {
-        attachments.push({
-          id: upload.id || crypto.randomUUID(),
-          file_name: upload.file_name,
-          file_type: upload.file_type,
-          file_path: upload.file_path,
-          file_size: upload.file_size,
-          type: upload.file_type?.startsWith('image/') ? 'image' : 'file',
-          created_at: upload.created_at || analysis.created_at
-        });
-      });
-    }
-    
-    // Check analysis settings for URLs
-    if (analysis.analysis_settings) {
-      const settings = analysis.analysis_settings;
-      if (settings.urls && Array.isArray(settings.urls)) {
-        settings.urls.forEach((url: string) => {
-          attachments.push({
-            id: crypto.randomUUID(),
-            url: url,
-            link_title: new URL(url).hostname,
-            type: 'link',
-            created_at: analysis.created_at
-          });
-        });
-      }
-    }
-  } catch (error) {
-    console.error('Error extracting attachments from wizard analysis:', error);
-  }
-  
-  return attachments;
-};
-
-// Extract screenshots from Wizard Analysis
-export const extractScreenshotsFromWizardAnalysis = (analysis: any): AnalysisScreenshot[] => {
-  const screenshots: AnalysisScreenshot[] = [];
-  
-  try {
-    const attachments = extractAttachmentsFromWizardAnalysis(analysis);
-    
-    attachments.forEach(att => {
-      if (att.type === 'image' || att.type === 'link') {
-        screenshots.push({
-          id: att.id,
-          file_name: att.file_name || `${att.link_title || 'screenshot'}.png`,
-          file_path: att.file_path,
-          file_size: att.file_size,
-          url: att.url,
-          created_at: att.created_at
-        });
-      }
-    });
-  } catch (error) {
-    console.error('Error extracting screenshots from wizard analysis:', error);
-  }
-  
-  return screenshots;
-};
-
-// Main helper function to get attachments from any analysis type
-export const getAttachmentsFromAnalysis = (analysis: any): AnalysisAttachment[] => {
+// Extract attachments from any analysis type
+export const getAttachmentsFromAnalysis = (analysis: any): SimpleAttachment[] => {
   if (!analysis) return [];
 
-  // Determine analysis type and extract accordingly
+  // Handle SavedChatAnalysis type
   if (analysis.type === 'chat' || analysis.analysis_type === 'chat') {
     return extractAttachmentsFromChatAnalysis(analysis);
   }
   
-  if (analysis.type === 'wizard' || analysis.batch_id) {
-    return extractAttachmentsFromWizardAnalysis(analysis);
+  // Handle other analysis types (wizard, design, etc.)
+  const attachments: SimpleAttachment[] = [];
+  
+  try {
+    // Check various possible locations for attachments
+    const sources = [
+      analysis.attachments,
+      analysis.batch_uploads,
+      analysis.uploads,
+      analysis.design_uploads,
+      analysis.files
+    ];
+    
+    for (const source of sources) {
+      if (Array.isArray(source)) {
+        source.forEach((item: any) => {
+          if (item && typeof item === 'object') {
+            attachments.push({
+              id: item.id || crypto.randomUUID(),
+              name: item.name || item.file_name || 'File',
+              url: item.url,
+              type: item.url ? 'link' : 'file',
+              thumbnailUrl: item.thumbnailUrl
+            });
+          }
+        });
+        break; // Use first valid source found
+      }
+    }
+    
+    // Check analysis_settings for URLs
+    if (analysis.analysis_settings && typeof analysis.analysis_settings === 'object') {
+      const settings = analysis.analysis_settings as any;
+      if (Array.isArray(settings.urls)) {
+        settings.urls.forEach((url: string) => {
+          if (typeof url === 'string' && url.length > 0) {
+            try {
+              const hostname = new URL(url).hostname;
+              attachments.push({
+                id: crypto.randomUUID(),
+                name: hostname,
+                url: url,
+                type: 'link'
+              });
+            } catch (e) {
+              // Invalid URL, skip
+            }
+          }
+        });
+      }
+    }
+  } catch (error) {
+    console.warn('Error extracting attachments from analysis:', error);
   }
-  
-  // For design analysis or unknown types, try generic extraction
-  const attachments: AnalysisAttachment[] = [];
-  
-  // Check for common attachment patterns
-  const possibleAttachments = analysis.attachments || 
-                             analysis.files || 
-                             analysis.uploads || 
-                             analysis.design_uploads ||
-                             [];
-  
-  possibleAttachments.forEach((item: any) => {
-    attachments.push({
-      id: item.id || crypto.randomUUID(),
-      file_name: item.name || item.file_name || 'Unknown File',
-      file_type: item.type || item.file_type,
-      file_path: item.uploadPath || item.file_path,
-      url: item.url,
-      type: item.url ? 'link' : 'file',
-      created_at: item.created_at || analysis.created_at
-    });
-  });
   
   return attachments;
 };
 
-// Helper function to get the first available screenshot for thumbnail display
+// Get first screenshot/thumbnail for display
 export const getFirstScreenshot = (analysis: any): string | null => {
-  const attachments = getAttachmentsFromAnalysis(analysis);
-  
-  // Look for image files first
-  for (const attachment of attachments) {
-    if (attachment.type === 'image' && attachment.file_path) {
-      return attachment.file_path;
+  try {
+    const attachments = getAttachmentsFromAnalysis(analysis);
+    
+    // Look for any attachment with a thumbnail
+    for (const attachment of attachments) {
+      if (attachment.thumbnailUrl) {
+        return attachment.thumbnailUrl;
+      }
     }
-  }
-  
-  // Look for link thumbnails
-  for (const attachment of attachments) {
-    if (attachment.link_thumbnail) {
-      return attachment.link_thumbnail;
+    
+    // For image types, return the URL if it looks like an image
+    for (const attachment of attachments) {
+      if (attachment.type === 'image' || 
+          (attachment.url && /\.(jpg|jpeg|png|gif|webp)$/i.test(attachment.url))) {
+        return attachment.url || null;
+      }
     }
+  } catch (error) {
+    console.warn('Error getting first screenshot:', error);
   }
   
   return null;
 };
 
-// Helper function to get all screenshots from an analysis
-export const getAllScreenshots = (analysis: any): AnalysisScreenshot[] => {
-  if (analysis.type === 'chat' || analysis.analysis_type === 'chat') {
-    return extractScreenshotsFromChatAnalysis(analysis);
-  }
-  
-  if (analysis.type === 'wizard' || analysis.batch_id) {
-    return extractScreenshotsFromWizardAnalysis(analysis);
-  }
-  
-  // Generic fallback
-  const attachments = getAttachmentsFromAnalysis(analysis);
-  return attachments
-    .filter(att => att.type === 'image')
-    .map(att => ({
-      id: att.id,
-      file_name: att.file_name,
-      file_path: att.file_path,
-      file_size: att.file_size,
-      url: att.url,
-      created_at: att.created_at
-    }));
-};
-
-// Helper function to get URLs analyzed in an analysis
-export const getAnalyzedUrls = (analysis: any): string[] => {
-  const attachments = getAttachmentsFromAnalysis(analysis);
-  return attachments
-    .filter(att => att.type === 'link' && att.url)
-    .map(att => att.url!)
-    .filter(url => url.length > 0);
-};
-
-// Helper function to check if analysis has any visual content
+// Check if analysis has visual content
 export const hasVisualContent = (analysis: any): boolean => {
-  const attachments = getAttachmentsFromAnalysis(analysis);
-  return attachments.some(att => att.type === 'image' || att.type === 'link');
+  try {
+    const attachments = getAttachmentsFromAnalysis(analysis);
+    return attachments.length > 0;
+  } catch (error) {
+    console.warn('Error checking visual content:', error);
+    return false;
+  }
 };
 
-// Helper function to get analysis summary safely
-export const getAnalysisSummary = (analysis: any): string => {
-  return analysis.analysis_results?.response || 
-         analysis.analysis_results?.analysis || 
-         analysis.analysis_results?.summary ||
-         analysis.response ||
-         analysis.analysis ||
-         analysis.summary ||
-         'Analysis completed';
-};
-
-// Helper function to get analysis title safely
+// Get analysis title safely
 export const getAnalysisTitle = (analysis: any): string => {
-  return analysis.title || 
-         analysis.analysis_results?.title ||
-         (analysis.prompt_used ? analysis.prompt_used.slice(0, 50) + '...' : '') ||
-         `${analysis.type || 'Unknown'} Analysis`;
+  try {
+    if (analysis.title) return analysis.title;
+    
+    if (analysis.analysis_results && typeof analysis.analysis_results === 'object') {
+      const results = analysis.analysis_results as any;
+      if (results.title) return results.title;
+    }
+    
+    if (analysis.prompt_used && typeof analysis.prompt_used === 'string') {
+      return analysis.prompt_used.slice(0, 50) + '...';
+    }
+    
+    const type = analysis.type || analysis.analysis_type || 'Unknown';
+    return `${type} Analysis`;
+  } catch (error) {
+    console.warn('Error getting analysis title:', error);
+    return 'Analysis';
+  }
+};
+
+// Get analysis summary safely
+export const getAnalysisSummary = (analysis: any): string => {
+  try {
+    if (analysis.analysis_results && typeof analysis.analysis_results === 'object') {
+      const results = analysis.analysis_results as any;
+      if (results.response) return results.response;
+      if (results.analysis) return results.analysis;
+      if (results.summary) return results.summary;
+    }
+    
+    if (analysis.response) return analysis.response;
+    if (analysis.analysis) return analysis.analysis;
+    if (analysis.summary) return analysis.summary;
+    
+    return 'Analysis completed';
+  } catch (error) {
+    console.warn('Error getting analysis summary:', error);
+    return 'Analysis completed';
+  }
+};
+
+// Get analyzed URLs
+export const getAnalyzedUrls = (analysis: any): string[] => {
+  try {
+    const attachments = getAttachmentsFromAnalysis(analysis);
+    return attachments
+      .filter(att => att.type === 'link' && att.url)
+      .map(att => att.url!)
+      .filter(url => url.length > 0);
+  } catch (error) {
+    console.warn('Error getting analyzed URLs:', error);
+    return [];
+  }
 };
