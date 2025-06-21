@@ -119,8 +119,246 @@
     }
   }
 
-  /* Mobile-specific spacing and layout adjustments for Figmant pages */
+  /* Mobile and tablet profile page optimizations */
   @media (max-width: 768px) {
+    /* Profile Header Mobile Optimizations */
+    .profile-header {
+      @apply px-4 py-4;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+    }
+
+    .profile-header-content {
+      @apply flex flex-col space-y-4;
+    }
+
+    .profile-header-avatar {
+      @apply mx-auto;
+    }
+
+    .profile-header-info {
+      @apply text-center;
+    }
+
+    .profile-header-actions {
+      @apply w-full justify-center;
+    }
+
+    /* Profile Sidebar Mobile Optimizations */
+    .profile-sidebar {
+      @apply w-full p-4;
+      max-height: none;
+      overflow: visible;
+    }
+
+    .profile-sidebar-grid {
+      @apply grid-cols-2 gap-2;
+    }
+
+    .profile-sidebar-item {
+      @apply p-3 min-h-[60px] text-sm;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .profile-sidebar-icon {
+      @apply w-5 h-5 mb-1;
+    }
+
+    .profile-sidebar-label {
+      @apply text-xs;
+      line-height: 1.2;
+    }
+
+    /* Profile Main Content Mobile Optimizations */
+    .profile-main-content {
+      @apply px-4 py-4;
+    }
+
+    .profile-form-container {
+      @apply space-y-6;
+    }
+
+    .profile-form-section {
+      @apply space-y-4;
+    }
+
+    .profile-form-grid {
+      @apply grid-cols-1 gap-4;
+    }
+
+    .profile-form-field {
+      @apply space-y-2;
+    }
+
+    .profile-form-label {
+      @apply text-base font-medium;
+    }
+
+    .profile-form-input {
+      @apply text-base px-4 py-3;
+      min-height: 48px;
+    }
+
+    .profile-form-textarea {
+      @apply text-base px-4 py-3;
+      min-height: 120px;
+    }
+
+    .profile-form-button {
+      @apply w-full py-3 text-base;
+      min-height: 48px;
+    }
+
+    /* Profile Completion Components Mobile Optimizations */
+    .profile-completion-banner {
+      @apply mx-4 mb-4 p-4;
+    }
+
+    .profile-completion-progress {
+      @apply mx-4 mb-6;
+    }
+
+    .profile-completion-sidebar {
+      @apply p-4 space-y-3;
+    }
+
+    .profile-completion-item {
+      @apply p-3 rounded-lg;
+    }
+
+    .profile-completion-icon {
+      @apply w-6 h-6;
+    }
+
+    /* Profile Card Mobile Optimizations */
+    .profile-card {
+      @apply mx-4 mb-4;
+    }
+
+    .profile-card-header {
+      @apply p-4;
+    }
+
+    .profile-card-content {
+      @apply p-4 pt-0;
+    }
+
+    .profile-card-title {
+      @apply text-xl;
+    }
+
+    .profile-card-description {
+      @apply text-sm;
+    }
+
+    /* Profile Avatar Upload Mobile Optimizations */
+    .profile-avatar-section {
+      @apply flex-col items-center space-y-4;
+    }
+
+    .profile-avatar {
+      @apply w-20 h-20;
+    }
+
+    .profile-avatar-info {
+      @apply text-center;
+    }
+
+    .profile-avatar-button {
+      @apply w-full;
+    }
+
+    /* Profile Settings Tab Mobile Optimizations */
+    .profile-settings-tabs {
+      @apply flex-col space-y-1;
+    }
+
+    .profile-settings-tab {
+      @apply w-full justify-start p-4 text-left;
+      min-height: 56px;
+    }
+
+    .profile-settings-tab-icon {
+      @apply w-5 h-5 mr-3;
+    }
+
+    .profile-settings-tab-content {
+      @apply flex-1;
+    }
+
+    .profile-settings-tab-label {
+      @apply text-base font-medium;
+    }
+
+    .profile-settings-tab-description {
+      @apply text-sm text-gray-500 mt-1;
+    }
+
+    /* Profile Security Section Mobile Optimizations */
+    .profile-security-section {
+      @apply space-y-6;
+    }
+
+    .profile-security-item {
+      @apply p-4 rounded-lg border;
+    }
+
+    .profile-security-header {
+      @apply flex-col space-y-2 items-start;
+    }
+
+    .profile-security-button {
+      @apply w-full mt-3;
+    }
+
+    /* Profile Address Form Mobile Optimizations */
+    .profile-address-form {
+      @apply space-y-4;
+    }
+
+    .profile-address-grid {
+      @apply grid-cols-1 gap-4;
+    }
+
+    .profile-address-row {
+      @apply flex-col space-y-4;
+    }
+
+    /* Profile Contact Form Mobile Optimizations */
+    .profile-contact-form {
+      @apply space-y-4;
+    }
+
+    .profile-contact-grid {
+      @apply grid-cols-1 gap-4;
+    }
+
+    .profile-emergency-section {
+      @apply mt-6 p-4 bg-gray-50 rounded-lg;
+    }
+
+    /* Profile Navigation Mobile Optimizations */
+    .profile-navigation {
+      @apply flex-col space-y-2;
+    }
+
+    .profile-nav-item {
+      @apply w-full justify-start p-4;
+      min-height: 56px;
+    }
+
+    .profile-nav-icon {
+      @apply w-5 h-5 mr-3;
+    }
+
+    .profile-nav-label {
+      @apply text-base;
+    }
+
     /* Dashboard page mobile optimizations */
     .dashboard-container {
       @apply px-3 py-2;
@@ -334,6 +572,33 @@
     .text-tablet-xl {
       @apply text-xl;
     }
+
+    /* Tablet Profile Optimizations */
+    .profile-sidebar-grid {
+      @apply grid-cols-3 gap-3;
+    }
+
+    .profile-form-grid {
+      @apply grid-cols-2 gap-4;
+    }
+
+    .profile-header {
+      @apply px-6 py-5;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .profile-header-content {
+      @apply flex flex-row space-y-0 space-x-6;
+    }
+
+    .profile-header-avatar {
+      @apply mx-0;
+    }
+
+    .profile-header-info {
+      @apply text-left;
+    }
   }
 
   /* Safe area adjustments for iOS devices */
@@ -347,6 +612,109 @@
       .wizard-navigation {
         padding-bottom: calc(12px + env(safe-area-inset-bottom));
       }
+
+      /* Profile page safe area adjustments */
+      .profile-main-content {
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+      }
+
+      .profile-form-button {
+        margin-bottom: env(safe-area-inset-bottom);
+      }
+    }
+  }
+
+  /* Enhanced mobile profile-specific optimizations */
+  @media (max-width: 640px) {
+    /* Profile page layout improvements */
+    .profile-page-container {
+      @apply h-full overflow-y-auto;
+    }
+
+    .profile-page-content {
+      @apply min-h-full pb-6;
+    }
+
+    /* Profile completion banner mobile improvements */
+    .profile-completion-banner {
+      @apply rounded-lg shadow-sm;
+    }
+
+    .profile-completion-banner-content {
+      @apply flex-col space-y-3;
+    }
+
+    .profile-completion-banner-actions {
+      @apply flex-col space-y-2 w-full;
+    }
+
+    .profile-completion-banner-button {
+      @apply w-full justify-center;
+    }
+
+    /* Profile progress indicator mobile improvements */
+    .profile-progress-container {
+      @apply p-4 rounded-lg;
+    }
+
+    .profile-progress-header {
+      @apply flex-col space-y-2 items-start;
+    }
+
+    .profile-progress-percentage {
+      @apply text-2xl;
+    }
+
+    .profile-progress-bar {
+      @apply h-3 rounded-full;
+    }
+
+    /* Profile section cards mobile improvements */
+    .profile-section-card {
+      @apply p-4 rounded-lg shadow-sm;
+    }
+
+    .profile-section-header {
+      @apply flex-col space-y-2 items-start mb-4;
+    }
+
+    .profile-section-title {
+      @apply text-lg font-semibold;
+    }
+
+    .profile-section-description {
+      @apply text-sm text-gray-600;
+    }
+
+    /* Profile field groups mobile improvements */
+    .profile-field-group {
+      @apply space-y-4;
+    }
+
+    .profile-field-row {
+      @apply flex-col space-y-4;
+    }
+
+    .profile-field-half {
+      @apply w-full;
+    }
+
+    /* Profile action buttons mobile improvements */
+    .profile-action-buttons {
+      @apply flex-col space-y-3 mt-6;
+    }
+
+    .profile-action-button {
+      @apply w-full justify-center py-3;
+      min-height: 48px;
+    }
+
+    .profile-action-button-primary {
+      @apply bg-blue-600 text-white hover:bg-blue-700;
+    }
+
+    .profile-action-button-secondary {
+      @apply bg-gray-100 text-gray-700 hover:bg-gray-200;
     }
   }
 }
