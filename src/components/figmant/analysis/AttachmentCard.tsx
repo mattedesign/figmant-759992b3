@@ -1,22 +1,21 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { FileText, Image, Link, Download, ExternalLink } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ExternalLink, Download, Eye, FileText, Globe } from 'lucide-react';
+import { EnhancedImage } from '../pages/analysis/components/EnhancedImage';
 
-interface AttachmentCardProps {
+export interface AttachmentCardProps {
   attachment: {
     id: string;
+    name: string;
+    url?: string;
+    type: 'file' | 'link' | 'image';
+    thumbnailUrl?: string;
     file_name?: string;
-    file_type?: string;
     file_path?: string;
     file_size?: number;
-    url?: string;
-    link_title?: string;
-    link_description?: string;
-    link_thumbnail?: string;
-    type?: 'file' | 'image' | 'link';
+    created_at?: string;
   };
   onClick?: () => void;
   showDownload?: boolean;
@@ -27,134 +26,108 @@ export const AttachmentCard: React.FC<AttachmentCardProps> = ({
   onClick,
   showDownload = false
 }) => {
-  const getAttachmentIcon = () => {
-    const type = attachment.type || attachment.file_type?.toLowerCase();
-    
-    if (type?.includes('image') || attachment.file_name?.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-      return Image;
-    } else if (attachment.url || type === 'link') {
-      return Link;
-    } else {
-      return FileText;
-    }
-  };
+  const isUrl = attachment.type === 'link' || attachment.url;
+  const isImage = attachment.type === 'image' || attachment.thumbnailUrl;
 
-  const getAttachmentTitle = () => {
-    return attachment.link_title || attachment.file_name || 'Untitled';
-  };
-
-  const getAttachmentSize = () => {
-    if (!attachment.file_size) return '';
-    const sizeInKB = Math.round(attachment.file_size / 1024);
-    if (sizeInKB < 1024) return `${sizeInKB} KB`;
-    return `${Math.round(sizeInKB / 1024)} MB`;
-  };
-
-  const getAttachmentType = () => {
-    return attachment.file_type || attachment.type || 'Unknown';
-  };
-
-  const handleDownload = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (attachment.file_path) {
-      // Create download link
-      const link = document.createElement('a');
-      link.href = attachment.file_path;
-      link.download = attachment.file_name || 'download';
-      link.click();
-    }
-  };
-
-  const handleExternalLink = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDownload = () => {
     if (attachment.url) {
       window.open(attachment.url, '_blank');
     }
   };
 
-  const Icon = getAttachmentIcon();
-
   return (
-    <Card 
-      className={`transition-all duration-200 hover:shadow-md border-l-4 border-l-blue-500 ${
-        onClick ? 'cursor-pointer hover:bg-gray-50' : ''
-      }`}
+    <div 
+      className="border rounded-lg p-3 hover:bg-gray-50 transition-colors cursor-pointer"
       onClick={onClick}
     >
-      <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          {/* Thumbnail or Icon */}
-          <div className="flex-shrink-0">
-            {attachment.link_thumbnail ? (
-              <img
-                src={attachment.link_thumbnail}
-                alt="Link thumbnail"
-                className="w-12 h-12 object-cover rounded-md"
-              />
-            ) : attachment.file_path?.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-              <img
-                src={attachment.file_path}
-                alt={attachment.file_name}
-                className="w-12 h-12 object-cover rounded-md"
-              />
-            ) : (
-              <div className="w-12 h-12 bg-blue-100 rounded-md flex items-center justify-center">
-                <Icon className="h-6 w-6 text-blue-600" />
-              </div>
+      <div className="flex items-start gap-3">
+        {/* Thumbnail or Icon */}
+        <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center flex-shrink-0 overflow-hidden">
+          {isImage ? (
+            <EnhancedImage
+              attachment={attachment}
+              className="w-full h-full"
+              showFallback={true}
+            />
+          ) : isUrl ? (
+            <Globe className="h-6 w-6 text-blue-500" />
+          ) : (
+            <FileText className="h-6 w-6 text-gray-500" />
+          )}
+        </div>
+        
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <h5 className="font-medium text-sm text-gray-900 truncate">
+            {attachment.file_name || attachment.name}
+          </h5>
+          {attachment.url && (
+            <p className="text-xs text-gray-500 truncate mt-1">
+              {attachment.url}
+            </p>
+          )}
+          
+          <div className="flex items-center gap-2 mt-2">
+            <Badge variant="outline" className="text-xs">
+              {attachment.type === 'link' ? 'URL' : attachment.type === 'image' ? 'Image' : 'File'}
+            </Badge>
+            
+            {attachment.file_size && (
+              <Badge variant="secondary" className="text-xs">
+                {(attachment.file_size / 1024).toFixed(1)} KB
+              </Badge>
             )}
           </div>
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-medium text-gray-900 truncate">
-                  {getAttachmentTitle()}
-                </h4>
-                {attachment.link_description && (
-                  <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                    {attachment.link_description}
-                  </p>
-                )}
-                <div className="flex items-center gap-2 mt-2">
-                  <Badge variant="secondary" className="text-xs">
-                    {getAttachmentType()}
-                  </Badge>
-                  {attachment.file_size && (
-                    <span className="text-xs text-gray-500">
-                      {getAttachmentSize()}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {showDownload && attachment.file_path && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDownload}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
-                )}
-                {attachment.url && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleExternalLink}
-                    className="h-8 w-8 p-0"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
+          
+          {/* Action Buttons */}
+          <div className="flex items-center gap-1 mt-2">
+            {onClick && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClick();
+                }}
+              >
+                <Eye className="h-3 w-3 mr-1" />
+                View
+              </Button>
+            )}
+            
+            {attachment.url && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(attachment.url, '_blank');
+                }}
+              >
+                <ExternalLink className="h-3 w-3 mr-1" />
+                Open
+              </Button>
+            )}
+            
+            {showDownload && attachment.url && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownload();
+                }}
+              >
+                <Download className="h-3 w-3 mr-1" />
+                Download
+              </Button>
+            )}
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -36,6 +35,7 @@ import {
   getAnalysisSummary,
   getAnalysisTitle
 } from '@/utils/analysisAttachments';
+import { EnhancedImage } from './components/EnhancedImage';
 
 interface AnalysisDetailDrawerProps {
   isOpen: boolean;
@@ -86,10 +86,10 @@ const ScreenshotModal: React.FC<{
         </DialogHeader>
         
         <div className="p-4 flex justify-center">
-          <img
-            src={currentScreenshot.thumbnailUrl || currentScreenshot.url}
-            alt="Screenshot"
-            className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
+          <EnhancedImage
+            attachment={currentScreenshot}
+            className="max-w-full max-h-[70vh] rounded-lg shadow-lg"
+            alt="Screenshot preview"
           />
         </div>
       </DialogContent>
@@ -108,18 +108,14 @@ const InlineAttachment: React.FC<{
     <div className="my-4 p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
       <div className="flex items-start gap-3">
         {/* Thumbnail or Icon */}
-        <div className="w-12 h-12 bg-white rounded border flex items-center justify-center flex-shrink-0">
+        <div className="w-12 h-12 bg-white rounded border flex items-center justify-center flex-shrink-0 overflow-hidden">
           {isImage ? (
-            attachment.thumbnailUrl ? (
-              <img
-                src={attachment.thumbnailUrl}
-                alt={attachment.name}
-                className="w-full h-full object-cover rounded cursor-pointer"
-                onClick={onViewScreenshot}
-              />
-            ) : (
-              <ImageIcon className="h-6 w-6 text-gray-500" />
-            )
+            <EnhancedImage
+              attachment={attachment}
+              className="w-full h-full cursor-pointer"
+              onClick={onViewScreenshot}
+              showFallback={true}
+            />
           ) : isUrl ? (
             <Globe className="h-6 w-6 text-blue-500" />
           ) : (
@@ -228,16 +224,13 @@ const AttachmentCard: React.FC<{
           </div>
         </div>
         
-        {hasScreenshot && attachment.thumbnailUrl && (
+        {hasScreenshot && (
           <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden flex-shrink-0">
-            <img
-              src={attachment.thumbnailUrl}
-              alt="Preview"
-              className="w-full h-full object-cover cursor-pointer"
+            <EnhancedImage
+              attachment={attachment}
+              className="w-full h-full cursor-pointer"
               onClick={onViewScreenshot}
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
+              showFallback={false}
             />
           </div>
         )}

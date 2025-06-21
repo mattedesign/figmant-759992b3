@@ -2,129 +2,102 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Download, ExternalLink, X } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react';
+import { EnhancedImage } from '../pages/analysis/components/EnhancedImage';
 
-interface ScreenshotModalProps {
+export interface ScreenshotModalProps {
   isOpen: boolean;
   onClose: () => void;
   screenshot: {
     id: string;
+    name: string;
+    url?: string;
+    thumbnailUrl?: string;
     file_name?: string;
     file_path?: string;
     file_size?: number;
-    url?: string;
     created_at?: string;
   } | null;
+  screenshots?: any[];
+  currentIndex?: number;
+  onNext?: () => void;
+  onPrevious?: () => void;
 }
 
 export const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
   isOpen,
   onClose,
-  screenshot
+  screenshot,
+  screenshots = [],
+  currentIndex = 0,
+  onNext,
+  onPrevious
 }) => {
   if (!screenshot) return null;
 
-  const handleDownload = () => {
-    if (screenshot.file_path) {
-      const link = document.createElement('a');
-      link.href = screenshot.file_path;
-      link.download = screenshot.file_name || 'screenshot.png';
-      link.click();
-    }
-  };
-
-  const handleExternalLink = () => {
-    if (screenshot.url) {
-      window.open(screenshot.url, '_blank');
-    }
-  };
-
-  const getFileSize = () => {
-    if (!screenshot.file_size) return '';
-    const sizeInKB = Math.round(screenshot.file_size / 1024);
-    if (sizeInKB < 1024) return `${sizeInKB} KB`;
-    return `${Math.round(sizeInKB / 1024)} MB`;
-  };
-
-  const imageUrl = screenshot.file_path || screenshot.url;
+  const hasMultiple = screenshots.length > 1;
+  const currentScreenshot = screenshots.length > 0 ? screenshots[currentIndex] : screenshot;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+        <DialogHeader className="p-4 border-b">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg font-semibold">
-              {screenshot.file_name || 'Screenshot'}
+            <DialogTitle className="flex items-center gap-2">
+              <ImageIcon className="h-5 w-5" />
+              Screenshot Preview
             </DialogTitle>
             <div className="flex items-center gap-2">
-              {screenshot.file_size && (
-                <Badge variant="secondary" className="text-xs">
-                  {getFileSize()}
-                </Badge>
+              {hasMultiple && onNext && onPrevious && (
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={onPrevious}
+                    disabled={currentIndex === 0}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                  <span className="text-sm text-gray-500">
+                    {currentIndex + 1} of {screenshots.length}
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={onNext}
+                    disabled={currentIndex === screenshots.length - 1}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
-              {screenshot.created_at && (
-                <Badge variant="outline" className="text-xs">
-                  {new Date(screenshot.created_at).toLocaleDateString()}
-                </Badge>
-              )}
+              <Button variant="outline" size="sm" onClick={onClose}>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </DialogHeader>
-
-        {/* Image Display */}
-        <div className="flex-1 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={screenshot.file_name || 'Screenshot'}
-              className="max-w-full max-h-[60vh] object-contain"
-            />
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Image not available</p>
-            </div>
-          )}
+        
+        <div className="p-4 flex justify-center bg-gray-50">
+          <EnhancedImage
+            attachment={currentScreenshot}
+            className="max-w-full max-h-[70vh] rounded-lg shadow-lg"
+            alt={currentScreenshot.file_name || currentScreenshot.name || 'Screenshot'}
+          />
         </div>
-
-        {/* Action Buttons */}
-        <div className="flex-shrink-0 flex items-center justify-between pt-4 border-t">
-          <div className="text-sm text-gray-500">
-            {screenshot.created_at && (
-              <span>
-                Captured on {new Date(screenshot.created_at).toLocaleString()}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {screenshot.file_path && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownload}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download
-              </Button>
-            )}
-            {screenshot.url && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExternalLink}
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Open Original
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+        
+        {/* Image Info */}
+        <div className="p-4 border-t bg-gray-50">
+          <h3 className="font-medium text-sm text-gray-900">
+            {currentScreenshot.file_name || currentScreenshot.name}
+          </h3>
+          {currentScreenshot.url && (
+            <p className="text-xs text-gray-500 mt-1">
+              {currentScreenshot.url}
+            </p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
