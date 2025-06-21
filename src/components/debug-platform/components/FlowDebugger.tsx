@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -32,19 +31,19 @@ export const FlowDebugger: React.FC<FlowDebuggerProps> = ({ isActive }) => {
   const [flowSteps, setFlowSteps] = useState<FlowStep[]>([]);
 
   const authFlowSteps = [
-    { id: '1', name: 'User Login Request', status: 'pending' as const },
-    { id: '2', name: 'Validate Credentials', status: 'pending' as const },
-    { id: '3', name: 'Generate Session Token', status: 'pending' as const },
-    { id: '4', name: 'Update User Session', status: 'pending' as const },
-    { id: '5', name: 'Redirect to Dashboard', status: 'pending' as const }
+    { id: '1', name: 'User Login Request', status: 'pending' as const, timestamp: new Date() },
+    { id: '2', name: 'Validate Credentials', status: 'pending' as const, timestamp: new Date() },
+    { id: '3', name: 'Generate Session Token', status: 'pending' as const, timestamp: new Date() },
+    { id: '4', name: 'Update User Session', status: 'pending' as const, timestamp: new Date() },
+    { id: '5', name: 'Redirect to Dashboard', status: 'pending' as const, timestamp: new Date() }
   ];
 
   const subscriptionFlowSteps = [
-    { id: '1', name: 'Check Current Plan', status: 'pending' as const },
-    { id: '2', name: 'Validate Payment Method', status: 'pending' as const },
-    { id: '3', name: 'Process Subscription', status: 'pending' as const },
-    { id: '4', name: 'Update User Credits', status: 'pending' as const },
-    { id: '5', name: 'Send Confirmation', status: 'pending' as const }
+    { id: '1', name: 'Check Current Plan', status: 'pending' as const, timestamp: new Date() },
+    { id: '2', name: 'Validate Payment Method', status: 'pending' as const, timestamp: new Date() },
+    { id: '3', name: 'Process Subscription', status: 'pending' as const, timestamp: new Date() },
+    { id: '4', name: 'Update User Credits', status: 'pending' as const, timestamp: new Date() },
+    { id: '5', name: 'Send Confirmation', status: 'pending' as const, timestamp: new Date() }
   ];
 
   const startTracing = (flowType: string) => {

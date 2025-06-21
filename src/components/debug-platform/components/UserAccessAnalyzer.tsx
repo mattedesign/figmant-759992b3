@@ -26,7 +26,7 @@ interface UserDebugData {
   email: string;
   role: string;
   authStatus: 'authenticated' | 'unauthenticated' | 'expired';
-  subscriptionStatus: 'active' | 'inactive' | 'cancelled';
+  subscriptionStatus: 'active' | 'inactive' | 'cancelled' | 'expired' | 'free';
   credits: {
     current: number;
     total: number;
@@ -92,7 +92,7 @@ export const UserAccessAnalyzer: React.FC<UserAccessAnalyzerProps> = ({
         email: profile.email,
         role: profile.role,
         authStatus: 'authenticated', // Simplified for demo
-        subscriptionStatus: subscription?.status || 'inactive',
+        subscriptionStatus: (subscription?.status as UserDebugData['subscriptionStatus']) || 'free',
         credits: {
           current: userCredits?.current_balance || 0,
           total: userCredits?.total_purchased || 0,
@@ -123,6 +123,7 @@ export const UserAccessAnalyzer: React.FC<UserAccessAnalyzerProps> = ({
         return 'text-green-600';
       case 'inactive':
       case 'unauthenticated':
+      case 'free':
         return 'text-yellow-600';
       case 'expired':
       case 'cancelled':
@@ -139,6 +140,7 @@ export const UserAccessAnalyzer: React.FC<UserAccessAnalyzerProps> = ({
         return <CheckCircle className="h-4 w-4" />;
       case 'inactive':
       case 'unauthenticated':
+      case 'free':
         return <AlertTriangle className="h-4 w-4" />;
       case 'expired':
       case 'cancelled':
