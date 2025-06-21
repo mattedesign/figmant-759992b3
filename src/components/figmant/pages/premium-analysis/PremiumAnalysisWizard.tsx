@@ -5,8 +5,11 @@ import { StepRenderer } from './StepRenderer';
 import { WizardNavigation } from './components/WizardNavigation';
 import { useWizardState } from './hooks/useWizardState';
 import { StepData } from './types';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const PremiumAnalysisWizard: React.FC = () => {
+  const isMobile = useIsMobile();
+  
   const {
     currentStep,
     stepData,
@@ -27,9 +30,9 @@ export const PremiumAnalysisWizard: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col max-h-screen">
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <ScrollArea className="h-full w-full">
+    <div className={`flex flex-col ${isMobile ? 'wizard-container' : 'h-full max-h-screen'}`}>
+      <div className={`flex-1 min-h-0 overflow-hidden ${isMobile ? 'wizard-content' : ''}`}>
+        <ScrollArea className={`h-full w-full ${isMobile ? 'wizard-scroll-area' : ''}`}>
           <div className="px-0 py-6 min-h-full">
             <div className="h-full">
               <StepRenderer 
