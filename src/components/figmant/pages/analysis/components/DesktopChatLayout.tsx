@@ -100,8 +100,6 @@ export const DesktopChatLayout: React.FC = () => {
         <DesignChatInterface
           onSendMessage={handleSendMessage}
           messages={messages}
-          attachments={attachments}
-          setAttachments={setAttachments}
           isProcessing={isAnalyzing}
           canSend={canSend}
           selectedTemplate={selectedTemplate}
