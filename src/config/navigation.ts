@@ -31,7 +31,7 @@ export const navigationConfig = {
     },
     { 
       id: 'competitor-analysis', 
-      label: 'Competitor Analysis', 
+      label: 'Quick Analysis', 
       icon: BarChart3, 
       priority: 1,
       description: 'UC-024 - AI-powered competitor insights'

@@ -54,7 +54,6 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
       source_type: upload.source_type, 
       file_path: upload.file_path, 
       source_url: upload.source_url,
-      analysis_goals: upload.analysis_goals,
       has_context: contextContent.length > 0
     });
 
@@ -113,11 +112,6 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
       enhancedPrompt += '\n\nPlease provide a concise, focused analysis highlighting the most critical points.';
     }
     
-    if (upload.analysis_goals) {
-      enhancedPrompt += `\n\nSpecific Analysis Goals & Context: ${upload.analysis_goals}`;
-      enhancedPrompt += '\n\nPlease tailor your analysis to address these specific goals and provide insights that directly relate to the user\'s objectives.';
-    }
-
     // Add context files content if available
     if (contextContent) {
       enhancedPrompt += contextContent;

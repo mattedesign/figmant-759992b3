@@ -31,7 +31,7 @@ export const CompetitorAnalysisPage: React.FC = () => {
       <div className="p-4 border-b bg-white">
         <div className="flex items-center gap-2">
           <Zap className="h-6 w-6 text-blue-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Competitor Analysis</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Quick Analysis</h1>
         </div>
         <p className="text-gray-600 mt-1">Analyze competitor designs and identify opportunities</p>
       </div>
