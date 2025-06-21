@@ -1,10 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import { StepProps } from '../types';
 import { ProcessingState } from '../components/ProcessingState';
 import { ErrorState } from '../components/ErrorState';
 import { usePremiumAnalysisSubmission } from '@/hooks/usePremiumAnalysisSubmission';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Download, ExternalLink, ArrowLeft } from 'lucide-react';
@@ -16,6 +16,7 @@ export const Step7Processing: React.FC<StepProps> = ({
   totalSteps 
 }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [processingState, setProcessingState] = useState<'processing' | 'complete' | 'error'>('processing');
   const [error, setError] = useState<string | null>(null);
@@ -61,8 +62,15 @@ export const Step7Processing: React.FC<StepProps> = ({
   }, [premiumAnalysis.isError, premiumAnalysis.error]);
 
   const handleViewInAnalysis = () => {
-    // Navigate to the dashboard where the analysis will be in the history
-    navigate('/figmant/dashboard');
+    // Navigate to the main dashboard with all-analysis tab active
+    // This works for both owners and subscribers since they use the same route structure
+    navigate('/dashboard?tab=all-analysis');
+    
+    // Show a helpful toast
+    toast({
+      title: "Redirecting to Analysis History",
+      description: "You'll find your completed analysis in the 'All Analysis' section.",
+    });
   };
 
   const handleBackToAnalysis = () => {
