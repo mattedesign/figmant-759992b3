@@ -14,12 +14,11 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { setTemplateCreditCost } = useTemplateCreditStore();
+  const { currentCreditCost, setTemplateCreditCost } = useTemplateCreditStore();
   
   // Force empty analyses to show "Start your analysis" state
   const [analyses] = useState([]); // Always empty for now
   const [isLoading, setIsLoading] = useState(true);
-  const [currentCreditCost, setCurrentCreditCost] = useState<number>(1);
   const [selectedPromptTemplate, setSelectedPromptTemplate] = useState<string>('');
 
   useEffect(() => {
@@ -37,7 +36,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
     // Set the selected template
     setSelectedPromptTemplate(templateId);
     
-    // Fetch credit cost from database
+    // Fetch credit cost from database and update global store
     try {
       const { data, error } = await supabase
         .from('claude_prompt_examples')
@@ -47,18 +46,15 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
       
       if (error) {
         console.error('Error fetching credit cost:', error);
-        setCurrentCreditCost(3); // Fallback
-        setTemplateCreditCost(templateId, 3);
+        setTemplateCreditCost(templateId, 3); // Fallback
       } else {
         const creditCost = data.credit_cost || 3;
         console.log('Credit cost fetched:', creditCost);
-        setCurrentCreditCost(creditCost);
         setTemplateCreditCost(templateId, creditCost);
       }
     } catch (error) {
       console.error('Error in handleTemplateSelect:', error);
-      setCurrentCreditCost(3); // Fallback
-      setTemplateCreditCost(templateId, 3);
+      setTemplateCreditCost(templateId, 3); // Fallback
     }
   };
 
@@ -81,6 +77,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
   return (
     <div className="h-full flex flex-col">
       <AnalysisNavigationHeader creditCost={currentCreditCost} />
+      
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         <div className="text-center max-w-md w-full">
           {/* Icon and Header */}

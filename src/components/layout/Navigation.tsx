@@ -112,7 +112,7 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
           <div className="flex items-center space-x-4">
             {user && (
               <>
-                {/* Dynamic Credit Cost Display */}
+                {/* Dynamic Credit Cost Display from global store */}
                 <Badge className={`flex items-center gap-1 ${getCreditBadgeStyle(currentCreditCost)}`}>
                   <CreditCard className="h-3 w-3" />
                   {currentCreditCost} Credit{currentCreditCost !== 1 ? 's' : ''}
