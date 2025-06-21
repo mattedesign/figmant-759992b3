@@ -2,6 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { StepRenderer } from './StepRenderer';
 import { StepData } from './types';
+import { AnalysisNavigationHeader } from '../analysis/components/AnalysisNavigationHeader';
 
 export const PremiumAnalysisController: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -57,6 +58,7 @@ export const PremiumAnalysisController: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
+      <AnalysisNavigationHeader creditCost={currentCreditCost} />
       <StepRenderer
         currentStep={currentStep}
         totalSteps={5}
