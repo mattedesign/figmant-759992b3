@@ -10,7 +10,6 @@ import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
 import Subscription from '@/pages/Subscription';
 import PaymentSuccess from '@/pages/PaymentSuccess';
-import OwnerDashboard from '@/pages/OwnerDashboard';
 import DesignAnalysis from '@/pages/DesignAnalysis';
 import StripeWebhookTest from '@/pages/StripeWebhookTest';
 import AdminAssets from '@/pages/AdminAssets';
@@ -36,22 +35,14 @@ const App: React.FC = () => {
                 <Routes>
                   <Route path="/auth" element={<Auth />} />
                   <Route
-                    path="/figmant"
+                    path="/figmant/*"
                     element={
                       <AuthGuard>
                         <FigmantLayout />
                       </AuthGuard>
                     }
                   />
-                  <Route path="/" element={<Navigate to="/figmant" replace />} />
-                  <Route
-                    path="/dashboard"
-                    element={
-                      <AuthGuard>
-                        <Dashboard />
-                      </AuthGuard>
-                    }
-                  />
+                  <Route path="/" element={<Navigate to="/figmant/dashboard" replace />} />
                   <Route
                     path="/analysis"
                     element={
@@ -97,14 +88,6 @@ const App: React.FC = () => {
                     element={
                       <AuthGuard requireOwner>
                         <StripeWebhookTest />
-                      </AuthGuard>
-                    }
-                  />
-                  <Route
-                    path="/owner"
-                    element={
-                      <AuthGuard requireOwner>
-                        <OwnerDashboard />
                       </AuthGuard>
                     }
                   />
