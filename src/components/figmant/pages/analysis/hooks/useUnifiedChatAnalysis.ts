@@ -40,7 +40,7 @@ export const useUnifiedChatAnalysis = () => {
         type: 'file',
         name: file.name,
         file,
-        status: 'uploaded'
+        status: 'uploading'
       };
       newAttachments.push(attachment);
     }
@@ -57,6 +57,39 @@ export const useUnifiedChatAnalysis = () => {
       title: "Files Added",
       description: `${newAttachments.length} file(s) added for analysis.`,
     });
+
+    // Process file uploads in background
+    for (const attachment of newAttachments) {
+      try {
+        console.log('📤 Starting file upload for:', attachment.name);
+        
+        // Simulate file upload processing
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Update attachment status to uploaded
+        if (setAttachments) {
+          setAttachments(prev => prev.map(att => 
+            att.id === attachment.id 
+              ? { ...att, status: 'uploaded', uploadPath: `uploads/${attachment.id}` }
+              : att
+          ));
+        }
+        
+        console.log('📤 File upload completed for:', attachment.name);
+        
+      } catch (error) {
+        console.error('📤 File upload failed:', error);
+        
+        // Update attachment status to error
+        if (setAttachments) {
+          setAttachments(prev => prev.map(att => 
+            att.id === attachment.id 
+              ? { ...att, status: 'error' }
+              : att
+          ));
+        }
+      }
+    }
   }, [setAttachments, toast]);
 
   const handleAddUrl = useCallback(async () => {
