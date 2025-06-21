@@ -58,9 +58,9 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
 
         {/* Credit Cost Display and Collapse Button */}
         <div className="flex items-center space-x-2">
-          {/* Credit Cost Badge - Hidden but not removed */}
+          {/* Credit Cost Badge - Hidden with display:none */}
           {!isCollapsed && (
-            <Badge className={`hidden flex items-center gap-1 transition-all duration-200 ${getCreditStyle()}`}>
+            <Badge className={`flex items-center gap-1 transition-all duration-200 ${getCreditStyle()}`} style={{ display: 'none' }}>
               {getCreditIcon()}
               {currentCreditCost} Credit{currentCreditCost !== 1 ? 's' : ''}
             </Badge>
