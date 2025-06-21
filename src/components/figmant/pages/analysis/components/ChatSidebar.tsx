@@ -38,7 +38,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const analysisMessages = messages.filter(msg => msg.role === 'assistant');
 
   return (
-    <div className="w-80 h-full bg-background border-l border-border flex flex-col">
+    <div className="w-80 h-full border-l border-border flex flex-col" style={{ backgroundColor: '#FFF' }}>
       <div className="p-4 border-b border-border">
         <h2 className="text-lg font-semibold">Analysis Sidebar</h2>
         <p className="text-sm text-muted-foreground mt-1">

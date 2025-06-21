@@ -151,7 +151,7 @@ export const FigmantRightSidebar: React.FC<FigmantRightSidebarProps> = ({
   };
 
   return (
-    <div className="h-full bg-white border-l border-gray-200">
+    <div className="h-full border-l border-gray-200" style={{ backgroundColor: '#FFF' }}>
       {renderContent()}
     </div>
   );

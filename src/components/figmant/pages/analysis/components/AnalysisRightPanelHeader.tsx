@@ -15,7 +15,7 @@ export const AnalysisRightPanelHeader: React.FC<AnalysisRightPanelHeaderProps> =
   totalAttachments
 }) => {
   return (
-    <div className="px-4 py-3 border-b border-gray-200 bg-white">
+    <div className="px-4 py-3 border-b border-gray-200" style={{ backgroundColor: '#FFF' }}>
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-gray-900">Analysis Details</h3>
         <Badge variant="secondary" className="text-xs">

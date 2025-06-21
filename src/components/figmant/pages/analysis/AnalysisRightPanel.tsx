@@ -63,7 +63,7 @@ export const AnalysisRightPanel: React.FC<AnalysisRightPanelProps> = ({
   };
 
   return (
-    <div className="w-80 max-w-[240px] bg-white border-l border-gray-200 flex flex-col h-full">
+    <div className="w-80 max-w-[240px] border-l border-gray-200 flex flex-col h-full" style={{ backgroundColor: '#FFF' }}>
       {/* Fixed Header with Tabs */}
       <AnalysisRightPanelHeader
         activeTab={activeTab}
