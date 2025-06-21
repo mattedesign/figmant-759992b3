@@ -4,11 +4,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { DesignBatchAnalysis } from '@/types/design';
 import { AnalysisRecoveryService } from '@/services/analysis/AnalysisRecoveryService';
 import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
 
 export const useEnhancedDesignBatchAnalyses = (batchId?: string) => {
   const { toast } = useToast();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['enhanced-batch-analyses', batchId],
     queryFn: async (): Promise<DesignBatchAnalysis[]> => {
       console.log('🔄 ENHANCED BATCH ANALYSES - Fetching with recovery mechanisms');
@@ -155,14 +156,20 @@ export const useEnhancedDesignBatchAnalyses = (batchId?: string) => {
     },
     enabled: true,
     retry: 2,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 20000),
-    onError: (error) => {
-      console.error('❌ Enhanced batch analyses query failed:', error);
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 20000)
+  });
+
+  // Handle errors using useEffect
+  useEffect(() => {
+    if (query.error) {
+      console.error('❌ Enhanced batch analyses query failed:', query.error);
       toast({
         variant: "destructive",
         title: "Batch Analysis System Error",
         description: "There was an issue loading batch analyses. Recovery attempted.",
       });
     }
-  });
+  }, [query.error, toast]);
+
+  return query;
 };

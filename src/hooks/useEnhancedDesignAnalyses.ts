@@ -4,12 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { DesignAnalysis } from '@/types/design';
 import { AnalysisRecoveryService } from '@/services/analysis/AnalysisRecoveryService';
 import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
 
 export const useEnhancedDesignAnalyses = (uploadId?: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['enhanced-design-analyses', uploadId],
     queryFn: async (): Promise<DesignAnalysis[]> => {
       console.log('🔄 ENHANCED DESIGN ANALYSES - Fetching with recovery mechanisms');
@@ -161,14 +162,20 @@ export const useEnhancedDesignAnalyses = (uploadId?: string) => {
     },
     enabled: uploadId ? !!uploadId : true,
     retry: 3,
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-    onError: (error) => {
-      console.error('❌ Enhanced design analyses query failed:', error);
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000)
+  });
+
+  // Handle errors using useEffect
+  useEffect(() => {
+    if (query.error) {
+      console.error('❌ Enhanced design analyses query failed:', query.error);
       toast({
         variant: "destructive",
         title: "Analysis System Error",
         description: "There was an issue loading analyses. System recovery attempted.",
       });
     }
-  });
+  }, [query.error, toast]);
+
+  return query;
 };
