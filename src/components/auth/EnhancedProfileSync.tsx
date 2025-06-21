@@ -10,11 +10,8 @@ export const EnhancedProfileSync: React.FC = () => {
   const { user } = useAuth();
   useRegistrationMonitor();
 
-  // Only show recovery message for specific users who experienced the issue
-  const shouldShowRecovery = isRecovering && (
-    user?.email === 'mbrown@triumphpay.com' || 
-    user?.email === 'Mbrown@tfin.com'
-  );
+  // Show recovery message for any user experiencing profile sync issues
+  const shouldShowRecovery = isRecovering && user?.email;
 
   if (shouldShowRecovery) {
     return (

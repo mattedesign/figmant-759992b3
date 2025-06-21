@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
@@ -7,11 +6,13 @@ import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInter
 import { useToast } from '@/hooks/use-toast';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
 import { convertToLegacyAttachments } from '@/utils/attachmentTypeConverter';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useUnifiedChatAnalysis = () => {
   const { data: templates = [], isLoading: templatesLoading } = useFigmantPromptTemplates();
   const { mutateAsync: analyzeWithClaude, isPending: isAnalyzing } = useFigmantChatAnalysis();
   const { toast } = useToast();
+  const { user } = useAuth(); // Get current authenticated user
   
   const chatState = useChatState();
   const {
@@ -34,6 +35,15 @@ export const useUnifiedChatAnalysis = () => {
   }, [templates, selectedTemplateId]);
 
   const handleFileUpload = useCallback(async (files: FileList) => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "Please log in to upload files.",
+      });
+      return;
+    }
+
     const newAttachments: ChatAttachment[] = [];
     
     for (const file of Array.from(files)) {
@@ -59,7 +69,7 @@ export const useUnifiedChatAnalysis = () => {
       title: "Files Added",
       description: `${newAttachments.length} file(s) added for analysis.`,
     });
-  }, [setAttachments, toast]);
+  }, [setAttachments, toast, user]);
 
   const handleAddUrl = useCallback(async () => {
     if (!urlInput.trim()) {
@@ -240,6 +250,15 @@ export const useUnifiedChatAnalysis = () => {
   }, []);
 
   const handleSendMessage = useCallback(async () => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "Please log in to send messages.",
+      });
+      return;
+    }
+
     if (!message.trim() && attachments.length === 0) {
       toast({
         variant: "destructive",
@@ -248,6 +267,8 @@ export const useUnifiedChatAnalysis = () => {
       });
       return;
     }
+
+    console.log('🔄 UNIFIED CHAT - Sending message for user:', user.email);
 
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
@@ -267,6 +288,8 @@ export const useUnifiedChatAnalysis = () => {
       // Convert attachments to legacy format for API compatibility
       const legacyAttachments = convertToLegacyAttachments(attachments);
 
+      console.log('🔄 UNIFIED CHAT - Calling analysis for user:', user.id);
+      
       const result = await analyzeWithClaude({
         message,
         attachments: legacyAttachments,
@@ -293,7 +316,7 @@ export const useUnifiedChatAnalysis = () => {
       }
 
     } catch (error) {
-      console.error('Analysis error:', error);
+      console.error('Analysis error for user', user.email, ':', error);
       
       const errorMessage: ChatMessage = {
         id: crypto.randomUUID(),
@@ -306,7 +329,7 @@ export const useUnifiedChatAnalysis = () => {
         setMessages(prev => [...prev, errorMessage]);
       }
     }
-  }, [message, attachments, messages, setMessages, setMessage, setAttachments, analyzeWithClaude, getCurrentTemplate, toast]);
+  }, [message, attachments, messages, setMessages, setMessage, setAttachments, analyzeWithClaude, getCurrentTemplate, toast, user]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -315,9 +338,11 @@ export const useUnifiedChatAnalysis = () => {
     }
   }, [handleSendMessage]);
 
-  const canSend = !isAnalyzing && (message.trim().length > 0 || attachments.length > 0);
+  const canSend = !isAnalyzing && (message.trim().length > 0 || attachments.length > 0) && !!user;
 
   console.log('🔄 UNIFIED CHAT ANALYSIS - Current state:', {
+    userId: user?.id,
+    userEmail: user?.email,
     messagesCount: messages.length,
     attachmentsCount: attachments.length,
     urlInput,
