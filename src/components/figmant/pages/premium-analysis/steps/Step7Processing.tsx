@@ -62,19 +62,15 @@ export const Step7Processing: React.FC<StepProps> = ({
   }, [premiumAnalysis.isError, premiumAnalysis.error]);
 
   const handleViewInAnalysis = () => {
-    // Navigate to the main dashboard with all-analysis tab active
-    // This works for both owners and subscribers since they use the same route structure
-    navigate('/dashboard?tab=all-analysis');
+    navigate('/figmant');
     
-    // Show a helpful toast
     toast({
       title: "Redirecting to Analysis History",
-      description: "You'll find your completed analysis in the 'All Analysis' section.",
+      description: "You'll find your completed analysis in the History tab of the sidebar.",
     });
   };
 
   const handleBackToAnalysis = () => {
-    // Navigate back to wizard start
     navigate('/figmant/wizard-analysis');
   };
 
