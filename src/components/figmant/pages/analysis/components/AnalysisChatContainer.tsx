@@ -88,13 +88,10 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   });
   
   return (
-    <div className="absolute inset-0 grid grid-rows-[1fr_auto] bg-background">
-      {/* Messages Area - Scrollable content area with explicit height */}
-      <div 
-        className="overflow-y-auto overflow-x-hidden"
-        style={{ height: '100%' }}
-      >
-        <div className="p-4 space-y-4 min-h-full">
+    <div className="flex flex-col h-full bg-background overflow-hidden">
+      {/* Messages Area - Uses flex-1 with min-h-0 to allow proper shrinking */}
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+        <div className="p-4 space-y-4">
           {messages.length === 0 ? (
             <div className="flex items-center justify-center h-full min-h-[300px]">
               <div className="text-center text-muted-foreground">
@@ -142,38 +139,33 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         </div>
       </div>
 
-      {/* Input Area - Fixed at bottom with explicit positioning */}
-      <div 
-        className="border-t border-border bg-background"
-        style={{ 
-          position: 'relative',
-          zIndex: 10,
-          height: 'auto',
-          minHeight: '80px'
-        }}
-      >
-        <div className="max-w-4xl mx-auto w-full">
-          <AnalysisChatInput
-            message={message}
-            setMessage={setMessage}
-            onSendMessage={finalSendMessage}
-            onKeyPress={finalKeyPress}
-            selectedPromptTemplate={selectedTemplate}
-            canSend={finalCanSend}
-            isAnalyzing={analyzing}
-            onFileUpload={onFileUpload}
-            onToggleUrlInput={onToggleUrlInput}
-            onTemplateSelect={onTemplateSelect}
-            availableTemplates={availableTemplates}
-            onViewTemplate={onViewTemplate}
-            attachments={attachments}
-            onRemoveAttachment={onRemoveAttachment}
-            showUrlInput={showUrlInput}
-            urlInput={urlInput}
-            setUrlInput={setUrlInput}
-            onAddUrl={onAddUrl}
-            onCancelUrl={onCancelUrl}
-          />
+      {/* Input Area - Fixed height with constrained max-height to prevent viewport overflow */}
+      <div className="flex-shrink-0 border-t border-border bg-background">
+        {/* Container with max-height to prevent viewport overflow */}
+        <div className="max-h-[40vh] overflow-y-auto">
+          <div className="max-w-4xl mx-auto w-full">
+            <AnalysisChatInput
+              message={message}
+              setMessage={setMessage}
+              onSendMessage={finalSendMessage}
+              onKeyPress={finalKeyPress}
+              selectedPromptTemplate={selectedTemplate}
+              canSend={finalCanSend}
+              isAnalyzing={analyzing}
+              onFileUpload={onFileUpload}
+              onToggleUrlInput={onToggleUrlInput}
+              onTemplateSelect={onTemplateSelect}
+              availableTemplates={availableTemplates}
+              onViewTemplate={onViewTemplate}
+              attachments={attachments}
+              onRemoveAttachment={onRemoveAttachment}
+              showUrlInput={showUrlInput}
+              urlInput={urlInput}
+              setUrlInput={setUrlInput}
+              onAddUrl={onAddUrl}
+              onCancelUrl={onCancelUrl}
+            />
+          </div>
         </div>
       </div>
     </div>

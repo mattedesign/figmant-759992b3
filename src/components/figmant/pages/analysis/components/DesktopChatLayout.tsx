@@ -60,55 +60,47 @@ export const DesktopChatLayout: React.FC = () => {
   return (
     <ChatAttachmentHandlers>
       {(attachmentHandlers) => (
-        <div className="fixed inset-0 bg-background overflow-hidden">
-          {/* Main Chat Container - Uses CSS Grid for bulletproof layout */}
-          <div 
-            className="grid h-full"
-            style={{
-              gridTemplateColumns: isAssetsPanelVisible ? '1fr 288px' : '1fr',
-              gridTemplateRows: '1fr'
-            }}
-          >
-            <div className="min-w-0 relative">
-              <AnalysisChatContainer
+        <div className="flex h-full bg-background overflow-hidden">
+          {/* Main Chat Container - Uses flex layout with constrained height */}
+          <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+            <AnalysisChatContainer
+              messages={messages}
+              isAnalyzing={isAnalyzing}
+              message={message}
+              setMessage={setMessage}
+              onSendMessage={handleSendMessage}
+              onKeyPress={handleKeyPress}
+              getCurrentTemplate={getCurrentTemplate}
+              canSend={canSend}
+              onFileUpload={attachmentHandlers.handleFileUpload}
+              onToggleUrlInput={handleToggleUrlInput}
+              showUrlInput={false}
+              urlInput=""
+              setUrlInput={() => {}}
+              onAddUrl={() => {}}
+              onCancelUrl={() => {}}
+              onTemplateSelect={handleTemplateSelect}
+              availableTemplates={templates}
+              onViewTemplate={handleViewTemplate}
+              attachments={attachments}
+              onRemoveAttachment={attachmentHandlers.removeAttachment}
+            />
+          </div>
+
+          {/* Analysis Assets Panel */}
+          {isAssetsPanelVisible && (
+            <div className="w-72 border-l border-border flex-shrink-0 overflow-hidden">
+              <AnalysisNavigationSidebar
                 messages={messages}
-                isAnalyzing={isAnalyzing}
-                message={message}
-                setMessage={setMessage}
-                onSendMessage={handleSendMessage}
-                onKeyPress={handleKeyPress}
-                getCurrentTemplate={getCurrentTemplate}
-                canSend={canSend}
-                onFileUpload={attachmentHandlers.handleFileUpload}
-                onToggleUrlInput={handleToggleUrlInput}
-                showUrlInput={false}
-                urlInput=""
-                setUrlInput={() => {}}
-                onAddUrl={() => {}}
-                onCancelUrl={() => {}}
-                onTemplateSelect={handleTemplateSelect}
-                availableTemplates={templates}
-                onViewTemplate={handleViewTemplate}
                 attachments={attachments}
                 onRemoveAttachment={attachmentHandlers.removeAttachment}
+                onViewAttachment={handleViewAttachment}
+                lastAnalysisResult={lastAnalysisResult}
+                isCollapsed={false}
+                onToggleCollapse={() => setIsAssetsPanelVisible(!isAssetsPanelVisible)}
               />
             </div>
-
-            {/* Analysis Assets Panel */}
-            {isAssetsPanelVisible && (
-              <div className="border-l border-border relative">
-                <AnalysisNavigationSidebar
-                  messages={messages}
-                  attachments={attachments}
-                  onRemoveAttachment={attachmentHandlers.removeAttachment}
-                  onViewAttachment={handleViewAttachment}
-                  lastAnalysisResult={lastAnalysisResult}
-                  isCollapsed={false}
-                  onToggleCollapse={() => setIsAssetsPanelVisible(!isAssetsPanelVisible)}
-                />
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Toggle Button for Assets Panel */}
           {!isAssetsPanelVisible && (

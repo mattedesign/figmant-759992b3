@@ -22,12 +22,14 @@ export const MobileChatLayout: React.FC = () => {
     getCurrentTemplate
   } = useChatStateContext();
 
-  // Handle iOS Safari viewport changes
+  // Handle iOS Safari viewport changes with improved detection
   useEffect(() => {
     const handleResize = () => {
+      // Use visual viewport if available (better for mobile browsers)
       if (window.visualViewport) {
         setViewportHeight(`${window.visualViewport.height}px`);
       } else {
+        // Fallback for older browsers
         setViewportHeight(`${window.innerHeight}px`);
       }
     };
@@ -89,12 +91,9 @@ export const MobileChatLayout: React.FC = () => {
   return (
     <ChatAttachmentHandlers>
       {(attachmentHandlers) => (
-        <div 
-          className="fixed inset-0 bg-background"
-          style={{ height: viewportHeight }}
-        >
-          {/* Main Chat Container - Uses absolute positioning for bulletproof layout */}
-          <div className="absolute inset-0">
+        <div className="flex flex-col bg-background" style={{ height: viewportHeight }}>
+          {/* Main Chat Container - Uses flex layout with constrained height */}
+          <div className="flex-1 min-h-0 overflow-hidden">
             <AnalysisChatContainer
               messages={messages}
               isAnalyzing={isAnalyzing}
