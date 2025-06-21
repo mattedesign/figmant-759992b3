@@ -1,4 +1,3 @@
-
 import { 
   Home, 
   BarChart3, 
@@ -65,7 +64,8 @@ export const navigationConfig = {
       label: 'Profile', 
       icon: User, 
       priority: 1,
-      description: 'User profile and account management'
+      description: 'User profile and account management',
+      hidden: true
     },
     { 
       id: 'credits', 
