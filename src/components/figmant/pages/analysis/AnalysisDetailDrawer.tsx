@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
 import { 
@@ -15,7 +18,14 @@ import {
   Image as ImageIcon,
   Globe,
   Eye,
-  X
+  X,
+  ChevronRight,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  TrendingUp,
+  Lightbulb,
+  ListTodo
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -158,6 +168,93 @@ const AttachmentCard: React.FC<{
   );
 };
 
+const MetadataCard: React.FC<{ analysis: any }> = ({ analysis }) => {
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'processing': return 'bg-yellow-100 text-yellow-800';
+      case 'failed': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+      <div className="flex items-center gap-2">
+        <Calendar className="h-4 w-4 text-gray-500" />
+        <div>
+          <p className="text-xs text-gray-500">Created</p>
+          <p className="text-sm font-medium">
+            {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
+          </p>
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-2">
+        <Target className="h-4 w-4 text-gray-500" />
+        <div>
+          <p className="text-xs text-gray-500">Confidence</p>
+          <p className="text-sm font-medium">
+            {Math.round((analysis.confidence_score || 0.8) * 100)}%
+          </p>
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-2">
+        <User className="h-4 w-4 text-gray-500" />
+        <div>
+          <p className="text-xs text-gray-500">Type</p>
+          <p className="text-sm font-medium capitalize">
+            {analysis.type || analysis.analysis_type || 'Analysis'}
+          </p>
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-2">
+        <CheckCircle2 className="h-4 w-4 text-gray-500" />
+        <div>
+          <p className="text-xs text-gray-500">Status</p>
+          <Badge className={`text-xs ${getStatusColor(analysis.status || 'completed')}`}>
+            {analysis.status || 'Completed'}
+          </Badge>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const FormattedContent: React.FC<{ content: string }> = ({ content }) => {
+  // Split content into paragraphs and format
+  const paragraphs = content.split('\n\n').filter(p => p.trim());
+  
+  return (
+    <div className="prose prose-sm max-w-none">
+      {paragraphs.map((paragraph, index) => {
+        // Check if it's a list item
+        if (paragraph.includes('•') || paragraph.includes('-')) {
+          const items = paragraph.split(/[•-]/).filter(item => item.trim());
+          return (
+            <ul key={index} className="space-y-1 mb-4">
+              {items.map((item, itemIndex) => (
+                <li key={itemIndex} className="text-sm leading-relaxed">
+                  {item.trim()}
+                </li>
+              ))}
+            </ul>
+          );
+        }
+        
+        // Regular paragraph
+        return (
+          <p key={index} className="text-sm leading-relaxed mb-3 text-gray-700">
+            {paragraph.trim()}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+
 export const AnalysisDetailDrawer: React.FC<AnalysisDetailDrawerProps> = ({
   isOpen,
   onClose,
@@ -220,18 +317,22 @@ export const AnalysisDetailDrawer: React.FC<AnalysisDetailDrawerProps> = ({
     );
   };
 
+  // Extract key insights and recommendations
+  const keyInsights = analysis.impact_summary?.key_metrics || {};
+  const recommendations = analysis.impact_summary?.recommendations || analysis.recommendations || [];
+
   return (
     <>
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent className="w-full sm:max-w-3xl overflow-y-auto">
-          <SheetHeader className="space-y-3">
+        <SheetContent className="w-full sm:max-w-4xl">
+          <SheetHeader className="space-y-3 pb-4">
             <div className="flex items-center gap-2">
               {analysis.type === 'chat' ? (
                 <MessageSquare className="h-5 w-5 text-blue-600" />
               ) : (
                 <FileText className="h-5 w-5 text-green-600" />
               )}
-              <SheetTitle className="text-left">{title}</SheetTitle>
+              <SheetTitle className="text-left text-lg">{title}</SheetTitle>
             </div>
             
             <div className="flex items-center gap-2 flex-wrap">
@@ -251,105 +352,206 @@ export const AnalysisDetailDrawer: React.FC<AnalysisDetailDrawerProps> = ({
             </div>
           </SheetHeader>
 
-          <div className="space-y-6 mt-6">
-            {(attachments.length > 0 || analyzedUrls.length > 0) && (
+          <ScrollArea className="h-[calc(100vh-200px)] pr-4">
+            <div className="space-y-6">
+              {/* Metadata Section */}
+              <MetadataCard analysis={analysis} />
+              
+              <Separator />
+
+              {/* Main Analysis Content */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="h-5 w-5 text-gray-600" />
-                  <h4 className="font-semibold">Screenshots & Attachments</h4>
-                  <Badge variant="outline" className="text-xs">
-                    {attachments.length + analyzedUrls.length}
-                  </Badge>
-                </div>
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Analysis Results
+                </h3>
                 
-                <div className="grid gap-3">
-                  {attachments.map((attachment, index) => (
-                    <AttachmentCard
-                      key={attachment.id}
-                      attachment={attachment}
-                      onViewScreenshot={() => openScreenshotModal(index)}
-                    />
-                  ))}
-                  
-                  {analyzedUrls
-                    .filter(url => !attachments.some(att => att.url === url))
-                    .map((url, index) => (
-                      <AttachmentCard
-                        key={`url-${index}`}
-                        attachment={{
-                          id: `url-${index}`,
-                          name: new URL(url).hostname,
-                          url: url,
-                          type: 'link'
-                        }}
-                      />
-                    ))
-                  }
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                Created {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
-              </div>
-
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                Confidence: {Math.round((analysis.confidence_score || 0.8) * 100)}%
-              </div>
-
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Target className="h-4 w-4" />
-                Items analyzed: {attachments.length + analyzedUrls.length || 1}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {analysis.type === 'chat' && analysis.prompt_used && (
-                <div>
-                  <h4 className="font-semibold mb-2">Original Prompt</h4>
-                  <div className="bg-muted p-3 rounded-lg text-sm">
-                    {analysis.prompt_used}
+                {analysis.type === 'chat' && analysis.prompt_used && (
+                  <div className="mb-4">
+                    <h4 className="font-medium text-sm text-gray-700 mb-2">Original Prompt</h4>
+                    <div className="bg-blue-50 border-l-4 border-blue-200 p-3 rounded-r-lg">
+                      <p className="text-sm text-gray-700 italic">{analysis.prompt_used}</p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              <div>
-                <h4 className="font-semibold mb-2">
-                  {analysis.type === 'chat' ? 'AI Response' : 'Analysis Summary'}
-                </h4>
-                <div className="bg-muted p-3 rounded-lg text-sm max-h-64 overflow-y-auto">
-                  {summary}
+                <div className="bg-white border rounded-lg p-4">
+                  <FormattedContent content={summary} />
                 </div>
               </div>
 
-              {analysis.impact_summary?.key_metrics && (
-                <div>
-                  <h4 className="font-semibold mb-2">Key Metrics</h4>
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    {Object.entries(analysis.impact_summary.key_metrics).map(([key, value]) => (
-                      <div key={key} className="flex justify-between p-2 bg-muted rounded">
-                        <span className="capitalize">{key.replace(/_/g, ' ')}:</span>
-                        <span className="font-medium">{String(value)}</span>
+              {/* Collapsible Sections */}
+              <Accordion type="multiple" className="w-full">
+                {/* Attachments Section */}
+                {(attachments.length > 0 || analyzedUrls.length > 0) && (
+                  <AccordionItem value="attachments">
+                    <AccordionTrigger className="text-left">
+                      <div className="flex items-center gap-2">
+                        <ImageIcon className="h-4 w-4" />
+                        <span>Attachments & Resources</span>
+                        <Badge variant="outline" className="ml-2">
+                          {attachments.length + analyzedUrls.length}
+                        </Badge>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-3 pt-2">
+                        {attachments.map((attachment, index) => (
+                          <AttachmentCard
+                            key={attachment.id}
+                            attachment={attachment}
+                            onViewScreenshot={() => openScreenshotModal(index)}
+                          />
+                        ))}
+                        
+                        {analyzedUrls
+                          .filter(url => !attachments.some(att => att.url === url))
+                          .map((url, index) => (
+                            <AttachmentCard
+                              key={`url-${index}`}
+                              attachment={{
+                                id: `url-${index}`,
+                                name: new URL(url).hostname,
+                                url: url,
+                                type: 'link'
+                              }}
+                            />
+                          ))
+                        }
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
 
-            <div className="pt-4 border-t">
-              <Button 
-                onClick={handleOpenInChat}
-                className="w-full"
-                size="lg"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                {analysis.type === 'chat' ? 'Continue in Chat' : 'Open in Analysis Wizard'}
-              </Button>
+                {/* Key Insights Section */}
+                {Object.keys(keyInsights).length > 0 && (
+                  <AccordionItem value="insights">
+                    <AccordionTrigger className="text-left">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        <span>Key Insights & Metrics</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                        {Object.entries(keyInsights).map(([key, value]) => (
+                          <div key={key} className="bg-gray-50 rounded-lg p-3">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium capitalize text-gray-700">
+                                {key.replace(/_/g, ' ')}
+                              </span>
+                              <span className="text-sm font-semibold text-gray-900">
+                                {typeof value === 'number' ? `${value}/10` : String(value)}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {/* Recommendations Section */}
+                {recommendations.length > 0 && (
+                  <AccordionItem value="recommendations">
+                    <AccordionTrigger className="text-left">
+                      <div className="flex items-center gap-2">
+                        <Lightbulb className="h-4 w-4" />
+                        <span>Recommendations & Action Items</span>
+                        <Badge variant="outline" className="ml-2">
+                          {recommendations.length}
+                        </Badge>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-3 pt-2">
+                        {recommendations.map((rec: any, index: number) => (
+                          <div key={index} className="border-l-4 border-blue-200 bg-blue-50 p-3 rounded-r-lg">
+                            <div className="flex items-start gap-2">
+                              <ListTodo className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  {rec.priority && (
+                                    <Badge 
+                                      variant={rec.priority === 'high' ? 'destructive' : 
+                                               rec.priority === 'medium' ? 'default' : 'secondary'}
+                                      className="text-xs"
+                                    >
+                                      {rec.priority} priority
+                                    </Badge>
+                                  )}
+                                  {rec.category && (
+                                    <Badge variant="outline" className="text-xs">
+                                      {rec.category}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-700 mb-1">
+                                  {rec.description || rec}
+                                </p>
+                                {rec.expected_impact && (
+                                  <p className="text-xs text-gray-500">
+                                    Expected impact: {rec.expected_impact}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {/* Technical Details Section */}
+                <AccordionItem value="technical">
+                  <AccordionTrigger className="text-left">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>Technical Details</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-4 pt-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Analysis ID:</span>
+                            <span className="font-mono text-xs">{analysis.id}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Processing Time:</span>
+                            <span>{analysis.processing_time || 'N/A'}</span>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Model Used:</span>
+                            <span>{analysis.model_used || 'Claude AI'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Items Analyzed:</span>
+                            <span>{attachments.length + analyzedUrls.length || 1}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
+          </ScrollArea>
+
+          {/* Footer Actions */}
+          <div className="border-t pt-4 mt-4">
+            <Button 
+              onClick={handleOpenInChat}
+              className="w-full"
+              size="lg"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              {analysis.type === 'chat' ? 'Continue in Chat' : 'Open in Analysis Wizard'}
+            </Button>
           </div>
         </SheetContent>
       </Sheet>
