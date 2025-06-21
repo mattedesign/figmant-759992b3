@@ -265,7 +265,8 @@ export const HistoryContextTabContent: React.FC<HistoryContextTabContentProps> =
       ...chatAnalyses.map(a => ({
         id: a.id,
         type: 'chat' as const,
-        title: a.analysis_results?.project_name || (typeof a.prompt_used === 'string' ? a.prompt_used.substring(0, 50) + '...' : 'Chat Analysis'),
+        title: (typeof a.analysis_results === 'object' && a.analysis_results?.response && typeof a.analysis_results.response === 'string' ? a.analysis_results.response.substring(0, 50) : '') || 
+               (typeof a.prompt_used === 'string' ? a.prompt_used.substring(0, 50) + '...' : 'Chat Analysis'),
         date: a.created_at,
         confidenceScore: a.confidence_score || 0.8,
         isRelated: true,
@@ -345,14 +346,89 @@ export const HistoryContextTabContent: React.FC<HistoryContextTabContentProps> =
           <CardContent>
             <div className="space-y-4">
               {relatedAnalyses.map((relatedAnalysis, index) => (
-                <TimelineItem
-                  key={relatedAnalysis.id}
-                  analysis={relatedAnalysis}
-                  isFirst={index === 0}
-                  isLast={index === relatedAnalyses.length - 1}
-                  onView={handleViewAnalysis}
-                  onPreview={handlePreviewAnalysis}
-                />
+                <div key={relatedAnalysis.id} className="relative flex items-start gap-4 group">
+                  {/* Timeline Line */}
+                  {index !== relatedAnalyses.length - 1 && (
+                    <div className="absolute left-6 top-12 w-0.5 h-20 bg-gray-200" />
+                  )}
+                  
+                  {/* Timeline Node */}
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white shadow-sm z-10 ${
+                    relatedAnalysis.type === 'premium' ? 'text-purple-600 bg-purple-50' :
+                    relatedAnalysis.type === 'chat' ? 'text-blue-600 bg-blue-50' :
+                    'text-gray-600 bg-gray-50'
+                  }`}>
+                    {relatedAnalysis.type === 'premium' ? <Sparkles className="h-5 w-5" /> :
+                     relatedAnalysis.type === 'chat' ? <MessageSquare className="h-5 w-5" /> :
+                     <FileText className="h-5 w-5" />}
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 pb-8">
+                    <Card className="hover:shadow-md transition-all duration-200 group-hover:border-blue-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-gray-900 truncate">
+                              {relatedAnalysis.title}
+                            </h4>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className={`text-xs ${
+                                relatedAnalysis.relationshipType === 'same_project' ? 'bg-blue-100 text-blue-800' :
+                                relatedAnalysis.relationshipType === 'similar_content' ? 'bg-green-100 text-green-800' :
+                                relatedAnalysis.relationshipType === 'follow_up' ? 'bg-purple-100 text-purple-800' :
+                                'bg-orange-100 text-orange-800'
+                              }`}>
+                                {relatedAnalysis.relationshipType === 'same_project' ? 'Same Project' :
+                                 relatedAnalysis.relationshipType === 'similar_content' ? 'Similar Content' :
+                                 relatedAnalysis.relationshipType === 'follow_up' ? 'Follow Up' :
+                                 'Comparison'}
+                              </Badge>
+                              <Badge variant="outline" className="text-xs capitalize">
+                                {relatedAnalysis.type}
+                              </Badge>
+                              <span className="text-xs text-gray-500">
+                                {Math.round(relatedAnalysis.confidenceScore * 100)}% confidence
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-1 ml-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                              onMouseEnter={() => handlePreviewAnalysis(relatedAnalysis)}
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              Preview
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              onClick={() => handleViewAnalysis(relatedAnalysis)}
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              Open
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {format(new Date(relatedAnalysis.date), 'MMM d, yyyy')}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {formatDistanceToNow(new Date(relatedAnalysis.date), { addSuffix: true })}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
               ))}
             </div>
           </CardContent>

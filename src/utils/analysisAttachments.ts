@@ -3,7 +3,7 @@
 
 export interface AnalysisAttachment {
   id: string;
-  type: 'image' | 'url' | 'file';
+  type: 'image' | 'link' | 'file';
   name: string;
   url?: string;
   file?: File;
@@ -17,6 +17,10 @@ export interface AnalysisAttachment {
     };
   };
   thumbnailUrl?: string;
+  file_name?: string;
+  file_path?: string;
+  file_size?: number;
+  created_at?: string;
 }
 
 export interface AnalysisScreenshot {
@@ -24,6 +28,12 @@ export interface AnalysisScreenshot {
   url: string;
   type: 'desktop' | 'mobile' | 'tablet';
   timestamp: string;
+  name?: string;
+  file_name?: string;
+  file_path?: string;
+  file_size?: number;
+  created_at?: string;
+  thumbnailUrl?: string;
 }
 
 // Utility function to extract URLs that were analyzed from analysis data
@@ -82,13 +92,16 @@ export const getAttachmentsFromAnalysis = (analysis: any): AnalysisAttachment[] 
     urls.forEach((url, index) => {
       attachments.push({
         id: `url-${index}`,
-        type: 'url',
+        type: 'link',
         name: new URL(url).hostname,
         url,
         status: 'uploaded',
         metadata: {
           description: `Analyzed website: ${url}`
-        }
+        },
+        file_name: new URL(url).hostname,
+        file_path: url,
+        created_at: analysis.created_at || new Date().toISOString()
       });
     });
     
@@ -101,7 +114,11 @@ export const getAttachmentsFromAnalysis = (analysis: any): AnalysisAttachment[] 
           name: attachment.name || `Attachment ${index + 1}`,
           url: attachment.url,
           status: 'uploaded',
-          metadata: attachment.metadata
+          metadata: attachment.metadata,
+          file_name: attachment.name || `Attachment ${index + 1}`,
+          file_path: attachment.url,
+          file_size: attachment.file_size,
+          created_at: attachment.created_at || analysis.created_at || new Date().toISOString()
         });
       });
     }
@@ -211,7 +228,12 @@ export const extractScreenshotsFromChatAnalysis = (analysis: any): AnalysisScree
     id: 'screenshot-0',
     url: screenshot,
     type: 'desktop',
-    timestamp: analysis.created_at || new Date().toISOString()
+    timestamp: analysis.created_at || new Date().toISOString(),
+    name: 'Screenshot',
+    file_name: 'screenshot.png',
+    file_path: screenshot,
+    created_at: analysis.created_at || new Date().toISOString(),
+    thumbnailUrl: screenshot
   }] : [];
 };
 
