@@ -60,6 +60,7 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
   
   const chatState = useChatState();
   
+  // Ensure all required setters are available
   if (!chatState.setAttachments || !chatState.setMessages || !chatState.setMessage) {
     console.error('🚨 CHAT STATE PROVIDER - Chat state functions not available!');
     throw new Error('Chat state not properly initialized');

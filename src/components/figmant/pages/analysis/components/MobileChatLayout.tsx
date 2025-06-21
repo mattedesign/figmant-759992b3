@@ -4,33 +4,43 @@ import { AnalysisChatContainer } from './AnalysisChatContainer';
 import { URLInputHandler } from './URLInputHandler';
 import { useChatStateContext } from './ChatStateProvider';
 import { ChatAttachmentHandlers } from './ChatAttachmentHandlers';
+import { useMessageHandler } from '../useMessageHandler';
 
 export const MobileChatLayout: React.FC = () => {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const {
     messages,
-    isAnalyzing,
+    setMessages,
     message,
     setMessage,
     attachments,
+    setAttachments,
     templates,
     setSelectedTemplateId,
     getCurrentTemplate
   } = useChatStateContext();
 
+  // Use the message handler hook for proper send functionality
+  const {
+    isAnalyzing,
+    canSend,
+    handleSendMessage: sendMessage,
+    handleKeyPress
+  } = useMessageHandler({
+    message,
+    setMessage,
+    attachments,
+    setAttachments,
+    messages,
+    setMessages,
+    selectedPromptTemplate: getCurrentTemplate(),
+    chatMode: 'analyze'
+  });
+
   const handleSendMessage = async () => {
-    // Implementation will be moved here from UnifiedChatContainer
-    console.log('🚀 MOBILE LAYOUT - Send message');
+    console.log('🚀 MOBILE LAYOUT - Send message triggered');
+    await sendMessage();
   };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const canSend = message.trim().length > 0 || attachments.length > 0;
 
   const handleTemplateSelect = (templateId: string) => {
     if (setSelectedTemplateId) {
@@ -73,7 +83,6 @@ export const MobileChatLayout: React.FC = () => {
             onRemoveAttachment={attachmentHandlers.removeAttachment}
           />
           
-          {/* URL Input Handler for Mobile */}
           <URLInputHandler
             showUrlInput={showUrlInput}
             onClose={() => setShowUrlInput(false)}

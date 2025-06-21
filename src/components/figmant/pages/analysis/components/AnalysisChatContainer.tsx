@@ -2,13 +2,11 @@
 import React from 'react';
 import { AnalysisChatInput } from '../AnalysisChatInput';
 import { ChatMessage } from '@/components/design/DesignChatInterface';
-import { useAnalysisChatHandler } from '../hooks/useAnalysisChatHandler';
 
 interface AnalysisChatContainerProps {
   messages: ChatMessage[];
   message: string;
   setMessage: (message: string) => void;
-  setMessages?: (messages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => void; // Made optional
   getCurrentTemplate: () => any;
   onFileUpload: (files: FileList) => void;
   onToggleUrlInput: () => void;
@@ -23,9 +21,9 @@ interface AnalysisChatContainerProps {
   attachments: any[];
   onRemoveAttachment: (id: string) => void;
   isAnalyzing?: boolean;
-  onSendMessage?: () => void;
-  onKeyPress?: (e: React.KeyboardEvent) => void;
-  canSend?: boolean;
+  onSendMessage: () => void;
+  onKeyPress: (e: React.KeyboardEvent) => void;
+  canSend: boolean;
   onShowHistory?: () => void;
   currentSessionName?: string;
 }
@@ -34,7 +32,6 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   messages,
   message,
   setMessage,
-  setMessages,
   getCurrentTemplate,
   onFileUpload,
   onToggleUrlInput,
@@ -57,32 +54,13 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
 }) => {
   const selectedTemplate = getCurrentTemplate();
 
-  // Only use the hook if setMessages is provided (internal chat management)
-  const shouldUseInternalHandler = !!setMessages;
-  const {
-    handleSendMessage,
-    handleKeyPress,
-    canSend: hookCanSend,
-    isAnalyzing: hookIsAnalyzing
-  } = useAnalysisChatHandler(message, setMessage, messages, setMessages || (() => {}),
-  // Provide fallback
-  attachments, newAttachments => {
-    // This will be handled by parent component
-  }, selectedTemplate);
-
-  // Use props if provided, otherwise use hook values (only if internal handler should be used)
-  const finalSendMessage = onSendMessage || (shouldUseInternalHandler ? handleSendMessage : () => {});
-  const finalKeyPress = onKeyPress || (shouldUseInternalHandler ? handleKeyPress : () => {});
-  const finalCanSend = canSend !== undefined ? canSend : shouldUseInternalHandler ? hookCanSend : false;
-  const analyzing = isAnalyzing || (shouldUseInternalHandler ? hookIsAnalyzing : false);
   console.log('📋 ANALYSIS CHAT CONTAINER - Rendering with:', {
     messagesCount: messages.length,
     attachmentsCount: attachments.length,
     templatesCount: availableTemplates.length,
     selectedTemplate: selectedTemplate?.title || 'None',
-    isAnalyzing: analyzing,
-    hasSetMessages: !!setMessages,
-    shouldUseInternalHandler
+    isAnalyzing,
+    canSend
   });
   
   return (
@@ -110,7 +88,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         )}
         
         {/* Loading indicator */}
-        {analyzing && (
+        {isAnalyzing && (
           <div className="flex justify-start">
             <div className="bg-muted p-3 rounded-lg">
               <div className="flex items-center space-x-2">
@@ -127,11 +105,11 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         <AnalysisChatInput
           message={message}
           setMessage={setMessage}
-          onSendMessage={finalSendMessage}
-          onKeyPress={finalKeyPress}
+          onSendMessage={onSendMessage}
+          onKeyPress={onKeyPress}
           selectedPromptTemplate={selectedTemplate}
-          canSend={finalCanSend}
-          isAnalyzing={analyzing}
+          canSend={canSend}
+          isAnalyzing={isAnalyzing}
           onFileUpload={onFileUpload}
           onToggleUrlInput={onToggleUrlInput}
           onTemplateSelect={onTemplateSelect}
