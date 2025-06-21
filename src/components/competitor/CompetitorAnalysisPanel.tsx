@@ -25,11 +25,12 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
   const [urls, setUrls] = useState<string[]>(['']);
   const [analysisGoals, setAnalysisGoals] = useState('');
   const [results, setResults] = useState<CompetitorAnalysisData[]>([]);
+  const [error, setError] = useState<string | null>(null);
   
   const {
-    analyzeCompetitors,
-    isAnalyzing,
-    error
+    analyzeMultipleCompetitors,
+    isProcessing,
+    analysisData
   } = useCompetitorAnalysis();
 
   const addUrlField = () => {
@@ -52,6 +53,8 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
     if (validUrls.length === 0) return;
 
     try {
+      setError(null);
+      
       // Create enhanced analysis goals that include template context
       let enhancedGoals = analysisGoals;
       
@@ -73,11 +76,12 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
         }
       }
 
-      const analysisResults = await analyzeCompetitors(validUrls, enhancedGoals);
+      const analysisResults = await analyzeMultipleCompetitors(validUrls);
       setResults(analysisResults);
       onAnalysisComplete?.(analysisResults);
     } catch (err) {
       console.error('Analysis failed:', err);
+      setError(err instanceof Error ? err.message : 'Analysis failed');
     }
   };
 
@@ -91,7 +95,7 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
   };
 
   const validUrls = urls.filter(url => url.trim() !== '' && isValidUrl(url.trim()));
-  const canAnalyze = validUrls.length > 0 && !isAnalyzing;
+  const canAnalyze = validUrls.length > 0 && !isProcessing;
 
   return (
     <div className="space-y-6">
@@ -201,7 +205,7 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
             className="w-full"
             size="lg"
           >
-            {isAnalyzing ? (
+            {isProcessing ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Analyzing Competitors...
@@ -220,7 +224,7 @@ export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = (
             </div>
           )}
           
-          {!canAnalyze && !isAnalyzing && (
+          {!canAnalyze && !isProcessing && (
             <p className="text-xs text-gray-500 mt-2 text-center">
               {validUrls.length === 0 ? 'Enter at least one valid competitor URL to start analysis' : 'Analysis in progress...'}
             </p>
