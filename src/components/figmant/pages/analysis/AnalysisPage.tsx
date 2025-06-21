@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { AnalysisChatPanel } from './AnalysisChatPanel';
 import { useChatState } from './ChatStateManager';
@@ -95,8 +94,8 @@ export const AnalysisPage: React.FC = () => {
     if (!urlInput.trim()) {
       toast({
         variant: "destructive",
-        title: "Invalid URL",
-        description: "Please enter a valid URL.",
+        title: "Empty URL",
+        description: "Please enter a website URL.",
       });
       return;
     }
@@ -229,7 +228,7 @@ export const AnalysisPage: React.FC = () => {
       toast({
         variant: "destructive",
         title: "Invalid URL",
-        description: "Please enter a valid website URL.",
+        description: "Please enter a valid website URL (e.g., example.com)",
       });
     }
   };
