@@ -24,10 +24,30 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
 
   useEffect(() => {
     const loadImage = async () => {
+      if (!attachment) {
+        setHasError(true);
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       setHasError(false);
       
       try {
+        // First try to get screenshot URL for URL attachments
+        if (attachment.type === 'url') {
+          const screenshotUrl = ImageService.getScreenshotUrl(attachment);
+          if (screenshotUrl) {
+            const isValid = await ImageService.validateImageUrl(screenshotUrl);
+            if (isValid) {
+              setImageUrl(screenshotUrl);
+              setIsLoading(false);
+              return;
+            }
+          }
+        }
+
+        // Fallback to general image URL resolution
         const url = await ImageService.getBestImageUrl(attachment);
         if (url) {
           setImageUrl(url);
@@ -42,9 +62,7 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
       }
     };
 
-    if (attachment) {
-      loadImage();
-    }
+    loadImage();
   }, [attachment]);
 
   const handleImageError = () => {

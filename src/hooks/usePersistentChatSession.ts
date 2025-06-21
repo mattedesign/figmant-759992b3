@@ -1,251 +1,226 @@
+
 import { useState, useEffect, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChatSessionService, ChatSession, ChatAttachmentRecord, ChatLinkRecord } from '@/services/chatSessionService';
+import { supabase } from '@/integrations/supabase/client';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { ChatSessionService } from '@/services/chatSessionService';
+
+interface ChatSession {
+  id: string;
+  session_name?: string;
+  created_at: string;
+  last_activity: string;
+  is_active: boolean;
+}
 
 export const usePersistentChatSession = () => {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [sessionAttachments, setSessionAttachments] = useState<any[]>([]);
+  const [sessionLinks, setSessionLinks] = useState<any[]>([]);
   const [isSessionInitialized, setIsSessionInitialized] = useState(false);
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Query for user's chat sessions
-  const { data: sessions = [], isLoading: sessionsLoading } = useQuery({
-    queryKey: ['chat-sessions', user?.id],
-    queryFn: () => ChatSessionService.getSessionsByUser(),
-    enabled: !!user
-  });
-
-  // Query for current session's attachments
-  const { data: sessionAttachments = [] } = useQuery({
-    queryKey: ['session-attachments', currentSessionId],
-    queryFn: () => currentSessionId ? ChatSessionService.getSessionAttachments(currentSessionId) : [],
-    enabled: !!currentSessionId
-  });
-
-  // Query for current session's links
-  const { data: sessionLinks = [] } = useQuery({
-    queryKey: ['session-links', currentSessionId],
-    queryFn: () => currentSessionId ? ChatSessionService.getSessionLinks(currentSessionId) : [],
-    enabled: !!currentSessionId
-  });
-
-  // Mutation for creating a new session
-  const createSessionMutation = useMutation({
-    mutationFn: (sessionName?: string) => ChatSessionService.createSession(sessionName),
-    onSuccess: (session) => {
+  // Create new session
+  const createNewSession = useCallback(async (sessionName?: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const session = await ChatSessionService.createSession(sessionName);
       if (session) {
         setCurrentSessionId(session.id);
+        setCurrentSession(session);
+        setSessionAttachments([]);
+        setSessionLinks([]);
         setIsSessionInitialized(true);
-        queryClient.invalidateQueries({ queryKey: ['chat-sessions'] });
         
-        toast({
-          title: "New Chat Session",
-          description: `Started new chat: ${session.session_name}`,
-        });
+        // Refresh sessions list
+        loadUserSessions();
       }
-    },
-    onError: (error) => {
-      console.error('Failed to create session:', error);
-      toast({
-        variant: "destructive",
-        title: "Session Creation Failed",
-        description: "Unable to create new chat session. Please try again.",
-      });
+    } catch (error) {
+      console.error('Error creating session:', error);
+      setError('Failed to create new session');
+    } finally {
+      setIsLoading(false);
     }
-  });
+  }, []);
 
-  // Mutation for saving attachments
-  const saveAttachmentMutation = useMutation({
-    mutationFn: async ({ 
-      file, 
-      messageId 
-    }: { 
-      file: File; 
-      messageId: string; 
-    }) => {
-      if (!currentSessionId) throw new Error('No active session');
-      
-      // Upload file to storage
-      const filePath = await ChatSessionService.uploadFileToStorage(file, currentSessionId);
-      if (!filePath) throw new Error('File upload failed');
+  // Load user sessions safely with error handling
+  const loadUserSessions = useCallback(async () => {
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) return;
 
-      // Save attachment record
-      return ChatSessionService.saveAttachment(
-        currentSessionId,
-        messageId,
-        file.name,
-        filePath,
-        file.size,
-        file.type
-      );
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['session-attachments', currentSessionId] });
-    },
-    onError: (error) => {
-      console.error('Failed to save attachment:', error);
-      toast({
-        variant: "destructive",
-        title: "Attachment Save Failed",
-        description: "Unable to save file attachment. Please try again.",
+      // Use the new safe function to prevent infinite loops
+      const { data, error } = await supabase.rpc('get_user_sessions_safe', {
+        p_user_id: user.id
       });
-    }
-  });
 
-  // Mutation for saving links
-  const saveLinkMutation = useMutation({
-    mutationFn: ({ 
-      url, 
-      messageId,
-      title,
-      description,
-      thumbnail 
-    }: { 
-      url: string; 
-      messageId: string;
-      title?: string;
-      description?: string;
-      thumbnail?: string;
-    }) => {
-      if (!currentSessionId) throw new Error('No active session');
-      
-      return ChatSessionService.saveLink(
-        currentSessionId,
-        messageId,
-        url,
-        title,
-        description,
-        thumbnail
-      );
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['session-links', currentSessionId] });
-    },
-    onError: (error) => {
-      console.error('Failed to save link:', error);
-      toast({
-        variant: "destructive",
-        title: "Link Save Failed",
-        description: "Unable to save link. Please try again.",
-      });
-    }
-  });
+      if (error) {
+        console.error('Error loading sessions:', error);
+        setError('Failed to load sessions');
+        return;
+      }
 
-  // Initialize or create session on component mount
-  useEffect(() => {
-    if (user && !isSessionInitialized && !sessionsLoading) {
-      // Check if there's a recent active session
-      const recentSession = sessions.find(s => s.is_active);
+      setSessions(data || []);
+    } catch (error) {
+      console.error('Error in loadUserSessions:', error);
+      setError('Failed to load sessions');
+    }
+  }, []);
+
+  // Switch to existing session
+  const switchToSession = useCallback(async (sessionId: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
       
-      if (recentSession) {
-        setCurrentSessionId(recentSession.id);
+      const session = sessions.find(s => s.id === sessionId);
+      if (session) {
+        setCurrentSessionId(sessionId);
+        setCurrentSession(session);
+        await loadSessionData(sessionId);
         setIsSessionInitialized(true);
-        
-        // Update activity for this session
-        ChatSessionService.updateSessionActivity(recentSession.id);
+      }
+    } catch (error) {
+      console.error('Error switching session:', error);
+      setError('Failed to switch session');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [sessions]);
+
+  // Load session data safely
+  const loadSessionData = useCallback(async (sessionId: string) => {
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) return;
+
+      // Load attachments safely
+      const { data: attachments, error: attachError } = await supabase.rpc('get_session_attachments_safe', {
+        p_session_id: sessionId,
+        p_user_id: user.id
+      });
+
+      if (attachError) {
+        console.error('Error loading attachments:', attachError);
       } else {
-        // Create a new session with default name
-        createSessionMutation.mutate(`Chat ${new Date().toLocaleDateString()}`);
+        setSessionAttachments(attachments || []);
       }
-    }
-  }, [user, sessions, sessionsLoading, isSessionInitialized, createSessionMutation]);
 
-  const createNewSession = useCallback((sessionName?: string) => {
-    createSessionMutation.mutate(sessionName);
-  }, [createSessionMutation]);
-
-  const switchToSession = useCallback((sessionId: string) => {
-    setCurrentSessionId(sessionId);
-    ChatSessionService.updateSessionActivity(sessionId);
-    
-    const session = sessions.find(s => s.id === sessionId);
-    if (session) {
-      toast({
-        title: "Switched Chat Session",
-        description: `Now viewing: ${session.session_name}`,
+      // Load links safely
+      const { data: links, error: linksError } = await supabase.rpc('get_session_links_safe', {
+        p_session_id: sessionId,
+        p_user_id: user.id
       });
-    }
-  }, [sessions, toast]);
 
-  const saveAttachmentFromMessage = useCallback(async (
-    attachment: ChatAttachment,
-    messageId: string
-  ) => {
-    if (!attachment.file || !currentSessionId) return;
-    
-    try {
-      await saveAttachmentMutation.mutateAsync({
-        file: attachment.file,
-        messageId
-      });
-    } catch (error) {
-      console.error('Error saving attachment:', error);
-    }
-  }, [currentSessionId, saveAttachmentMutation]);
-
-  const saveLinkFromMessage = useCallback(async (
-    attachment: ChatAttachment,
-    messageId: string
-  ) => {
-    if (!attachment.url || !currentSessionId) return;
-    
-    try {
-      await saveLinkMutation.mutateAsync({
-        url: attachment.url,
-        messageId,
-        title: attachment.name
-      });
-    } catch (error) {
-      console.error('Error saving link:', error);
-    }
-  }, [currentSessionId, saveLinkMutation]);
-
-  const saveMessageAttachments = useCallback(async (
-    message: ChatMessage
-  ) => {
-    if (!message.attachments || message.attachments.length === 0) return;
-
-    // Save each attachment
-    for (const attachment of message.attachments) {
-      if (attachment.type === 'file' && attachment.file) {
-        await saveAttachmentFromMessage(attachment, message.id);
-      } else if (attachment.type === 'url' && attachment.url) {
-        await saveLinkFromMessage(attachment, message.id);
+      if (linksError) {
+        console.error('Error loading links:', linksError);
+      } else {
+        setSessionLinks(links || []);
       }
+    } catch (error) {
+      console.error('Error loading session data:', error);
+      setError('Failed to load session data');
+    }
+  }, []);
+
+  // Save message attachments
+  const saveMessageAttachments = useCallback(async (message: ChatMessage) => {
+    if (!currentSessionId || !message.attachments || message.attachments.length === 0) {
+      return;
     }
 
-    // Update session activity
-    if (currentSessionId) {
-      ChatSessionService.updateSessionActivity(currentSessionId);
+    try {
+      for (const attachment of message.attachments) {
+        if (attachment.type === 'file' && attachment.uploadPath) {
+          await ChatSessionService.saveAttachment(
+            currentSessionId,
+            message.id,
+            attachment.name,
+            attachment.uploadPath,
+            attachment.file?.size,
+            attachment.file?.type
+          );
+        } else if (attachment.type === 'url' && attachment.url) {
+          await ChatSessionService.saveLink(
+            currentSessionId,
+            message.id,
+            attachment.url,
+            attachment.name
+          );
+        }
+      }
+      
+      // Refresh session data
+      await loadSessionData(currentSessionId);
+    } catch (error) {
+      console.error('Error saving message attachments:', error);
     }
-  }, [currentSessionId, saveAttachmentFromMessage, saveLinkFromMessage]);
+  }, [currentSessionId, loadSessionData]);
 
-  const currentSession = sessions.find(s => s.id === currentSessionId);
+  // Initialize session on mount
+  useEffect(() => {
+    let mounted = true;
+    
+    const initializeSession = async () => {
+      try {
+        const user = (await supabase.auth.getUser()).data.user;
+        if (!user || !mounted) return;
+
+        await loadUserSessions();
+        
+        if (!mounted) return;
+
+        // Create a default session if none exist
+        if (sessions.length === 0) {
+          await createNewSession('Default Session');
+        } else if (!currentSessionId) {
+          // Use the most recent session
+          const mostRecent = sessions[0];
+          if (mostRecent) {
+            setCurrentSessionId(mostRecent.id);
+            setCurrentSession(mostRecent);
+            await loadSessionData(mostRecent.id);
+            setIsSessionInitialized(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing session:', error);
+        if (mounted) {
+          setError('Failed to initialize session');
+        }
+      }
+    };
+
+    initializeSession();
+    
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Load session data when switching sessions
+  useEffect(() => {
+    if (currentSessionId && currentSession) {
+      loadSessionData(currentSessionId);
+    }
+  }, [currentSessionId, loadSessionData]);
 
   return {
-    // Session management
     currentSessionId,
     currentSession,
     sessions,
-    sessionsLoading,
-    isSessionInitialized,
-    
-    // Session operations
-    createNewSession,
-    switchToSession,
-    
-    // Attachment operations
-    saveMessageAttachments,
     sessionAttachments,
     sessionLinks,
-    
-    // Loading states
-    isCreatingSession: createSessionMutation.isPending,
-    isSavingAttachment: saveAttachmentMutation.isPending,
-    isSavingLink: saveLinkMutation.isPending
+    isSessionInitialized,
+    isLoading,
+    error,
+    createNewSession,
+    switchToSession,
+    saveMessageAttachments,
+    loadUserSessions
   };
 };

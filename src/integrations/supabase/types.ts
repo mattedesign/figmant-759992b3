@@ -1314,11 +1314,43 @@ export type Database = {
           fallback_logo_url: string
         }[]
       }
+      get_session_attachments_safe: {
+        Args: { p_session_id: string; p_user_id: string }
+        Returns: {
+          id: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          upload_timestamp: string
+        }[]
+      }
+      get_session_links_safe: {
+        Args: { p_session_id: string; p_user_id: string }
+        Returns: {
+          id: string
+          url: string
+          link_title: string
+          link_description: string
+          link_thumbnail: string
+          upload_timestamp: string
+        }[]
+      }
       get_user_journey_analytics: {
         Args: { days_back?: number }
         Returns: {
           step_name: string
           user_count: number
+        }[]
+      }
+      get_user_sessions_safe: {
+        Args: { p_user_id: string }
+        Returns: {
+          id: string
+          session_name: string
+          created_at: string
+          last_activity: string
+          is_active: boolean
         }[]
       }
       has_role: {

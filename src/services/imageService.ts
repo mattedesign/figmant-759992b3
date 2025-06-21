@@ -24,6 +24,8 @@ export class ImageService {
    * Resolve the best available image URL for an attachment
    */
   static resolveImageUrl(attachment: any): string | null {
+    if (!attachment) return null;
+
     // Try different URL properties in order of preference
     const urlCandidates = [
       attachment.thumbnailUrl,
@@ -49,14 +51,23 @@ export class ImageService {
    * Check if a URL is accessible by attempting to load it
    */
   static async validateImageUrl(url: string): Promise<boolean> {
+    if (!url) return false;
+    
     return new Promise((resolve) => {
       const img = new Image();
-      img.onload = () => resolve(true);
-      img.onerror = () => resolve(false);
-      img.src = url;
+      const timeoutId = setTimeout(() => resolve(false), 5000);
       
-      // Timeout after 5 seconds
-      setTimeout(() => resolve(false), 5000);
+      img.onload = () => {
+        clearTimeout(timeoutId);
+        resolve(true);
+      };
+      
+      img.onerror = () => {
+        clearTimeout(timeoutId);
+        resolve(false);
+      };
+      
+      img.src = url;
     });
   }
 
@@ -83,6 +94,25 @@ export class ImageService {
       const resolvedUrl = fallbackUrl.startsWith('http') ? fallbackUrl : this.getPublicUrl(fallbackUrl);
       const isValid = await this.validateImageUrl(resolvedUrl);
       if (isValid) return resolvedUrl;
+    }
+    
+    return null;
+  }
+
+  /**
+   * Handle screenshot metadata and return best image URL
+   */
+  static getScreenshotUrl(attachment: any): string | null {
+    // Check if we have screenshot data in metadata
+    const hasDesktopScreenshot = attachment.metadata?.screenshots?.desktop?.success;
+    const hasMobileScreenshot = attachment.metadata?.screenshots?.mobile?.success;
+    
+    if (hasDesktopScreenshot) {
+      return attachment.metadata.screenshots.desktop.thumbnailUrl || attachment.metadata.screenshots.desktop.url;
+    }
+    
+    if (hasMobileScreenshot) {
+      return attachment.metadata.screenshots.mobile.thumbnailUrl || attachment.metadata.screenshots.mobile.url;
     }
     
     return null;

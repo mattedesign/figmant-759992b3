@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { X, ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react';
 import { EnhancedImage } from '../pages/analysis/components/EnhancedImage';
@@ -43,10 +43,15 @@ export const ScreenshotModal: React.FC<ScreenshotModalProps> = ({
       <DialogContent className="max-w-4xl max-h-[90vh] p-0">
         <DialogHeader className="p-4 border-b">
           <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2">
-              <ImageIcon className="h-5 w-5" />
-              Screenshot Preview
-            </DialogTitle>
+            <div>
+              <DialogTitle className="flex items-center gap-2">
+                <ImageIcon className="h-5 w-5" />
+                Screenshot Preview
+              </DialogTitle>
+              <DialogDescription>
+                View and navigate through captured screenshots
+              </DialogDescription>
+            </div>
             <div className="flex items-center gap-2">
               {hasMultiple && onNext && onPrevious && (
                 <div className="flex items-center gap-2">

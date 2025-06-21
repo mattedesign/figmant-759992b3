@@ -38,45 +38,64 @@ export interface ChatLinkRecord {
 
 export class ChatSessionService {
   static async createSession(sessionName?: string): Promise<ChatSession | null> {
-    const { data, error } = await supabase
-      .from('chat_sessions')
-      .insert({
-        session_name: sessionName || `Chat ${new Date().toLocaleString()}`,
-        user_id: (await supabase.auth.getUser()).data.user?.id
-      })
-      .select()
-      .single();
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
 
-    if (error) {
-      console.error('Error creating chat session:', error);
+      const { data, error } = await supabase
+        .from('chat_sessions')
+        .insert({
+          session_name: sessionName || `Chat ${new Date().toLocaleString()}`,
+          user_id: user.id
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating chat session:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in createSession:', error);
       return null;
     }
-
-    return data;
   }
 
   static async getSessionsByUser(): Promise<ChatSession[]> {
-    const { data, error } = await supabase
-      .from('chat_sessions')
-      .select('*')
-      .eq('is_active', true)
-      .order('last_activity', { ascending: false });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
 
-    if (error) {
-      console.error('Error fetching chat sessions:', error);
+      // Use the safe function to prevent infinite loops
+      const { data, error } = await supabase.rpc('get_user_sessions_safe', {
+        p_user_id: user.id
+      });
+
+      if (error) {
+        console.error('Error fetching chat sessions:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in getSessionsByUser:', error);
       return [];
     }
-
-    return data || [];
   }
 
   static async updateSessionActivity(sessionId: string): Promise<void> {
-    const { error } = await supabase.rpc('update_session_activity', {
-      session_id: sessionId
-    });
+    try {
+      const { error } = await supabase.rpc('update_session_activity', {
+        session_id: sessionId
+      });
 
-    if (error) {
-      console.error('Error updating session activity:', error);
+      if (error) {
+        console.error('Error updating session activity:', error);
+      }
+    } catch (error) {
+      console.error('Error in updateSessionActivity:', error);
     }
   }
 
@@ -88,26 +107,34 @@ export class ChatSessionService {
     fileSize?: number,
     fileType?: string
   ): Promise<ChatAttachmentRecord | null> {
-    const { data, error } = await supabase
-      .from('chat_attachments')
-      .insert({
-        chat_session_id: sessionId,
-        message_id: messageId,
-        file_name: fileName,
-        file_path: filePath,
-        file_size: fileSize,
-        file_type: fileType,
-        created_by: (await supabase.auth.getUser()).data.user?.id
-      })
-      .select()
-      .single();
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
 
-    if (error) {
-      console.error('Error saving attachment:', error);
+      const { data, error } = await supabase
+        .from('chat_attachments')
+        .insert({
+          chat_session_id: sessionId,
+          message_id: messageId,
+          file_name: fileName,
+          file_path: filePath,
+          file_size: fileSize,
+          file_type: fileType,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving attachment:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in saveAttachment:', error);
       return null;
     }
-
-    return data;
   }
 
   static async saveLink(
@@ -118,63 +145,85 @@ export class ChatSessionService {
     description?: string,
     thumbnail?: string
   ): Promise<ChatLinkRecord | null> {
-    const { data, error } = await supabase
-      .from('chat_links')
-      .insert({
-        chat_session_id: sessionId,
-        message_id: messageId,
-        url,
-        link_title: title,
-        link_description: description,
-        link_thumbnail: thumbnail,
-        created_by: (await supabase.auth.getUser()).data.user?.id
-      })
-      .select()
-      .single();
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
 
-    if (error) {
-      console.error('Error saving link:', error);
+      const { data, error } = await supabase
+        .from('chat_links')
+        .insert({
+          chat_session_id: sessionId,
+          message_id: messageId,
+          url,
+          link_title: title,
+          link_description: description,
+          link_thumbnail: thumbnail,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving link:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in saveLink:', error);
       return null;
     }
-
-    return data;
   }
 
   static async getSessionAttachments(sessionId: string): Promise<ChatAttachmentRecord[]> {
-    const { data, error } = await supabase
-      .from('chat_attachments')
-      .select('*')
-      .eq('chat_session_id', sessionId)
-      .eq('is_active', true)
-      .order('upload_timestamp', { ascending: false });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
 
-    if (error) {
-      console.error('Error fetching session attachments:', error);
+      // Use the safe function to prevent infinite loops
+      const { data, error } = await supabase.rpc('get_session_attachments_safe', {
+        p_session_id: sessionId,
+        p_user_id: user.id
+      });
+
+      if (error) {
+        console.error('Error fetching session attachments:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in getSessionAttachments:', error);
       return [];
     }
-
-    return data || [];
   }
 
   static async getSessionLinks(sessionId: string): Promise<ChatLinkRecord[]> {
-    const { data, error } = await supabase
-      .from('chat_links')
-      .select('*')
-      .eq('chat_session_id', sessionId)
-      .eq('is_active', true)
-      .order('upload_timestamp', { ascending: false });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
 
-    if (error) {
-      console.error('Error fetching session links:', error);
+      // Use the safe function to prevent infinite loops
+      const { data, error } = await supabase.rpc('get_session_links_safe', {
+        p_session_id: sessionId,
+        p_user_id: user.id
+      });
+
+      if (error) {
+        console.error('Error fetching session links:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in getSessionLinks:', error);
       return [];
     }
-
-    return data || [];
   }
 
   static async uploadFileToStorage(file: File, sessionId: string): Promise<string | null> {
     try {
-      const user = (await supabase.auth.getUser()).data.user;
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
       const fileExt = file.name.split('.').pop();
@@ -182,7 +231,7 @@ export class ChatSessionService {
       const filePath = `${user.id}/${sessionId}/${fileName}`;
 
       const { data, error } = await supabase.storage
-        .from('chat-attachments')
+        .from('design-uploads')
         .upload(filePath, file);
 
       if (error) {
@@ -200,7 +249,7 @@ export class ChatSessionService {
   static async getFileUrl(filePath: string): Promise<string | null> {
     try {
       const { data } = supabase.storage
-        .from('chat-attachments')
+        .from('design-uploads')
         .getPublicUrl(filePath);
 
       return data.publicUrl;
