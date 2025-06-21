@@ -13,7 +13,6 @@ import { SearchPage } from './pages/SearchPage';
 import { CreditsPage } from './pages/CreditsPage';
 import { PreferencesPage } from './pages/PreferencesPage';
 import { AdminPage } from './pages/AdminPage';
-import { CompetitorAnalysisPage } from './pages/analysis/CompetitorAnalysisPage';
 
 interface FigmantMainContentProps {
   activeSection: string;
@@ -53,8 +52,8 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
         return <DashboardPage />;
       
       case 'competitor-analysis':
-        // UC-024 - AI Competitor Analysis - Dedicated competitor analysis page
-        return <CompetitorAnalysisPage />;
+        // UC-024 - AI Competitor Analysis
+        return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
       
       case 'wizard-analysis':
         // Direct to stepped wizard process
@@ -82,8 +81,8 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       // Legacy routes - maintain backward compatibility during transition
       case 'chat':
       case 'analysis':
-        // These now redirect to regular analysis management
-        return <AnalysisPage selectedTemplate={location.state?.selectedTemplate} />;
+        // These now redirect to competitor-analysis
+        return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
       
       case 'wizard':
         // This now redirects to wizard-analysis

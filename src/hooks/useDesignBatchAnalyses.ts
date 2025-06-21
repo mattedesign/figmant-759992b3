@@ -24,7 +24,7 @@ export const useDesignBatchAnalyses = (batchId?: string) => {
       
       // Ensure all batch analyses have at least a basic impact summary for display
       const processedData = (data || []).map(analysis => {
-        if (!(analysis as any).impact_summary && analysis.analysis_results) {
+        if (!analysis.impact_summary && analysis.analysis_results) {
           // Create a minimal impact summary for display purposes
           const basicSummary = {
             key_metrics: {

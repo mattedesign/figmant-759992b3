@@ -1,236 +1,341 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { 
+  Target, 
+  Globe, 
+  Camera, 
+  CheckCircle, 
+  XCircle, 
+  Loader2, 
+  Plus, 
+  Trash2,
+  Monitor,
+  Smartphone,
+  AlertTriangle,
+  Settings,
+  TestTube
+} from 'lucide-react';
 import { useCompetitorAnalysis, CompetitorAnalysisData } from '@/hooks/useCompetitorAnalysis';
-import { ScreenshotServiceStatus } from './ScreenshotServiceStatus';
-import { FigmantPromptTemplate } from '@/types/figmant';
-import { Globe, Plus, X, Play, Loader2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ScreenshotOneConfig } from './ScreenshotOneConfig';
+import { ScreenshotOneTest } from './ScreenshotOneTest';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface CompetitorAnalysisPanelProps {
   onAnalysisComplete?: (results: CompetitorAnalysisData[]) => void;
-  selectedTemplate?: FigmantPromptTemplate | null;
-  templateContext?: Record<string, any>;
 }
 
 export const CompetitorAnalysisPanel: React.FC<CompetitorAnalysisPanelProps> = ({
-  onAnalysisComplete,
-  selectedTemplate,
-  templateContext = {}
+  onAnalysisComplete
 }) => {
-  const [urls, setUrls] = useState<string[]>(['']);
-  const [analysisGoals, setAnalysisGoals] = useState('');
-  const [results, setResults] = useState<CompetitorAnalysisData[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [urlInput, setUrlInput] = useState('');
+  const [urlList, setUrlList] = useState<string[]>([]);
+  const [showConfig, setShowConfig] = useState(false);
+  const [showTest, setShowTest] = useState(false);
   
   const {
-    analyzeMultipleCompetitors,
+    analysisData,
     isProcessing,
-    analysisData
+    analyzeMultipleCompetitors,
+    clearAnalysis,
+    removeCompetitor
   } = useCompetitorAnalysis();
 
-  const addUrlField = () => {
-    setUrls([...urls, '']);
-  };
-
-  const removeUrlField = (index: number) => {
-    const newUrls = urls.filter((_, i) => i !== index);
-    setUrls(newUrls.length > 0 ? newUrls : ['']);
-  };
-
-  const updateUrl = (index: number, value: string) => {
-    const newUrls = [...urls];
-    newUrls[index] = value;
-    setUrls(newUrls);
-  };
-
-  const handleAnalyze = async () => {
-    const validUrls = urls.filter(url => url.trim() !== '');
-    if (validUrls.length === 0) return;
-
-    try {
-      setError(null);
-      
-      // Create enhanced analysis goals that include template context
-      let enhancedGoals = analysisGoals;
-      
-      if (selectedTemplate) {
-        enhancedGoals = `Template: ${selectedTemplate.displayName}\n\n`;
-        
-        if (Object.keys(templateContext).length > 0) {
-          enhancedGoals += 'Analysis Context:\n';
-          Object.entries(templateContext).forEach(([key, value]) => {
-            enhancedGoals += `- ${key.replace(/([A-Z])/g, ' $1').trim()}: ${value}\n`;
-          });
-          enhancedGoals += '\n';
-        }
-        
-        enhancedGoals += `Focus Areas: ${selectedTemplate.analysis_focus?.join(', ') || 'General analysis'}\n\n`;
-        
-        if (analysisGoals) {
-          enhancedGoals += `Additional Goals: ${analysisGoals}`;
-        }
-      }
-
-      const analysisResults = await analyzeMultipleCompetitors(validUrls);
-      setResults(analysisResults);
-      onAnalysisComplete?.(analysisResults);
-    } catch (err) {
-      console.error('Analysis failed:', err);
-      setError(err instanceof Error ? err.message : 'Analysis failed');
+  const addURL = () => {
+    const trimmedUrl = urlInput.trim();
+    if (trimmedUrl && !urlList.includes(trimmedUrl)) {
+      setUrlList(prev => [...prev, trimmedUrl]);
+      setUrlInput('');
     }
   };
 
-  const isValidUrl = (url: string) => {
+  const removeURL = (url: string) => {
+    setUrlList(prev => prev.filter(u => u !== url));
+  };
+
+  const startAnalysis = async () => {
+    if (urlList.length === 0) return;
+    
     try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
+      const results = await analyzeMultipleCompetitors(urlList);
+      onAnalysisComplete?.(results);
+    } catch (error) {
+      console.error('Analysis failed:', error);
     }
   };
 
-  const validUrls = urls.filter(url => url.trim() !== '' && isValidUrl(url.trim()));
-  const canAnalyze = validUrls.length > 0 && !isProcessing;
+  const getStatusIcon = (status: CompetitorAnalysisData['status']) => {
+    switch (status) {
+      case 'pending':
+        return <Globe className="h-4 w-4 text-gray-400" />;
+      case 'validating':
+        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
+      case 'capturing':
+        return <Camera className="h-4 w-4 text-yellow-500" />;
+      case 'completed':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'failed':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+    }
+  };
+
+  const getStatusText = (status: CompetitorAnalysisData['status']) => {
+    switch (status) {
+      case 'pending':
+        return 'Pending';
+      case 'validating':
+        return 'Validating URL...';
+      case 'capturing':
+        return 'Capturing Screenshots...';
+      case 'completed':
+        return 'Analysis Complete';
+      case 'failed':
+        return 'Analysis Failed';
+    }
+  };
+
+  const calculateProgress = () => {
+    if (analysisData.length === 0) return 0;
+    const completed = analysisData.filter(item => 
+      item.status === 'completed' || item.status === 'failed'
+    ).length;
+    return (completed / analysisData.length) * 100;
+  };
+
+  const apiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
 
   return (
-    <div className="space-y-6">
-      {/* Service Status */}
-      <ScreenshotServiceStatus />
+    <Card className="w-full">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-blue-600" />
+            Competitor Analysis - Market Positioning
+          </CardTitle>
+          <div className="flex gap-2">
+            {apiKey && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTest(!showTest)}
+              >
+                <TestTube className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowConfig(!showConfig)}
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
 
-      {/* Template Info */}
-      {selectedTemplate && (
-        <Card className="bg-blue-50 border-blue-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Globe className="h-4 w-4 text-blue-600" />
-              Selected Template: {selectedTemplate.displayName}
-            </CardTitle>
-            <CardDescription className="text-sm">
-              {selectedTemplate.description}
-            </CardDescription>
-          </CardHeader>
-          {selectedTemplate.analysis_focus && selectedTemplate.analysis_focus.length > 0 && (
-            <CardContent className="pt-0">
-              <div className="flex flex-wrap gap-2">
-                {selectedTemplate.analysis_focus.map((focus, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
-                    {focus}
-                  </Badge>
+      <CardContent className="space-y-6">
+        {/* Configuration Section */}
+        <Collapsible open={showConfig} onOpenChange={setShowConfig}>
+          <CollapsibleContent>
+            <ScreenshotOneConfig className="mb-4" />
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Test Section */}
+        {apiKey && (
+          <Collapsible open={showTest} onOpenChange={setShowTest}>
+            <CollapsibleContent>
+              <ScreenshotOneTest />
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+
+        {/* URL Input Section */}
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              placeholder="https://competitor-website.com"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && addURL()}
+            />
+            <Button onClick={addURL} disabled={!urlInput.trim()}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add
+            </Button>
+          </div>
+
+          {/* URL List */}
+          {urlList.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Competitors to Analyze ({urlList.length})</h4>
+              <div className="space-y-2">
+                {urlList.map((url, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <span className="text-sm truncate flex-1">{url}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeURL(url)}
+                      className="h-6 w-6 p-0"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 ))}
               </div>
-            </CardContent>
-          )}
-        </Card>
-      )}
-
-      {/* URL Input Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Competitor Websites</CardTitle>
-          <CardDescription>
-            Enter the URLs of competitor websites you want to analyze (3-7 recommended)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {urls.map((url, index) => (
-            <div key={index} className="flex gap-2">
-              <div className="flex-1">
-                <Input
-                  type="url"
-                  placeholder="https://competitor-website.com"
-                  value={url}
-                  onChange={(e) => updateUrl(index, e.target.value)}
-                  className={url.trim() && !isValidUrl(url.trim()) ? 'border-red-300' : ''}
-                />
-              </div>
-              {urls.length > 1 && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => removeUrlField(index)}
-                  className="flex-shrink-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
             </div>
-          ))}
-          
-          <div className="flex justify-between items-center pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={addUrlField}
-              disabled={urls.length >= 10}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add URL
-            </Button>
-            <span className="text-xs text-gray-500">
-              {validUrls.length} valid URL{validUrls.length !== 1 ? 's' : ''} entered
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+          )}
+        </div>
 
-      {/* Analysis Goals */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Additional Analysis Goals</CardTitle>
-          <CardDescription>
-            Specify any additional objectives or questions for your competitor analysis
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            placeholder="e.g., Focus on pricing strategies, identify design patterns that drive conversion, analyze mobile experience differences..."
-            value={analysisGoals}
-            onChange={(e) => setAnalysisGoals(e.target.value)}
-            rows={3}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Analysis Button */}
-      <Card>
-        <CardContent className="pt-6">
-          <Button
-            onClick={handleAnalyze}
-            disabled={!canAnalyze}
-            className="w-full"
-            size="lg"
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          <Button 
+            onClick={startAnalysis} 
+            disabled={urlList.length === 0 || isProcessing}
+            className="flex-1"
           >
             {isProcessing ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Analyzing Competitors...
+                Analyzing...
               </>
             ) : (
               <>
-                <Play className="h-4 w-4 mr-2" />
-                Start Competitor Analysis ({validUrls.length} website{validUrls.length !== 1 ? 's' : ''})
+                <Camera className="h-4 w-4 mr-2" />
+                Start Analysis
               </>
             )}
           </Button>
           
-          {error && (
-            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-700">{error}</p>
+          {analysisData.length > 0 && (
+            <Button variant="outline" onClick={clearAnalysis}>
+              Clear Results
+            </Button>
+          )}
+        </div>
+
+        {/* Progress Section */}
+        {isProcessing && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span>Analysis Progress</span>
+              <span>{Math.round(calculateProgress())}%</span>
             </div>
-          )}
-          
-          {!canAnalyze && !isProcessing && (
-            <p className="text-xs text-gray-500 mt-2 text-center">
-              {validUrls.length === 0 ? 'Enter at least one valid competitor URL to start analysis' : 'Analysis in progress...'}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            <Progress value={calculateProgress()} className="h-2" />
+          </div>
+        )}
+
+        {/* Results Section */}
+        {analysisData.length > 0 && (
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium">Analysis Results</h4>
+            <div className="space-y-3">
+              {analysisData.map((item, index) => (
+                <Card key={index} className="p-4">
+                  <div className="space-y-3">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(item.status)}
+                        <span className="font-medium text-sm">{item.validation.hostname}</span>
+                        <Badge variant={item.status === 'completed' ? 'default' : 
+                                     item.status === 'failed' ? 'destructive' : 'secondary'}>
+                          {getStatusText(item.status)}
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCompetitor(item.url)}
+                        className="h-6 w-6 p-0"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+
+                    {/* Validation Warnings */}
+                    {item.validation.warnings && item.validation.warnings.length > 0 && (
+                      <Alert>
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertDescription className="text-xs">
+                          {item.validation.warnings[0]}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    {/* Error Display */}
+                    {item.error && (
+                      <Alert variant="destructive">
+                        <XCircle className="h-4 w-4" />
+                        <AlertDescription className="text-xs">
+                          {item.error}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    {/* Screenshots */}
+                    {item.screenshots && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Monitor className="h-3 w-3" />
+                            <span className="text-xs font-medium">Desktop</span>
+                            {item.screenshots.desktop?.success && (
+                              <CheckCircle className="h-3 w-3 text-green-500" />
+                            )}
+                          </div>
+                          {item.screenshots.desktop?.thumbnailUrl && (
+                            <div className="bg-gray-100 rounded p-2 text-center">
+                              <div className="text-xs text-gray-600">Screenshot Captured</div>
+                              <div className="text-xs text-gray-500">
+                                {item.screenshots.desktop.metadata?.width}x{item.screenshots.desktop.metadata?.height}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Smartphone className="h-3 w-3" />
+                            <span className="text-xs font-medium">Mobile</span>
+                            {item.screenshots.mobile?.success && (
+                              <CheckCircle className="h-3 w-3 text-green-500" />
+                            )}
+                          </div>
+                          {item.screenshots.mobile?.thumbnailUrl && (
+                            <div className="bg-gray-100 rounded p-2 text-center">
+                              <div className="text-xs text-gray-600">Screenshot Captured</div>
+                              <div className="text-xs text-gray-500">
+                                {item.screenshots.mobile.metadata?.width}x{item.screenshots.mobile.metadata?.height}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Metadata */}
+                    {item.validation.metadata && (
+                      <div className="text-xs text-gray-600 space-y-1">
+                        {item.validation.metadata.loadTime && (
+                          <div>Load time: {item.validation.metadata.loadTime}ms</div>
+                        )}
+                        <div className="truncate">URL: {item.url}</div>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
