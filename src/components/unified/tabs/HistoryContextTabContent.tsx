@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -264,7 +265,7 @@ export const HistoryContextTabContent: React.FC<HistoryContextTabContentProps> =
       ...chatAnalyses.map(a => ({
         id: a.id,
         type: 'chat' as const,
-        title: a.analysis_results?.title || (typeof a.prompt_used === 'string' ? a.prompt_used.substring(0, 50) + '...' : 'Chat Analysis'),
+        title: a.analysis_results?.project_name || (typeof a.prompt_used === 'string' ? a.prompt_used.substring(0, 50) + '...' : 'Chat Analysis'),
         date: a.created_at,
         confidenceScore: a.confidence_score || 0.8,
         isRelated: true,
@@ -274,7 +275,7 @@ export const HistoryContextTabContent: React.FC<HistoryContextTabContentProps> =
       ...designAnalyses.map(a => ({
         id: a.id,
         type: (a.analysis_type === 'premium' ? 'premium' : 'design') as const,
-        title: a.analysis_results?.title || a.analysis_results?.project_name || 'Design Analysis',
+        title: a.analysis_results?.project_name || a.analysis_results?.title || 'Design Analysis',
         date: a.created_at,
         confidenceScore: a.confidence_score || 0.8,
         isRelated: true,

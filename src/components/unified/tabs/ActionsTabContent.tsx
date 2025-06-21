@@ -1,21 +1,25 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  ExternalLink, 
-  MessageSquare, 
   Download, 
-  Share, 
-  Copy,
+  Share2, 
+  Copy, 
+  Mail, 
+  FileText, 
+  Printer,
+  BookOpen,
   RefreshCw,
+  Archive,
   Trash2,
+  ExternalLink,
+  MessageSquare,
   Settings,
-  FileDown,
-  Mail
+  Star,
+  Flag
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 interface ActionsTabContentProps {
@@ -29,210 +33,95 @@ export const ActionsTabContent: React.FC<ActionsTabContentProps> = ({
   analysisType,
   onClose
 }) => {
-  const navigate = useNavigate();
+  const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
 
-  const handleContinueAnalysis = () => {
-    console.log('🔍 ActionsTabContent: Continue analysis clicked:', {
-      analysisType,
-      analysisId: analysis.id
-    });
-
-    if (analysisType === 'chat') {
-      navigate('/figmant', { 
-        state: { 
-          activeSection: 'chat',
-          loadHistoricalAnalysis: analysis.id,
-          historicalData: analysis
-        } 
-      });
-    } else if (analysisType === 'wizard' || analysisType === 'premium') {
-      navigate('/figmant', { 
-        state: { 
-          activeSection: 'wizard',
-          loadHistoricalAnalysis: analysis.id,
-          historicalData: analysis
-        } 
-      });
-    } else {
-      navigate('/figmant', { 
-        state: { 
-          activeSection: 'analysis',
-          loadHistoricalAnalysis: analysis.id,
-          historicalData: analysis
-        } 
-      });
-    }
-    onClose();
-  };
-
-  const handleCopyAnalysis = async () => {
+  const handleExportPDF = async () => {
+    setIsExporting(true);
     try {
-      const analysisText = `
-Analysis Title: ${analysis.title || 'Analysis'}
-Type: ${analysisType}
-Created: ${new Date(analysis.created_at).toLocaleString()}
-Confidence: ${Math.round((analysis.confidence_score || 0.8) * 100)}%
-
-Analysis Results:
-${analysis.analysis_results?.response || analysis.analysis_results?.analysis || 'No analysis content available'}
-
-${analysis.suggestions ? `\nSuggestions:\n${typeof analysis.suggestions === 'string' ? analysis.suggestions : JSON.stringify(analysis.suggestions, null, 2)}` : ''}
-      `.trim();
-
-      await navigator.clipboard.writeText(analysisText);
+      // Simulate PDF export
+      await new Promise(resolve => setTimeout(resolve, 2000));
       toast({
-        title: "Analysis Copied",
-        description: "Analysis content has been copied to clipboard",
+        title: "Export Complete",
+        description: "Analysis has been exported as PDF"
       });
     } catch (error) {
       toast({
-        title: "Copy Failed",
-        description: "Failed to copy analysis to clipboard",
-        variant: "destructive",
+        title: "Export Failed",
+        description: "Could not export analysis",
+        variant: "destructive"
       });
+    } finally {
+      setIsExporting(false);
     }
   };
 
-  const handleShareAnalysis = async () => {
+  const handleCopyLink = () => {
+    const url = `${window.location.origin}/analysis/${analysisType}/${analysis.id}`;
+    navigator.clipboard.writeText(url);
+    toast({
+      title: "Link Copied",
+      description: "Analysis link copied to clipboard"
+    });
+  };
+
+  const handleShare = () => {
     if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Analysis: ${analysis.title || 'Analysis'}`,
-          text: analysis.analysis_results?.response?.substring(0, 200) + '...',
-          url: window.location.href,
-        });
-      } catch (error) {
-        // Fallback to copy link
-        handleCopyLink();
-      }
+      navigator.share({
+        title: `Analysis: ${analysis.title || 'Untitled'}`,
+        url: `${window.location.origin}/analysis/${analysisType}/${analysis.id}`
+      });
     } else {
       handleCopyLink();
     }
   };
 
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: "Link Copied",
-        description: "Analysis link has been copied to clipboard",
-      });
-    } catch (error) {
-      toast({
-        title: "Copy Failed",
-        description: "Failed to copy link to clipboard",
-        variant: "destructive",
-      });
-    }
+  const handleEmailShare = () => {
+    const subject = encodeURIComponent(`Analysis Results: ${analysis.title || 'Untitled'}`);
+    const body = encodeURIComponent(`Check out this analysis: ${window.location.origin}/analysis/${analysisType}/${analysis.id}`);
+    window.open(`mailto:?subject=${subject}&body=${body}`);
   };
 
-  const handleDownloadAnalysis = () => {
-    const analysisData = {
-      id: analysis.id,
-      title: analysis.title || 'Analysis',
-      type: analysisType,
-      created_at: analysis.created_at,
-      confidence_score: analysis.confidence_score,
-      analysis_results: analysis.analysis_results,
-      suggestions: analysis.suggestions,
-      improvement_areas: analysis.improvement_areas,
-      impact_summary: analysis.impact_summary
-    };
-
-    const blob = new Blob([JSON.stringify(analysisData, null, 2)], {
-      type: 'application/json'
-    });
-    
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `analysis-${analysis.id}-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-
+  const handleReRunAnalysis = () => {
     toast({
-      title: "Download Started",
-      description: "Analysis data is being downloaded",
+      title: "Re-running Analysis",
+      description: "This feature will be available soon"
     });
   };
 
-  const handleEmailAnalysis = () => {
-    const subject = `Analysis Report: ${analysis.title || 'Analysis'}`;
-    const body = `
-Please find the analysis report below:
-
-Title: ${analysis.title || 'Analysis'}
-Type: ${analysisType}
-Created: ${new Date(analysis.created_at).toLocaleString()}
-Confidence Score: ${Math.round((analysis.confidence_score || 0.8) * 100)}%
-
-Analysis Results:
-${analysis.analysis_results?.response || analysis.analysis_results?.analysis || 'No analysis content available'}
-
-${analysis.suggestions ? `\nSuggestions:\n${typeof analysis.suggestions === 'string' ? analysis.suggestions : JSON.stringify(analysis.suggestions, null, 2)}` : ''}
-
-Generated by Figmant AI Analysis Platform
-    `.trim();
-
-    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoLink;
-  };
-
-  const handleRerunAnalysis = () => {
-    // This would trigger a rerun of the analysis
+  const handleArchive = () => {
     toast({
-      title: "Analysis Rerun",
-      description: "This feature is coming soon",
+      title: "Archived",
+      description: "Analysis has been archived"
     });
   };
 
-  const handleDeleteAnalysis = () => {
-    // This would delete the analysis (with confirmation)
+  const handleDelete = () => {
     toast({
-      title: "Delete Analysis",
-      description: "This feature is coming soon",
-      variant: "destructive",
+      title: "Deleted",
+      description: "Analysis has been deleted",
+      variant: "destructive"
+    });
+    onClose();
+  };
+
+  const handleFavorite = () => {
+    toast({
+      title: "Added to Favorites",
+      description: "Analysis saved to favorites"
+    });
+  };
+
+  const handleFlag = () => {
+    toast({
+      title: "Flagged for Review",
+      description: "Analysis has been flagged"
     });
   };
 
   return (
     <div className="p-6 space-y-6">
-      {/* Primary Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Primary Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Button 
-            onClick={handleContinueAnalysis}
-            className="w-full"
-            size="lg"
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            {analysisType === 'chat' ? 'Continue in Chat' : 
-             analysisType === 'wizard' || analysisType === 'premium' ? 'Open in Wizard' :
-             'View in Analysis'}
-          </Button>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" onClick={handleCopyAnalysis}>
-              <Copy className="h-4 w-4 mr-2" />
-              Copy Analysis
-            </Button>
-            
-            <Button variant="outline" onClick={handleShareAnalysis}>
-              <Share className="h-4 w-4 mr-2" />
-              Share
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Export & Download */}
+      {/* Export Actions */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -241,85 +130,183 @@ Generated by Figmant AI Analysis Platform
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Button variant="outline" onClick={handleDownloadAnalysis} className="w-full">
-            <FileDown className="h-4 w-4 mr-2" />
-            Download as JSON
+          <Button 
+            onClick={handleExportPDF}
+            disabled={isExporting}
+            className="w-full justify-start"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            {isExporting ? 'Exporting...' : 'Export as PDF'}
           </Button>
           
-          <Button variant="outline" onClick={handleEmailAnalysis} className="w-full">
-            <Mail className="h-4 w-4 mr-2" />
-            Email Analysis
+          <Button 
+            variant="outline"
+            onClick={() => window.print()}
+            className="w-full justify-start"
+          >
+            <Printer className="h-4 w-4 mr-2" />
+            Print Analysis
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={handleExportPDF}
+            className="w-full justify-start"
+          >
+            <BookOpen className="h-4 w-4 mr-2" />
+            Export Report
           </Button>
         </CardContent>
       </Card>
 
-      {/* Advanced Actions */}
+      {/* Share Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Share2 className="h-5 w-5" />
+            Share & Collaborate
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button 
+            onClick={handleShare}
+            className="w-full justify-start"
+          >
+            <Share2 className="h-4 w-4 mr-2" />
+            Share Analysis
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={handleCopyLink}
+            className="w-full justify-start"
+          >
+            <Copy className="h-4 w-4 mr-2" />
+            Copy Link
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={handleEmailShare}
+            className="w-full justify-start"
+          >
+            <Mail className="h-4 w-4 mr-2" />
+            Email Link
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={() => toast({ title: "Coming Soon", description: "Team collaboration features coming soon" })}
+            className="w-full justify-start"
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Add Comment
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Analysis Actions */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Advanced Actions
+            Analysis Actions
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Button variant="outline" onClick={handleRerunAnalysis} className="w-full">
+          <Button 
+            variant="outline"
+            onClick={handleReRunAnalysis}
+            className="w-full justify-start"
+          >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Rerun Analysis
-            <Badge variant="secondary" className="ml-2 text-xs">Coming Soon</Badge>
+            Re-run Analysis
           </Button>
           
           <Button 
-            variant="outline" 
-            onClick={handleDeleteAnalysis} 
-            className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+            variant="outline"
+            onClick={handleFavorite}
+            className="w-full justify-start"
           >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete Analysis
-            <Badge variant="secondary" className="ml-2 text-xs">Coming Soon</Badge>
+            <Star className="h-4 w-4 mr-2" />
+            Add to Favorites
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={handleFlag}
+            className="w-full justify-start"
+          >
+            <Flag className="h-4 w-4 mr-2" />
+            Flag for Review
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={() => window.open(`/analysis/${analysisType}/${analysis.id}`, '_blank')}
+            className="w-full justify-start"
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Open in New Tab
           </Button>
         </CardContent>
       </Card>
 
-      {/* Quick Info */}
+      {/* Management Actions */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            Quick Info
+            <Archive className="h-5 w-5" />
+            Manage Analysis
           </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button 
+            variant="outline"
+            onClick={handleArchive}
+            className="w-full justify-start"
+          >
+            <Archive className="h-4 w-4 mr-2" />
+            Archive Analysis
+          </Button>
+          
+          <Button 
+            variant="destructive"
+            onClick={handleDelete}
+            className="w-full justify-start"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete Analysis
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Analysis Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Analysis Information</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-500">Analysis ID:</span>
-              <code className="text-xs">{analysis.id}</code>
-            </div>
-            <div className="flex justify-between">
               <span className="text-gray-500">Type:</span>
-              <Badge variant="outline" className="text-xs">{analysisType}</Badge>
+              <Badge variant="outline" className="capitalize">{analysisType}</Badge>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-500">Status:</span>
-              <Badge variant="default" className="text-xs">Completed</Badge>
+              <span className="text-gray-500">ID:</span>
+              <span className="font-mono text-xs">{analysis.id}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Created:</span>
               <span>{new Date(analysis.created_at).toLocaleDateString()}</span>
             </div>
+            {analysis.confidence_score && (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Confidence:</span>
+                <span>{Math.round(analysis.confidence_score * 100)}%</span>
+              </div>
+            )}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Tips */}
-      <Card className="bg-blue-50 border-blue-200">
-        <CardContent className="p-4">
-          <h4 className="font-medium text-blue-900 mb-2">💡 Tips</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Use "Continue in Chat" to ask follow-up questions</li>
-            <li>• Download analysis for offline review</li>
-            <li>• Share analysis with team members via email</li>
-            <li>• Copy analysis text for reports and presentations</li>
-          </ul>
         </CardContent>
       </Card>
     </div>

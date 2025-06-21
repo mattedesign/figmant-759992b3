@@ -1,105 +1,161 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   History, 
   Clock, 
-  FileText, 
+  Eye, 
+  TrendingUp,
+  FileText,
   MessageSquare,
-  ExternalLink,
-  TrendingUp
+  Sparkles,
+  Calendar,
+  Search,
+  Filter
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
+import { Input } from '@/components/ui/input';
 
 interface HistoryTabContentProps {
   analysis: any;
   analysisType: string;
 }
 
+const HistoryItem: React.FC<{
+  item: any;
+  type: string;
+  onView: (item: any) => void;
+}> = ({ item, type, onView }) => {
+  const getTypeIcon = () => {
+    switch (type) {
+      case 'chat': return MessageSquare;
+      case 'premium': return Sparkles;
+      default: return FileText;
+    }
+  };
+
+  const getTypeColor = () => {
+    switch (type) {
+      case 'chat': return 'text-blue-600 bg-blue-50';
+      case 'premium': return 'text-purple-600 bg-purple-50';
+      default: return 'text-green-600 bg-green-50';
+    }
+  };
+
+  const getTitle = () => {
+    if (item.analysis_results?.title) {
+      return item.analysis_results.title;
+    }
+    if (item.analysis_results?.project_name) {
+      return item.analysis_results.project_name;
+    }
+    if (item.prompt_used && typeof item.prompt_used === 'string') {
+      return item.prompt_used.length > 60 
+        ? item.prompt_used.substring(0, 60) + '...'
+        : item.prompt_used;
+    }
+    return `${type.charAt(0).toUpperCase() + type.slice(1)} Analysis`;
+  };
+
+  const Icon = getTypeIcon();
+  const typeColor = getTypeColor();
+  const title = getTitle();
+
+  return (
+    <Card className="hover:shadow-sm transition-shadow cursor-pointer" onClick={() => onView(item)}>
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          <div className={`w-10 h-10 rounded-lg ${typeColor} flex items-center justify-center flex-shrink-0`}>
+            <Icon className="h-5 w-5" />
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-medium text-sm text-gray-900 truncate">
+                {title}
+              </h4>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onView(item);
+                }}
+              >
+                <Eye className="h-3 w-3" />
+              </Button>
+            </div>
+            
+            <div className="flex items-center gap-3 text-xs text-gray-500">
+              <Badge variant="outline" className="text-xs capitalize">
+                {type}
+              </Badge>
+              
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                <span>{format(new Date(item.created_at), 'MMM d')}</span>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
+              </div>
+              
+              {item.confidence_score && (
+                <span>{Math.round(item.confidence_score * 100)}% confidence</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 export const HistoryTabContent: React.FC<HistoryTabContentProps> = ({
   analysis,
   analysisType
 }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<string>('all');
+  
   const { data: chatAnalyses = [] } = useChatAnalysisHistory();
   const { data: designAnalyses = [] } = useDesignAnalyses();
 
-  // Combine all analyses and filter out current one
+  // Combine all analyses
   const allAnalyses = [
     ...chatAnalyses.map(a => ({ ...a, type: 'chat' })),
-    ...designAnalyses.map(a => ({ ...a, type: 'design' }))
+    ...designAnalyses.map(a => ({ ...a, type: a.analysis_type === 'premium' ? 'premium' : 'design' }))
   ]
-    .filter(a => a.id !== analysis.id)
+    .filter(a => a.id !== analysis.id) // Exclude current analysis
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  const recentAnalyses = allAnalyses.slice(0, 10);
-  
-  // Get related analyses (same type or similar keywords)
-  const getRelatedAnalyses = () => {
-    const currentTitle = analysis.title || analysis.analysis_results?.title || analysis.analysis_results?.project_name || '';
-    const currentSummary = analysis.analysis_results?.response || '';
-    const searchText = (currentTitle + ' ' + currentSummary).toLowerCase();
+  // Filter analyses based on search and type
+  const filteredAnalyses = allAnalyses.filter(item => {
+    const matchesSearch = !searchTerm || 
+      (item.analysis_results?.title?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (item.analysis_results?.project_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (typeof item.prompt_used === 'string' && item.prompt_used.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    return allAnalyses
-      .filter(a => {
-        if (a.type === analysisType) return true;
-        
-        const aTitle = (getAnalysisTitle(a)).toLowerCase();
-        const aSummary = (a.analysis_results?.response || '').toLowerCase();
-        const aText = aTitle + ' ' + aSummary;
-        
-        // Simple keyword matching
-        const keywords = searchText.split(' ').filter(word => word.length > 3);
-        return keywords.some(keyword => aText.includes(keyword));
-      })
-      .slice(0, 5);
-  };
-
-  const relatedAnalyses = getRelatedAnalyses();
-
-  const getAnalysisIcon = (type: string) => {
-    switch (type) {
-      case 'chat':
-        return MessageSquare;
-      default:
-        return FileText;
-    }
-  };
-
-  const getAnalysisTitle = (analysisItem: any) => {
-    // Handle different analysis structures
-    if (analysisItem.title) return analysisItem.title;
-    if (analysisItem.analysis_results?.title) return analysisItem.analysis_results.title;
-    if (analysisItem.analysis_results?.project_name) return analysisItem.analysis_results.project_name;
+    const matchesType = filterType === 'all' || item.type === filterType;
     
-    // For chat analyses, try to extract title from response
-    if (analysisItem.type === 'chat' && analysisItem.analysis_results?.response) {
-      const response = analysisItem.analysis_results.response;
-      const firstLine = response.split('\n')[0];
-      if (firstLine.length < 100) {
-        return firstLine.replace(/^#+\s*/, ''); // Remove markdown headers
-      }
-    }
-    
-    return `${analysisItem.type || 'Unknown'} Analysis`;
+    return matchesSearch && matchesType;
+  });
+
+  const handleViewAnalysis = (item: any) => {
+    console.log('Viewing analysis:', item);
+    // Navigate to analysis - this would be implemented based on routing
   };
 
-  const getAnalysisSummary = (analysisItem: any) => {
-    if (analysisItem.analysis_results?.response) {
-      return analysisItem.analysis_results.response.substring(0, 150) + '...';
-    }
-    if (analysisItem.analysis_results?.summary) {
-      return analysisItem.analysis_results.summary.substring(0, 150) + '...';
-    }
-    return 'Analysis completed';
-  };
-
-  const handleOpenAnalysis = (analysisItem: any) => {
-    // This would typically open the analysis in a new modal or navigate to it
-    console.log('Opening analysis:', analysisItem);
+  const analysisTypeCounts = {
+    chat: allAnalyses.filter(a => a.type === 'chat').length,
+    premium: allAnalyses.filter(a => a.type === 'premium').length,
+    design: allAnalyses.filter(a => a.type === 'design').length
   };
 
   if (allAnalyses.length === 0) {
@@ -108,7 +164,7 @@ export const HistoryTabContent: React.FC<HistoryTabContentProps> = ({
         <div className="text-center py-12">
           <History className="h-12 w-12 mx-auto mb-4 text-gray-300" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No Analysis History</h3>
-          <p className="text-gray-500">This is your first analysis. Future analyses will appear here.</p>
+          <p className="text-gray-500">This appears to be your first analysis. Future analyses will appear here.</p>
         </div>
       </div>
     );
@@ -116,165 +172,88 @@ export const HistoryTabContent: React.FC<HistoryTabContentProps> = ({
 
   return (
     <div className="p-6 space-y-6">
-      {/* Analysis Timeline Summary */}
+      {/* Header with Stats */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">Analysis History</h3>
+          <p className="text-sm text-gray-500">{allAnalyses.length} total analyses</p>
+        </div>
+        
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="p-2 bg-blue-50 rounded">
+            <div className="text-lg font-bold text-blue-600">{analysisTypeCounts.chat}</div>
+            <div className="text-xs text-gray-500">Chat</div>
+          </div>
+          <div className="p-2 bg-purple-50 rounded">
+            <div className="text-lg font-bold text-purple-600">{analysisTypeCounts.premium}</div>
+            <div className="text-xs text-gray-500">Premium</div>
+          </div>
+          <div className="p-2 bg-green-50 rounded">
+            <div className="text-lg font-bold text-green-600">{analysisTypeCounts.design}</div>
+            <div className="text-xs text-gray-500">Design</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Filter */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Analysis Activity Summary
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{allAnalyses.length}</div>
-              <div className="text-sm text-gray-500">Total Analyses</div>
+        <CardContent className="p-4">
+          <div className="flex gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search analyses..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
-                {allAnalyses.filter(a => a.type === 'chat').length}
-              </div>
-              <div className="text-sm text-gray-500">Chat Analyses</div>
-            </div>
-            <div className="text-center p-3 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">
-                {allAnalyses.filter(a => a.type === 'design').length}
-              </div>
-              <div className="text-sm text-gray-500">Design Analyses</div>
-            </div>
-            <div className="text-center p-3 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">
-                {allAnalyses.filter(a => 
-                  new Date(a.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-                ).length}
-              </div>
-              <div className="text-sm text-gray-500">This Week</div>
+            
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-400" />
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="border rounded px-3 py-2 text-sm"
+              >
+                <option value="all">All Types</option>
+                <option value="chat">Chat</option>
+                <option value="premium">Premium</option>
+                <option value="design">Design</option>
+              </select>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Related Analyses */}
-      {relatedAnalyses.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Related Analyses
-              <Badge variant="outline">{relatedAnalyses.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {relatedAnalyses.map((relatedAnalysis) => {
-                const Icon = getAnalysisIcon(relatedAnalysis.type);
-                return (
-                  <div
-                    key={`${relatedAnalysis.type}-${relatedAnalysis.id}`}
-                    className="flex items-start gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
-                      <Icon className="h-4 w-4 text-gray-600" />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-sm text-gray-900 truncate">
-                          {getAnalysisTitle(relatedAnalysis)}
-                        </h4>
-                        <Badge variant="outline" className="text-xs">
-                          {relatedAnalysis.type}
-                        </Badge>
-                      </div>
-                      
-                      <p className="text-xs text-gray-600 line-clamp-2 mb-2">
-                        {getAnalysisSummary(relatedAnalysis)}
-                      </p>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <Clock className="h-3 w-3" />
-                          {formatDistanceToNow(new Date(relatedAnalysis.created_at), { addSuffix: true })}
-                        </div>
-                        
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2 text-xs"
-                          onClick={() => handleOpenAnalysis(relatedAnalysis)}
-                        >
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          View
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Analysis List */}
+      <div className="space-y-3">
+        {filteredAnalyses.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <p className="text-gray-500">No analyses match your search criteria.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredAnalyses.map((item) => (
+            <HistoryItem
+              key={item.id}
+              item={item}
+              type={item.type}
+              onView={handleViewAnalysis}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Load More */}
+      {filteredAnalyses.length > 10 && (
+        <div className="text-center">
+          <Button variant="outline">
+            Load More Analyses
+          </Button>
+        </div>
       )}
-
-      {/* Recent Analysis History */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="h-5 w-5" />
-            Recent Analysis History
-            <Badge variant="outline">{recentAnalyses.length}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3 max-h-96 overflow-y-auto">
-            {recentAnalyses.map((historyAnalysis) => {
-              const Icon = getAnalysisIcon(historyAnalysis.type);
-              return (
-                <div
-                  key={`${historyAnalysis.type}-${historyAnalysis.id}`}
-                  className="flex items-start gap-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
-                    <Icon className="h-4 w-4 text-gray-600" />
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-medium text-sm text-gray-900 truncate">
-                        {getAnalysisTitle(historyAnalysis)}
-                      </h4>
-                      <Badge variant="outline" className="text-xs">
-                        {historyAnalysis.type}
-                      </Badge>
-                    </div>
-                    
-                    <p className="text-xs text-gray-600 line-clamp-2 mb-2">
-                      {getAnalysisSummary(historyAnalysis)}
-                    </p>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
-                        <Clock className="h-3 w-3" />
-                        {formatDistanceToNow(new Date(historyAnalysis.created_at), { addSuffix: true })}
-                      </div>
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 px-2 text-xs"
-                        onClick={() => handleOpenAnalysis(historyAnalysis)}
-                      >
-                        <ExternalLink className="h-3 w-3 mr-1" />
-                        View
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
