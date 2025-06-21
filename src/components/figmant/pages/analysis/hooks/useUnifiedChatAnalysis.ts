@@ -5,6 +5,7 @@ import { useChatState } from '../ChatStateManager';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useToast } from '@/hooks/use-toast';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
+import { convertToLegacyAttachments } from '@/utils/attachmentTypeConverter';
 
 export const useUnifiedChatAnalysis = () => {
   const { data: templates = [], isLoading: templatesLoading } = useFigmantPromptTemplates();
@@ -37,7 +38,7 @@ export const useUnifiedChatAnalysis = () => {
     for (const file of Array.from(files)) {
       const attachment: ChatAttachment = {
         id: crypto.randomUUID(),
-        type: 'file',
+        type: file.type.startsWith('image/') ? 'image' : 'file',
         name: file.name,
         file,
         status: 'uploaded'
@@ -262,17 +263,12 @@ export const useUnifiedChatAnalysis = () => {
     try {
       const template = getCurrentTemplate();
       
-      const analysisAttachments = attachments.map(att => ({
-        id: att.id,
-        type: att.type,
-        name: att.name,
-        uploadPath: att.uploadPath,
-        url: att.url
-      }));
+      // Convert attachments to legacy format for API compatibility
+      const legacyAttachments = convertToLegacyAttachments(attachments);
 
       const result = await analyzeWithClaude({
         message,
-        attachments: analysisAttachments,
+        attachments: legacyAttachments,
         template
       });
 

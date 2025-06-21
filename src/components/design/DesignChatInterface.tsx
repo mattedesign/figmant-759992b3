@@ -46,7 +46,7 @@ export interface ChatMessage {
 
 interface DesignChatInterfaceProps {
   onSendMessage: (message: string, attachments: ChatAttachment[]) => void;
-  onClearChat: () => void;
+  onClearChat?: () => void; // Made optional
   messages: ChatMessage[];
   isAnalyzing?: boolean;
   isProcessing?: boolean;
