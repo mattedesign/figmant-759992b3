@@ -4,9 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import { UserMenu } from './UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
-import { useTemplateCreditStore } from '@/stores/templateCreditStore';
-import { CreditCard, Crown, Zap } from 'lucide-react';
-import { useEffect } from 'react';
 
 interface NavigationProps {
   showSidebarTrigger?: boolean;
@@ -15,31 +12,6 @@ interface NavigationProps {
 export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
   const { user, isOwner } = useAuth();
   const location = useLocation();
-  
-  // Use explicit selector pattern for better reactivity
-  const currentCreditCost = useTemplateCreditStore((state) => {
-    console.log('🔄 Navigation: Store selector called, credit cost:', state.currentCreditCost);
-    return state.currentCreditCost;
-  });
-  
-  // Add render-time logging
-  console.log('🔄 Navigation: Component rendering with credit cost:', currentCreditCost);
-  console.log('🔄 Navigation: Current location:', location.pathname);
-  console.log('🔄 Navigation: Component render timestamp:', new Date().toISOString());
-  
-  // Monitor credit cost changes with useEffect
-  useEffect(() => {
-    console.log('🔄 Navigation: useEffect triggered - credit cost changed to:', currentCreditCost);
-    console.log('🔄 Navigation: useEffect timestamp:', new Date().toISOString());
-  }, [currentCreditCost]);
-  
-  // Log component mount/unmount
-  useEffect(() => {
-    console.log('🔄 Navigation: Component mounted');
-    return () => {
-      console.log('🔄 Navigation: Component unmounting');
-    };
-  }, []);
   
   // Determine the title based on the current route and search params
   const getTitle = () => {
@@ -110,26 +82,6 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
     return null;
   };
 
-  const getCreditIcon = () => {
-    const icon = currentCreditCost >= 5 ? <Crown className="h-3 w-3" /> : 
-                 currentCreditCost >= 3 ? <Zap className="h-3 w-3" /> : 
-                 <CreditCard className="h-3 w-3" />;
-    console.log('🔄 Navigation: getCreditIcon called, returning icon for cost:', currentCreditCost);
-    return icon;
-  };
-
-  const getCreditStyle = () => {
-    const style = currentCreditCost >= 5 
-      ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none"
-      : currentCreditCost >= 3 
-      ? "bg-blue-50 text-blue-700 border-blue-200"
-      : "bg-gray-100 text-gray-700 border-gray-200";
-    console.log('🔄 Navigation: getCreditStyle called, returning style for cost:', currentCreditCost);
-    return style;
-  };
-
-  console.log('🔄 Navigation: About to render credit badge with cost:', currentCreditCost);
-
   return (
     <header className="border-b bg-card flex-shrink-0">
       <div className="container mx-auto px-4 py-4">
@@ -146,14 +98,7 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
 
           <div className="flex items-center space-x-4">
             {user && (
-              <>
-                {/* Dynamic Credit Cost Display with updated styling */}
-                <Badge className={`flex items-center gap-1 transition-all duration-200 ${getCreditStyle()}`}>
-                  {getCreditIcon()}
-                  {currentCreditCost} Credit{currentCreditCost !== 1 ? 's' : ''}
-                </Badge>
-                <UserMenu />
-              </>
+              <UserMenu />
             )}
           </div>
         </div>
