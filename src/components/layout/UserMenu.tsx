@@ -1,5 +1,6 @@
+// src/components/layout/UserMenu.tsx
 
-import { User, Settings, LogOut, CreditCard, Shield, LayoutDashboard, UserCog, Home } from 'lucide-react';
+import { User, Settings, LogOut, CreditCard, UserCog, Home } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -29,11 +30,10 @@ export const UserMenu = () => {
   };
 
   const isOwner = profile?.role === 'owner';
-  const isOnOwnerDashboard = location.pathname === '/owner';
-  const isOnSubscriberDashboard = location.pathname === '/dashboard';
-  const isOnFigmant = location.pathname === '/figmant' || location.pathname === '/';
+  const isOnFigmant = location.pathname.startsWith('/figmant');
+  const currentSection = location.pathname.split('/')[2]; // Get section from /figmant/section
 
-  // Get avatar URL from the profiles table data, not from the UserProfile type
+  // Get avatar URL from the profiles table data
   const avatarUrl = profile ? (profile as any).avatar_url : undefined;
 
   return (
@@ -68,51 +68,23 @@ export const UserMenu = () => {
         
         <DropdownMenuSeparator />
         
-        {/* Main App - now points to figmant as default */}
+        {/* Main App - Unified Dashboard */}
         <DropdownMenuItem 
-          onClick={() => navigate('/figmant')}
-          className={isOnFigmant ? 'bg-accent' : ''}
+          onClick={() => navigate('/figmant/dashboard')}
+          className={isOnFigmant && currentSection === 'dashboard' ? 'bg-accent' : ''}
         >
           <Home className="mr-2 h-4 w-4" />
           Main App
         </DropdownMenuItem>
         
-        {/* Dashboard Navigation - Only show for owners or as additional option */}
+        {/* Admin Access for Owners */}
         {isOwner && (
-          <>
-            <DropdownMenuItem 
-              onClick={() => navigate('/dashboard')}
-              className={isOnSubscriberDashboard ? 'bg-accent' : ''}
-            >
-              <LayoutDashboard className="mr-2 h-4 w-4" />
-              Subscriber Dashboard
-            </DropdownMenuItem>
-            
-            <DropdownMenuItem 
-              onClick={() => navigate('/owner')}
-              className={isOnOwnerDashboard ? 'bg-accent' : ''}
-            >
-              <Shield className="mr-2 h-4 w-4" />
-              Owner Dashboard
-            </DropdownMenuItem>
-
-            <DropdownMenuItem 
-              onClick={() => navigate('/figmant', { state: { activeSection: 'admin' } })}
-              className={isOnFigmant && location.state?.activeSection === 'admin' ? 'bg-accent' : ''}
-            >
-              <UserCog className="mr-2 h-4 w-4" />
-              Admin
-            </DropdownMenuItem>
-            
-            <DropdownMenuSeparator />
-          </>
-        )}
-
-        {/* Regular dashboard link for non-owners */}
-        {!isOwner && (
-          <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-            <User className="mr-2 h-4 w-4" />
-            Dashboard
+          <DropdownMenuItem 
+            onClick={() => navigate('/figmant/admin')}
+            className={isOnFigmant && currentSection === 'admin' ? 'bg-accent' : ''}
+          >
+            <UserCog className="mr-2 h-4 w-4" />
+            Admin
           </DropdownMenuItem>
         )}
         
