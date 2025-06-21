@@ -25,7 +25,9 @@ import {
   AlertCircle,
   TrendingUp,
   Lightbulb,
-  ListTodo
+  ListTodo,
+  File,
+  Download
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -92,6 +94,82 @@ const ScreenshotModal: React.FC<{
         </div>
       </DialogContent>
     </Dialog>
+  );
+};
+
+const InlineAttachment: React.FC<{
+  attachment: any;
+  onViewScreenshot?: () => void;
+}> = ({ attachment, onViewScreenshot }) => {
+  const isImage = attachment.type === 'image' || attachment.thumbnailUrl;
+  const isUrl = attachment.type === 'link' || attachment.url;
+
+  return (
+    <div className="my-4 p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+      <div className="flex items-start gap-3">
+        {/* Thumbnail or Icon */}
+        <div className="w-12 h-12 bg-white rounded border flex items-center justify-center flex-shrink-0">
+          {isImage ? (
+            attachment.thumbnailUrl ? (
+              <img
+                src={attachment.thumbnailUrl}
+                alt={attachment.name}
+                className="w-full h-full object-cover rounded cursor-pointer"
+                onClick={onViewScreenshot}
+              />
+            ) : (
+              <ImageIcon className="h-6 w-6 text-gray-500" />
+            )
+          ) : isUrl ? (
+            <Globe className="h-6 w-6 text-blue-500" />
+          ) : (
+            <File className="h-6 w-6 text-gray-500" />
+          )}
+        </div>
+        
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <h5 className="font-medium text-sm text-gray-900 truncate">
+            {attachment.name}
+          </h5>
+          {attachment.url && (
+            <p className="text-xs text-gray-500 truncate mt-1">
+              {attachment.url}
+            </p>
+          )}
+          
+          <div className="flex items-center gap-2 mt-2">
+            <Badge variant="outline" className="text-xs">
+              {attachment.type === 'link' ? 'URL' : attachment.type === 'image' ? 'Image' : 'File'}
+            </Badge>
+            
+            {isImage && onViewScreenshot && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={onViewScreenshot}
+              >
+                <Eye className="h-3 w-3 mr-1" />
+                View
+              </Button>
+            )}
+            
+            {attachment.url && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => window.open(attachment.url, '_blank')}
+              >
+                <ExternalLink className="h-3 w-3 mr-1" />
+                Open
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -223,7 +301,11 @@ const MetadataCard: React.FC<{ analysis: any }> = ({ analysis }) => {
   );
 };
 
-const FormattedContent: React.FC<{ content: string }> = ({ content }) => {
+const FormattedContent: React.FC<{ 
+  content: string; 
+  attachments: any[];
+  onViewScreenshot: (index: number) => void;
+}> = ({ content, attachments, onViewScreenshot }) => {
   // Split content into paragraphs and format
   const paragraphs = content.split('\n\n').filter(p => p.trim());
   
@@ -246,9 +328,32 @@ const FormattedContent: React.FC<{ content: string }> = ({ content }) => {
         
         // Regular paragraph
         return (
-          <p key={index} className="text-sm leading-relaxed mb-3 text-gray-700">
-            {paragraph.trim()}
-          </p>
+          <div key={index} className="mb-4">
+            <p className="text-sm leading-relaxed mb-3 text-gray-700">
+              {paragraph.trim()}
+            </p>
+            
+            {/* Show relevant attachments after certain paragraphs */}
+            {index === 0 && attachments.length > 0 && (
+              <div className="my-4">
+                <h5 className="text-sm font-medium text-gray-700 mb-3">Referenced Materials:</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {attachments.slice(0, 4).map((attachment, attIndex) => (
+                    <InlineAttachment
+                      key={attachment.id}
+                      attachment={attachment}
+                      onViewScreenshot={() => onViewScreenshot(attIndex)}
+                    />
+                  ))}
+                </div>
+                {attachments.length > 4 && (
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    +{attachments.length - 4} more attachments available below
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         );
       })}
     </div>
@@ -359,7 +464,7 @@ export const AnalysisDetailDrawer: React.FC<AnalysisDetailDrawerProps> = ({
               
               <Separator />
 
-              {/* Main Analysis Content */}
+              {/* Main Analysis Content with Inline Attachments */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <FileText className="h-5 w-5" />
@@ -376,7 +481,11 @@ export const AnalysisDetailDrawer: React.FC<AnalysisDetailDrawerProps> = ({
                 )}
 
                 <div className="bg-white border rounded-lg p-4">
-                  <FormattedContent content={summary} />
+                  <FormattedContent 
+                    content={summary} 
+                    attachments={attachments}
+                    onViewScreenshot={openScreenshotModal}
+                  />
                 </div>
               </div>
 
@@ -388,7 +497,7 @@ export const AnalysisDetailDrawer: React.FC<AnalysisDetailDrawerProps> = ({
                     <AccordionTrigger className="text-left">
                       <div className="flex items-center gap-2">
                         <ImageIcon className="h-4 w-4" />
-                        <span>Attachments & Resources</span>
+                        <span>All Attachments & Resources</span>
                         <Badge variant="outline" className="ml-2">
                           {attachments.length + analyzedUrls.length}
                         </Badge>
