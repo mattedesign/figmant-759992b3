@@ -17,6 +17,10 @@ export interface AnalysisAttachment {
   url?: string;
   type: 'file' | 'link' | 'image';
   thumbnailUrl?: string;
+  file_name?: string;
+  file_path?: string;
+  file_size?: number;
+  created_at?: string;
 }
 
 export interface AnalysisScreenshot {
@@ -24,6 +28,10 @@ export interface AnalysisScreenshot {
   name: string;
   url?: string;
   thumbnailUrl?: string;
+  file_name?: string;
+  file_path?: string;
+  file_size?: number;
+  created_at?: string;
 }
 
 // Extract attachments from Chat Analysis - handles type safety issues
@@ -115,7 +123,10 @@ export const extractScreenshotsFromChatAnalysis = (analysis: SavedChatAnalysis):
           id: att.id,
           name: att.name,
           url: att.url,
-          thumbnailUrl: att.thumbnailUrl
+          thumbnailUrl: att.thumbnailUrl,
+          file_name: att.name,
+          file_path: att.url,
+          created_at: new Date().toISOString()
         });
       }
     });
@@ -185,7 +196,10 @@ export const extractScreenshotsFromWizardAnalysis = (analysis: any): AnalysisScr
           id: att.id,
           name: att.name,
           url: att.url,
-          thumbnailUrl: att.thumbnailUrl
+          thumbnailUrl: att.thumbnailUrl,
+          file_name: att.name,
+          file_path: att.url,
+          created_at: new Date().toISOString()
         });
       }
     });
@@ -312,7 +326,10 @@ export const getAllScreenshots = (analysis: any): AnalysisScreenshot[] => {
       id: att.id,
       name: att.name,
       url: att.url,
-      thumbnailUrl: att.thumbnailUrl
+      thumbnailUrl: att.thumbnailUrl,
+      file_name: att.name,
+      file_path: att.url,
+      created_at: new Date().toISOString()
     }));
 };
 

@@ -44,8 +44,18 @@ export const EnhancedAnalysisCard: React.FC<EnhancedAnalysisCardProps> = ({
 
   // Extract attachments and screenshots based on analysis type
   const attachments: AnalysisAttachment[] = analysis.type === 'chat' 
-    ? extractAttachmentsFromChatAnalysis(analysis)
-    : extractAttachmentsFromWizardAnalysis(analysis);
+    ? extractAttachmentsFromChatAnalysis(analysis).map(att => ({
+        ...att,
+        file_name: att.name,
+        file_path: att.url,
+        created_at: new Date().toISOString()
+      }))
+    : extractAttachmentsFromWizardAnalysis(analysis).map(att => ({
+        ...att,
+        file_name: att.name,
+        file_path: att.url,
+        created_at: new Date().toISOString()
+      }));
   
   const screenshots: AnalysisScreenshot[] = analysis.type === 'chat'
     ? extractScreenshotsFromChatAnalysis(analysis)
@@ -87,8 +97,11 @@ export const EnhancedAnalysisCard: React.FC<EnhancedAnalysisCardProps> = ({
     if (attachment.type === 'image') {
       setSelectedScreenshot({
         id: attachment.id,
-        file_name: attachment.file_name,
-        file_path: attachment.file_path,
+        name: attachment.name,
+        url: attachment.url,
+        thumbnailUrl: attachment.thumbnailUrl,
+        file_name: attachment.file_name || attachment.name,
+        file_path: attachment.file_path || attachment.url,
         file_size: attachment.file_size,
         created_at: attachment.created_at
       });
@@ -201,8 +214,8 @@ export const EnhancedAnalysisCard: React.FC<EnhancedAnalysisCardProps> = ({
                     onClick={() => handleScreenshotClick(screenshot)}
                   >
                     <img
-                      src={screenshot.file_path || screenshot.url}
-                      alt={screenshot.file_name}
+                      src={screenshot.file_path || screenshot.url || screenshot.thumbnailUrl}
+                      alt={screenshot.file_name || screenshot.name}
                       className="w-16 h-16 object-cover rounded-md border"
                     />
                   </div>
