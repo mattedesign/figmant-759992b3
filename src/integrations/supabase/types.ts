@@ -569,6 +569,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_design_analysis_upload"
+            columns: ["design_upload_id"]
+            isOneToOne: false
+            referencedRelation: "design_uploads"
+            referencedColumns: ["id"]
+          },
         ]
       }
       design_batch_analysis: {
@@ -630,6 +637,13 @@ export type Database = {
           winner_upload_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_batch_analysis_winner"
+            columns: ["winner_upload_id"]
+            isOneToOne: false
+            referencedRelation: "design_uploads"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_parent_analysis_id"
             columns: ["parent_analysis_id"]
@@ -1360,6 +1374,15 @@ export type Database = {
       user_has_access: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      validate_analysis_data_integrity: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          table_name: string
+          issue_type: string
+          count: number
+          details: string
+        }[]
       }
       validate_claude_api_key: {
         Args: { api_key: string }

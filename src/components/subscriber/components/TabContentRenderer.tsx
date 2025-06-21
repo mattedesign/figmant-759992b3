@@ -1,4 +1,3 @@
-
 import { lazy, Suspense } from 'react';
 import { LoadingSpinner } from './LoadingSpinner';
 import { AllAnalysisPageWrapper } from '@/components/design/analysis/AllAnalysisPageWrapper';
@@ -6,6 +5,7 @@ import { AdvancedDesignAnalysisPageContent } from '@/components/design/AdvancedD
 import { CompetitorAnalysisPage } from '@/components/figmant/pages/analysis/CompetitorAnalysisPage';
 import { PremiumAnalysisWizard } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisWizard';
 import { PremiumAnalysisTabController } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisTabController';
+import { SystemStatusMonitor } from '@/components/analysis/SystemStatusMonitor';
 
 // Lazy load other content components
 const InsightsPage = lazy(() => import('@/components/design/InsightsPage').then(module => ({
@@ -42,8 +42,13 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
       case 'competitor-analysis':
         console.log('✅ SUBSCRIBER TAB RENDERER - Loading CompetitorAnalysisPage for tab:', activeTab);
         return (
-          <div className="h-full w-full">
-            <CompetitorAnalysisPage />
+          <div className="h-full w-full flex flex-col">
+            <div className="flex-none p-4 border-b">
+              <SystemStatusMonitor showDetails={false} autoRefresh={true} />
+            </div>
+            <div className="flex-1">
+              <CompetitorAnalysisPage />
+            </div>
           </div>
         );
       case 'design':
@@ -57,6 +62,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
                   Chat with AI for comprehensive UX insights and design analysis
                 </p>
               </div>
+              <SystemStatusMonitor showDetails={false} autoRefresh={true} />
             </div>
             <Suspense fallback={<LoadingSpinner />}>
               <AdvancedDesignAnalysisPageContent />
@@ -65,35 +71,40 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
         );
       case 'all-analysis':
         console.log('✅ SUBSCRIBER TAB RENDERER - Loading AllAnalysisPageWrapper for tab:', activeTab);
-        return <AllAnalysisPageWrapper />;
-      case 'insights':
-        console.log('✅ SUBSCRIBER TAB RENDERER - Loading InsightsPage for tab:', activeTab);
         return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <InsightsPage />
-          </Suspense>
-        );
-      case 'prompts':
-        console.log('✅ SUBSCRIBER TAB RENDERER - Loading PromptsPage for tab:', activeTab);
-        return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <PromptsPage />
-          </Suspense>
+          <div className="h-full w-full flex flex-col">
+            <div className="flex-none p-4 border-b">
+              <SystemStatusMonitor showDetails={false} autoRefresh={true} />
+            </div>
+            <div className="flex-1">
+              <AllAnalysisPageWrapper />
+            </div>
+          </div>
         );
       case 'wizard-analysis':
         console.log('✅ SUBSCRIBER TAB RENDERER - Loading PremiumAnalysisWizard for tab:', activeTab);
-        return <PremiumAnalysisWizard />;
+        return (
+          <div className="h-full w-full flex flex-col">
+            <div className="flex-none p-4 border-b">
+              <SystemStatusMonitor showDetails={false} autoRefresh={true} />
+            </div>
+            <div className="flex-1">
+              <PremiumAnalysisWizard />
+            </div>
+          </div>
+        );
       case 'premium-analysis':
         console.log('✅ SUBSCRIBER TAB RENDERER - Loading PremiumAnalysisTabController for tab:', activeTab);
-        return <PremiumAnalysisTabController />;
-      case 'integrations':
-        console.log('✅ SUBSCRIBER TAB RENDERER - Loading IntegrationsPage for tab:', activeTab);
         return (
-          <Suspense fallback={<LoadingSpinner />}>
-            <IntegrationsPage />
-          </Suspense>
+          <div className="h-full w-full flex flex-col">
+            <div className="flex-none p-4 border-b">
+              <SystemStatusMonitor showDetails={false} autoRefresh={true} />
+            </div>
+            <div className="flex-1">
+              <PremiumAnalysisTabController />
+            </div>
+          </div>
         );
-      // Hidden pages - keep functional but not shown in navigation
       case 'batch':
         console.log('✅ SUBSCRIBER TAB RENDERER - Loading BatchAnalysisDashboard for tab:', activeTab);
         return (
@@ -105,6 +116,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
                   Analyze multiple designs simultaneously for comprehensive insights
                 </p>
               </div>
+              <SystemStatusMonitor showDetails={false} autoRefresh={true} />
             </div>
             <Suspense fallback={<LoadingSpinner />}>
               <BatchAnalysisDashboard />
@@ -122,6 +134,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
                   View and manage all your design analysis history
                 </p>
               </div>
+              <SystemStatusMonitor showDetails={false} autoRefresh={true} />
             </div>
             <Suspense fallback={<LoadingSpinner />}>
               <UnifiedAnalysisHistory onViewAnalysis={(upload) => console.log('Viewing analysis:', upload.id, upload.file_name)} />
@@ -145,6 +158,27 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
             </Suspense>
           </div>
         );
+      case 'insights':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading InsightsPage for tab:', activeTab);
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <InsightsPage />
+          </Suspense>
+        );
+      case 'prompts':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading PromptsPage for tab:', activeTab);
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <PromptsPage />
+          </Suspense>
+        );
+      case 'integrations':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading IntegrationsPage for tab:', activeTab);
+        return (
+          <Suspense fallback={<LoadingSpinner />}>
+            <IntegrationsPage />
+          </Suspense>
+        );
       default:
         console.log('✅ SUBSCRIBER TAB RENDERER - Loading default AdvancedDesignAnalysisPageContent for tab:', activeTab);
         return (
@@ -156,6 +190,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
                   Chat with AI for comprehensive UX insights and design analysis
                 </p>
               </div>
+              <SystemStatusMonitor showDetails={false} autoRefresh={true} />
             </div>
             <Suspense fallback={<LoadingSpinner />}>
               <AdvancedDesignAnalysisPageContent />
