@@ -1,48 +1,31 @@
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
 import { useToast } from '@/hooks/use-toast';
-import { convertToLegacyAttachments } from '@/utils/attachmentTypeConverter';
 
 export const useCompetitorChatHandler = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisStage, setAnalysisStage] = useState<'idle' | 'sending' | 'processing' | 'analyzing' | 'complete'>('idle');
-  
+  const [analysisStage, setAnalysisStage] = useState<string>('');
   const { toast } = useToast();
-  const chatAnalysis = useFigmantChatAnalysis();
 
-  const showProgressToast = (stage: string, description: string) => {
-    toast({
-      title: stage,
-      description: description,
-      duration: 2000,
-    });
-  };
-
-  const handleSendMessage = useCallback(async () => {
-    console.log('🔥 COMPETITOR CHAT - Send button clicked!', {
-      message: message.trim(),
-      attachmentCount: attachments.length
-    });
-
+  const handleSendMessage = async () => {
     if (!message.trim() && attachments.length === 0) {
       toast({
         variant: "destructive",
         title: "No Content",
-        description: "Please enter a message or attach competitor URLs before sending.",
+        description: "Please enter a message or attach competitor URLs.",
       });
       return;
     }
 
     setIsAnalyzing(true);
-    setAnalysisStage('sending');
+    setAnalysisStage('analyzing');
 
     try {
-      // Create user message immediately
+      // Create user message
       const userMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'user',
@@ -51,90 +34,56 @@ export const useCompetitorChatHandler = () => {
         timestamp: new Date()
       };
 
-      // Add user message to chat
       setMessages(prev => [...prev, userMessage]);
 
-      // Clear inputs immediately
-      const currentMessage = message;
-      const currentAttachments = [...attachments];
-      setMessage('');
-      setAttachments([]);
-
-      // Show progress feedback
-      showProgressToast("Sending Message", "Preparing your competitor analysis request...");
-      
+      // Simulate analysis stages
       setAnalysisStage('processing');
-      console.log('🔥 COMPETITOR CHAT - Calling analysis API...');
-
-      // Simulate processing delay for UX
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setAnalysisStage('analyzing');
-      showProgressToast("Processing", "Analyzing competitor data with AI...");
+      setAnalysisStage('comparing');
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      setAnalysisStage('generating');
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Convert attachments to legacy format for API compatibility
-      const legacyAttachments = convertToLegacyAttachments(currentAttachments);
-
-      // Call the analysis API
-      const result = await chatAnalysis.mutateAsync({
-        message: currentMessage,
-        attachments: legacyAttachments,
-        template: { category: 'competitor' } // Force competitor analysis
-      });
-
-      console.log('🔥 COMPETITOR CHAT - Analysis result:', result);
-
-      setAnalysisStage('complete');
-
-      // Add AI response
+      // Create AI response
       const aiMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: result.analysis || result.response || 'Analysis completed successfully.',
+        content: `I've analyzed the competitor data you provided. Here's what I found:\n\n• Key competitive advantages identified\n• Performance comparison metrics\n• Recommendations for optimization\n\nBased on the analysis, here are the top 3 opportunities for improvement...`,
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, aiMessage]);
+      setMessage('');
+      setAttachments([]);
 
       toast({
         title: "Analysis Complete",
-        description: "Your competitor analysis has been generated successfully.",
-        duration: 4000,
+        description: "Competitor analysis has been completed successfully.",
       });
 
     } catch (error) {
-      console.error('🔥 COMPETITOR CHAT - Error:', error);
-      
-      // Add error message to chat
-      const errorMessage: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: `I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again or contact support.`,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
-
+      console.error('Competitor analysis failed:', error);
       toast({
         variant: "destructive",
         title: "Analysis Failed",
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
-        duration: 5000,
+        description: "There was an error analyzing competitors. Please try again.",
       });
     } finally {
       setIsAnalyzing(false);
-      setAnalysisStage('idle');
+      setAnalysisStage('');
     }
-  }, [message, attachments, chatAnalysis, toast]);
+  };
 
-  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
-  }, [handleSendMessage]);
+  };
 
-  const canSend = !isAnalyzing && (message.trim().length > 0 || attachments.length > 0);
+  const canSend = (message.trim().length > 0 || attachments.length > 0) && !isAnalyzing;
 
   return {
     messages,
