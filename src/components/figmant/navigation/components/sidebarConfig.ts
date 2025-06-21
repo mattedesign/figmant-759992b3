@@ -16,6 +16,6 @@ export const sidebarItems: SidebarItem[] = navigationConfig.mainItems.map(item =
   id: item.id,
   label: item.label,
   icon: item.icon,
-  badge: item.id === 'competitor-analysis' ? 'New' : undefined,
+  badge: item.id === 'analysis' ? 'New' : undefined,
   disabled: false
 }));

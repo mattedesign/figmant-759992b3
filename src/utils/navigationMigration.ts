@@ -5,9 +5,9 @@
  */
 
 export const navigationMigrations = {
-  // Legacy chat/analysis routes -> Competitor Analysis
-  'chat': 'competitor-analysis',
-  'analysis': 'competitor-analysis',
+  // Legacy chat/analysis routes -> Analysis
+  'chat': 'analysis',
+  'competitor-analysis': 'analysis',
   
   // Legacy wizard routes -> Wizard Analysis (direct to stepped process)
   'wizard': 'wizard-analysis',

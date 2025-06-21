@@ -30,8 +30,8 @@ export const navigationConfig = {
       description: 'Main overview and activity center'
     },
     { 
-      id: 'competitor-analysis', 
-      label: 'Quick Analysis', 
+      id: 'analysis', 
+      label: 'Analysis', 
       icon: BarChart3, 
       priority: 1,
       description: 'UC-024 - AI-powered competitor insights'

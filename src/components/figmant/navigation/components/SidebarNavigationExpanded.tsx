@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -79,7 +80,7 @@ export const SidebarNavigationExpanded: React.FC<SidebarNavigationExpandedProps>
                     >
                       <item.icon className="h-4 w-4 mr-3 flex-shrink-0" />
                       <span className="flex-1 text-left truncate text-sm">{item.label}</span>
-                      {item.id === 'competitor-analysis' && (
+                      {item.id === 'analysis' && (
                         <Badge variant="secondary" className="ml-2 text-xs bg-blue-100 text-blue-700">
                           New
                         </Badge>

@@ -51,7 +51,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       case 'dashboard':
         return <DashboardPage />;
       
-      case 'competitor-analysis':
+      case 'analysis':
         // UC-024 - AI Competitor Analysis
         return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
       
@@ -80,8 +80,8 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       
       // Legacy routes - maintain backward compatibility during transition
       case 'chat':
-      case 'analysis':
-        // These now redirect to competitor-analysis
+      case 'competitor-analysis':
+        // These now redirect to analysis
         return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
       
       case 'wizard':
