@@ -49,38 +49,47 @@ export const MobileChatLayout: React.FC = () => {
   return (
     <ChatAttachmentHandlers>
       {(attachmentHandlers) => (
-        <div className="h-full">
-          <AnalysisChatContainer
-            messages={messages}
-            isAnalyzing={isAnalyzing}
-            message={message}
-            setMessage={setMessage}
-            onSendMessage={handleSendMessage}
-            onKeyPress={handleKeyPress}
-            getCurrentTemplate={getCurrentTemplate}
-            canSend={canSend}
-            onFileUpload={attachmentHandlers.handleFileUpload}
-            onToggleUrlInput={handleToggleUrlInput}
-            showUrlInput={showUrlInput}
-            urlInput=""
-            setUrlInput={() => {}}
-            onAddUrl={() => {}}
-            onCancelUrl={() => setShowUrlInput(false)}
-            onTemplateSelect={handleTemplateSelect}
-            availableTemplates={templates}
-            onViewTemplate={handleViewTemplate}
-            attachments={attachments}
-            onRemoveAttachment={attachmentHandlers.removeAttachment}
-          />
+        <div className="h-full flex flex-col overflow-hidden">
+          {/* Main Chat Container - Takes remaining space */}
+          <div className="flex-1 min-h-0 relative">
+            <AnalysisChatContainer
+              messages={messages}
+              isAnalyzing={isAnalyzing}
+              message={message}
+              setMessage={setMessage}
+              onSendMessage={handleSendMessage}
+              onKeyPress={handleKeyPress}
+              getCurrentTemplate={getCurrentTemplate}
+              canSend={canSend}
+              onFileUpload={attachmentHandlers.handleFileUpload}
+              onToggleUrlInput={handleToggleUrlInput}
+              showUrlInput={showUrlInput}
+              urlInput=""
+              setUrlInput={() => {}}
+              onAddUrl={() => {}}
+              onCancelUrl={() => setShowUrlInput(false)}
+              onTemplateSelect={handleTemplateSelect}
+              availableTemplates={templates}
+              onViewTemplate={handleViewTemplate}
+              attachments={attachments}
+              onRemoveAttachment={attachmentHandlers.removeAttachment}
+            />
+          </div>
           
-          {/* URL Input Handler for Mobile */}
-          <URLInputHandler
-            showUrlInput={showUrlInput}
-            onClose={() => setShowUrlInput(false)}
-            attachments={attachments}
-            onAttachmentAdd={attachmentHandlers.handleAttachmentAdd}
-            onAttachmentUpdate={attachmentHandlers.handleAttachmentUpdate}
-          />
+          {/* URL Input Handler for Mobile - Fixed position overlay */}
+          {showUrlInput && (
+            <div className="absolute inset-0 z-50 bg-black bg-opacity-50 flex items-end">
+              <div className="w-full bg-white rounded-t-lg">
+                <URLInputHandler
+                  showUrlInput={showUrlInput}
+                  onClose={() => setShowUrlInput(false)}
+                  attachments={attachments}
+                  onAttachmentAdd={attachmentHandlers.handleAttachmentAdd}
+                  onAttachmentUpdate={attachmentHandlers.handleAttachmentUpdate}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
     </ChatAttachmentHandlers>

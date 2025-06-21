@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -252,9 +251,9 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
   };
 
   return (
-    <Card className={`flex flex-col h-full ${className}`}>
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <Card className={`flex flex-col h-full overflow-hidden ${className}`}>
+      {/* Messages Area - Scrollable with proper constraints */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -310,8 +309,8 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
         )}
       </div>
 
-      {/* Input Area */}
-      <div className="border-t p-4" {...getRootProps()}>
+      {/* Input Area - Fixed at bottom with constraints */}
+      <div className="flex-shrink-0 border-t p-4" {...getRootProps()}>
         <input {...getInputProps()} />
         
         {/* URL Input */}
@@ -342,7 +341,7 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
 
         {/* Attachments Preview */}
         {attachments.length > 0 && (
-          <div className="mb-3 space-y-2">
+          <div className="mb-3 space-y-2 max-h-32 overflow-y-auto">
             {attachments.map((attachment) => (
               <div
                 key={attachment.id}
@@ -388,10 +387,10 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
           </div>
         )}
 
-        {/* Input Controls */}
-        <div className="flex items-end gap-3">
+        {/* Input Controls - Fixed height container */}
+        <div className="flex items-end gap-3 min-h-[60px]">
           {/* Attachment Buttons */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <input
               type="file"
               id="file-upload"
@@ -420,13 +419,13 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
           </div>
 
           {/* Text Input */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <Textarea
               ref={textareaRef}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder={placeholder}
-              className="min-h-[60px] resize-none"
+              className="min-h-[60px] max-h-[120px] resize-none"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
@@ -442,6 +441,7 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
             onClick={handleSend}
             disabled={(!message.trim() && attachments.length === 0) || disabled || isAnalyzing || isProcessing}
             size="sm"
+            className="flex-shrink-0"
           >
             <Send className="h-4 w-4" />
           </Button>

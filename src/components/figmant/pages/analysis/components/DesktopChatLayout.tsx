@@ -59,35 +59,37 @@ export const DesktopChatLayout: React.FC = () => {
   return (
     <ChatAttachmentHandlers>
       {(attachmentHandlers) => (
-        <div className="h-full flex gap-4">
-          {/* Main Chat Container */}
-          <div className="flex-1 min-w-0 relative">
-            <AnalysisChatContainer
-              messages={messages}
-              isAnalyzing={isAnalyzing}
-              message={message}
-              setMessage={setMessage}
-              onSendMessage={handleSendMessage}
-              onKeyPress={handleKeyPress}
-              getCurrentTemplate={getCurrentTemplate}
-              canSend={canSend}
-              onFileUpload={attachmentHandlers.handleFileUpload}
-              onToggleUrlInput={handleToggleUrlInput}
-              showUrlInput={false}
-              urlInput=""
-              setUrlInput={() => {}}
-              onAddUrl={() => {}}
-              onCancelUrl={() => {}}
-              onTemplateSelect={handleTemplateSelect}
-              availableTemplates={templates}
-              onViewTemplate={handleViewTemplate}
-              attachments={attachments}
-              onRemoveAttachment={attachmentHandlers.removeAttachment}
-            />
+        <div className="h-full flex gap-4 overflow-hidden">
+          {/* Main Chat Container - Fixed height with proper flex layout */}
+          <div className="flex-1 min-w-0 relative flex flex-col h-full">
+            <div className="flex-1 min-h-0 relative">
+              <AnalysisChatContainer
+                messages={messages}
+                isAnalyzing={isAnalyzing}
+                message={message}
+                setMessage={setMessage}
+                onSendMessage={handleSendMessage}
+                onKeyPress={handleKeyPress}
+                getCurrentTemplate={getCurrentTemplate}
+                canSend={canSend}
+                onFileUpload={attachmentHandlers.handleFileUpload}
+                onToggleUrlInput={handleToggleUrlInput}
+                showUrlInput={false}
+                urlInput=""
+                setUrlInput={() => {}}
+                onAddUrl={() => {}}
+                onCancelUrl={() => {}}
+                onTemplateSelect={handleTemplateSelect}
+                availableTemplates={templates}
+                onViewTemplate={handleViewTemplate}
+                attachments={attachments}
+                onRemoveAttachment={attachmentHandlers.removeAttachment}
+              />
+            </div>
             
-            {/* URL Input Handler */}
+            {/* URL Input Handler - Positioned absolutely but within container */}
             {showUrlInput && (
-              <div className="absolute top-0 left-0 right-0 z-10 p-4">
+              <div className="absolute top-4 left-4 right-4 z-10 bg-white rounded-lg shadow-lg border">
                 <URLInputHandler
                   showUrlInput={showUrlInput}
                   onClose={() => setShowUrlInput(false)}
@@ -101,7 +103,7 @@ export const DesktopChatLayout: React.FC = () => {
 
           {/* Analysis Assets Panel */}
           {isAssetsPanelVisible && (
-            <div className="flex-shrink-0 w-72">
+            <div className="flex-shrink-0 w-72 h-full overflow-hidden">
               <AnalysisNavigationSidebar
                 messages={messages}
                 attachments={attachments}
