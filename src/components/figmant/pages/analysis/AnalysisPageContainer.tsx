@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
@@ -70,7 +69,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
   if (isLoading) {
     return (
       <div className="h-full flex flex-col">
-        <AnalysisNavigationHeader />
+        <AnalysisNavigationHeader creditCost={currentCreditCost} />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
@@ -84,7 +83,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
   // ALWAYS show "Start your analysis" content for both mobile and desktop
   return (
     <div className="h-full flex flex-col">
-      <AnalysisNavigationHeader />
+      <AnalysisNavigationHeader creditCost={currentCreditCost} />
       
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         <div className="text-center max-w-md w-full">

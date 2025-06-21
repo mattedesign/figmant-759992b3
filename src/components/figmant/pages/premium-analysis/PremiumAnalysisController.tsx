@@ -58,7 +58,7 @@ export const PremiumAnalysisController: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
-      <AnalysisNavigationHeader />
+      <AnalysisNavigationHeader creditCost={currentCreditCost} />
       <StepRenderer
         currentStep={currentStep}
         totalSteps={5}

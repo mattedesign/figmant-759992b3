@@ -1,7 +1,9 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { PanelLeftClose, PanelLeftOpen, CreditCard, Crown, Zap } from 'lucide-react';
+import { useTemplateCreditStore } from '@/stores/templateCreditStore';
 
 interface SidebarHeaderProps {
   isCollapsed: boolean;
@@ -12,6 +14,32 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
   isCollapsed,
   onToggleCollapse
 }) => {
+  // Use explicit selector pattern for better reactivity
+  const currentCreditCost = useTemplateCreditStore((state) => {
+    console.log('🔄 SidebarHeader: Store selector called, credit cost:', state.currentCreditCost);
+    return state.currentCreditCost;
+  });
+
+  console.log('🔄 SidebarHeader: Component rendering with credit cost:', currentCreditCost);
+
+  const getCreditIcon = () => {
+    const icon = currentCreditCost >= 5 ? <Crown className="h-3 w-3" /> : 
+                 currentCreditCost >= 3 ? <Zap className="h-3 w-3" /> : 
+                 <CreditCard className="h-3 w-3" />;
+    console.log('🔄 SidebarHeader: getCreditIcon called, returning icon for cost:', currentCreditCost);
+    return icon;
+  };
+
+  const getCreditStyle = () => {
+    const style = currentCreditCost >= 5 
+      ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none"
+      : currentCreditCost >= 3 
+      ? "bg-blue-50 text-blue-700 border-blue-200"
+      : "bg-gray-100 text-gray-700 border-gray-200";
+    console.log('🔄 SidebarHeader: getCreditStyle called, returning style for cost:', currentCreditCost);
+    return style;
+  };
+
   return (
     <div className="flex-shrink-0 p-4 border-b border-gray-200">
       <div className="flex items-center justify-between">
@@ -27,8 +55,17 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({
           )}
         </div>
 
-        {/* Collapse Toggle Button */}
-        <div className="flex items-center">
+        {/* Credit Cost Display and Collapse Button */}
+        <div className="flex items-center space-x-2">
+          {/* Credit Cost Badge - Show when not collapsed */}
+          {!isCollapsed && (
+            <Badge className={`flex items-center gap-1 transition-all duration-200 ${getCreditStyle()}`}>
+              {getCreditIcon()}
+              {currentCreditCost} Credit{currentCreditCost !== 1 ? 's' : ''}
+            </Badge>
+          )}
+          
+          {/* Collapse Toggle Button */}
           <Button
             variant="ghost"
             size="sm"
