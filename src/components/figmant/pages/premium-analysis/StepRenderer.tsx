@@ -7,7 +7,11 @@ import { Step6CustomPrompt } from './steps/Step6CustomPrompt';
 import { Step7Processing } from './steps/Step7Processing';
 import { StepProps } from './types';
 
-export const StepRenderer: React.FC<StepProps> = (props) => {
+interface StepRendererProps extends StepProps {
+  onCreditCostChange?: (creditCost: number) => void;
+}
+
+export const StepRenderer: React.FC<StepRendererProps> = (props) => {
   const { currentStep } = props;
 
   const renderStepContent = () => {

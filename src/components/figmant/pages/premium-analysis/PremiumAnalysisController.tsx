@@ -5,6 +5,7 @@ import { StepData } from './types';
 
 export const PremiumAnalysisController: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [currentCreditCost, setCurrentCreditCost] = useState<number>(1);
   const [stepData, setStepData] = useState<StepData>({
     selectedType: '',
     projectName: 'Untitled Analysis', // Set default project name
@@ -18,6 +19,7 @@ export const PremiumAnalysisController: React.FC = () => {
 
   console.log('🔍 PremiumAnalysisController render:', {
     currentStep,
+    currentCreditCost,
     stepData: {
       selectedType: stepData.selectedType,
       projectName: stepData.projectName,
@@ -25,6 +27,10 @@ export const PremiumAnalysisController: React.FC = () => {
       uploadedFilesCount: stepData.uploadedFiles?.length || 0
     }
   });
+
+  const handleCreditCostChange = (creditCost: number) => {
+    setCurrentCreditCost(creditCost);
+  };
 
   const goToNextStep = useCallback(() => {
     console.log('🔍 Going to next step, current:', currentStep);
@@ -58,6 +64,7 @@ export const PremiumAnalysisController: React.FC = () => {
         setStepData={setStepData}
         onNextStep={goToNextStep}
         onPreviousStep={goToPreviousStep}
+        onCreditCostChange={handleCreditCostChange}
       />
     </div>
   );
