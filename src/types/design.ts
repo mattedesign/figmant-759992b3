@@ -12,7 +12,7 @@ export interface DesignUpload {
   source_url: string | null;
   batch_id: string | null;
   batch_name: string | null;
-  analysis_goals: string | null;
+  analysis_goals?: string | null;
   analysis_preferences: AnalysisPreferences | null;
   original_batch_id: string | null;
   is_replacement: boolean | null;
