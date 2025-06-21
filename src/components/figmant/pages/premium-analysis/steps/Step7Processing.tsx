@@ -1,4 +1,6 @@
 
+// Complete Step7Processing.tsx with all states (processing, error, and complete)
+
 import React, { useEffect, useState } from 'react';
 import { StepProps } from '../types';
 import { ProcessingState } from '../components/ProcessingState';
@@ -121,6 +123,7 @@ export const Step7Processing: React.FC<StepProps> = ({
     }
   };
 
+  // PROCESSING STATE
   if (processingState === 'processing') {
     return (
       <div className="w-full min-h-full">
@@ -137,6 +140,7 @@ export const Step7Processing: React.FC<StepProps> = ({
     );
   }
 
+  // ERROR STATE
   if (processingState === 'error') {
     return (
       <div className="w-full min-h-full">
@@ -157,7 +161,7 @@ export const Step7Processing: React.FC<StepProps> = ({
     );
   }
 
-  // Complete state - show actual results
+  // COMPLETE STATE - show actual results
   return (
     <div className="w-full min-h-full">
       <div className="w-full text-center mb-8">
