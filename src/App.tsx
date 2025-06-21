@@ -8,10 +8,8 @@ import {
   Navigate,
 } from 'react-router-dom';
 import Auth from '@/pages/Auth';
-import Dashboard from '@/pages/Dashboard';
 import Subscription from '@/pages/Subscription';
 import PaymentSuccess from '@/pages/PaymentSuccess';
-import OwnerDashboard from '@/pages/OwnerDashboard';
 import DesignAnalysis from '@/pages/DesignAnalysis';
 import StripeWebhookTest from '@/pages/StripeWebhookTest';
 import AdminAssets from '@/pages/AdminAssets';
