@@ -59,7 +59,7 @@ export const DesktopChatLayout: React.FC = () => {
   return (
     <ChatAttachmentHandlers>
       {(attachmentHandlers) => (
-        <div className="h-full flex gap-4 overflow-hidden">
+        <div className="h-full flex gap-4 overflow-hidden relative">
           {/* Main Chat Container - Fixed height with proper flex layout */}
           <div className="flex-1 min-w-0 relative flex flex-col h-full">
             <div className="flex-1 min-h-0 relative">
@@ -86,19 +86,6 @@ export const DesktopChatLayout: React.FC = () => {
                 onRemoveAttachment={attachmentHandlers.removeAttachment}
               />
             </div>
-            
-            {/* URL Input Handler - Positioned absolutely but within container */}
-            {showUrlInput && (
-              <div className="absolute top-4 left-4 right-4 z-10 bg-white rounded-lg shadow-lg border">
-                <URLInputHandler
-                  showUrlInput={showUrlInput}
-                  onClose={() => setShowUrlInput(false)}
-                  attachments={attachments}
-                  onAttachmentAdd={attachmentHandlers.handleAttachmentAdd}
-                  onAttachmentUpdate={attachmentHandlers.handleAttachmentUpdate}
-                />
-              </div>
-            )}
           </div>
 
           {/* Analysis Assets Panel */}
@@ -129,6 +116,15 @@ export const DesktopChatLayout: React.FC = () => {
               </Button>
             </div>
           )}
+
+          {/* URL Input Handler - Rendered as overlay portal */}
+          <URLInputHandler
+            showUrlInput={showUrlInput}
+            onClose={() => setShowUrlInput(false)}
+            attachments={attachments}
+            onAttachmentAdd={attachmentHandlers.handleAttachmentAdd}
+            onAttachmentUpdate={attachmentHandlers.handleAttachmentUpdate}
+          />
         </div>
       )}
     </ChatAttachmentHandlers>

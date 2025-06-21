@@ -49,7 +49,7 @@ export const MobileChatLayout: React.FC = () => {
   return (
     <ChatAttachmentHandlers>
       {(attachmentHandlers) => (
-        <div className="h-full flex flex-col overflow-hidden">
+        <div className="h-full flex flex-col overflow-hidden relative">
           {/* Main Chat Container - Takes remaining space */}
           <div className="flex-1 min-h-0 relative">
             <AnalysisChatContainer
@@ -63,7 +63,7 @@ export const MobileChatLayout: React.FC = () => {
               canSend={canSend}
               onFileUpload={attachmentHandlers.handleFileUpload}
               onToggleUrlInput={handleToggleUrlInput}
-              showUrlInput={showUrlInput}
+              showUrlInput={false}
               urlInput=""
               setUrlInput={() => {}}
               onAddUrl={() => {}}
@@ -76,20 +76,14 @@ export const MobileChatLayout: React.FC = () => {
             />
           </div>
           
-          {/* URL Input Handler for Mobile - Fixed position overlay */}
-          {showUrlInput && (
-            <div className="absolute inset-0 z-50 bg-black bg-opacity-50 flex items-end">
-              <div className="w-full bg-white rounded-t-lg">
-                <URLInputHandler
-                  showUrlInput={showUrlInput}
-                  onClose={() => setShowUrlInput(false)}
-                  attachments={attachments}
-                  onAttachmentAdd={attachmentHandlers.handleAttachmentAdd}
-                  onAttachmentUpdate={attachmentHandlers.handleAttachmentUpdate}
-                />
-              </div>
-            </div>
-          )}
+          {/* URL Input Handler - Rendered as overlay portal */}
+          <URLInputHandler
+            showUrlInput={showUrlInput}
+            onClose={() => setShowUrlInput(false)}
+            attachments={attachments}
+            onAttachmentAdd={attachmentHandlers.handleAttachmentAdd}
+            onAttachmentUpdate={attachmentHandlers.handleAttachmentUpdate}
+          />
         </div>
       )}
     </ChatAttachmentHandlers>
