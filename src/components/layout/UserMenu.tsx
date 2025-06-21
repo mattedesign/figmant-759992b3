@@ -1,3 +1,4 @@
+
 // src/components/layout/UserMenu.tsx
 
 import { User, Settings, LogOut, CreditCard, UserCog, Home } from 'lucide-react';

@@ -13,11 +13,9 @@ import {
 import { 
   LogOut,
   CreditCard,
-  LayoutDashboard,
-  Shield,
   UserCog,
   Settings,
-  User
+  Home
 } from 'lucide-react';
 
 interface UserProfileDropdownProps {
@@ -47,9 +45,8 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
     }
   };
 
-  const isOnOwnerDashboard = location.pathname === '/owner';
-  const isOnSubscriberDashboard = location.pathname === '/dashboard';
-  const isOnFigmant = location.pathname === '/figmant';
+  const isOnFigmant = location.pathname.startsWith('/figmant');
+  const currentSection = location.pathname.split('/')[2];
 
   return (
     <div className="flex-shrink-0 px-6 py-4">
@@ -104,42 +101,23 @@ export const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
           
           <DropdownMenuSeparator />
           
-          {/* Dashboard Navigation - Only show for owners */}
+          {/* Main App */}
+          <DropdownMenuItem 
+            onClick={() => navigate('/figmant/dashboard')}
+            className={isOnFigmant && currentSection === 'dashboard' ? 'bg-accent' : ''}
+          >
+            <Home className="mr-2 h-4 w-4" />
+            Main App
+          </DropdownMenuItem>
+
+          {/* Admin Access for Owners */}
           {isOwner && (
-            <>
-              <DropdownMenuItem 
-                onClick={() => navigate('/dashboard')}
-                className={isOnSubscriberDashboard ? 'bg-accent' : ''}
-              >
-                <LayoutDashboard className="mr-2 h-4 w-4" />
-                Subscriber Dashboard
-              </DropdownMenuItem>
-              
-              <DropdownMenuItem 
-                onClick={() => navigate('/owner')}
-                className={isOnOwnerDashboard ? 'bg-accent' : ''}
-              >
-                <Shield className="mr-2 h-4 w-4" />
-                Owner Dashboard
-              </DropdownMenuItem>
-
-              <DropdownMenuItem 
-                onClick={() => navigate('/figmant', { state: { activeSection: 'admin' } })}
-                className={isOnFigmant && location.state?.activeSection === 'admin' ? 'bg-accent' : ''}
-              >
-                <UserCog className="mr-2 h-4 w-4" />
-                Admin
-              </DropdownMenuItem>
-              
-              <DropdownMenuSeparator />
-            </>
-          )}
-
-          {/* Regular dashboard link for non-owners */}
-          {!isOwner && (
-            <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-              <User className="mr-2 h-4 w-4" />
-              Dashboard
+            <DropdownMenuItem 
+              onClick={() => navigate('/figmant/admin')}
+              className={isOnFigmant && currentSection === 'admin' ? 'bg-accent' : ''}
+            >
+              <UserCog className="mr-2 h-4 w-4" />
+              Admin
             </DropdownMenuItem>
           )}
           
