@@ -1,71 +1,93 @@
+// src/components/figmant/FigmantLayout.tsx
 
 import React, { useState, useEffect } from 'react';
-import { FigmantMainContent } from './FigmantMainContent';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { FigmantSidebar } from './sidebar/FigmantSidebarContainer';
+import { FigmantMainContent } from './FigmantMainContent';
 import { MobileNavigation } from './navigation/MobileNavigation';
-import { useIsMobile, useIsTablet } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { migrateNavigationRoute } from '@/utils/navigationMigration';
 
 export const FigmantLayout: React.FC = () => {
-  const [activeSection, setActiveSection] = useState('dashboard');
+  // Get section from URL parameters
+  const { section } = useParams<{ section: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // State management
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  
+  // Responsive design states
   const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
+  const isTablet = !isMobile && window.innerWidth < 1024;
+  
+  // Default to dashboard if no section specified, apply migration for legacy URLs
+  const rawActiveSection = section || 'dashboard';
+  const activeSection = migrateNavigationRoute(rawActiveSection);
+  
+  // Handle navigation - update URL when section changes
+  const handleSectionChange = (newSection: string) => {
+    const migratedSection = migrateNavigationRoute(newSection);
+    navigate(`/figmant/${migratedSection}`, { 
+      state: location.state,
+      replace: false 
+    });
+  };
 
-  // Auto-collapse sidebar for tablet screens (768px - 1023px)
+  // Handle URL changes and migration redirects
   useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth;
-      
-      console.log('🔧 FIGMANT LAYOUT - Resize detected:', { width, isTablet });
-      
-      // Only auto-collapse for tablet range (768px - 1023px)
-      // Mobile (< 768px) and Desktop (>= 1024px) maintain their own behavior
-      if (width >= 768 && width < 1024) {
-        console.log('🔧 FIGMANT LAYOUT - Setting collapsed for tablet');
-        setIsSidebarCollapsed(true);
-      } else if (width >= 1024) {
-        console.log('🔧 FIGMANT LAYOUT - Setting expanded for desktop');
-        // Auto-expand for desktop unless user manually collapsed it
-        // We'll track manual collapse state separately if needed
-        setIsSidebarCollapsed(false);
-      }
-      // Don't change state for mobile (< 768px) as it uses different navigation
-    };
-
-    // Set initial state based on screen size
-    handleResize();
-
-    // Listen for window resize
-    window.addEventListener('resize', handleResize);
+    // If the current URL section needed migration, redirect to the correct URL
+    if (section && section !== activeSection) {
+      navigate(`/figmant/${activeSection}`, { 
+        state: location.state,
+        replace: true 
+      });
+    }
     
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [isTablet]);
+    // If no section in URL, redirect to dashboard
+    if (!section) {
+      navigate('/figmant/dashboard', { 
+        state: location.state,
+        replace: true 
+      });
+    }
+  }, [section, activeSection, navigate, location.state]);
+
+  // Handle navigation state from external links (like premium analysis, template selection)
+  useEffect(() => {
+    if (location.state?.activeSection) {
+      const targetSection = migrateNavigationRoute(location.state.activeSection);
+      if (targetSection !== activeSection) {
+        navigate(`/figmant/${targetSection}`, { 
+          state: location.state,
+          replace: true 
+        });
+      }
+    }
+  }, [location.state, activeSection, navigate]);
 
   const handleBackToList = () => {
     setSelectedAnalysis(null);
   };
 
   const handleRightSidebarModeChange = (mode: string) => {
-    console.log('Right sidebar mode changed to:', mode);
+    // Handle right sidebar mode changes if needed
+    console.log('Right sidebar mode changed:', mode);
   };
 
   const handleSidebarCollapsedChange = (collapsed: boolean) => {
-    console.log('🔧 FIGMANT LAYOUT - Manual collapse change:', collapsed);
     setIsSidebarCollapsed(collapsed);
   };
 
-  console.log('🔧 FIGMANT LAYOUT - Current state:', {
-    activeSection,
-    selectedAnalysis,
-    isSidebarCollapsed,
-    screenWidth: typeof window !== 'undefined' ? window.innerWidth : 0,
+  // Screen size detection with responsive behavior
+  const screenSize = React.useMemo(() => ({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
     isMobile,
     isTablet
-  });
+  }), [isMobile, isTablet]);
 
+  // Mobile layout
   if (isMobile) {
     return (
       <div className="h-screen flex flex-col w-full overflow-hidden p-3" style={{ background: 'transparent' }}>
@@ -74,7 +96,7 @@ export const FigmantLayout: React.FC = () => {
           <h1 className="text-xl font-bold text-gray-900">figmant</h1>
           <MobileNavigation 
             activeSection={activeSection}
-            onSectionChange={setActiveSection}
+            onSectionChange={handleSectionChange}
           />
         </div>
         
@@ -82,7 +104,7 @@ export const FigmantLayout: React.FC = () => {
         <div className="flex-1 min-h-0 overflow-hidden">
           <FigmantMainContent
             activeSection={activeSection}
-            setActiveSection={setActiveSection}
+            setActiveSection={handleSectionChange}
             selectedAnalysis={selectedAnalysis}
             onBackToList={handleBackToList}
             onRightSidebarModeChange={handleRightSidebarModeChange}
@@ -99,7 +121,7 @@ export const FigmantLayout: React.FC = () => {
       <div className="flex-shrink-0">
         <FigmantSidebar 
           activeSection={activeSection}
-          onSectionChange={setActiveSection}
+          onSectionChange={handleSectionChange}
           onCollapsedChange={handleSidebarCollapsedChange}
         />
       </div>
@@ -107,7 +129,7 @@ export const FigmantLayout: React.FC = () => {
       <div className="flex-1 min-w-0 overflow-hidden">
         <FigmantMainContent
           activeSection={activeSection}
-          setActiveSection={setActiveSection}
+          setActiveSection={handleSectionChange}
           selectedAnalysis={selectedAnalysis}
           onBackToList={handleBackToList}
           onRightSidebarModeChange={handleRightSidebarModeChange}
