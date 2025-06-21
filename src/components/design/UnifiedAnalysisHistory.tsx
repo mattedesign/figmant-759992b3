@@ -12,6 +12,7 @@ import { DesignUpload, DesignAnalysis, DesignBatchAnalysis } from '@/types/desig
 import { Eye, FileImage, BarChart3, Clock, Target, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { UnifiedAnalysisResultsViewer } from './UnifiedAnalysisResultsViewer';
+import { EnhancedAnalysisCard } from '@/components/figmant/analysis/EnhancedAnalysisCard';
 
 interface UnifiedAnalysisHistoryProps {
   onViewAnalysis?: (upload: DesignUpload) => void;
@@ -40,15 +41,6 @@ export const UnifiedAnalysisHistory: React.FC<UnifiedAnalysisHistoryProps> = ({
   const recentIndividualAnalyses = individualAnalyses.slice(0, limit);
   const recentBatchAnalyses = batchAnalyses.slice(0, limit);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'default';
-      case 'processing': return 'secondary';
-      case 'failed': return 'destructive';
-      default: return 'outline';
-    }
-  };
-
   const handleViewIndividualAnalysis = (analysis: DesignAnalysis) => {
     const upload = uploads.find(u => u.id === analysis.design_upload_id);
     setSelectedAnalysis({ 
@@ -68,6 +60,29 @@ export const UnifiedAnalysisHistory: React.FC<UnifiedAnalysisHistoryProps> = ({
     });
   };
 
+  // Transform individual analyses to enhanced card format
+  const transformedIndividualAnalyses = recentIndividualAnalyses.map(analysis => {
+    const upload = uploads.find(u => u.id === analysis.design_upload_id);
+    return {
+      ...analysis,
+      type: 'design',
+      title: analysis.analysis_results?.title || 'Design Analysis',
+      displayTitle: `Design Analysis - ${analysis.analysis_type || 'General'}`,
+      fileCount: 1,
+      score: analysis.impact_summary?.key_metrics?.overall_score || 0
+    };
+  });
+
+  // Transform batch analyses to enhanced card format
+  const transformedBatchAnalyses = recentBatchAnalyses.map(batchAnalysis => ({
+    ...batchAnalysis,
+    type: 'batch',
+    title: 'Batch Comparative Analysis',
+    displayTitle: 'Batch Comparative Analysis',
+    fileCount: uploads.filter(u => u.batch_id === batchAnalysis.batch_id).length,
+    score: batchAnalysis.impact_summary?.key_metrics?.overall_score || 0
+  }));
+
   if (isLoading) {
     return (
       <Card>
@@ -75,7 +90,7 @@ export const UnifiedAnalysisHistory: React.FC<UnifiedAnalysisHistoryProps> = ({
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="animate-pulse">
-                <div className="h-16 bg-muted rounded-lg"></div>
+                <div className="h-32 bg-muted rounded-lg"></div>
               </div>
             ))}
           </div>
@@ -119,106 +134,39 @@ export const UnifiedAnalysisHistory: React.FC<UnifiedAnalysisHistoryProps> = ({
             </TabsList>
             
             <TabsContent value="individual" className="mt-4">
-              <div className="space-y-3">
-                {recentIndividualAnalyses.map((analysis) => {
-                  const upload = uploads.find(u => u.id === analysis.design_upload_id);
-                  const overallScore = analysis.impact_summary?.key_metrics?.overall_score || 0;
-                  
-                  return (
-                    <div key={analysis.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <FileImage className="h-8 w-8 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium text-sm">{upload?.file_name || 'Unknown Design'}</p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span>{analysis.analysis_type}</span>
-                            <span>•</span>
-                            <span>{formatDistanceToNow(new Date(analysis.created_at))} ago</span>
-                            {overallScore > 0 && (
-                              <>
-                                <span>•</span>
-                                <Badge variant="outline" className="text-xs">
-                                  Score: {overallScore}/10
-                                </Badge>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="default">
-                          Individual
-                        </Badge>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewIndividualAnalysis(analysis)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="space-y-4">
+                {transformedIndividualAnalyses.length === 0 ? (
+                  <div className="text-center py-4">
+                    <FileImage className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">No individual analyses yet</p>
+                  </div>
+                ) : (
+                  transformedIndividualAnalyses.map((analysis) => (
+                    <EnhancedAnalysisCard
+                      key={analysis.id}
+                      analysis={analysis}
+                      onViewDetails={() => handleViewIndividualAnalysis(analysis)}
+                    />
+                  ))
+                )}
               </div>
             </TabsContent>
             
             <TabsContent value="batch" className="mt-4">
-              <div className="space-y-3">
-                {recentBatchAnalyses.length === 0 ? (
+              <div className="space-y-4">
+                {transformedBatchAnalyses.length === 0 ? (
                   <div className="text-center py-4">
                     <BarChart3 className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">No batch analyses yet</p>
                   </div>
                 ) : (
-                  recentBatchAnalyses.map((batchAnalysis) => {
-                    const overallScore = batchAnalysis.impact_summary?.key_metrics?.overall_score || 0;
-                    
-                    return (
-                      <div key={batchAnalysis.id} className="flex items-center justify-between p-3 border rounded-lg border-l-4 border-l-blue-500 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <BarChart3 className="h-8 w-8 text-blue-600" />
-                          <div>
-                            <p className="font-medium text-sm flex items-center gap-2">
-                              Batch Comparative Analysis
-                              {batchAnalysis.version_number && batchAnalysis.version_number > 1 && (
-                                <Badge variant="outline" className="text-xs">
-                                  v{batchAnalysis.version_number}
-                                </Badge>
-                              )}
-                            </p>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <span>{batchAnalysis.analysis_type}</span>
-                              <span>•</span>
-                              <span>{formatDistanceToNow(new Date(batchAnalysis.created_at))} ago</span>
-                              {overallScore > 0 && (
-                                <>
-                                  <span>•</span>
-                                  <Badge variant="outline" className="text-xs">
-                                    Score: {overallScore}/10
-                                  </Badge>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="default" className="bg-blue-100 text-blue-800">
-                            Batch
-                          </Badge>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewBatchAnalysis(batchAnalysis)}
-                          >
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })
+                  transformedBatchAnalyses.map((batchAnalysis) => (
+                    <EnhancedAnalysisCard
+                      key={batchAnalysis.id}
+                      analysis={batchAnalysis}
+                      onViewDetails={() => handleViewBatchAnalysis(batchAnalysis)}
+                    />
+                  ))
                 )}
               </div>
             </TabsContent>

@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, MessageSquare, Clock, FileText } from 'lucide-react';
 import { useChatAnalysisHistory, SavedChatAnalysis } from '@/hooks/useChatAnalysisHistory';
 import { formatDistanceToNow } from 'date-fns';
+import { EnhancedAnalysisCard } from '@/components/figmant/analysis/EnhancedAnalysisCard';
+import { AnalysisDetailModal } from '@/components/figmant/pages/dashboard/components/AnalysisDetailModal';
 
 interface ChatAnalysisHistoryProps {
   onSelectAnalysis?: (analysis: SavedChatAnalysis) => void;
@@ -15,6 +17,28 @@ export const ChatAnalysisHistory: React.FC<ChatAnalysisHistoryProps> = ({
   onSelectAnalysis
 }) => {
   const { data: analyses, isLoading, error } = useChatAnalysisHistory();
+  const [selectedAnalysis, setSelectedAnalysis] = useState<SavedChatAnalysis | null>(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleViewDetails = (analysis: any) => {
+    setSelectedAnalysis(analysis);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedAnalysis(null);
+  };
+
+  // Transform analyses to enhanced card format
+  const transformedAnalyses = (analyses || []).map(analysis => ({
+    ...analysis,
+    type: 'chat',
+    title: 'Chat Analysis',
+    displayTitle: `Chat Analysis - ${analysis.analysis_type || 'General'}`,
+    fileCount: analysis.analysis_results?.attachments_processed || 1,
+    score: Math.round((analysis.confidence_score || 0.8) * 10)
+  }));
 
   if (isLoading) {
     return (
@@ -74,81 +98,35 @@ export const ChatAnalysisHistory: React.FC<ChatAnalysisHistoryProps> = ({
     );
   }
 
-  const truncateText = (text: string, maxLength: number = 100) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MessageSquare className="h-4 w-4" />
-          Chat Analysis History
-          <Badge variant="secondary">{analyses.length}</Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4 max-h-96 overflow-y-auto">
-          {analyses.map((analysis) => (
-            <div
-              key={analysis.id}
-              className="border rounded-lg p-3 hover:bg-muted/50 transition-colors cursor-pointer"
-              onClick={() => onSelectAnalysis?.(analysis)}
-            >
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Chat Analysis</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Prompt:</p>
-                  <p className="text-sm">{truncateText(analysis.prompt_used)}</p>
-                </div>
-                
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Analysis:</p>
-                  <p className="text-sm text-muted-foreground">
-                    {truncateText(analysis.analysis_results.response)}
-                  </p>
-                </div>
-                
-                <div className="flex items-center gap-2 pt-2">
-                  <Badge variant="outline" className="text-xs">
-                    Confidence: {Math.round((analysis.confidence_score || 0) * 100)}%
-                  </Badge>
-                  {analysis.analysis_results.attachments_processed && (
-                    <Badge variant="outline" className="text-xs">
-                      {analysis.analysis_results.attachments_processed} attachments
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              
-              {onSelectAnalysis && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full mt-2"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelectAnalysis(analysis);
-                  }}
-                >
-                  View Full Analysis
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Chat Analysis History
+            <Badge variant="secondary">{analyses.length}</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            {transformedAnalyses.map((analysis) => (
+              <EnhancedAnalysisCard
+                key={analysis.id}
+                analysis={analysis}
+                onViewDetails={handleViewDetails}
+              />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Analysis Detail Modal */}
+      <AnalysisDetailModal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        analysis={selectedAnalysis}
+      />
+    </>
   );
 };

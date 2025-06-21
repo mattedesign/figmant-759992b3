@@ -1,9 +1,6 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronRight, Clock, FileText, MessageSquare, Sparkles } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { EnhancedAnalysisCard } from '@/components/figmant/analysis/EnhancedAnalysisCard';
 import { AnalysisDetailModal } from '../../pages/dashboard/components/AnalysisDetailModal';
 
 interface RecentAnalysisItemProps {
@@ -21,14 +18,11 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
 }) => {
   const [showModal, setShowModal] = useState(false);
 
-  const handleAnalysisClick = (event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    
+  const handleViewDetails = (selectedAnalysis: any) => {
     console.log('🔍 RecentAnalysisItem: Opening analysis modal:', {
-      analysisId: analysis.id,
-      analysisType: analysis.type,
-      title: analysis.title
+      analysisId: selectedAnalysis.id,
+      analysisType: selectedAnalysis.type,
+      title: selectedAnalysis.title
     });
     
     setShowModal(true);
@@ -39,112 +33,13 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
     setShowModal(false);
   };
 
-  const analysisId = `${analysis.type}-${analysis.id}`;
-  
-  // Get appropriate icon based on analysis type
-  const getAnalysisIcon = () => {
-    if (analysis.type === 'chat') return MessageSquare;
-    if (analysis.type === 'wizard') return Sparkles;
-    return FileText;
-  };
-  
-  const Icon = getAnalysisIcon();
-  
-  const getConfidenceScore = () => {
-    if (analysis.confidence_score) {
-      return Math.round(analysis.confidence_score * 100);
-    }
-    if (analysis.score) {
-      return analysis.score * 10;
-    }
-    return 85;
-  };
-
-  const getAnalysisTitle = () => {
-    // Use displayTitle if available, otherwise fall back to title
-    return analysis.displayTitle || analysis.title || 'Analysis';
-  };
-
-  console.log('🔍 RecentAnalysisItem: Rendering analysis item:', {
-    analysisId,
-    title: getAnalysisTitle(),
-    type: analysis.type,
-    score: getConfidenceScore(),
-    isExpanded
-  });
-
   return (
     <>
-      <div className="group rounded-lg border border-gray-100 bg-white hover:bg-gray-50 transition-colors">
-        <div
-          className="flex items-center justify-between p-3 cursor-pointer"
-          onClick={handleAnalysisClick}
-        >
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <Icon className="h-4 w-4 text-gray-500 flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {getAnalysisTitle()}
-              </p>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="flex items-center gap-1 text-xs text-gray-500">
-                  <Clock className="h-3 w-3" />
-                  <span>
-                    {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
-                  </span>
-                </div>
-                <Badge variant="secondary" className="text-xs">
-                  {getConfidenceScore()}%
-                </Badge>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleExpanded(analysisId, e);
-              }}
-            >
-              {isExpanded ? (
-                <ChevronDown className="h-3 w-3" />
-              ) : (
-                <ChevronRight className="h-3 w-3" />
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {isExpanded && (
-          <div className="px-3 pb-3 border-t border-gray-100">
-            <div className="mt-3 space-y-2 text-xs text-gray-600">
-              <div>
-                <span className="font-medium">Type:</span> {analysis.analysisType || analysis.analysis_type || 'General'}
-              </div>
-              <div>
-                <span className="font-medium">Status:</span> {analysis.status || 'Completed'}
-              </div>
-              <div>
-                <span className="font-medium">Files:</span> {analysis.fileCount || 1}
-              </div>
-              {analysis.analysis_results && (
-                <div className="mt-2">
-                  <div className="font-medium mb-1">Preview:</div>
-                  <div className="text-xs bg-gray-50 p-2 rounded text-gray-700 line-clamp-3">
-                    {typeof analysis.analysis_results === 'string' 
-                      ? analysis.analysis_results.slice(0, 100) + '...'
-                      : analysis.analysis_results.response?.slice(0, 100) + '...' || 'No preview available'}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+      <EnhancedAnalysisCard
+        analysis={analysis}
+        onViewDetails={handleViewDetails}
+        className="mb-2"
+      />
 
       {/* Analysis Detail Modal */}
       <AnalysisDetailModal
