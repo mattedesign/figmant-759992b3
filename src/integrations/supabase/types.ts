@@ -1318,22 +1318,30 @@ export type Database = {
         Args: { p_session_id: string; p_user_id: string }
         Returns: {
           id: string
+          chat_session_id: string
+          message_id: string
           file_name: string
           file_path: string
           file_size: number
           file_type: string
           upload_timestamp: string
+          is_active: boolean
+          created_by: string
         }[]
       }
       get_session_links_safe: {
         Args: { p_session_id: string; p_user_id: string }
         Returns: {
           id: string
+          chat_session_id: string
+          message_id: string
           url: string
           link_title: string
           link_description: string
           link_thumbnail: string
           upload_timestamp: string
+          is_active: boolean
+          created_by: string
         }[]
       }
       get_user_journey_analytics: {
@@ -1347,6 +1355,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: {
           id: string
+          user_id: string
           session_name: string
           created_at: string
           last_activity: string
