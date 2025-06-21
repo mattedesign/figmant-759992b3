@@ -22,7 +22,12 @@ export const CompetitorAnalysisPage: React.FC = () => {
 
   const handleOnSendMessage = (msg: string, attachments: any[]) => {
     console.log('🔥 COMPETITOR - OnSendMessage called with:', { msg, attachments });
-    // The actual sending is handled by the hook's handleSendMessage
+    
+    // Update the hook's state with the parameters from DesignChatInterface
+    setMessage(msg);
+    setAttachments(attachments);
+    
+    // Then call the send message handler
     handleSendMessage();
   };
 
