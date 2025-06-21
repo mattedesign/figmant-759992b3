@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AnalysisChatPanel } from './AnalysisChatPanel';
 import { useChatState } from './ChatStateManager';
@@ -65,9 +66,16 @@ export const AnalysisPage: React.FC = () => {
     
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+      
+      // Properly categorize files based on their MIME type
+      let attachmentType: 'file' | 'url' | 'image' = 'file';
+      if (file.type.startsWith('image/')) {
+        attachmentType = 'image';
+      }
+      
       const newAttachment: ChatAttachment = {
         id: crypto.randomUUID(),
-        type: file.type.startsWith('image/') ? 'image' : 'file',
+        type: attachmentType,
         name: file.name,
         url: URL.createObjectURL(file),
         status: 'uploaded',
@@ -309,6 +317,12 @@ export const AnalysisPage: React.FC = () => {
   const handleCancelUrl = () => {
     setShowUrlInput(false);
     setUrlInput('');
+  };
+
+  const handleClearChat = () => {
+    chatState.setMessages([]);
+    chatState.setAttachments([]);
+    chatState.setMessage('');
   };
 
   return (

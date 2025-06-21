@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
 import { useToast } from '@/hooks/use-toast';
+import { convertToLegacyAttachments } from '@/utils/attachmentTypeConverter';
 
 export const useCompetitorChatHandler = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -71,10 +72,13 @@ export const useCompetitorChatHandler = () => {
       setAnalysisStage('analyzing');
       showProgressToast("Processing", "Analyzing competitor data with AI...");
 
+      // Convert attachments to legacy format for API compatibility
+      const legacyAttachments = convertToLegacyAttachments(currentAttachments);
+
       // Call the analysis API
       const result = await chatAnalysis.mutateAsync({
         message: currentMessage,
-        attachments: currentAttachments,
+        attachments: legacyAttachments,
         template: { category: 'competitor' } // Force competitor analysis
       });
 

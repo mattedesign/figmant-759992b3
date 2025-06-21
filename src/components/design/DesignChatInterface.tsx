@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -16,7 +15,7 @@ export interface ChatAttachment {
   name: string;
   url?: string;
   file?: File;
-  status: 'uploading' | 'uploaded' | 'processing' | 'error';
+  status: 'pending' | 'uploading' | 'uploaded' | 'processing' | 'error';
   uploadPath?: string;
   error?: string;
   errorMessage?: string;
@@ -155,6 +154,7 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
 
   const getStatusIcon = (status: ChatAttachment['status']) => {
     switch (status) {
+      case 'pending':
       case 'uploading':
       case 'processing':
         return <Loader2 className="h-3 w-3 animate-spin" />;
