@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { FigmantPromptTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
@@ -38,7 +37,7 @@ export const TemplateDropdown: React.FC<TemplateDropdownProps> = ({
     onTemplateSelect(templateId);
     setShowTemplateMenu(false);
 
-    // Update global credit cost store
+    // Fetch and update global credit cost
     try {
       const { data, error } = await supabase
         .from('claude_prompt_examples')
@@ -48,14 +47,15 @@ export const TemplateDropdown: React.FC<TemplateDropdownProps> = ({
       
       if (error) {
         console.error('Error fetching credit cost:', error);
-        setTemplateCreditCost(templateId, 3);
+        setTemplateCreditCost(templateId, 3); // Fallback
       } else {
         const creditCost = data.credit_cost || 3;
+        console.log(`Template ${templateId} costs ${creditCost} credits`);
         setTemplateCreditCost(templateId, creditCost);
       }
     } catch (error) {
-      console.error('Error updating credit cost:', error);
-      setTemplateCreditCost(templateId, 3);
+      console.error('Error in handleTemplateSelect:', error);
+      setTemplateCreditCost(templateId, 3); // Fallback
     }
   };
 
