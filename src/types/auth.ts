@@ -7,6 +7,10 @@ export interface UserProfile {
   full_name: string | null;
   role: 'owner' | 'subscriber';
   created_at: string;
+  avatar_url: string | null;
+  address: string | null;
+  city: string | null;
+  country: string | null;
 }
 
 export interface Subscription {
