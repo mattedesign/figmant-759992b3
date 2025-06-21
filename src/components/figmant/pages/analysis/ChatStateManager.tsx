@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
+import { usePersistentChatSession } from '@/hooks/usePersistentChatSession';
 
 interface ChatState {
   messages: ChatMessage[];
@@ -11,6 +12,19 @@ interface ChatState {
   setAttachments: (attachments: ChatAttachment[] | ((prev: ChatAttachment[]) => ChatAttachment[])) => void;
   selectedTemplateId?: string;
   setSelectedTemplateId?: (id: string) => void;
+  
+  // Session management properties
+  currentSessionId: string | null;
+  currentSession: any;
+  sessions: any[];
+  sessionAttachments: ChatAttachment[];
+  sessionLinks: any[];
+  isSessionInitialized: boolean;
+  
+  // Session management functions
+  startNewSession: (sessionName?: string) => void;
+  loadSession: (sessionId: string) => void;
+  saveMessageAttachments: (message: ChatMessage) => void;
 }
 
 const ChatStateContext = createContext<ChatState | undefined>(undefined);
@@ -25,6 +39,19 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>();
 
+  // Use persistent chat session hook for session management
+  const {
+    currentSessionId,
+    currentSession,
+    sessions,
+    sessionAttachments,
+    sessionLinks,
+    isSessionInitialized,
+    createNewSession,
+    switchToSession,
+    saveMessageAttachments
+  } = usePersistentChatSession();
+
   const value: ChatState = {
     messages,
     setMessages,
@@ -33,7 +60,20 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
     attachments,
     setAttachments,
     selectedTemplateId,
-    setSelectedTemplateId
+    setSelectedTemplateId,
+    
+    // Session management state
+    currentSessionId,
+    currentSession,
+    sessions,
+    sessionAttachments,
+    sessionLinks,
+    isSessionInitialized,
+    
+    // Session management functions
+    startNewSession: createNewSession,
+    loadSession: switchToSession,
+    saveMessageAttachments
   };
 
   return (
@@ -60,7 +100,20 @@ export const useChatState = (): ChatState => {
       attachments,
       setAttachments,
       selectedTemplateId,
-      setSelectedTemplateId
+      setSelectedTemplateId,
+      
+      // Default session management state
+      currentSessionId: null,
+      currentSession: null,
+      sessions: [],
+      sessionAttachments: [],
+      sessionLinks: [],
+      isSessionInitialized: false,
+      
+      // Default session management functions
+      startNewSession: () => {},
+      loadSession: () => {},
+      saveMessageAttachments: () => {}
     };
   }
   return context;
