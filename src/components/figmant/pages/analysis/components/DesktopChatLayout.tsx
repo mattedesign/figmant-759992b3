@@ -59,38 +59,36 @@ export const DesktopChatLayout: React.FC = () => {
   return (
     <ChatAttachmentHandlers>
       {(attachmentHandlers) => (
-        <div className="h-full flex gap-4 overflow-hidden relative">
-          {/* Main Chat Container - Fixed height with proper flex layout */}
-          <div className="flex-1 min-w-0 relative flex flex-col h-full">
-            <div className="flex-1 min-h-0 relative">
-              <AnalysisChatContainer
-                messages={messages}
-                isAnalyzing={isAnalyzing}
-                message={message}
-                setMessage={setMessage}
-                onSendMessage={handleSendMessage}
-                onKeyPress={handleKeyPress}
-                getCurrentTemplate={getCurrentTemplate}
-                canSend={canSend}
-                onFileUpload={attachmentHandlers.handleFileUpload}
-                onToggleUrlInput={handleToggleUrlInput}
-                showUrlInput={false}
-                urlInput=""
-                setUrlInput={() => {}}
-                onAddUrl={() => {}}
-                onCancelUrl={() => {}}
-                onTemplateSelect={handleTemplateSelect}
-                availableTemplates={templates}
-                onViewTemplate={handleViewTemplate}
-                attachments={attachments}
-                onRemoveAttachment={attachmentHandlers.removeAttachment}
-              />
-            </div>
+        <div className="h-full flex overflow-hidden bg-background">
+          {/* Main Chat Container - Bulletproof viewport layout */}
+          <div className="flex-1 min-w-0 h-full">
+            <AnalysisChatContainer
+              messages={messages}
+              isAnalyzing={isAnalyzing}
+              message={message}
+              setMessage={setMessage}
+              onSendMessage={handleSendMessage}
+              onKeyPress={handleKeyPress}
+              getCurrentTemplate={getCurrentTemplate}
+              canSend={canSend}
+              onFileUpload={attachmentHandlers.handleFileUpload}
+              onToggleUrlInput={handleToggleUrlInput}
+              showUrlInput={false} // Never inline - always overlay
+              urlInput=""
+              setUrlInput={() => {}}
+              onAddUrl={() => {}}
+              onCancelUrl={() => {}}
+              onTemplateSelect={handleTemplateSelect}
+              availableTemplates={templates}
+              onViewTemplate={handleViewTemplate}
+              attachments={attachments}
+              onRemoveAttachment={attachmentHandlers.removeAttachment}
+            />
           </div>
 
-          {/* Analysis Assets Panel */}
+          {/* Analysis Assets Panel - Fixed width, independent scrolling */}
           {isAssetsPanelVisible && (
-            <div className="flex-shrink-0 w-72 h-full overflow-hidden">
+            <div className="flex-shrink-0 w-72 h-full border-l border-border">
               <AnalysisNavigationSidebar
                 messages={messages}
                 attachments={attachments}
@@ -103,21 +101,21 @@ export const DesktopChatLayout: React.FC = () => {
             </div>
           )}
 
-          {/* Toggle Button for Assets Panel */}
+          {/* Toggle Button for Assets Panel - Floating when collapsed */}
           {!isAssetsPanelVisible && (
-            <div className="flex-shrink-0 flex items-start pt-4">
+            <div className="fixed right-4 top-1/2 -translate-y-1/2 z-30">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setIsAssetsPanelVisible(true)}
-                className="h-8 w-8 p-0"
+                className="h-10 w-10 p-0 bg-background shadow-lg border-border"
               >
                 <PanelRightOpen className="h-4 w-4" />
               </Button>
             </div>
           )}
 
-          {/* URL Input Handler - Rendered as overlay portal */}
+          {/* URL Input Handler - Rendered as centered overlay portal */}
           <URLInputHandler
             showUrlInput={showUrlInput}
             onClose={() => setShowUrlInput(false)}

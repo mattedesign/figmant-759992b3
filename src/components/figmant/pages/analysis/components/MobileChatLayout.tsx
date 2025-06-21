@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnalysisChatContainer } from './AnalysisChatContainer';
 import { URLInputHandler } from './URLInputHandler';
 import { useChatStateContext } from './ChatStateProvider';
@@ -7,6 +7,8 @@ import { ChatAttachmentHandlers } from './ChatAttachmentHandlers';
 
 export const MobileChatLayout: React.FC = () => {
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState('100vh');
+
   const {
     messages,
     isAnalyzing,
@@ -17,6 +19,46 @@ export const MobileChatLayout: React.FC = () => {
     setSelectedTemplateId,
     getCurrentTemplate
   } = useChatStateContext();
+
+  // Handle iOS Safari viewport changes
+  useEffect(() => {
+    const handleResize = () => {
+      // Use visualViewport API if available (iOS Safari)
+      if (window.visualViewport) {
+        setViewportHeight(`${window.visualViewport.height}px`);
+      } else {
+        setViewportHeight(`${window.innerHeight}px`);
+      }
+    };
+
+    // Initial setup
+    handleResize();
+
+    // Listen for viewport changes
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+      return () => window.visualViewport.removeEventListener('resize', handleResize);
+    } else {
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
+
+  // Prevent body scroll when URL input is open
+  useEffect(() => {
+    if (showUrlInput) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.height = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.height = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.height = '';
+    };
+  }, [showUrlInput]);
 
   const handleSendMessage = async () => {
     // Implementation will be moved here from UnifiedChatContainer
@@ -49,9 +91,12 @@ export const MobileChatLayout: React.FC = () => {
   return (
     <ChatAttachmentHandlers>
       {(attachmentHandlers) => (
-        <div className="h-full flex flex-col overflow-hidden relative">
-          {/* Main Chat Container - Takes remaining space */}
-          <div className="flex-1 min-h-0 relative">
+        <div 
+          className="flex flex-col overflow-hidden relative bg-background"
+          style={{ height: viewportHeight }}
+        >
+          {/* Main Chat Container - Mobile optimized with proper flex */}
+          <div className="flex-1 min-h-0 overflow-hidden">
             <AnalysisChatContainer
               messages={messages}
               isAnalyzing={isAnalyzing}
@@ -63,7 +108,7 @@ export const MobileChatLayout: React.FC = () => {
               canSend={canSend}
               onFileUpload={attachmentHandlers.handleFileUpload}
               onToggleUrlInput={handleToggleUrlInput}
-              showUrlInput={false}
+              showUrlInput={false} // Never inline - always overlay
               urlInput=""
               setUrlInput={() => {}}
               onAddUrl={() => {}}
@@ -76,7 +121,7 @@ export const MobileChatLayout: React.FC = () => {
             />
           </div>
           
-          {/* URL Input Handler - Rendered as overlay portal */}
+          {/* URL Input Handler - Rendered as fullscreen overlay on mobile */}
           <URLInputHandler
             showUrlInput={showUrlInput}
             onClose={() => setShowUrlInput(false)}
