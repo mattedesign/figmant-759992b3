@@ -47,7 +47,7 @@ export const UserDetails: React.FC<UserDetailsProps> = ({ user, onRefresh }) => 
     );
   }
 
-  const handleRoleChange = async (newRole: string) => {
+  const handleRoleChange = async (newRole: 'owner' | 'subscriber') => {
     if (user.role === 'owner' && newRole !== 'owner') {
       toast({
         variant: "destructive",
@@ -135,22 +135,16 @@ export const UserDetails: React.FC<UserDetailsProps> = ({ user, onRefresh }) => 
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleRoleChange('admin')}
-                    disabled={isLoading || user.role === 'admin'}
-                    className="w-full"
-                  >
-                    {user.role === 'admin' ? 'Already Admin' : 'Make Admin'}
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
                     onClick={() => handleRoleChange('subscriber')}
                     disabled={isLoading || user.role === 'subscriber'}
                     className="w-full"
                   >
                     {user.role === 'subscriber' ? 'Already Subscriber' : 'Make Subscriber'}
                   </Button>
+                  
+                  <p className="text-xs text-gray-500 mt-2">
+                    Note: Admin role management will be available in a future update.
+                  </p>
                 </div>
               </div>
             )}

@@ -44,13 +44,13 @@ export const UserManagement: React.FC = () => {
         query = query.or(`email.ilike.%${searchTerm}%,full_name.ilike.%${searchTerm}%`);
       }
 
-      // Apply role filter
-      if (roleFilter !== 'all') {
+      // Apply role filter - only filter if it's a valid role
+      if (roleFilter !== 'all' && (roleFilter === 'owner' || roleFilter === 'subscriber')) {
         query = query.eq('role', roleFilter);
       }
 
-      // Apply status filter for subscriptions
-      if (statusFilter !== 'all') {
+      // Apply status filter for subscriptions - only filter if it's a valid status
+      if (statusFilter !== 'all' && ['active', 'inactive', 'cancelled', 'expired'].includes(statusFilter)) {
         query = query.eq('subscriptions.status', statusFilter);
       }
 
@@ -61,8 +61,14 @@ export const UserManagement: React.FC = () => {
         throw error;
       }
 
-      console.log('✅ Users fetched:', data?.length || 0);
-      return data as UserManagementProfile[];
+      // Transform the data to match UserManagementProfile type
+      const transformedData: UserManagementProfile[] = (data || []).map(user => ({
+        ...user,
+        subscriptions: user.subscriptions ? [user.subscriptions] : []
+      }));
+
+      console.log('✅ Users fetched:', transformedData?.length || 0);
+      return transformedData;
     },
     enabled: isOwner,
     refetchInterval: 30000, // Refresh every 30 seconds
