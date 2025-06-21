@@ -39,7 +39,7 @@ export const HistoryTabContent: React.FC<HistoryTabContentProps> = ({
   
   // Get related analyses (same type or similar keywords)
   const getRelatedAnalyses = () => {
-    const currentTitle = analysis.title || analysis.analysis_results?.title || '';
+    const currentTitle = analysis.title || analysis.analysis_results?.title || analysis.analysis_results?.project_name || '';
     const currentSummary = analysis.analysis_results?.response || '';
     const searchText = (currentTitle + ' ' + currentSummary).toLowerCase();
     
@@ -47,7 +47,7 @@ export const HistoryTabContent: React.FC<HistoryTabContentProps> = ({
       .filter(a => {
         if (a.type === analysisType) return true;
         
-        const aTitle = (a.title || a.analysis_results?.title || '').toLowerCase();
+        const aTitle = (getAnalysisTitle(a)).toLowerCase();
         const aSummary = (a.analysis_results?.response || '').toLowerCase();
         const aText = aTitle + ' ' + aSummary;
         
@@ -70,9 +70,21 @@ export const HistoryTabContent: React.FC<HistoryTabContentProps> = ({
   };
 
   const getAnalysisTitle = (analysisItem: any) => {
+    // Handle different analysis structures
     if (analysisItem.title) return analysisItem.title;
     if (analysisItem.analysis_results?.title) return analysisItem.analysis_results.title;
-    return `${analysisItem.type} Analysis`;
+    if (analysisItem.analysis_results?.project_name) return analysisItem.analysis_results.project_name;
+    
+    // For chat analyses, try to extract title from response
+    if (analysisItem.type === 'chat' && analysisItem.analysis_results?.response) {
+      const response = analysisItem.analysis_results.response;
+      const firstLine = response.split('\n')[0];
+      if (firstLine.length < 100) {
+        return firstLine.replace(/^#+\s*/, ''); // Remove markdown headers
+      }
+    }
+    
+    return `${analysisItem.type || 'Unknown'} Analysis`;
   };
 
   const getAnalysisSummary = (analysisItem: any) => {
