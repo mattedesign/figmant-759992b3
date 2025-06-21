@@ -318,7 +318,10 @@ export const useUnifiedChatAnalysis = () => {
     }
   }, [handleSendMessage]);
 
-  const canSend = !isAnalyzing && (message.trim().length > 0 || attachments.length > 0);
+  const canSend = !isAnalyzing && (
+    message.trim().length > 0 || 
+    (attachments.length > 0 && attachments.every(att => att.status === 'uploaded'))
+  );
 
   console.log('🔄 UNIFIED CHAT ANALYSIS - Current state:', {
     messagesCount: messages.length,
