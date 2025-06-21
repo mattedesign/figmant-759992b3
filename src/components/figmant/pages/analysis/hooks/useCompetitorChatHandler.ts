@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useToast } from '@/hooks/use-toast';
 
+type AnalysisStage = 'idle' | 'sending' | 'processing' | 'analyzing' | 'complete';
+
 export const useCompetitorChatHandler = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisStage, setAnalysisStage] = useState<string>('');
+  const [analysisStage, setAnalysisStage] = useState<AnalysisStage>('idle');
   const { toast } = useToast();
 
   const handleSendMessage = async () => {
@@ -40,10 +42,10 @@ export const useCompetitorChatHandler = () => {
       setAnalysisStage('processing');
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setAnalysisStage('comparing');
+      setAnalysisStage('analyzing');
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      setAnalysisStage('generating');
+      setAnalysisStage('processing');
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Create AI response
@@ -72,7 +74,7 @@ export const useCompetitorChatHandler = () => {
       });
     } finally {
       setIsAnalyzing(false);
-      setAnalysisStage('');
+      setAnalysisStage('idle');
     }
   };
 
