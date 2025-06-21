@@ -1,10 +1,8 @@
-
 import { lazy, Suspense } from 'react';
 import { LoadingSpinner } from './LoadingSpinner';
 import { AllAnalysisPageWrapper } from '@/components/design/analysis/AllAnalysisPageWrapper';
 import { AdvancedDesignAnalysisPageContent } from '@/components/design/AdvancedDesignAnalysisPageContent';
-import { PremiumAnalysisWizard } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisWizard';
-import { PremiumAnalysisTabController } from '@/components/figmant/pages/premium-analysis/PremiumAnalysisTabController';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 // Lazy load other content components
 const InsightsPage = lazy(() => import('@/components/design/InsightsPage').then(module => ({
@@ -12,9 +10,6 @@ const InsightsPage = lazy(() => import('@/components/design/InsightsPage').then(
 })));
 const PromptsPage = lazy(() => import('@/components/design/PromptsPage').then(module => ({
   default: module.PromptsPage
-})));
-const PremiumAnalysisPage = lazy(() => import('@/components/design/PremiumAnalysisPage').then(module => ({
-  default: module.PremiumAnalysisPage
 })));
 const IntegrationsPage = lazy(() => import('@/components/design/IntegrationsPage').then(module => ({
   default: module.IntegrationsPage
@@ -67,9 +62,20 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
           </Suspense>
         );
       case 'wizard-analysis':
-        return <PremiumAnalysisWizard />;
-      case 'premium-analysis':
-        return <PremiumAnalysisTabController />;
+        return (
+          <div className="p-6 space-y-6 h-full overflow-y-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle>Wizard Analysis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Wizard analysis functionality is currently being restructured. Please use the design analysis tab for comprehensive analysis.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        );
       case 'integrations':
         return (
           <Suspense fallback={<LoadingSpinner />}>

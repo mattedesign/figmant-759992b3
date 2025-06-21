@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { PremiumAnalysisWizard } from '../../premium-analysis/PremiumAnalysisWizard';
 import { AnalysisChatContainer } from './AnalysisChatContainer';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AnalysisTabContentProps {
   activeTab: string;
@@ -101,8 +101,17 @@ export const AnalysisTabContent: React.FC<AnalysisTabContentProps> = ({
 
       {/* Wizard Tab Content */}
       {activeTab === 'wizard' && (
-        <div className="h-full flex flex-col min-h-0">
-          <PremiumAnalysisWizard />
+        <div className="h-full flex flex-col min-h-0 p-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Wizard Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Wizard analysis functionality is currently being restructured. Please use the chat interface for analysis.
+              </p>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>
