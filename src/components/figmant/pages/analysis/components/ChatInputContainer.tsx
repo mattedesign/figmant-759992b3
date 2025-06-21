@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Paperclip, Link, X } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
+import { FigmantPromptTemplate } from '@/hooks/prompts/useFigmantPromptTemplates';
 
 interface ChatInputContainerProps {
   message: string;
@@ -15,6 +16,17 @@ interface ChatInputContainerProps {
   onRemoveAttachment: (id: string) => void;
   isAnalyzing: boolean;
   showUrlInput: boolean;
+  // Additional props from AnalysisChatPanel
+  onKeyPress?: (e: React.KeyboardEvent) => void;
+  selectedPromptTemplate?: FigmantPromptTemplate | null;
+  canSend?: boolean;
+  onTemplateSelect?: (templateId: string) => void;
+  availableTemplates?: FigmantPromptTemplate[];
+  onViewTemplate?: (template: FigmantPromptTemplate) => void;
+  urlInput?: string;
+  setUrlInput?: (url: string) => void;
+  onAddUrl?: () => void;
+  onCancelUrl?: () => void;
 }
 
 export const ChatInputContainer: React.FC<ChatInputContainerProps> = ({
@@ -26,7 +38,9 @@ export const ChatInputContainer: React.FC<ChatInputContainerProps> = ({
   onToggleUrlInput,
   onRemoveAttachment,
   isAnalyzing,
-  showUrlInput
+  showUrlInput,
+  onKeyPress,
+  canSend = true
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -41,14 +55,15 @@ export const ChatInputContainer: React.FC<ChatInputContainerProps> = ({
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       onSendMessage();
     }
+    onKeyPress?.(e);
   };
 
-  const canSend = (message.trim().length > 0 || attachments.length > 0) && !isAnalyzing;
+  const actualCanSend = (message.trim().length > 0 || attachments.length > 0) && !isAnalyzing && canSend;
 
   return (
     <div className="border-t bg-white p-4">
@@ -122,7 +137,7 @@ export const ChatInputContainer: React.FC<ChatInputContainerProps> = ({
           {/* Send Button */}
           <Button
             onClick={onSendMessage}
-            disabled={!canSend}
+            disabled={!actualCanSend}
             size="sm"
           >
             <Send className="h-4 w-4" />

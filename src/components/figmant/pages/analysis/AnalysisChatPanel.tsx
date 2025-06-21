@@ -77,13 +77,6 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
     onFileUpload(files);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      onSendMessage();
-    }
-  };
-
   const canSend = (message.trim().length > 0 || attachments.length > 0) && !isAnalyzing;
 
   return (
@@ -260,28 +253,18 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         )}
       </div>
 
-      {/* Enhanced Input Area with proper prop passing */}
+      {/* Enhanced Input Area */}
       <div className="flex-none">
         <ChatInputContainer
           message={message}
           setMessage={setMessage}
           onSendMessage={onSendMessage}
-          onKeyPress={handleKeyPress}
-          selectedPromptTemplate={activeTemplate || null}
-          canSend={canSend}
           isAnalyzing={isAnalyzing}
           onFileUpload={handleFileUpload}
           onToggleUrlInput={onToggleUrlInput}
-          onTemplateSelect={onTemplateSelect}
-          availableTemplates={promptTemplates}
-          onViewTemplate={(template) => console.log('View template:', template)}
           attachments={attachments}
           onRemoveAttachment={onRemoveAttachment}
           showUrlInput={showUrlInput}
-          urlInput={urlInput}
-          setUrlInput={setUrlInput}
-          onAddUrl={onAddUrl}
-          onCancelUrl={handleUrlCancel}
         />
       </div>
     </div>
