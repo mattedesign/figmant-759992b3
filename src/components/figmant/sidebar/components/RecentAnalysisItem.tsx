@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { EnhancedHistoryCard } from '@/components/figmant/navigation/components/EnhancedHistoryCard';
-import { AnalysisDetailModal } from '../../pages/dashboard/components/AnalysisDetailModal';
+import { AnalysisDetailDrawer } from '../../pages/analysis/AnalysisDetailDrawer';
 
 interface RecentAnalysisItemProps {
   analysis: any;
@@ -16,21 +16,21 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
   onToggleExpanded,
   onAnalysisClick
 }) => {
-  const [showModal, setShowModal] = useState(false);
+  const [showDrawer, setShowDrawer] = useState(false);
 
   const handleViewDetails = (selectedAnalysis: any) => {
-    console.log('🔍 RecentAnalysisItem: Opening analysis modal:', {
+    console.log('🔍 RecentAnalysisItem: Opening analysis drawer:', {
       analysisId: selectedAnalysis.id,
       analysisType: selectedAnalysis.type,
       title: selectedAnalysis.title
     });
     
-    setShowModal(true);
+    setShowDrawer(true);
   };
 
-  const handleCloseModal = () => {
-    console.log('🔍 RecentAnalysisItem: Closing analysis modal');
-    setShowModal(false);
+  const handleCloseDrawer = () => {
+    console.log('🔍 RecentAnalysisItem: Closing analysis drawer');
+    setShowDrawer(false);
   };
 
   return (
@@ -41,10 +41,10 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
         className="mb-2"
       />
 
-      {/* Analysis Detail Modal */}
-      <AnalysisDetailModal
-        isOpen={showModal}
-        onClose={handleCloseModal}
+      {/* Analysis Detail Drawer */}
+      <AnalysisDetailDrawer
+        isOpen={showDrawer}
+        onClose={handleCloseDrawer}
         analysis={analysis}
       />
     </>
