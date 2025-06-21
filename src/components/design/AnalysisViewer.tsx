@@ -14,15 +14,13 @@ interface AnalysisViewerProps {
 }
 
 export const AnalysisViewer = ({ upload, onBack }: AnalysisViewerProps) => {
-  const { data: analyses = [], isLoading } = useDesignAnalyses();
+  const { data: analyses = [], isLoading } = useDesignAnalyses(upload.id);
 
   if (isLoading) {
     return <div>Loading analysis...</div>;
   }
 
-  // Filter analyses for this specific upload
-  const uploadAnalyses = analyses.filter(analysis => analysis.design_upload_id === upload.id);
-  const latestAnalysis = uploadAnalyses[0];
+  const latestAnalysis = analyses[0];
 
   if (!latestAnalysis) {
     return (
