@@ -4,14 +4,27 @@ import { Badge } from '@/components/ui/badge';
 import { UserMenu } from './UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
+import { useTemplateCreditStore } from '@/stores/templateCreditStore';
+import { CreditCard } from 'lucide-react';
 
 interface NavigationProps {
   showSidebarTrigger?: boolean;
 }
 
+const getCreditBadgeStyle = (creditCost: number) => {
+  if (creditCost >= 5) {
+    return "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none";
+  }
+  if (creditCost >= 3) {
+    return "bg-blue-50 text-blue-700 border-blue-200";
+  }
+  return "bg-gray-100 text-gray-700 border-gray-200";
+};
+
 export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
   const { user, isOwner } = useAuth();
   const location = useLocation();
+  const { currentCreditCost } = useTemplateCreditStore();
   
   // Determine the title based on the current route and search params
   const getTitle = () => {
@@ -99,6 +112,11 @@ export const Navigation = ({ showSidebarTrigger = false }: NavigationProps) => {
           <div className="flex items-center space-x-4">
             {user && (
               <>
+                {/* Dynamic Credit Cost Display */}
+                <Badge className={`flex items-center gap-1 ${getCreditBadgeStyle(currentCreditCost)}`}>
+                  <CreditCard className="h-3 w-3" />
+                  {currentCreditCost} Credit{currentCreditCost !== 1 ? 's' : ''}
+                </Badge>
                 <UserMenu />
               </>
             )}

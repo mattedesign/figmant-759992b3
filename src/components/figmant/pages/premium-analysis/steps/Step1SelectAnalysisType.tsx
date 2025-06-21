@@ -6,6 +6,7 @@ import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTempl
 import { Lightbulb, Target, TrendingUp, Users, Zap, CheckCircle } from 'lucide-react';
 import { CreditCostDisplay } from '../components/CreditCostDisplay';
 import { supabase } from '@/integrations/supabase/client';
+import { useTemplateCreditStore } from '@/stores/templateCreditStore';
 
 interface Step1SelectAnalysisTypeProps extends StepProps {
   onCreditCostChange?: (creditCost: number) => void;
@@ -20,6 +21,7 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
 }) => {
   const { data: templates = [], isLoading } = useFigmantPromptTemplates();
   const [selectedTemplateCreditCost, setSelectedTemplateCreditCost] = useState<number>(1);
+  const { setTemplateCreditCost } = useTemplateCreditStore();
 
   const handleTemplateSelect = async (templateId: string) => {
     setStepData(prev => ({ ...prev, selectedType: templateId }));
@@ -35,6 +37,9 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
       const creditCost = data?.credit_cost || 3;
       setSelectedTemplateCreditCost(creditCost);
       
+      // Update global credit store
+      setTemplateCreditCost(templateId, creditCost);
+      
       // Pass credit cost to parent component
       if (onCreditCostChange) {
         onCreditCostChange(creditCost);
@@ -42,6 +47,7 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
     } catch (error) {
       console.error('Error fetching template credit cost:', error);
       setSelectedTemplateCreditCost(3);
+      setTemplateCreditCost(templateId, 3);
       if (onCreditCostChange) {
         onCreditCostChange(3);
       }

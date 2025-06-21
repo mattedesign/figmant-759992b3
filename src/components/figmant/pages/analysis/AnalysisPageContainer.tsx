@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { AnalysisNavigationHeader } from './components/AnalysisNavigationHeader';
+import { useTemplateCreditStore } from '@/stores/templateCreditStore';
 
 interface AnalysisPageContainerProps {
   selectedTemplate?: any;
@@ -14,6 +14,7 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { setTemplateCreditCost } = useTemplateCreditStore();
   
   // Force empty analyses to show "Start your analysis" state
   const [analyses] = useState([]); // Always empty for now
@@ -47,14 +48,17 @@ export const AnalysisPageContainer: React.FC<AnalysisPageContainerProps> = ({
       if (error) {
         console.error('Error fetching credit cost:', error);
         setCurrentCreditCost(3); // Fallback
+        setTemplateCreditCost(templateId, 3);
       } else {
         const creditCost = data.credit_cost || 3;
         console.log('Credit cost fetched:', creditCost);
         setCurrentCreditCost(creditCost);
+        setTemplateCreditCost(templateId, creditCost);
       }
     } catch (error) {
       console.error('Error in handleTemplateSelect:', error);
       setCurrentCreditCost(3); // Fallback
+      setTemplateCreditCost(templateId, 3);
     }
   };
 
