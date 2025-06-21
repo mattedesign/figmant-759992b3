@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useParams, useNavigate } from 'react-router-dom';
 import { FigmantSidebar } from './sidebar/FigmantSidebar';
 import { FigmantMainContent } from './FigmantMainContent';
 import { FigmantRightSidebar } from './FigmantRightSidebar';
@@ -9,20 +10,41 @@ import { useScreenSize } from '@/hooks/use-mobile';
 import { useAutomaticProfileRecovery } from '@/hooks/useAutomaticProfileRecovery';
 
 interface FigmantLayoutProps {
-  activeSection: string;
-  onSectionChange: (section: string) => void;
+  activeSection?: string;
+  onSectionChange?: (section: string) => void;
   children?: React.ReactNode;
 }
 
 export const FigmantLayout: React.FC<FigmantLayoutProps> = ({
-  activeSection,
-  onSectionChange,
+  activeSection: propActiveSection,
+  onSectionChange: propOnSectionChange,
   children
 }) => {
   const { user } = useAuth();
   const { isMobile, isTablet, isDesktop } = useScreenSize();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { isRecovering } = useAutomaticProfileRecovery();
+  const { section } = useParams();
+  const navigate = useNavigate();
+
+  // Internal state management for navigation
+  const [internalActiveSection, setInternalActiveSection] = useState(section || 'dashboard');
+  const [selectedAnalysis, setSelectedAnalysis] = useState(null);
+  const [rightSidebarMode, setRightSidebarMode] = useState('attachments');
+
+  // Use external props if provided, otherwise use internal state
+  const activeSection = propActiveSection || internalActiveSection;
+  const onSectionChange = propOnSectionChange || ((newSection: string) => {
+    setInternalActiveSection(newSection);
+    navigate(`/figmant/${newSection}`);
+  });
+
+  // Update internal state when URL params change
+  useEffect(() => {
+    if (section && section !== internalActiveSection) {
+      setInternalActiveSection(section);
+    }
+  }, [section, internalActiveSection]);
 
   // Responsive sidebar state management
   useEffect(() => {
@@ -32,6 +54,14 @@ export const FigmantLayout: React.FC<FigmantLayoutProps> = ({
       setSidebarCollapsed(false);
     }
   }, [isTablet, isDesktop, sidebarCollapsed]);
+
+  const handleBackToList = () => {
+    setSelectedAnalysis(null);
+  };
+
+  const handleRightSidebarModeChange = (mode: string) => {
+    setRightSidebarMode(mode);
+  };
 
   if (!user) {
     return (
@@ -67,7 +97,14 @@ export const FigmantLayout: React.FC<FigmantLayoutProps> = ({
         
         {/* Main Content - Full width on mobile */}
         <div className="pt-16 px-4 pb-6">
-          <FigmantMainContent activeSection={activeSection} />
+          <FigmantMainContent 
+            activeSection={activeSection}
+            setActiveSection={onSectionChange}
+            selectedAnalysis={selectedAnalysis}
+            onBackToList={handleBackToList}
+            onRightSidebarModeChange={handleRightSidebarModeChange}
+            isSidebarCollapsed={sidebarCollapsed}
+          />
           {children}
         </div>
       </div>
@@ -90,14 +127,24 @@ export const FigmantLayout: React.FC<FigmantLayoutProps> = ({
         {/* Main Content Area */}
         <div className="flex-1 flex overflow-hidden">
           <div className="flex-1 overflow-y-auto">
-            <FigmantMainContent activeSection={activeSection} />
+            <FigmantMainContent 
+              activeSection={activeSection}
+              setActiveSection={onSectionChange}
+              selectedAnalysis={selectedAnalysis}
+              onBackToList={handleBackToList}
+              onRightSidebarModeChange={handleRightSidebarModeChange}
+              isSidebarCollapsed={sidebarCollapsed}
+            />
             {children}
           </div>
 
           {/* Right Sidebar - Only show on desktop when needed */}
           {isDesktop && (
             <div className="w-80 flex-shrink-0 p-3 pl-0">
-              <FigmantRightSidebar />
+              <FigmantRightSidebar 
+                mode={rightSidebarMode}
+                activeSection={activeSection}
+              />
             </div>
           )}
         </div>
