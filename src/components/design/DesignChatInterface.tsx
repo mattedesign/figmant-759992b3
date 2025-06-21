@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -11,13 +12,15 @@ import { ScreenshotResult } from '@/services/screenshot/types';
 
 export interface ChatAttachment {
   id: string;
-  type: 'file' | 'url' | 'image';  // Added 'image' to the union type
+  type: 'file' | 'url' | 'image';
   name: string;
   url?: string;
   file?: File;
   status: 'uploading' | 'uploaded' | 'processing' | 'error';
   uploadPath?: string;
   error?: string;
+  errorMessage?: string;
+  processingInfo?: any;
   metadata?: {
     screenshots?: {
       desktop?: ScreenshotResult;
@@ -37,6 +40,9 @@ export interface ChatMessage {
   content: string;
   attachments?: ChatAttachment[];
   timestamp: Date;
+  uploadIds?: string[];
+  batchId?: string;
+  mode?: 'chat' | 'analyze';
 }
 
 interface DesignChatInterfaceProps {
@@ -44,6 +50,7 @@ interface DesignChatInterfaceProps {
   onClearChat: () => void;
   messages: ChatMessage[];
   isAnalyzing?: boolean;
+  isProcessing?: boolean;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -54,6 +61,7 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
   onClearChat,
   messages,
   isAnalyzing = false,
+  isProcessing = false,
   placeholder = "Describe your design or ask for analysis...",
   disabled = false,
   className = ""
@@ -204,7 +212,7 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
           </div>
         ))}
         
-        {isAnalyzing && (
+        {(isAnalyzing || isProcessing) && (
           <div className="flex justify-start">
             <div className="bg-gray-100 rounded-lg px-4 py-3">
               <div className="flex items-center gap-2">
@@ -295,13 +303,13 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
               multiple
               accept="image/*,application/pdf"
               onChange={(e) => e.target.files && handleFileUpload(Array.from(e.target.files))}
-              disabled={disabled || isAnalyzing}
+              disabled={disabled || isAnalyzing || isProcessing}
             />
             <Button
               variant="outline"
               size="sm"
               onClick={() => document.getElementById('file-upload')?.click()}
-              disabled={disabled || isAnalyzing}
+              disabled={disabled || isAnalyzing || isProcessing}
             >
               <Upload className="h-4 w-4" />
             </Button>
@@ -309,7 +317,7 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
               variant="outline"
               size="sm"
               onClick={() => setShowUrlInput(!showUrlInput)}
-              disabled={disabled || isAnalyzing}
+              disabled={disabled || isAnalyzing || isProcessing}
             >
               <Link className="h-4 w-4" />
             </Button>
@@ -329,14 +337,14 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
                   handleSend();
                 }
               }}
-              disabled={disabled || isAnalyzing}
+              disabled={disabled || isAnalyzing || isProcessing}
             />
           </div>
 
           {/* Send Button */}
           <Button
             onClick={handleSend}
-            disabled={(!message.trim() && attachments.length === 0) || disabled || isAnalyzing}
+            disabled={(!message.trim() && attachments.length === 0) || disabled || isAnalyzing || isProcessing}
             size="sm"
           >
             <Send className="h-4 w-4" />
