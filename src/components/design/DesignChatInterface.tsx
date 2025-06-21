@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -300,6 +299,19 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
     }
   };
 
+  // Add debug logging right before return
+  console.log('🔍 SEND BUTTON DEBUG:', {
+    message: message,
+    messageLength: message.length,
+    messageTrimmed: message.trim(),
+    messageTrimmedLength: message.trim().length,
+    attachments: attachments,
+    attachmentsLength: attachments.length,
+    isProcessing: isProcessing,
+    canSend: canSend,
+    buttonShouldBeDisabled: !canSend
+  });
+
   return (
     <div className={`flex flex-col h-full ${className}`} {...getRootProps()}>
       <input {...getInputProps()} />
@@ -597,7 +609,10 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
             
             {/* SUBMIT BUTTON */}
             <button 
-              onClick={handleSendMessage}
+              onClick={() => {
+                console.log('🔥 BUTTON CLICKED!', { canSend, message, attachments });
+                handleSendMessage();
+              }}
               disabled={!canSend}
               className="flex w-10 h-10 px-8 py-3 justify-center items-center gap-2 rounded-xl bg-gradient-to-b from-[#E5E5E5] to-[#E2E2E2] shadow-[0px_3px_4px_-1px_rgba(0,0,0,0.15),0px_1px_0px_0px_rgba(255,255,255,0.33)_inset,0px_0px_0px_1px_#D4D4D4] hover:from-[#E0E0E0] hover:to-[#DDDDDD] transition-all disabled:opacity-50 sm:w-12 sm:h-12"
             >
