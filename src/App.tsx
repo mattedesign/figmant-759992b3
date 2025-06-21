@@ -1,3 +1,4 @@
+// src/App.tsx
 
 import React from 'react';
 import {
@@ -10,6 +11,7 @@ import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
 import Subscription from '@/pages/Subscription';
 import PaymentSuccess from '@/pages/PaymentSuccess';
+import OwnerDashboard from '@/pages/OwnerDashboard';
 import DesignAnalysis from '@/pages/DesignAnalysis';
 import StripeWebhookTest from '@/pages/StripeWebhookTest';
 import AdminAssets from '@/pages/AdminAssets';
@@ -34,15 +36,43 @@ const App: React.FC = () => {
               <Router>
                 <Routes>
                   <Route path="/auth" element={<Auth />} />
+                  
+                  {/* Updated Figmant routing with dynamic sections */}
                   <Route
-                    path="/figmant/*"
+                    path="/figmant/:section"
                     element={
                       <AuthGuard>
                         <FigmantLayout />
                       </AuthGuard>
                     }
                   />
+                  <Route
+                    path="/figmant"
+                    element={
+                      <AuthGuard>
+                        <FigmantLayout />
+                      </AuthGuard>
+                    }
+                  />
+                  
+                  {/* Root redirect to figmant dashboard */}
                   <Route path="/" element={<Navigate to="/figmant/dashboard" replace />} />
+                  
+                  {/* Legacy dashboard routes - redirect to figmant */}
+                  <Route
+                    path="/dashboard"
+                    element={<Navigate to="/figmant/dashboard" replace />}
+                  />
+                  <Route
+                    path="/owner"
+                    element={
+                      <AuthGuard requireOwner>
+                        <Navigate to="/figmant/admin" replace />
+                      </AuthGuard>
+                    }
+                  />
+                  
+                  {/* Preserve other important routes */}
                   <Route
                     path="/analysis"
                     element={
