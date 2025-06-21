@@ -16,8 +16,8 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
 }) => {
   const { isOwner } = useAuth();
 
-  // Show all priority 1 items consistently across devices
-  const mainSections = navigationConfig.mainItems.filter(item => item.priority === 1);
+  // Show all priority 1 items consistently across devices, but filter out hidden items
+  const mainSections = navigationConfig.mainItems.filter(item => item.priority === 1 && !item.hidden);
   
   // Add admin section for owners
   const adminSections = isOwner ? navigationConfig.adminItems : [];

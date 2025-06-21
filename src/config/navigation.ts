@@ -18,6 +18,7 @@ export interface NavigationItem {
   icon: LucideIcon;
   priority: number;
   description?: string;
+  hidden?: boolean; // Add hidden property
 }
 
 export const navigationConfig = {
@@ -48,7 +49,8 @@ export const navigationConfig = {
       label: 'Premium Analysis', 
       icon: Star, 
       priority: 1,
-      description: 'UC-018 - E-commerce revenue impact predictions'
+      description: 'UC-018 - E-commerce revenue impact predictions',
+      hidden: true // Hide premium analysis
     },
     { 
       id: 'templates', 
@@ -94,15 +96,16 @@ export const navigationConfig = {
   ] as NavigationItem[]
 };
 
-// Helper function to get navigation items by priority
+// Helper function to get navigation items by priority, filtering out hidden items
 export const getNavigationItemsByPriority = (priority: number) => {
-  return navigationConfig.mainItems.filter(item => item.priority <= priority);
+  return navigationConfig.mainItems.filter(item => item.priority <= priority && !item.hidden);
 };
 
-// Helper function to get all navigation items
+// Helper function to get all navigation items, filtering out hidden items
 export const getAllNavigationItems = () => {
+  const visibleMainItems = navigationConfig.mainItems.filter(item => !item.hidden);
   return [
-    ...navigationConfig.mainItems,
+    ...visibleMainItems,
     ...navigationConfig.supportItems,
     ...navigationConfig.adminItems
   ];
