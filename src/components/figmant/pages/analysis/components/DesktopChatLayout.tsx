@@ -101,7 +101,6 @@ export const DesktopChatLayout: React.FC = () => {
           onSendMessage={handleSendMessage}
           messages={messages}
           isProcessing={isAnalyzing}
-          canSend={canSend}
           selectedTemplate={selectedTemplate}
           templates={templates}
           selectedTemplateId={selectedTemplateId}
