@@ -9,9 +9,8 @@ import { AlertTriangle } from 'lucide-react';
 
 // Import real admin components
 import { AdminAssetDashboard } from '@/components/admin/AdminAssetDashboard';
-import { RegistrationDebugPanel } from '@/components/debug/RegistrationDebugPanel';
-import { SpecificUserDebugPanel } from '@/components/debug/SpecificUserDebugPanel';
-import { UserDebugPanel } from '@/components/debug/UserDebugPanel';
+import { UserManagement } from '@/components/admin/UserManagement';
+import { DebugPanel } from '@/components/admin/DebugPanel';
 import { Settings } from '@/components/dashboard/Settings';
 import { PromptsPage } from '@/components/design/PromptsPage';
 import { SubscriptionPlansManager } from './admin/SubscriptionPlansManager';
@@ -36,6 +35,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
         'products': 'plans',
         'assets': 'assets',
         'prompt-manager': 'prompts',
+        'debug': 'debug',
         'admin': 'dashboard'
       };
       setActiveTab(tabMap[initialTab] || 'dashboard');
@@ -81,7 +81,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
       <div className="flex-1 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
           <div className="flex-none px-6 pt-4">
-            <TabsList className="grid w-full grid-cols-7">
+            <TabsList className="grid w-full grid-cols-8">
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="claude">Claude</TabsTrigger>
@@ -89,6 +89,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
               <TabsTrigger value="plans">Plans</TabsTrigger>
               <TabsTrigger value="assets">Assets</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsTrigger value="debug">Debug</TabsTrigger>
             </TabsList>
           </div>
 
@@ -98,25 +99,55 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
                 <Alert>
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
-                    Admin dashboard with integrated debugging and management tools.
+                    Admin dashboard with comprehensive management tools and analytics.
                   </AlertDescription>
                 </Alert>
-                <RegistrationDebugPanel />
-                <SpecificUserDebugPanel />
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                  <div className="p-6 border rounded-lg">
+                    <h3 className="font-semibold mb-2">User Management</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Manage user accounts, roles, and permissions
+                    </p>
+                    <button 
+                      onClick={() => setActiveTab('users')}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Go to Users →
+                    </button>
+                  </div>
+                  
+                  <div className="p-6 border rounded-lg">
+                    <h3 className="font-semibold mb-2">System Debug</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Advanced debugging and diagnostic tools
+                    </p>
+                    <button 
+                      onClick={() => setActiveTab('debug')}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Go to Debug →
+                    </button>
+                  </div>
+                  
+                  <div className="p-6 border rounded-lg">
+                    <h3 className="font-semibold mb-2">Subscription Plans</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Manage pricing and subscription options
+                    </p>
+                    <button 
+                      onClick={() => setActiveTab('plans')}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Go to Plans →
+                    </button>
+                  </div>
+                </div>
               </div>
             </TabsContent>
 
             <TabsContent value="users" className="m-0 h-full">
-              <div className="p-6 space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">User Management</h2>
-                  <p className="text-muted-foreground mb-6">
-                    Debug user accounts, profiles, and access permissions.
-                  </p>
-                </div>
-                <UserDebugPanel />
-                <SpecificUserDebugPanel />
-              </div>
+              <UserManagement />
             </TabsContent>
 
             <TabsContent value="claude" className="m-0 h-full">
@@ -153,6 +184,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
                 </div>
                 <Settings />
               </div>
+            </TabsContent>
+
+            <TabsContent value="debug" className="m-0 h-full">
+              <DebugPanel />
             </TabsContent>
           </div>
         </Tabs>
