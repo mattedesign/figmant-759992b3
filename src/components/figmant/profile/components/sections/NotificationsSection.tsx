@@ -2,14 +2,19 @@
 import React, { useState } from 'react';
 import { NotificationsTab } from '@/components/dashboard/settings/NotificationsTab';
 
+interface Notifications {
+  realTimeAlerts: boolean;
+  weeklyReports: boolean;
+  anomalyDetection: boolean;
+  emailNotifications: boolean;
+}
+
 export const NotificationsSection: React.FC = () => {
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: false,
-    sms: false,
-    marketing: false,
-    security: true,
-    product: true,
+  const [notifications, setNotifications] = useState<Notifications>({
+    realTimeAlerts: true,
+    weeklyReports: true,
+    anomalyDetection: true,
+    emailNotifications: false,
   });
 
   return (
