@@ -8,13 +8,16 @@ import { ProfileMainContent } from './components/ProfileMainContent';
 import { ProfileCompletionProgress } from './components/ProfileCompletionProgress';
 import { ProfileCompletionBanner } from './components/ProfileCompletionBanner';
 import { ProfileCompletionSidebar } from './components/ProfileCompletionSidebar';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useScreenSize } from '@/hooks/use-mobile';
 
 export const EnhancedProfilePageLayout: React.FC = () => {
   const { user, profile } = useAuth();
   const [activeSection, setActiveSection] = useState('personal');
   const [showCompletionBanner, setShowCompletionBanner] = useState(true);
-  const isMobile = useIsMobile();
+  const { isMobile, isTablet } = useScreenSize();
+
+  // Use mobile layout for both mobile and tablet devices
+  const isMobileOrTablet = isMobile || isTablet;
 
   if (!user) {
     return (
@@ -26,7 +29,7 @@ export const EnhancedProfilePageLayout: React.FC = () => {
     );
   }
 
-  if (isMobile) {
+  if (isMobileOrTablet) {
     return (
       <div className="h-full overflow-y-auto bg-gray-50">
         <div className="min-h-full">
