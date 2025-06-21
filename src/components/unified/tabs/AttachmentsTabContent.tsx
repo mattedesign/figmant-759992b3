@@ -340,10 +340,10 @@ export const AttachmentsTabContent: React.FC<AttachmentsTabContentProps> = ({
     .map(att => ({
       id: att.id,
       name: att.name,
-      type: att.file?.type.startsWith('image/') ? 'image' as const : 'document' as const,
+      type: att.file?.type.startsWith('image/') ? 'image' : 'document',
       size: att.file ? `${Math.round(att.file.size / 1024)} KB` : 'Unknown size',
       uploadDate: new Date().toISOString(), // Would come from actual data
-      source: 'chat' as const, // Would be determined by analysis type
+      source: 'chat', // Would be determined by analysis type
       preview: att.file?.type.startsWith('image/') ? URL.createObjectURL(att.file) : undefined,
       downloadUrl: att.url || '#'
     }));
@@ -357,7 +357,7 @@ export const AttachmentsTabContent: React.FC<AttachmentsTabContentProps> = ({
         title: att.name,
         description: att.metadata?.description,
         screenshot: att.metadata?.screenshots?.desktop?.screenshot_url,
-        status: (att.status === 'uploaded' ? 'active' : att.status === 'error' ? 'broken' : 'pending') as const,
+        status: (att.status === 'uploaded' ? 'active' : att.status === 'error' ? 'broken' : 'pending'),
         addedDate: new Date().toISOString(),
         source: 'analysis'
       })),
@@ -366,7 +366,7 @@ export const AttachmentsTabContent: React.FC<AttachmentsTabContentProps> = ({
       .map(url => ({
         url,
         title: new URL(url).hostname,
-        status: 'active' as const,
+        status: 'active',
         addedDate: analysis.created_at,
         source: 'automatic'
       }))
