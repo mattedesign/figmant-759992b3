@@ -39,6 +39,13 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
   
   const renderTabContent = (activeTab: string) => {
     switch (activeTab) {
+      case 'competitor-analysis':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading CompetitorAnalysisPage for tab:', activeTab);
+        return (
+          <div className="h-full w-full">
+            <CompetitorAnalysisPage />
+          </div>
+        );
       case 'design':
         console.log('✅ SUBSCRIBER TAB RENDERER - Loading AdvancedDesignAnalysisPageContent for tab:', activeTab);
         return (
@@ -72,13 +79,6 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
           <Suspense fallback={<LoadingSpinner />}>
             <PromptsPage />
           </Suspense>
-        );
-      case 'competitor-analysis':
-        console.log('✅ SUBSCRIBER TAB RENDERER - Loading CompetitorAnalysisPage for tab:', activeTab);
-        return (
-          <div className="h-full w-full">
-            <CompetitorAnalysisPage />
-          </div>
         );
       case 'wizard-analysis':
         console.log('✅ SUBSCRIBER TAB RENDERER - Loading PremiumAnalysisWizard for tab:', activeTab);

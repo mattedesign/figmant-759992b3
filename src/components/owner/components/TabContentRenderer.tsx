@@ -12,7 +12,7 @@ interface TabContentRendererProps {
 export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
   console.log('🎯 OWNER TAB CONTENT RENDERER - activeTab received:', activeTab);
   
-  // Handle specific analysis routes directly
+  // Handle competitor analysis route FIRST
   if (activeTab === 'competitor-analysis') {
     console.log('✅ OWNER TAB RENDERER - Loading CompetitorAnalysisPage for tab:', activeTab);
     return (
