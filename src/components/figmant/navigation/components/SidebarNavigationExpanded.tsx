@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { navigationConfig } from '@/config/navigation';
 import { cn } from '@/lib/utils';
+import { SidebarRecentAnalyses } from '../../sidebar/components/SidebarRecentAnalyses';
+import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
 
 interface SidebarNavigationExpandedProps {
   activeTab: string;
@@ -27,6 +29,9 @@ export const SidebarNavigationExpanded: React.FC<SidebarNavigationExpandedProps>
   const mainItems = navigationConfig.mainItems;
   const supportItems = navigationConfig.supportItems;
   const adminItems = isOwner ? navigationConfig.adminItems : [];
+
+  // Get chat analysis history for the interactive component
+  const { data: chatAnalysisHistory = [] } = useChatAnalysisHistory();
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
@@ -149,33 +154,13 @@ export const SidebarNavigationExpanded: React.FC<SidebarNavigationExpandedProps>
                 <div className="text-xs text-gray-500">Last 10 analyses</div>
               </div>
               
-              {/* History content with controlled scroll */}
-              <ScrollArea className="flex-1">
-                <div className="px-4 space-y-2">
-                  {allAnalyses.slice(0, 10).map((analysis, index) => (
-                    <div
-                      key={`${analysis.type}-${analysis.id}`}
-                      className="p-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors cursor-pointer"
-                    >
-                      <div className="text-sm font-medium text-gray-900 mb-1 truncate">
-                        {analysis.title || analysis.displayTitle}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(analysis.created_at).toLocaleDateString()}
-                      </div>
-                      <div className="text-xs text-blue-600 mt-1">
-                        {analysis.analysisType || analysis.type}
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {allAnalyses.length === 0 && (
-                    <div className="text-center text-gray-500 text-sm py-8">
-                      No analyses found
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
+              {/* Use the interactive SidebarRecentAnalyses component */}
+              <div className="flex-1 min-h-0">
+                <SidebarRecentAnalyses
+                  analysisHistory={chatAnalysisHistory}
+                  onSectionChange={onSectionChange}
+                />
+              </div>
             </div>
           </TabsContent>
         </div>
