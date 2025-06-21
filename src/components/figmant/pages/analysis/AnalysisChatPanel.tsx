@@ -23,7 +23,7 @@ interface AnalysisChatPanelProps {
   selectedTemplate?: string;
   onTemplateSelect: (templateId: string) => void;
   isAnalyzing?: boolean;
-  // New props for restored functionality
+  // Enhanced props for restored functionality
   showUrlInput?: boolean;
   urlInput?: string;
   setUrlInput?: (url: string) => void;
@@ -58,6 +58,20 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
 }) => {
   const activeTemplate = promptTemplates.find(t => t.id === selectedTemplate);
 
+  // Add proper URL handling
+  const handleUrlSubmit = () => {
+    if (!urlInput?.trim()) return;
+    
+    console.log('🔗 ANALYSIS CHAT PANEL - Submitting URL:', urlInput);
+    onAddUrl?.();
+  };
+
+  const handleUrlCancel = () => {
+    console.log('🔗 ANALYSIS CHAT PANEL - Cancelling URL input');
+    setUrlInput?.('');
+    onCancelUrl?.();
+  };
+
   const handleFileUpload = (files: FileList) => {
     console.log('🎯 ANALYSIS CHAT PANEL - File upload requested:', files.length);
     onFileUpload(files);
@@ -89,6 +103,46 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
           onTemplateSelect={onTemplateSelect}
         />
       </div>
+
+      {/* URL Input Section */}
+      {showUrlInput && (
+        <div className="p-4 bg-blue-50 border-b border-blue-200">
+          <div className="flex gap-2">
+            <input
+              type="url"
+              value={urlInput}
+              onChange={(e) => setUrlInput?.(e.target.value)}
+              placeholder="Enter website URL (e.g., example.com)"
+              className="flex-1 px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleUrlSubmit();
+                }
+              }}
+              autoFocus
+            />
+            <Button 
+              onClick={handleUrlSubmit} 
+              size="sm"
+              disabled={!urlInput?.trim()}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Add Website
+            </Button>
+            <Button 
+              onClick={handleUrlCancel} 
+              variant="outline" 
+              size="sm"
+            >
+              Cancel
+            </Button>
+          </div>
+          <p className="text-xs text-blue-600 mt-1">
+            Add a website URL to analyze its design and get improvement suggestions
+          </p>
+        </div>
+      )}
 
       {/* Template Context Info */}
       {activeTemplate && (
@@ -206,7 +260,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
         )}
       </div>
 
-      {/* Restored Input Area with all functionality */}
+      {/* Enhanced Input Area with proper prop passing */}
       <div className="flex-none">
         <ChatInputContainer
           message={message}
@@ -227,7 +281,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
           urlInput={urlInput}
           setUrlInput={setUrlInput}
           onAddUrl={onAddUrl}
-          onCancelUrl={onCancelUrl}
+          onCancelUrl={handleUrlCancel}
         />
       </div>
     </div>
