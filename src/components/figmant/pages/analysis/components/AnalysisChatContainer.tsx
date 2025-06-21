@@ -77,7 +77,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   const finalCanSend = canSend !== undefined ? canSend : shouldUseInternalHandler ? hookCanSend : false;
   const analyzing = isAnalyzing || (shouldUseInternalHandler ? hookIsAnalyzing : false);
 
-  console.log('📋 ANALYSIS CHAT CONTAINER - Bulletproof layout implementation:', {
+  console.log('📋 ANALYSIS CHAT CONTAINER - Layout implementation:', {
     messagesCount: messages.length,
     attachmentsCount: attachments.length,
     templatesCount: availableTemplates.length,
@@ -88,9 +88,12 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
   });
   
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-background">
-      {/* Messages Area - Flexible scrollable area with proper viewport usage */}
-      <div className="flex-1 overflow-y-auto scroll-smooth">
+    <div className="absolute inset-0 grid grid-rows-[1fr_auto] bg-background">
+      {/* Messages Area - Scrollable content area with explicit height */}
+      <div 
+        className="overflow-y-auto overflow-x-hidden"
+        style={{ height: '100%' }}
+      >
         <div className="p-4 space-y-4 min-h-full">
           {messages.length === 0 ? (
             <div className="flex items-center justify-center h-full min-h-[300px]">
@@ -125,7 +128,7 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
             ))
           )}
           
-          {/* Loading indicator - Always visible when analyzing */}
+          {/* Loading indicator */}
           {analyzing && (
             <div className="flex justify-start">
               <div className="bg-muted p-3 rounded-lg border">
@@ -139,8 +142,16 @@ export const AnalysisChatContainer: React.FC<AnalysisChatContainerProps> = ({
         </div>
       </div>
 
-      {/* Input Area - Fixed at bottom, always visible, never moves */}
-      <div className="flex-shrink-0 sticky bottom-0 bg-background border-t border-border z-20">
+      {/* Input Area - Fixed at bottom with explicit positioning */}
+      <div 
+        className="border-t border-border bg-background"
+        style={{ 
+          position: 'relative',
+          zIndex: 10,
+          height: 'auto',
+          minHeight: '80px'
+        }}
+      >
         <div className="max-w-4xl mx-auto w-full">
           <AnalysisChatInput
             message={message}

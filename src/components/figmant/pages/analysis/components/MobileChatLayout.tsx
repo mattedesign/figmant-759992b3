@@ -22,10 +22,9 @@ export const MobileChatLayout: React.FC = () => {
     getCurrentTemplate
   } = useChatStateContext();
 
-  // Handle iOS Safari viewport changes while maintaining layout integrity
+  // Handle iOS Safari viewport changes
   useEffect(() => {
     const handleResize = () => {
-      // Use visualViewport API if available (iOS Safari)
       if (window.visualViewport) {
         setViewportHeight(`${window.visualViewport.height}px`);
       } else {
@@ -33,10 +32,8 @@ export const MobileChatLayout: React.FC = () => {
       }
     };
 
-    // Initial setup
     handleResize();
 
-    // Listen for viewport changes
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleResize);
       return () => window.visualViewport.removeEventListener('resize', handleResize);
@@ -63,7 +60,6 @@ export const MobileChatLayout: React.FC = () => {
   }, [showUrlInput]);
 
   const handleSendMessage = async () => {
-    // Implementation will be moved here from UnifiedChatContainer
     console.log('🚀 MOBILE LAYOUT - Send message');
   };
 
@@ -94,11 +90,11 @@ export const MobileChatLayout: React.FC = () => {
     <ChatAttachmentHandlers>
       {(attachmentHandlers) => (
         <div 
-          className="flex flex-col overflow-hidden relative bg-background"
+          className="fixed inset-0 bg-background"
           style={{ height: viewportHeight }}
         >
-          {/* Main Chat Container - Mobile optimized with bulletproof flex layout */}
-          <div className="flex-1 min-h-0 overflow-hidden">
+          {/* Main Chat Container - Uses absolute positioning for bulletproof layout */}
+          <div className="absolute inset-0">
             <AnalysisChatContainer
               messages={messages}
               isAnalyzing={isAnalyzing}
@@ -110,7 +106,7 @@ export const MobileChatLayout: React.FC = () => {
               canSend={canSend}
               onFileUpload={attachmentHandlers.handleFileUpload}
               onToggleUrlInput={handleToggleUrlInput}
-              showUrlInput={false} // Never inline - always overlay
+              showUrlInput={false}
               urlInput=""
               setUrlInput={() => {}}
               onAddUrl={() => {}}
@@ -123,7 +119,7 @@ export const MobileChatLayout: React.FC = () => {
             />
           </div>
           
-          {/* URL Input Handler - True overlay with fullscreen positioning */}
+          {/* URL Input Handler - True overlay with highest z-index */}
           <URLInputHandler
             showUrlInput={showUrlInput}
             onClose={() => setShowUrlInput(false)}

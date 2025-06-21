@@ -27,7 +27,6 @@ export const DesktopChatLayout: React.FC = () => {
   } = useChatStateContext();
 
   const handleSendMessage = async () => {
-    // Implementation will be moved here from UnifiedChatContainer
     console.log('🚀 DESKTOP LAYOUT - Send message');
   };
 
@@ -61,49 +60,57 @@ export const DesktopChatLayout: React.FC = () => {
   return (
     <ChatAttachmentHandlers>
       {(attachmentHandlers) => (
-        <div className="h-screen flex overflow-hidden bg-background">
-          {/* Main Chat Container - Bulletproof viewport layout with full height */}
-          <div className="flex-1 min-w-0 h-full">
-            <AnalysisChatContainer
-              messages={messages}
-              isAnalyzing={isAnalyzing}
-              message={message}
-              setMessage={setMessage}
-              onSendMessage={handleSendMessage}
-              onKeyPress={handleKeyPress}
-              getCurrentTemplate={getCurrentTemplate}
-              canSend={canSend}
-              onFileUpload={attachmentHandlers.handleFileUpload}
-              onToggleUrlInput={handleToggleUrlInput}
-              showUrlInput={false} // Never inline - always overlay
-              urlInput=""
-              setUrlInput={() => {}}
-              onAddUrl={() => {}}
-              onCancelUrl={() => {}}
-              onTemplateSelect={handleTemplateSelect}
-              availableTemplates={templates}
-              onViewTemplate={handleViewTemplate}
-              attachments={attachments}
-              onRemoveAttachment={attachmentHandlers.removeAttachment}
-            />
-          </div>
-
-          {/* Analysis Assets Panel - Fixed width, independent scrolling */}
-          {isAssetsPanelVisible && (
-            <div className="flex-shrink-0 w-72 h-full border-l border-border">
-              <AnalysisNavigationSidebar
+        <div className="fixed inset-0 bg-background overflow-hidden">
+          {/* Main Chat Container - Uses CSS Grid for bulletproof layout */}
+          <div 
+            className="grid h-full"
+            style={{
+              gridTemplateColumns: isAssetsPanelVisible ? '1fr 288px' : '1fr',
+              gridTemplateRows: '1fr'
+            }}
+          >
+            <div className="min-w-0 relative">
+              <AnalysisChatContainer
                 messages={messages}
+                isAnalyzing={isAnalyzing}
+                message={message}
+                setMessage={setMessage}
+                onSendMessage={handleSendMessage}
+                onKeyPress={handleKeyPress}
+                getCurrentTemplate={getCurrentTemplate}
+                canSend={canSend}
+                onFileUpload={attachmentHandlers.handleFileUpload}
+                onToggleUrlInput={handleToggleUrlInput}
+                showUrlInput={false}
+                urlInput=""
+                setUrlInput={() => {}}
+                onAddUrl={() => {}}
+                onCancelUrl={() => {}}
+                onTemplateSelect={handleTemplateSelect}
+                availableTemplates={templates}
+                onViewTemplate={handleViewTemplate}
                 attachments={attachments}
                 onRemoveAttachment={attachmentHandlers.removeAttachment}
-                onViewAttachment={handleViewAttachment}
-                lastAnalysisResult={lastAnalysisResult}
-                isCollapsed={false}
-                onToggleCollapse={() => setIsAssetsPanelVisible(!isAssetsPanelVisible)}
               />
             </div>
-          )}
 
-          {/* Toggle Button for Assets Panel - Floating when collapsed */}
+            {/* Analysis Assets Panel */}
+            {isAssetsPanelVisible && (
+              <div className="border-l border-border relative">
+                <AnalysisNavigationSidebar
+                  messages={messages}
+                  attachments={attachments}
+                  onRemoveAttachment={attachmentHandlers.removeAttachment}
+                  onViewAttachment={handleViewAttachment}
+                  lastAnalysisResult={lastAnalysisResult}
+                  isCollapsed={false}
+                  onToggleCollapse={() => setIsAssetsPanelVisible(!isAssetsPanelVisible)}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Toggle Button for Assets Panel */}
           {!isAssetsPanelVisible && (
             <div className="fixed right-4 top-1/2 -translate-y-1/2 z-30">
               <Button
@@ -117,7 +124,7 @@ export const DesktopChatLayout: React.FC = () => {
             </div>
           )}
 
-          {/* URL Input Handler - True overlay with fixed positioning */}
+          {/* URL Input Handler - Highest z-index overlay */}
           <URLInputHandler
             showUrlInput={showUrlInput}
             onClose={() => setShowUrlInput(false)}
