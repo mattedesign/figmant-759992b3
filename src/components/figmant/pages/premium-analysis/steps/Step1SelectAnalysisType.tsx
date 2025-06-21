@@ -1,22 +1,51 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { StepProps } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { Lightbulb, Target, TrendingUp, Users, Zap, CheckCircle } from 'lucide-react';
 import { CreditCostDisplay } from '../components/CreditCostDisplay';
+import { supabase } from '@/integrations/supabase/client';
 
-export const Step1SelectAnalysisType: React.FC<StepProps> = ({ 
+interface Step1SelectAnalysisTypeProps extends StepProps {
+  onCreditCostChange?: (creditCost: number) => void;
+}
+
+export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = ({ 
   stepData, 
   setStepData, 
   currentStep, 
-  totalSteps 
+  totalSteps,
+  onCreditCostChange
 }) => {
   const { data: templates = [], isLoading } = useFigmantPromptTemplates();
+  const [selectedTemplateCreditCost, setSelectedTemplateCreditCost] = useState<number>(1);
 
-  const handleTemplateSelect = (templateId: string) => {
+  const handleTemplateSelect = async (templateId: string) => {
     setStepData(prev => ({ ...prev, selectedType: templateId }));
+
+    // Fetch and set credit cost for display
+    try {
+      const { data } = await supabase
+        .from('claude_prompt_examples')
+        .select('credit_cost')
+        .eq('id', templateId)
+        .single();
+      
+      const creditCost = data?.credit_cost || 3;
+      setSelectedTemplateCreditCost(creditCost);
+      
+      // Pass credit cost to parent component
+      if (onCreditCostChange) {
+        onCreditCostChange(creditCost);
+      }
+    } catch (error) {
+      console.error('Error fetching template credit cost:', error);
+      setSelectedTemplateCreditCost(3);
+      if (onCreditCostChange) {
+        onCreditCostChange(3);
+      }
+    }
   };
 
   const getIcon = (category: string) => {
