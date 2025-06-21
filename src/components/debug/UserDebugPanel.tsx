@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useUserDebugInfo } from '@/hooks/useUserDebugInfo';
+import { useAuth } from '@/contexts/AuthContext';
 import { AlertTriangle, CheckCircle, XCircle, RefreshCw, Eye, EyeOff, Database, User, CreditCard } from 'lucide-react';
 
 export const UserDebugPanel: React.FC = () => {
+  const { user } = useAuth();
   const { data: debugInfo, isLoading, error, refetch } = useUserDebugInfo();
   const [showRawData, setShowRawData] = React.useState(false);
 
@@ -16,7 +18,7 @@ export const UserDebugPanel: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <RefreshCw className="h-5 w-5 animate-spin" />
-            Loading Debug Info for Mbrown@tfin.com...
+            Loading Debug Info for {user?.email || 'Current User'}...
           </CardTitle>
         </CardHeader>
       </Card>
@@ -158,7 +160,7 @@ export const UserDebugPanel: React.FC = () => {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              Debug Info: Mbrown@tfin.com
+              Debug Info: {debugInfo.user?.email || user?.email || 'Current User'}
             </div>
             <div className="flex gap-2">
               <Button 
@@ -176,7 +178,7 @@ export const UserDebugPanel: React.FC = () => {
             </div>
           </CardTitle>
           <CardDescription>
-            Debugging information for user: {debugInfo.user?.email}
+            Debugging information for user: {debugInfo.user?.email || user?.email}
             <br />
             <span className={`font-bold ${shouldHaveAccess ? 'text-green-600' : 'text-red-600'}`}>
               Expected Access: {shouldHaveAccess ? 'YES' : 'NO'}
@@ -350,8 +352,8 @@ export const UserDebugPanel: React.FC = () => {
             <span>{debugInfo.user?.full_name || 'Not available'}</span>
             <span>Role:</span>
             <span>{debugInfo.user?.role || 'Not available'}</span>
-            <span>Target User:</span>
-            <span className="font-medium text-blue-600">Mbrown@tfin.com</span>
+            <span>Current User:</span>
+            <span className="font-medium text-blue-600">{user?.email || 'Not logged in'}</span>
           </div>
         </CardContent>
       </Card>
