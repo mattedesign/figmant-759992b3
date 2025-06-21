@@ -3,9 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 
 export class ImageService {
   /**
-   * Get a public URL for a file in the design-uploads bucket
+   * Get a public URL for a file in any storage bucket
    */
-  static getPublicUrl(filePath: string): string {
+  static getPublicUrl(filePath: string, bucket: string = 'design-uploads'): string {
     if (!filePath) return '';
     
     // If it's already a full URL, return as-is
@@ -14,14 +14,14 @@ export class ImageService {
     }
     
     const { data } = supabase.storage
-      .from('design-uploads')
+      .from(bucket)
       .getPublicUrl(filePath);
     
     return data.publicUrl;
   }
 
   /**
-   * Resolve the best available image URL for an attachment
+   * Resolve the best available image URL for an attachment with bucket detection
    */
   static resolveImageUrl(attachment: any): string | null {
     if (!attachment) return null;
@@ -33,6 +33,7 @@ export class ImageService {
     const urlCandidates = [
       // First try storage paths (most reliable for uploaded files)
       attachment.file_path,
+      attachment.path, // Handle stored data structure
       attachment.uploadPath,
       // Then try actual URLs (but skip blob URLs for stored content)
       !skipBlobUrls || !attachment.url?.startsWith('blob:') ? attachment.url : null,
@@ -43,7 +44,12 @@ export class ImageService {
       if (candidate && typeof candidate === 'string') {
         // If it's a storage path, convert to public URL
         if (!candidate.startsWith('http')) {
-          return this.getPublicUrl(candidate);
+          // Try analysis-attachments bucket first, then design-uploads
+          const analysisUrl = this.getPublicUrl(candidate, 'analysis-attachments');
+          const designUrl = this.getPublicUrl(candidate, 'design-uploads');
+          
+          // Return the first one that looks valid (non-empty path)
+          return candidate.includes('analysis') ? analysisUrl : designUrl;
         }
         return candidate;
       }
@@ -93,15 +99,18 @@ export class ImageService {
     const isValid = await this.validateImageUrl(primaryUrl);
     if (isValid) return primaryUrl;
     
-    // If primary URL fails, try other storage-based options
+    // If primary URL fails, try other storage-based options with different buckets
     const fallbackCandidates = [
-      attachment.file_path,
-      attachment.uploadPath,
-    ].filter(Boolean);
+      { path: attachment.file_path, bucket: 'analysis-attachments' },
+      { path: attachment.path, bucket: 'analysis-attachments' },
+      { path: attachment.file_path, bucket: 'design-uploads' },
+      { path: attachment.path, bucket: 'design-uploads' },
+      { path: attachment.uploadPath, bucket: 'design-uploads' },
+    ].filter(candidate => candidate.path);
     
     for (const candidate of fallbackCandidates) {
-      if (candidate && !candidate.startsWith('http')) {
-        const resolvedUrl = this.getPublicUrl(candidate);
+      if (candidate.path && !candidate.path.startsWith('http')) {
+        const resolvedUrl = this.getPublicUrl(candidate.path, candidate.bucket);
         const isValid = await this.validateImageUrl(resolvedUrl);
         if (isValid) return resolvedUrl;
       }
@@ -121,13 +130,13 @@ export class ImageService {
     if (hasDesktopScreenshot) {
       const desktop = attachment.metadata.screenshots.desktop;
       // Prefer storage paths over blob URLs
-      return desktop.file_path || desktop.thumbnailUrl || desktop.url;
+      return desktop.file_path || desktop.path || desktop.thumbnailUrl || desktop.url;
     }
     
     if (hasMobileScreenshot) {
       const mobile = attachment.metadata.screenshots.mobile;
       // Prefer storage paths over blob URLs
-      return mobile.file_path || mobile.thumbnailUrl || mobile.url;
+      return mobile.file_path || mobile.path || mobile.thumbnailUrl || mobile.url;
     }
     
     return null;
@@ -139,20 +148,37 @@ export class ImageService {
   static resolveAnalysisAttachmentUrl(attachment: any): string | null {
     if (!attachment) return null;
 
+    console.log('🔍 RESOLVING ANALYSIS ATTACHMENT:', {
+      id: attachment.id,
+      name: attachment.name,
+      type: attachment.type,
+      url: attachment.url,
+      file_path: attachment.file_path,
+      path: attachment.path,
+      thumbnailUrl: attachment.thumbnailUrl,
+      metadata: attachment.metadata
+    });
+
     // For URL-type attachments, check for screenshots first
     if (attachment.type === 'url' || attachment.url) {
       const screenshotUrl = this.getScreenshotUrl(attachment);
       if (screenshotUrl) {
-        return screenshotUrl.startsWith('http') ? screenshotUrl : this.getPublicUrl(screenshotUrl);
+        const resolvedUrl = screenshotUrl.startsWith('http') ? screenshotUrl : this.getPublicUrl(screenshotUrl, 'analysis-attachments');
+        console.log('📸 SCREENSHOT URL RESOLVED:', resolvedUrl);
+        return resolvedUrl;
       }
     }
 
-    // For file attachments, prioritize storage paths
-    if (attachment.type === 'file' || attachment.file_path) {
-      return this.resolveImageUrl(attachment);
+    // For file attachments, prioritize storage paths with correct bucket
+    if (attachment.type === 'file' || attachment.file_path || attachment.path) {
+      const resolvedUrl = this.resolveImageUrl(attachment);
+      console.log('📁 FILE URL RESOLVED:', resolvedUrl);
+      return resolvedUrl;
     }
 
     // Fallback to general resolution
-    return this.resolveImageUrl(attachment);
+    const fallbackUrl = this.resolveImageUrl(attachment);
+    console.log('🔄 FALLBACK URL RESOLVED:', fallbackUrl);
+    return fallbackUrl;
   }
 }

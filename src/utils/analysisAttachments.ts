@@ -1,5 +1,6 @@
+
 // src/utils/analysisAttachments.ts
-// Complete fixed version with all required exports and type safety
+// Enhanced fixed version with proper handling of stored attachment data
 
 import { SavedChatAnalysis } from '@/hooks/useChatAnalysisHistory';
 
@@ -10,6 +11,7 @@ export interface SimpleAttachment {
   type: 'file' | 'link' | 'image';
   thumbnailUrl?: string;
   file_path?: string;
+  path?: string; // Handle stored data structure
   file_name?: string;
   metadata?: any;
 }
@@ -22,6 +24,7 @@ export interface AnalysisAttachment {
   thumbnailUrl?: string;
   file_name?: string;
   file_path?: string;
+  path?: string;
   file_size?: number;
   created_at?: string;
   metadata?: any;
@@ -34,6 +37,7 @@ export interface AnalysisScreenshot {
   thumbnailUrl?: string;
   file_name?: string;
   file_path?: string;
+  path?: string;
   file_size?: number;
   created_at?: string;
   metadata?: any;
@@ -41,27 +45,34 @@ export interface AnalysisScreenshot {
 
 // Enhanced attachment processing with better storage path handling
 const processAttachmentData = (att: any): SimpleAttachment => {
+  console.log('🔧 PROCESSING ATTACHMENT DATA:', att);
+  
   return {
     id: att.id || crypto.randomUUID(),
-    name: att.name || att.file_name || att.link_title || 'Unknown',
+    name: att.name || att.file_name || att.link_title || att.filename || 'Unknown',
     url: att.url,
     type: determineAttachmentType(att),
-    thumbnailUrl: att.thumbnailUrl || att.screenshot,
+    thumbnailUrl: att.thumbnailUrl || att.screenshot || att.thumbnail_url,
     file_path: att.file_path || att.uploadPath,
-    file_name: att.file_name || att.name,
+    path: att.path, // Handle stored data structure
+    file_name: att.file_name || att.filename || att.name,
     metadata: att.metadata
   };
 };
 
 const determineAttachmentType = (att: any): 'file' | 'link' | 'image' => {
   // Check if it's a URL/link type
-  if (att.url && !att.file_path) return 'link';
+  if ((att.url && !att.file_path && !att.path) || att.type === 'url') return 'link';
   
   // Check if it has image-related properties or file types
   if (att.file_type?.startsWith('image/') || 
+      att.type?.startsWith('image/') ||
       att.thumbnailUrl || 
       att.screenshot ||
-      att.metadata?.screenshots) {
+      att.thumbnail_url ||
+      att.metadata?.screenshots ||
+      att.path?.includes('image') ||
+      att.file_path?.includes('image')) {
     return 'image';
   }
   
@@ -74,6 +85,8 @@ export const extractAttachmentsFromChatAnalysis = (analysis: SavedChatAnalysis):
   const attachments: SimpleAttachment[] = [];
   
   try {
+    console.log('💬 EXTRACTING FROM CHAT ANALYSIS:', analysis);
+    
     // Safely check if analysis_results exists and has data
     if (analysis.analysis_results && typeof analysis.analysis_results === 'object') {
       const results = analysis.analysis_results as any;
@@ -82,6 +95,7 @@ export const extractAttachmentsFromChatAnalysis = (analysis: SavedChatAnalysis):
       const possibleAttachments = results.attachments || 
                                  results.files || 
                                  results.uploads || 
+                                 results.batch_uploads ||
                                  [];
       
       if (Array.isArray(possibleAttachments)) {
@@ -115,6 +129,15 @@ export const extractAttachmentsFromChatAnalysis = (analysis: SavedChatAnalysis):
       }
     }
     
+    // Check if analysis itself has attachment-like properties (stored data structure)
+    if (analysis.batch_uploads && Array.isArray(analysis.batch_uploads)) {
+      analysis.batch_uploads.forEach((att: any) => {
+        if (att && typeof att === 'object') {
+          attachments.push(processAttachmentData(att));
+        }
+      });
+    }
+    
     // Check metadata if it exists - but safely cast to avoid type errors
     const analysisWithMetadata = analysis as any;
     if (analysisWithMetadata.metadata && typeof analysisWithMetadata.metadata === 'object') {
@@ -131,10 +154,11 @@ export const extractAttachmentsFromChatAnalysis = (analysis: SavedChatAnalysis):
     console.warn('Error extracting attachments from chat analysis:', error);
   }
   
+  console.log('💬 EXTRACTED ATTACHMENTS:', attachments);
   return attachments;
 };
 
-// Extract screenshots from Chat Analysis - MISSING EXPORT ADDED
+// Extract screenshots from Chat Analysis
 export const extractScreenshotsFromChatAnalysis = (analysis: SavedChatAnalysis): AnalysisScreenshot[] => {
   const screenshots: AnalysisScreenshot[] = [];
   
@@ -142,7 +166,7 @@ export const extractScreenshotsFromChatAnalysis = (analysis: SavedChatAnalysis):
     const attachments = extractAttachmentsFromChatAnalysis(analysis);
     
     attachments.forEach(att => {
-      if (att.type === 'image' || att.thumbnailUrl || att.file_path) {
+      if (att.type === 'image' || att.thumbnailUrl || att.file_path || att.path) {
         screenshots.push({
           id: att.id,
           name: att.name,
@@ -150,6 +174,7 @@ export const extractScreenshotsFromChatAnalysis = (analysis: SavedChatAnalysis):
           thumbnailUrl: att.thumbnailUrl,
           file_name: att.file_name || att.name,
           file_path: att.file_path,
+          path: att.path,
           created_at: new Date().toISOString(),
           metadata: att.metadata
         });
@@ -162,11 +187,13 @@ export const extractScreenshotsFromChatAnalysis = (analysis: SavedChatAnalysis):
   return screenshots;
 };
 
-// Extract attachments from Wizard Analysis - MISSING EXPORT ADDED
+// Extract attachments from Wizard Analysis
 export const extractAttachmentsFromWizardAnalysis = (analysis: any): SimpleAttachment[] => {
   const attachments: SimpleAttachment[] = [];
   
   try {
+    console.log('🧙 EXTRACTING FROM WIZARD ANALYSIS:', analysis);
+    
     // Check for batch uploads
     if (analysis.batch_uploads && Array.isArray(analysis.batch_uploads)) {
       analysis.batch_uploads.forEach((upload: any) => {
@@ -199,10 +226,11 @@ export const extractAttachmentsFromWizardAnalysis = (analysis: any): SimpleAttac
     console.warn('Error extracting attachments from wizard analysis:', error);
   }
   
+  console.log('🧙 EXTRACTED ATTACHMENTS:', attachments);
   return attachments;
 };
 
-// Extract screenshots from Wizard Analysis - MISSING EXPORT ADDED
+// Extract screenshots from Wizard Analysis
 export const extractScreenshotsFromWizardAnalysis = (analysis: any): AnalysisScreenshot[] => {
   const screenshots: AnalysisScreenshot[] = [];
   
@@ -210,7 +238,7 @@ export const extractScreenshotsFromWizardAnalysis = (analysis: any): AnalysisScr
     const attachments = extractAttachmentsFromWizardAnalysis(analysis);
     
     attachments.forEach(att => {
-      if (att.type === 'image' || att.thumbnailUrl || att.file_path) {
+      if (att.type === 'image' || att.thumbnailUrl || att.file_path || att.path) {
         screenshots.push({
           id: att.id,
           name: att.name,
@@ -218,6 +246,7 @@ export const extractScreenshotsFromWizardAnalysis = (analysis: any): AnalysisScr
           thumbnailUrl: att.thumbnailUrl,
           file_name: att.file_name || att.name,
           file_path: att.file_path,
+          path: att.path,
           created_at: new Date().toISOString(),
           metadata: att.metadata
         });
@@ -233,6 +262,8 @@ export const extractScreenshotsFromWizardAnalysis = (analysis: any): AnalysisScr
 // Main function - extract attachments from any analysis type
 export const getAttachmentsFromAnalysis = (analysis: any): SimpleAttachment[] => {
   if (!analysis) return [];
+
+  console.log('🔍 GET ATTACHMENTS FROM ANALYSIS:', analysis);
 
   // Handle SavedChatAnalysis type
   if (analysis.type === 'chat' || analysis.analysis_type === 'chat') {
@@ -293,6 +324,7 @@ export const getAttachmentsFromAnalysis = (analysis: any): SimpleAttachment[] =>
     console.warn('Error extracting attachments from analysis:', error);
   }
   
+  console.log('🔍 FINAL EXTRACTED ATTACHMENTS:', attachments);
   return attachments;
 };
 
@@ -301,10 +333,10 @@ export const getFirstScreenshot = (analysis: any): string | null => {
   try {
     const attachments = getAttachmentsFromAnalysis(analysis);
     
-    // Look for any attachment with a file_path first (uploaded files)
+    // Look for any attachment with a file_path or path first (uploaded files)
     for (const attachment of attachments) {
-      if (attachment.file_path && attachment.type === 'image') {
-        return attachment.file_path;
+      if ((attachment.file_path || attachment.path) && attachment.type === 'image') {
+        return attachment.file_path || attachment.path;
       }
     }
     
@@ -331,7 +363,7 @@ export const getFirstScreenshot = (analysis: any): string | null => {
   return null;
 };
 
-// Get all screenshots from an analysis - MISSING EXPORT ADDED
+// Get all screenshots from an analysis
 export const getAllScreenshots = (analysis: any): AnalysisScreenshot[] => {
   if (analysis.type === 'chat' || analysis.analysis_type === 'chat') {
     return extractScreenshotsFromChatAnalysis(analysis);
@@ -344,7 +376,7 @@ export const getAllScreenshots = (analysis: any): AnalysisScreenshot[] => {
   // Generic fallback
   const attachments = getAttachmentsFromAnalysis(analysis);
   return attachments
-    .filter(att => att.type === 'image' || att.thumbnailUrl || att.file_path)
+    .filter(att => att.type === 'image' || att.thumbnailUrl || att.file_path || att.path)
     .map(att => ({
       id: att.id,
       name: att.name,
@@ -352,6 +384,7 @@ export const getAllScreenshots = (analysis: any): AnalysisScreenshot[] => {
       thumbnailUrl: att.thumbnailUrl,
       file_name: att.file_name || att.name,
       file_path: att.file_path,
+      path: att.path,
       created_at: new Date().toISOString(),
       metadata: att.metadata
     }));
@@ -368,7 +401,6 @@ export const hasVisualContent = (analysis: any): boolean => {
   }
 };
 
-// Get analysis title safely
 export const getAnalysisTitle = (analysis: any): string => {
   try {
     if (analysis.title) return analysis.title;
@@ -390,7 +422,6 @@ export const getAnalysisTitle = (analysis: any): string => {
   }
 };
 
-// Get analysis summary safely
 export const getAnalysisSummary = (analysis: any): string => {
   try {
     if (analysis.analysis_results && typeof analysis.analysis_results === 'object') {
@@ -411,7 +442,6 @@ export const getAnalysisSummary = (analysis: any): string => {
   }
 };
 
-// Get analyzed URLs
 export const getAnalyzedUrls = (analysis: any): string[] => {
   try {
     const attachments = getAttachmentsFromAnalysis(analysis);

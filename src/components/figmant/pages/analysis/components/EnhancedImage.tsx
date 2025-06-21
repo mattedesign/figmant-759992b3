@@ -40,6 +40,7 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
           type: attachment.type,
           url: attachment.url,
           file_path: attachment.file_path,
+          path: attachment.path,
           thumbnailUrl: attachment.thumbnailUrl
         });
 

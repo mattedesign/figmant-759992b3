@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
 import { 
   FileText, 
@@ -33,9 +32,11 @@ import {
   getAttachmentsFromAnalysis,
   getAnalyzedUrls,
   getAnalysisSummary,
-  getAnalysisTitle
+  getAnalysisTitle,
+  getAllScreenshots
 } from '@/utils/analysisAttachments';
 import { EnhancedImage } from './components/EnhancedImage';
+import { ScreenshotModal } from '../../analysis/ScreenshotModal';
 
 interface AnalysisDetailDrawerProps {
   isOpen: boolean;
@@ -43,66 +44,14 @@ interface AnalysisDetailDrawerProps {
   analysis: any;
 }
 
-const ScreenshotModal: React.FC<{
-  screenshots: any[];
-  currentIndex: number;
-  isOpen: boolean;
-  onClose: () => void;
-  onNext: () => void;
-  onPrevious: () => void;
-}> = ({ screenshots, currentIndex, isOpen, onClose, onNext, onPrevious }) => {
-  const currentScreenshot = screenshots[currentIndex];
-  
-  if (!currentScreenshot) return null;
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-        <DialogHeader className="p-4 border-b">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2">
-              <ImageIcon className="h-5 w-5" />
-              Screenshot Preview
-            </DialogTitle>
-            <div className="flex items-center gap-2">
-              {screenshots.length > 1 && (
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={onPrevious}>
-                    Previous
-                  </Button>
-                  <span className="text-sm text-gray-500">
-                    {currentIndex + 1} of {screenshots.length}
-                  </span>
-                  <Button variant="outline" size="sm" onClick={onNext}>
-                    Next
-                  </Button>
-                </div>
-              )}
-              <Button variant="outline" size="sm" onClick={onClose}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </DialogHeader>
-        
-        <div className="p-4 flex justify-center">
-          <EnhancedImage
-            attachment={currentScreenshot}
-            className="max-w-full max-h-[70vh] rounded-lg shadow-lg"
-            alt="Screenshot preview"
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
 const InlineAttachment: React.FC<{
   attachment: any;
   onViewScreenshot?: () => void;
 }> = ({ attachment, onViewScreenshot }) => {
-  const isImage = attachment.type === 'image' || attachment.thumbnailUrl;
+  const isImage = attachment.type === 'image' || attachment.thumbnailUrl || attachment.file_path || attachment.path;
   const isUrl = attachment.type === 'link' || attachment.url;
+
+  console.log('🖼️ INLINE ATTACHMENT:', attachment);
 
   return (
     <div className="my-4 p-3 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
@@ -112,7 +61,7 @@ const InlineAttachment: React.FC<{
           {isImage ? (
             <EnhancedImage
               attachment={attachment}
-              className="w-full h-full cursor-pointer"
+              className="w-full h-full cursor-pointer object-cover"
               onClick={onViewScreenshot}
               showFallback={true}
             />
@@ -174,7 +123,7 @@ const AttachmentCard: React.FC<{
   onViewScreenshot?: () => void;
 }> = ({ attachment, onViewScreenshot }) => {
   const isUrl = attachment.type === 'link' || attachment.url;
-  const hasScreenshot = attachment.thumbnailUrl || (attachment.url && onViewScreenshot);
+  const hasScreenshot = attachment.thumbnailUrl || attachment.file_path || attachment.path || (attachment.url && onViewScreenshot);
 
   return (
     <div className="border rounded-lg p-3 hover:bg-gray-50 transition-colors">
@@ -228,7 +177,7 @@ const AttachmentCard: React.FC<{
           <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden flex-shrink-0">
             <EnhancedImage
               attachment={attachment}
-              className="w-full h-full cursor-pointer"
+              className="w-full h-full cursor-pointer object-cover"
               onClick={onViewScreenshot}
               showFallback={false}
             />
@@ -368,14 +317,14 @@ export const AnalysisDetailDrawer: React.FC<AnalysisDetailDrawerProps> = ({
   const analyzedUrls = getAnalyzedUrls(analysis);
   const summary = getAnalysisSummary(analysis);
   const title = getAnalysisTitle(analysis);
+  const screenshots = getAllScreenshots(analysis);
 
-  const screenshots = attachments
-    .filter(att => att.thumbnailUrl || (att.type === 'link' && att.url))
-    .map(att => ({
-      thumbnailUrl: att.thumbnailUrl,
-      url: att.url,
-      name: att.name
-    }));
+  console.log('🎭 ANALYSIS DETAIL DRAWER:', {
+    analysis,
+    attachments,
+    screenshots,
+    analyzedUrls
+  });
 
   const handleOpenInChat = () => {
     if (analysis.type === 'chat') {
@@ -660,10 +609,11 @@ export const AnalysisDetailDrawer: React.FC<AnalysisDetailDrawerProps> = ({
 
       {screenshots.length > 0 && (
         <ScreenshotModal
-          screenshots={screenshots}
-          currentIndex={currentScreenshotIndex}
           isOpen={screenshotModalOpen}
           onClose={() => setScreenshotModalOpen(false)}
+          screenshot={screenshots[currentScreenshotIndex]}
+          screenshots={screenshots}
+          currentIndex={currentScreenshotIndex}
           onNext={nextScreenshot}
           onPrevious={previousScreenshot}
         />
