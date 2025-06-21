@@ -1,3 +1,4 @@
+
 // src/App.tsx
 
 import React from 'react';
@@ -70,20 +71,18 @@ const App: React.FC = () => {
                     }
                   />
                   
+                  {/* Legacy profile route - redirect to new figmant profile */}
+                  <Route
+                    path="/profile"
+                    element={<Navigate to="/figmant/profile" replace />}
+                  />
+                  
                   {/* Preserve other important routes */}
                   <Route
                     path="/analysis"
                     element={
                       <AuthGuard>
                         <DesignAnalysis />
-                      </AuthGuard>
-                    }
-                  />
-                  <Route
-                    path="/profile"
-                    element={
-                      <AuthGuard>
-                        <ProfilePage />
                       </AuthGuard>
                     }
                   />

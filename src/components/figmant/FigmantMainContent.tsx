@@ -13,6 +13,7 @@ import { SearchPage } from './pages/SearchPage';
 import { CreditsPage } from './pages/CreditsPage';
 import { PreferencesPage } from './pages/PreferencesPage';
 import { AdminPage } from './pages/AdminPage';
+import { ProfilePage } from './pages/ProfilePage';
 
 interface FigmantMainContentProps {
   activeSection: string;
@@ -65,6 +66,9 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       
       case 'templates':
         return <TemplatesPage />;
+      
+      case 'profile':
+        return <ProfilePage />;
       
       case 'credits':
         return <CreditsPage />;

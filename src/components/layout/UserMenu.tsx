@@ -61,8 +61,11 @@ export const UserMenu = () => {
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        {/* Profile Management */}
-        <DropdownMenuItem onClick={() => navigate('/profile')}>
+        {/* Profile Management - now goes to figmant/profile */}
+        <DropdownMenuItem 
+          onClick={() => navigate('/figmant/profile')}
+          className={isOnFigmant && currentSection === 'profile' ? 'bg-accent' : ''}
+        >
           <Settings className="mr-2 h-4 w-4" />
           Profile & Settings
         </DropdownMenuItem>

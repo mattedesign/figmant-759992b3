@@ -9,6 +9,7 @@ import {
   HelpCircle, 
   Shield,
   Wand2,
+  User,
   LucideIcon
 } from 'lucide-react';
 
@@ -18,7 +19,7 @@ export interface NavigationItem {
   icon: LucideIcon;
   priority: number;
   description?: string;
-  hidden?: boolean; // Add hidden property
+  hidden?: boolean;
 }
 
 export const navigationConfig = {
@@ -50,7 +51,7 @@ export const navigationConfig = {
       icon: Star, 
       priority: 1,
       description: 'UC-018 - E-commerce revenue impact predictions',
-      hidden: true // Hide premium analysis
+      hidden: true
     },
     { 
       id: 'templates', 
@@ -58,6 +59,13 @@ export const navigationConfig = {
       icon: FileText, 
       priority: 1,
       description: 'Analysis templates and prompt management'
+    },
+    { 
+      id: 'profile', 
+      label: 'Profile', 
+      icon: User, 
+      priority: 1,
+      description: 'User profile and account management'
     },
     { 
       id: 'credits', 

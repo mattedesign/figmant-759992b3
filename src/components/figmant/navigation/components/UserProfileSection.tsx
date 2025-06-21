@@ -60,7 +60,7 @@ export const UserProfileSection: React.FC<UserProfileSectionProps> = ({
         <Button
           variant="ghost"
           className="w-full justify-start h-10 text-sm"
-          onClick={() => handleProfileNavigation('/profile')}
+          onClick={() => handleProfileNavigation('/figmant/profile')}
         >
           <Settings className="mr-2 h-4 w-4" />
           Profile & Settings

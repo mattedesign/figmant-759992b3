@@ -70,7 +70,7 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
             <DropdownMenuSeparator />
             
             {/* Profile Management */}
-            <DropdownMenuItem onClick={() => navigate('/profile')}>
+            <DropdownMenuItem onClick={() => navigate('/figmant/profile')}>
               <Settings className="mr-2 h-4 w-4" />
               Profile & Settings
             </DropdownMenuItem>
@@ -148,7 +148,7 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
           <DropdownMenuSeparator />
           
           {/* Profile Management */}
-          <DropdownMenuItem onClick={() => navigate('/profile')}>
+          <DropdownMenuItem onClick={() => navigate('/figmant/profile')}>
             <Settings className="mr-2 h-4 w-4" />
             Profile & Settings
           </DropdownMenuItem>
