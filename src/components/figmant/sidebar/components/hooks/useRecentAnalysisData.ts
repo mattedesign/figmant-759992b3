@@ -38,40 +38,105 @@ export const useRecentAnalysisData = (analysisHistory: SavedChatAnalysis[]) => {
     }, obj);
   };
 
-  // Combine all types of analyses and sort by date
-  const allAnalyses = [
-    ...designAnalyses.map(a => ({ 
-      ...a, 
-      type: 'design', 
-      title: a.analysis_results?.title || 'Design Analysis',
-      analysisType: a.analysis_type || 'General',
-      score: a.impact_summary?.key_metrics?.overall_score || Math.floor(Math.random() * 4) + 7,
-      fileCount: 1,
-      imageUrl: null
-    })),
-    ...analysisHistory.map(a => ({ 
-      ...a, 
-      type: 'chat', 
-      title: getAnalysisDisplayName(a.analysis_type),
-      analysisType: getAnalysisDisplayName(a.analysis_type),
-      score: Math.floor((a.confidence_score || 0.8) * 10),
-      fileCount: safeGet(a, 'analysis_results.attachments_processed', 1),
-      imageUrl: safeGet(a, 'analysis_results.upload_ids.0', null)
-    })),
-    ...wizardAnalyses.map(a => ({ 
-      ...a, 
-      type: 'wizard', 
-      title: 'Wizard Analysis',
-      analysisType: 'Premium Wizard',
-      score: Math.floor((a.confidence_score || 0.8) * 10),
-      fileCount: safeGet(a, 'analysis_results.attachments_processed', 1),
-      imageUrl: safeGet(a, 'analysis_results.upload_ids.0', null)
-    }))
-  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  // Enhanced data transformation with better error handling and logging
+  const transformAnalysisData = () => {
+    console.log('🔍 Transforming analysis data:', {
+      designAnalysesCount: designAnalyses.length,
+      chatAnalysesCount: analysisHistory.length,
+      wizardAnalysesCount: wizardAnalyses.length
+    });
 
-  const recentAnalyses = allAnalyses.slice(0, 20);
+    const transformedDesignAnalyses = designAnalyses.map(a => {
+      const transformed = {
+        ...a, 
+        type: 'design', 
+        title: safeGet(a, 'analysis_results.title', 'Design Analysis'),
+        displayTitle: safeGet(a, 'analysis_results.title', 'Design Analysis'),
+        analysisType: a.analysis_type || 'General Design Analysis',
+        score: safeGet(a, 'impact_summary.key_metrics.overall_score', Math.floor(Math.random() * 4) + 7),
+        fileCount: 1,
+        imageUrl: null,
+        status: 'completed',
+        confidence_score: a.confidence_score || 0.8
+      };
+      
+      console.log('🔍 Transformed design analysis:', {
+        id: transformed.id,
+        title: transformed.title,
+        analysisType: transformed.analysisType,
+        score: transformed.score
+      });
+      
+      return transformed;
+    });
+
+    const transformedChatAnalyses = analysisHistory.map(a => {
+      const analysisTypeName = getAnalysisDisplayName(a.analysis_type);
+      const transformed = {
+        ...a, 
+        type: 'chat', 
+        title: analysisTypeName,
+        displayTitle: analysisTypeName,
+        analysisType: analysisTypeName,
+        score: Math.floor((a.confidence_score || 0.8) * 10),
+        fileCount: safeGet(a, 'analysis_results.attachments_processed', 1),
+        imageUrl: safeGet(a, 'analysis_results.upload_ids.0', null),
+        status: 'completed'
+      };
+      
+      console.log('🔍 Transformed chat analysis:', {
+        id: transformed.id,
+        title: transformed.title,
+        analysisType: transformed.analysisType,
+        score: transformed.score,
+        originalType: a.analysis_type
+      });
+      
+      return transformed;
+    });
+
+    const transformedWizardAnalyses = wizardAnalyses.map(a => {
+      const transformed = {
+        ...a, 
+        type: 'wizard', 
+        title: 'Premium Wizard Analysis',
+        displayTitle: 'Premium Wizard Analysis',
+        analysisType: 'Premium Wizard',
+        score: Math.floor((a.confidence_score || 0.8) * 10),
+        fileCount: safeGet(a, 'analysis_results.attachments_processed', 1),
+        imageUrl: safeGet(a, 'analysis_results.upload_ids.0', null),
+        status: 'completed'
+      };
+      
+      console.log('🔍 Transformed wizard analysis:', {
+        id: transformed.id,
+        title: transformed.title,
+        analysisType: transformed.analysisType,
+        score: transformed.score
+      });
+      
+      return transformed;
+    });
+
+    return [
+      ...transformedDesignAnalyses,
+      ...transformedChatAnalyses,
+      ...transformedWizardAnalyses
+    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  };
+
+  const recentAnalyses = transformAnalysisData().slice(0, 20);
+
+  console.log('🔍 Final recent analyses:', {
+    totalCount: recentAnalyses.length,
+    types: recentAnalyses.reduce((acc, curr) => {
+      acc[curr.type] = (acc[curr.type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>)
+  });
 
   const toggleExpanded = (analysisId: string) => {
+    console.log('🔍 Toggling expanded state for analysis:', analysisId);
     const newExpanded = new Set(expandedItems);
     if (newExpanded.has(analysisId)) {
       newExpanded.delete(analysisId);

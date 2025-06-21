@@ -2,9 +2,10 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, MessageSquare, Clock, Target } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, FileText, MessageSquare, Sparkles, ExternalLink, User, Target } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 interface AnalysisDetailModalProps {
   isOpen: boolean;
@@ -17,156 +18,189 @@ export const AnalysisDetailModal: React.FC<AnalysisDetailModalProps> = ({
   onClose,
   analysis
 }) => {
-  console.log('Modal props:', { isOpen, analysis: !!analysis });
+  const navigate = useNavigate();
 
   if (!analysis) {
-    console.log('No analysis provided to modal');
+    console.log('🔍 AnalysisDetailModal: No analysis provided');
     return null;
   }
 
+  console.log('🔍 AnalysisDetailModal: Rendering modal for analysis:', {
+    id: analysis.id,
+    type: analysis.type,
+    title: analysis.title || analysis.displayTitle
+  });
+
   const getAnalysisIcon = () => {
-    return analysis.type === 'chat' ? MessageSquare : FileText;
+    if (analysis.type === 'chat') return MessageSquare;
+    if (analysis.type === 'wizard') return Sparkles;
+    return FileText;
   };
 
-  const getAnalysisResults = () => {
+  const getAnalysisTitle = () => {
+    return analysis.displayTitle || analysis.title || 'Analysis';
+  };
+
+  const getAnalysisResponse = () => {
     if (analysis.type === 'chat') {
-      return analysis.analysis_results?.response || 'No analysis results available';
+      return analysis.analysis_results?.response || 'No response available';
     }
-    return analysis.analysis_results?.response || analysis.analysis_results?.analysis || 'No analysis results available';
+    
+    if (analysis.type === 'design') {
+      return analysis.analysis_results?.summary || analysis.analysis_results?.analysis || 'Analysis completed';
+    }
+    
+    if (analysis.type === 'wizard') {
+      return analysis.analysis_results?.response || 'Wizard analysis completed';
+    }
+    
+    return 'Analysis completed';
   };
 
   const getConfidenceScore = () => {
     if (analysis.confidence_score) {
       return Math.round(analysis.confidence_score * 100);
     }
-    return analysis.impact_summary?.key_metrics?.overall_score * 10 || 85;
+    if (analysis.score) {
+      return analysis.score * 10;
+    }
+    return 85;
+  };
+
+  const handleContinueAnalysis = () => {
+    console.log('🔍 AnalysisDetailModal: Continue analysis clicked:', {
+      analysisType: analysis.type,
+      analysisId: analysis.id
+    });
+
+    if (analysis.type === 'chat') {
+      // Navigate to chat page with the historical analysis loaded
+      navigate('/figmant', { 
+        state: { 
+          activeSection: 'chat',
+          loadHistoricalAnalysis: analysis.id,
+          historicalData: analysis
+        } 
+      });
+    } else if (analysis.type === 'wizard') {
+      // Navigate to wizard/premium analysis
+      navigate('/figmant', { 
+        state: { 
+          activeSection: 'wizard',
+          loadHistoricalAnalysis: analysis.id,
+          historicalData: analysis
+        } 
+      });
+    } else {
+      // For design analysis, navigate to analysis page
+      navigate('/figmant', { 
+        state: { 
+          activeSection: 'analysis',
+          loadHistoricalAnalysis: analysis.id,
+          historicalData: analysis
+        } 
+      });
+    }
+    onClose();
   };
 
   const Icon = getAnalysisIcon();
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      console.log('Dialog onOpenChange:', open);
-      if (!open) {
-        onClose();
-      }
-    }}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Icon className="h-5 w-5" />
-            {analysis.type === 'chat' ? 'Chat Analysis Details' : 'Design Analysis Details'}
-          </DialogTitle>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Icon className="h-5 w-5 text-blue-600" />
+            <DialogTitle>
+              {getAnalysisTitle()}
+            </DialogTitle>
+          </div>
+          
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="outline">
+              {analysis.type === 'chat' ? 'Chat Analysis' : 
+               analysis.type === 'wizard' ? 'Premium Wizard' : 
+               'Design Analysis'}
+            </Badge>
+            {analysis.analysisType && (
+              <Badge variant="secondary">
+                {analysis.analysisType}
+              </Badge>
+            )}
+            <Badge variant="default">
+              Score: {getConfidenceScore()}%
+            </Badge>
+          </div>
         </DialogHeader>
-        
-        <div className="space-y-6">
-          {/* Analysis Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>{analysis.displayTitle || analysis.title}</span>
-                <Badge variant="default">
-                  {getConfidenceScore()}% Confidence
-                </Badge>
-              </CardTitle>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  <span>
-                    {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
-                  </span>
-                </div>
-                <Badge variant="outline">
-                  {analysis.analysis_type || 'General Analysis'}
-                </Badge>
-              </div>
-            </CardHeader>
-          </Card>
 
-          {/* Analysis Results */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Analysis Results
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="prose max-w-none">
-                <div className="whitespace-pre-wrap text-sm leading-relaxed bg-muted/30 p-4 rounded-lg">
-                  {getAnalysisResults()}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="space-y-6 mt-6">
+          {/* Analysis Details */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              Created {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
+            </div>
 
-          {/* Prompt Used (for chat analyses) */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <User className="h-4 w-4" />
+              Confidence: {getConfidenceScore()}%
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Target className="h-4 w-4" />
+              Files processed: {analysis.fileCount || 1}
+            </div>
+          </div>
+
+          {/* Original Prompt for Chat Analysis */}
           {analysis.type === 'chat' && analysis.prompt_used && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Prompt Used</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-muted/30 p-3 rounded-lg text-sm">
-                  {analysis.prompt_used}
-                </div>
-              </CardContent>
-            </Card>
+            <div>
+              <h4 className="font-semibold mb-2">Original Prompt</h4>
+              <div className="bg-muted p-3 rounded-lg text-sm">
+                {analysis.prompt_used}
+              </div>
+            </div>
           )}
 
-          {/* Suggestions (if available) */}
-          {analysis.suggestions && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Suggestions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-muted/30 p-3 rounded-lg text-sm">
-                  <pre className="whitespace-pre-wrap">
-                    {typeof analysis.suggestions === 'string' 
-                      ? analysis.suggestions 
-                      : JSON.stringify(analysis.suggestions, null, 2)}
-                  </pre>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Analysis Content */}
+          <div>
+            <h4 className="font-semibold mb-2">
+              {analysis.type === 'chat' ? 'AI Response' : 'Analysis Results'}
+            </h4>
+            <div className="bg-muted p-3 rounded-lg text-sm max-h-64 overflow-y-auto">
+              {getAnalysisResponse()}
+            </div>
+          </div>
+
+          {/* Key Metrics if available */}
+          {analysis.impact_summary?.key_metrics && (
+            <div>
+              <h4 className="font-semibold mb-2">Key Metrics</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                {Object.entries(analysis.impact_summary.key_metrics).map(([key, value]) => (
+                  <div key={key} className="flex justify-between p-2 bg-muted rounded">
+                    <span className="capitalize">{key.replace(/_/g, ' ')}:</span>
+                    <span className="font-medium">{String(value)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
-          {/* Impact Summary (for design analyses) */}
-          {analysis.impact_summary && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Impact Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {analysis.impact_summary.key_metrics && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Overall Score</p>
-                        <p className="text-2xl font-bold">
-                          {analysis.impact_summary.key_metrics.overall_score}/10
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {analysis.impact_summary.improvement_areas && (
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-2">Improvement Areas</p>
-                      <div className="flex flex-wrap gap-2">
-                        {analysis.impact_summary.improvement_areas.map((area: string, index: number) => (
-                          <Badge key={index} variant="secondary">
-                            {area}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Action Button */}
+          <div className="pt-4 border-t">
+            <Button 
+              onClick={handleContinueAnalysis}
+              className="w-full"
+              size="lg"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              {analysis.type === 'chat' ? 'Continue in Chat' : 
+               analysis.type === 'wizard' ? 'Open in Wizard' :
+               'View in Analysis'}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

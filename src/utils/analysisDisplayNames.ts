@@ -1,54 +1,50 @@
 
-import { figmantPromptTemplates } from '@/data/figmantPromptTemplates';
-
-// Map of analysis types to display names
-const ANALYSIS_TYPE_DISPLAY_NAMES: Record<string, string> = {
-  'master': 'Master UX Analysis',
-  'competitor': 'Competitive Analysis', 
-  'visual_hierarchy': 'Visual Hierarchy',
-  'copy_messaging': 'Copy & Messaging',
-  'ecommerce_revenue': 'E-commerce Revenue',
-  'ab_testing': 'A/B Testing Strategy',
-  'premium': 'Premium Analysis',
-  'general': 'General Analysis',
-  'figmant_chat': 'Master Analysis',
-  'Master Analysis': 'Master Analysis',
-  'Competitive Analysis': 'Competitive Analysis',
-  'Visual Hierarchy': 'Visual Hierarchy',
-  'Copy & Messaging': 'Copy & Messaging',
-  'E-commerce Revenue': 'E-commerce Revenue',
-  'A/B Testing Strategy': 'A/B Testing Strategy'
+// Utility function to get user-friendly display names for analysis types
+export const getAnalysisDisplayName = (analysisType: string): string => {
+  const displayNames: Record<string, string> = {
+    // Chat analysis types
+    'figmant_chat': 'Chat Analysis',
+    'master_ux_analysis': 'Master UX Analysis',
+    'competitor_analysis': 'Competitor Analysis',
+    'visual_hierarchy_analysis': 'Visual Hierarchy Analysis',
+    'copy_messaging_analysis': 'Copy & Messaging Analysis',
+    'ecommerce_revenue_analysis': 'E-commerce Revenue Analysis',
+    'ab_testing_analysis': 'A/B Testing Analysis',
+    'premium_analysis': 'Premium Analysis',
+    'wizard': 'Premium Wizard',
+    
+    // Design analysis types  
+    'design_analysis': 'Design Analysis',
+    'batch_analysis': 'Batch Analysis',
+    'comparative_analysis': 'Comparative Analysis',
+    
+    // General fallbacks
+    'chat': 'Chat Analysis',
+    'design': 'Design Analysis',
+    'wizard_analysis': 'Wizard Analysis'
+  };
+  
+  // Return the display name or a formatted version of the original type
+  return displayNames[analysisType] || 
+         analysisType.split('_')
+           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+           .join(' ');
 };
 
-export const getAnalysisDisplayName = (analysisType?: string): string => {
-  if (!analysisType) {
-    return 'Master Analysis';
-  }
-
-  // First try to find exact match
-  if (ANALYSIS_TYPE_DISPLAY_NAMES[analysisType]) {
-    return ANALYSIS_TYPE_DISPLAY_NAMES[analysisType];
-  }
-
-  // Try to find a template with matching category or name
-  const template = figmantPromptTemplates.find(t => 
-    t.category === analysisType.toLowerCase() || 
-    t.name.toLowerCase() === analysisType.toLowerCase() ||
-    t.id === analysisType
-  );
-
-  if (template) {
-    return template.displayName;
-  }
-
-  // Check for partial matches (case insensitive)
-  const lowerType = analysisType.toLowerCase();
-  for (const [key, displayName] of Object.entries(ANALYSIS_TYPE_DISPLAY_NAMES)) {
-    if (lowerType.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerType)) {
-      return displayName;
-    }
-  }
-
-  // If no match found, return the original type with proper casing
-  return analysisType.charAt(0).toUpperCase() + analysisType.slice(1);
+// Get a short description for analysis types
+export const getAnalysisDescription = (analysisType: string): string => {
+  const descriptions: Record<string, string> = {
+    'master_ux_analysis': 'Comprehensive UX evaluation and recommendations',
+    'competitor_analysis': 'Compare design against top performers',
+    'visual_hierarchy_analysis': 'Analyze information architecture and flow',
+    'copy_messaging_analysis': 'Optimize headlines, CTAs, and messaging',
+    'ecommerce_revenue_analysis': 'Predict revenue impact of design changes',
+    'ab_testing_analysis': 'Design statistically valid A/B tests',
+    'premium_analysis': 'Advanced analysis with detailed insights',
+    'design_analysis': 'General design evaluation and feedback',
+    'batch_analysis': 'Comparative analysis of multiple designs',
+    'figmant_chat': 'Interactive design analysis conversation'
+  };
+  
+  return descriptions[analysisType] || 'Analysis and recommendations';
 };

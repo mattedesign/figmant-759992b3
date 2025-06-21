@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronRight, Clock, FileText, MessageSquare } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock, FileText, MessageSquare, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { AnalysisDetailModal } from '../../pages/dashboard/components/AnalysisDetailModal';
 
@@ -25,23 +25,53 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
     event.preventDefault();
     event.stopPropagation();
     
-    console.log('Opening analysis modal from sidebar:', analysis);
+    console.log('🔍 RecentAnalysisItem: Opening analysis modal:', {
+      analysisId: analysis.id,
+      analysisType: analysis.type,
+      title: analysis.title
+    });
+    
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
+    console.log('🔍 RecentAnalysisItem: Closing analysis modal');
     setShowModal(false);
   };
 
   const analysisId = `${analysis.type}-${analysis.id}`;
-  const Icon = analysis.type === 'chat' ? MessageSquare : FileText;
+  
+  // Get appropriate icon based on analysis type
+  const getAnalysisIcon = () => {
+    if (analysis.type === 'chat') return MessageSquare;
+    if (analysis.type === 'wizard') return Sparkles;
+    return FileText;
+  };
+  
+  const Icon = getAnalysisIcon();
   
   const getConfidenceScore = () => {
     if (analysis.confidence_score) {
       return Math.round(analysis.confidence_score * 100);
     }
-    return analysis.impact_summary?.key_metrics?.overall_score * 10 || 85;
+    if (analysis.score) {
+      return analysis.score * 10;
+    }
+    return 85;
   };
+
+  const getAnalysisTitle = () => {
+    // Use displayTitle if available, otherwise fall back to title
+    return analysis.displayTitle || analysis.title || 'Analysis';
+  };
+
+  console.log('🔍 RecentAnalysisItem: Rendering analysis item:', {
+    analysisId,
+    title: getAnalysisTitle(),
+    type: analysis.type,
+    score: getConfidenceScore(),
+    isExpanded
+  });
 
   return (
     <>
@@ -54,7 +84,7 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
             <Icon className="h-4 w-4 text-gray-500 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
-                {analysis.displayTitle}
+                {getAnalysisTitle()}
               </p>
               <div className="flex items-center gap-2 mt-1">
                 <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -75,7 +105,10 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0"
-              onClick={(e) => onToggleExpanded(analysisId, e)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleExpanded(analysisId, e);
+              }}
             >
               {isExpanded ? (
                 <ChevronDown className="h-3 w-3" />
@@ -90,10 +123,13 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
           <div className="px-3 pb-3 border-t border-gray-100">
             <div className="mt-3 space-y-2 text-xs text-gray-600">
               <div>
-                <span className="font-medium">Type:</span> {analysis.analysis_type || 'General'}
+                <span className="font-medium">Type:</span> {analysis.analysisType || analysis.analysis_type || 'General'}
               </div>
               <div>
                 <span className="font-medium">Status:</span> {analysis.status || 'Completed'}
+              </div>
+              <div>
+                <span className="font-medium">Files:</span> {analysis.fileCount || 1}
               </div>
               {analysis.analysis_results && (
                 <div className="mt-2">
