@@ -58,6 +58,9 @@ export const CompetitorAnalysisPage: React.FC = () => {
           placeholder="Enter competitor URLs or ask about competitive analysis..."
           onSendMessage={handleOnSendMessage}
           className="h-full"
+          // Remove internal state management
+          showAttachmentMenu={false}
+          setShowAttachmentMenu={() => {}}
         />
       </div>
       
