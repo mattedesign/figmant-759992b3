@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { History, ChevronLeft, ChevronRight, Plus, Clock, FileText } from 'lucide-react';
+import { History, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
-import { formatDistanceToNow } from 'date-fns';
 import { AnalysisDetailDrawer } from './AnalysisDetailDrawer';
+import { EnhancedAnalysisCard } from '../../analysis/EnhancedAnalysisCard';
 
 interface CollapsibleHistorySidebarProps {
   onNewAnalysis: () => void;
@@ -21,7 +21,6 @@ export const CollapsibleHistorySidebar: React.FC<CollapsibleHistorySidebarProps>
   const { data: designAnalyses = [], isLoading } = useDesignAnalyses();
   const { data: chatAnalyses = [] } = useChatAnalysisHistory();
 
-  // Combine both types of analyses and sort by date
   const allAnalyses = [
     ...designAnalyses.map(a => ({ 
       ...a, 
@@ -38,20 +37,9 @@ export const CollapsibleHistorySidebar: React.FC<CollapsibleHistorySidebarProps>
   const recentAnalyses = allAnalyses.slice(0, 10);
 
   const handleAnalysisClick = (analysis: any) => {
+    console.log('Opening analysis:', analysis);
     setSelectedAnalysis(analysis);
     setIsDrawerOpen(true);
-  };
-
-  const truncateText = (text: string, maxLength: number = 50) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
-
-  const getAnalysisPreview = (analysis: any) => {
-    if (analysis.type === 'chat') {
-      return truncateText(analysis.prompt_used || 'Chat analysis');
-    }
-    return truncateText(analysis.analysis_results?.analysis || 'Design analysis');
   };
 
   return (
@@ -59,7 +47,6 @@ export const CollapsibleHistorySidebar: React.FC<CollapsibleHistorySidebarProps>
       <div className={`h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out ${
         isCollapsed ? 'w-16' : 'w-80'
       }`}>
-        {/* Header */}
         <div className="flex-none p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             {!isCollapsed && (
@@ -84,7 +71,6 @@ export const CollapsibleHistorySidebar: React.FC<CollapsibleHistorySidebarProps>
           </div>
         </div>
 
-        {/* New Analysis Button */}
         <div className="flex-none p-4 border-b border-gray-200">
           {isCollapsed ? (
             <Button
@@ -105,39 +91,26 @@ export const CollapsibleHistorySidebar: React.FC<CollapsibleHistorySidebarProps>
           )}
         </div>
 
-        {/* History List */}
         {!isCollapsed && (
           <div className="flex-1 overflow-y-auto p-4">
-            <div className="space-y-2">
+            <div className="space-y-3">
               {isLoading ? (
-                <div className="text-sm text-gray-500">Loading analyses...</div>
+                <div className="text-sm text-gray-500 text-center py-8">
+                  Loading analyses...
+                </div>
               ) : recentAnalyses.length === 0 ? (
-                <div className="text-sm text-gray-500">No analyses found</div>
+                <div className="text-sm text-gray-500 text-center py-8">
+                  <History className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                  No analyses found
+                  <p className="text-xs mt-1">Create your first analysis to see it here</p>
+                </div>
               ) : (
                 recentAnalyses.map((analysis) => (
-                  <Button
+                  <EnhancedAnalysisCard
                     key={`${analysis.type}-${analysis.id}`}
-                    variant="ghost"
-                    className="w-full justify-start p-3 h-auto flex-col items-start hover:bg-blue-50"
-                    onClick={() => handleAnalysisClick(analysis)}
-                  >
-                    <div className="flex items-center gap-2 w-full">
-                      <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">
-                        <FileText className="w-3 h-3 text-blue-500" />
-                      </div>
-                      <div className="text-left flex-1 min-w-0">
-                        <div className="font-medium text-sm">{analysis.title}</div>
-                        <div className="text-xs text-gray-500 flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}
-                        </div>
-                      </div>
-                      <div className="text-xs text-gray-400">→</div>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1 text-left w-full">
-                      {getAnalysisPreview(analysis)}
-                    </div>
-                  </Button>
+                    analysis={analysis}
+                    onViewDetails={() => handleAnalysisClick(analysis)}
+                  />
                 ))
               )}
             </div>
@@ -145,10 +118,12 @@ export const CollapsibleHistorySidebar: React.FC<CollapsibleHistorySidebarProps>
         )}
       </div>
 
-      {/* Analysis Detail Drawer */}
       <AnalysisDetailDrawer
         isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setSelectedAnalysis(null);
+        }}
         analysis={selectedAnalysis}
       />
     </>
