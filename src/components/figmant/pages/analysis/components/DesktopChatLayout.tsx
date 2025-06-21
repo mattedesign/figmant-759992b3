@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { DesignChatInterface } from '@/components/design/DesignChatInterface';
 import { AnalysisNavigationSidebar } from './AnalysisNavigationSidebar';
-import { ScreenshotModal } from '../../../figmant/analysis/ScreenshotModal';
+import { ScreenshotModal } from '../../../analysis/ScreenshotModal';
 import { useChatStateContext } from './ChatStateProvider';
 import { useAnalysisChatHandler } from '../hooks/useAnalysisChatHandler';
 import { useLocation } from 'react-router-dom';
@@ -100,8 +100,6 @@ export const DesktopChatLayout: React.FC = () => {
         <DesignChatInterface
           onSendMessage={handleSendMessage}
           messages={messages}
-          message={message}
-          setMessage={setMessage}
           attachments={attachments}
           setAttachments={setAttachments}
           isProcessing={isAnalyzing}
