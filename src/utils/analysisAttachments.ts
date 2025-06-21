@@ -129,10 +129,9 @@ export const extractAttachmentsFromChatAnalysis = (analysis: SavedChatAnalysis):
       }
     }
     
-    // Check if analysis has batch_uploads (with proper type checking)
-    const analysisWithBatchUploads = analysis as any;
-    if (analysisWithBatchUploads.batch_uploads && Array.isArray(analysisWithBatchUploads.batch_uploads)) {
-      analysisWithBatchUploads.batch_uploads.forEach((att: any) => {
+    // Check if analysis itself has attachment-like properties (stored data structure)
+    if (analysis.batch_uploads && Array.isArray(analysis.batch_uploads)) {
+      analysis.batch_uploads.forEach((att: any) => {
         if (att && typeof att === 'object') {
           attachments.push(processAttachmentData(att));
         }

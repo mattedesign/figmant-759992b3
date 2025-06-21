@@ -12,7 +12,6 @@ interface AnalysisNavigationSidebarProps {
   onRemoveAttachment: (id: string) => void;
   onViewAttachment: (attachment: ChatAttachment) => void;
   lastAnalysisResult?: any;
-  historicalAnalysis?: any; // Add support for historical analysis
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
 }
@@ -23,7 +22,6 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
   onRemoveAttachment,
   onViewAttachment,
   lastAnalysisResult,
-  historicalAnalysis,
   isCollapsed = false,
   onToggleCollapse
 }) => {
@@ -42,7 +40,6 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
       totalAttachments: attachments.length,
       fileAttachmentsCount: fileAttachments.length,
       urlAttachmentsCount: urlAttachments.length,
-      hasHistoricalAnalysis: !!historicalAnalysis,
       attachmentDetails: attachments.map(att => ({ 
         id: att.id, 
         type: att.type, 
@@ -51,7 +48,7 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
         url: att.url 
       }))
     });
-  }, [attachments, historicalAnalysis]);
+  }, [attachments]);
 
   console.log('🎯 ANALYSIS NAVIGATION SIDEBAR - Rendering with:', {
     totalAttachments: attachments.length,
@@ -59,7 +56,6 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
     urlAttachmentsCount: urlAttachments.length,
     analysisMessagesCount: analysisMessages.length,
     hasLastAnalysisResult: !!lastAnalysisResult,
-    hasHistoricalAnalysis: !!historicalAnalysis,
     activeTab,
     isCollapsed,
     attachmentDetails: attachments.map(att => ({ 
@@ -92,7 +88,6 @@ export const AnalysisNavigationSidebar: React.FC<AnalysisNavigationSidebarProps>
             urlAttachments={urlAttachments}
             analysisMessages={analysisMessages}
             lastAnalysisResult={lastAnalysisResult}
-            historicalAnalysis={historicalAnalysis}
             onRemoveAttachment={onRemoveAttachment}
             onViewAttachment={onViewAttachment}
             activeTab={activeTab}

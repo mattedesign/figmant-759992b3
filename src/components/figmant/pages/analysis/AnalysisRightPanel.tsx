@@ -9,7 +9,6 @@ interface AnalysisRightPanelProps {
   currentSessionId?: string;
   analysisMessages?: any[];
   lastAnalysisResult?: any;
-  historicalAnalysis?: any; // Add support for historical analysis
   onRemoveAttachment?: (id: string) => void;
   onViewAttachment?: (attachment: ChatAttachment) => void;
 }
@@ -18,7 +17,6 @@ export const AnalysisRightPanel: React.FC<AnalysisRightPanelProps> = ({
   currentSessionId,
   analysisMessages = [],
   lastAnalysisResult,
-  historicalAnalysis,
   onRemoveAttachment,
   onViewAttachment
 }) => {
@@ -34,28 +32,13 @@ export const AnalysisRightPanel: React.FC<AnalysisRightPanelProps> = ({
 
   const fileAttachments = attachments.filter(att => att.type === 'file');
   const urlAttachments = attachments.filter(att => att.type === 'url');
-  
-  // Calculate total attachments including historical ones
-  const historicalAttachmentCount = historicalAnalysis ? 
-    (historicalAnalysis.batch_uploads?.length || 0) + 
-    (historicalAnalysis.analysis_settings?.urls?.length || 0) : 0;
-  
-  const totalAttachments = attachments.length + historicalAttachmentCount;
+  const totalAttachments = attachments.length;
 
   useEffect(() => {
     if (currentSessionId) {
       refreshAttachments();
     }
   }, [currentSessionId, refreshAttachments]);
-
-  console.log('🎯 ANALYSIS RIGHT PANEL - Rendering with:', {
-    currentSessionId,
-    currentAttachments: attachments.length,
-    historicalAnalysis: !!historicalAnalysis,
-    historicalAttachmentCount,
-    totalAttachments,
-    hasLastAnalysisResult: !!lastAnalysisResult
-  });
 
   const handleRemoveAttachment = async (id: string) => {
     try {
@@ -89,14 +72,14 @@ export const AnalysisRightPanel: React.FC<AnalysisRightPanelProps> = ({
       />
 
       {/* Loading State */}
-      {attachmentsLoading && !historicalAnalysis && (
+      {attachmentsLoading && (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-sm text-gray-500">Loading attachments...</div>
         </div>
       )}
 
       {/* Error State */}
-      {attachmentsError && !historicalAnalysis && (
+      {attachmentsError && (
         <div className="p-4">
           <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">
             Error loading attachments: {attachmentsError}
@@ -105,13 +88,12 @@ export const AnalysisRightPanel: React.FC<AnalysisRightPanelProps> = ({
       )}
 
       {/* Content */}
-      {(!attachmentsLoading || historicalAnalysis) && !attachmentsError && (
+      {!attachmentsLoading && !attachmentsError && (
         <NavigationSectionList
           fileAttachments={fileAttachments}
           urlAttachments={urlAttachments}
           analysisMessages={analysisMessages}
           lastAnalysisResult={lastAnalysisResult}
-          historicalAnalysis={historicalAnalysis}
           onRemoveAttachment={handleRemoveAttachment}
           onViewAttachment={handleViewAttachment}
           activeTab={activeTab}
