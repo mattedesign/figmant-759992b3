@@ -99,6 +99,8 @@ export const EnhancedAnalysisCard: React.FC<EnhancedAnalysisCardProps> = ({
         id: attachment.id,
         name: attachment.name,
         url: attachment.url,
+        type: 'desktop',
+        timestamp: attachment.created_at || new Date().toISOString(),
         thumbnailUrl: attachment.thumbnailUrl,
         file_name: attachment.file_name || attachment.name,
         file_path: attachment.file_path || attachment.url,
