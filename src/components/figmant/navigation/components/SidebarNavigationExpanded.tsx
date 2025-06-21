@@ -4,13 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { History, MessageSquare, FileText, Clock, Eye } from 'lucide-react';
+import { History } from 'lucide-react';
 import { getAllNavigationItems } from '@/config/navigation';
 import { cn } from '@/lib/utils';
 import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { AnalysisDetailDrawer } from '../../pages/analysis/AnalysisDetailDrawer';
-import { formatDistanceToNow } from 'date-fns';
+import { EnhancedHistoryCard } from './EnhancedHistoryCard';
 
 interface SidebarNavigationExpandedProps {
   activeTab: string;
@@ -52,20 +52,6 @@ export const SidebarNavigationExpanded: React.FC<SidebarNavigationExpandedProps>
   const handleAnalysisClick = (analysis: any) => {
     setSelectedAnalysis(analysis);
     setIsDrawerOpen(true);
-  };
-
-  const getAnalysisTitle = (analysis: any) => {
-    if (analysis.type === 'chat') {
-      return 'Chat Analysis';
-    }
-    return analysis.analysis_results?.title || 'Design Analysis';
-  };
-
-  const getAnalysisPreview = (analysis: any) => {
-    if (analysis.type === 'chat') {
-      return analysis.analysis_results?.response?.slice(0, 80) + '...' || 'Analysis completed';
-    }
-    return analysis.analysis_results?.summary?.slice(0, 80) + '...' || 'Analysis completed';
   };
 
   return (
@@ -202,60 +188,11 @@ export const SidebarNavigationExpanded: React.FC<SidebarNavigationExpandedProps>
                       </div>
                     ) : (
                       combinedAnalyses.map((analysis) => (
-                        <div
+                        <EnhancedHistoryCard
                           key={`${analysis.type}-${analysis.id}`}
-                          className="border rounded-lg p-3 hover:bg-gray-50 transition-colors cursor-pointer group"
-                          onClick={() => handleAnalysisClick(analysis)}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className={cn(
-                              "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
-                              analysis.type === 'chat' ? 'bg-blue-100' : 'bg-green-100'
-                            )}>
-                              {analysis.type === 'chat' ? (
-                                <MessageSquare className="h-4 w-4 text-blue-600" />
-                              ) : (
-                                <FileText className="h-4 w-4 text-green-600" />
-                              )}
-                            </div>
-                            
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between mb-1">
-                                <h4 className="font-medium text-sm text-gray-900 truncate">
-                                  {getAnalysisTitle(analysis)}
-                                </h4>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAnalysisClick(analysis);
-                                  }}
-                                >
-                                  <Eye className="h-3 w-3" />
-                                </Button>
-                              </div>
-                              
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge 
-                                  variant={analysis.type === 'chat' ? 'default' : 'secondary'} 
-                                  className="text-xs h-5"
-                                >
-                                  {analysis.type === 'chat' ? 'Chat' : 'Design'}
-                                </Badge>
-                                <div className="flex items-center gap-1 text-xs text-gray-500">
-                                  <Clock className="h-3 w-3" />
-                                  <span>{formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true })}</span>
-                                </div>
-                              </div>
-                              
-                              <p className="text-xs text-gray-600 line-clamp-2">
-                                {getAnalysisPreview(analysis)}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                          analysis={analysis}
+                          onViewDetails={handleAnalysisClick}
+                        />
                       ))
                     )}
                   </div>

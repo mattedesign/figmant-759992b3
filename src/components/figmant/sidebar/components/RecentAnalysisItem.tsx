@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { EnhancedAnalysisCard } from '@/components/figmant/analysis/EnhancedAnalysisCard';
+import { EnhancedHistoryCard } from '@/components/figmant/navigation/components/EnhancedHistoryCard';
 import { AnalysisDetailModal } from '../../pages/dashboard/components/AnalysisDetailModal';
 
 interface RecentAnalysisItemProps {
@@ -35,7 +35,7 @@ export const RecentAnalysisItem: React.FC<RecentAnalysisItemProps> = ({
 
   return (
     <>
-      <EnhancedAnalysisCard
+      <EnhancedHistoryCard
         analysis={analysis}
         onViewDetails={handleViewDetails}
         className="mb-2"

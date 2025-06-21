@@ -5,7 +5,7 @@ import { History, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useDesignAnalyses } from '@/hooks/useDesignAnalyses';
 import { useChatAnalysisHistory } from '@/hooks/useChatAnalysisHistory';
 import { AnalysisDetailDrawer } from './AnalysisDetailDrawer';
-import { EnhancedAnalysisCard } from '../../analysis/EnhancedAnalysisCard';
+import { EnhancedHistoryCard } from '../../navigation/components/EnhancedHistoryCard';
 
 interface CollapsibleHistorySidebarProps {
   onNewAnalysis: () => void;
@@ -106,10 +106,10 @@ export const CollapsibleHistorySidebar: React.FC<CollapsibleHistorySidebarProps>
                 </div>
               ) : (
                 recentAnalyses.map((analysis) => (
-                  <EnhancedAnalysisCard
+                  <EnhancedHistoryCard
                     key={`${analysis.type}-${analysis.id}`}
                     analysis={analysis}
-                    onViewDetails={() => handleAnalysisClick(analysis)}
+                    onViewDetails={handleAnalysisClick}
                   />
                 ))
               )}
