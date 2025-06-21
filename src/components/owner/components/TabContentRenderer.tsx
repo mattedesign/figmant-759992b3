@@ -10,8 +10,11 @@ interface TabContentRendererProps {
 }
 
 export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
+  console.log('🎯 OWNER TAB CONTENT RENDERER - activeTab received:', activeTab);
+  
   // Handle specific analysis routes directly
   if (activeTab === 'competitor-analysis') {
+    console.log('✅ OWNER TAB RENDERER - Loading CompetitorAnalysisPage for tab:', activeTab);
     return (
       <div className="h-full w-full">
         <CompetitorAnalysisPage />
@@ -20,6 +23,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
   }
 
   if (activeTab === 'wizard-analysis') {
+    console.log('✅ OWNER TAB RENDERER - Loading PremiumAnalysisWizard for tab:', activeTab);
     return (
       <div className="h-full w-full">
         <PremiumAnalysisWizard />
@@ -28,6 +32,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
   }
 
   if (activeTab === 'premium-analysis') {
+    console.log('✅ OWNER TAB RENDERER - Loading PremiumAnalysisTabController for tab:', activeTab);
     return (
       <div className="h-full w-full">
         <PremiumAnalysisTabController />
@@ -37,6 +42,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
 
   // Use existing tab mapping for other components
   const TabComponent = tabMapping[activeTab] || DesignAnalysisTab;
+  console.log('🎯 OWNER TAB RENDERER - Using tabMapping for tab:', activeTab, 'Component:', TabComponent?.name || 'DesignAnalysisTab');
 
   return (
     <div className="h-full w-full">

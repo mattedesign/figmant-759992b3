@@ -29,12 +29,19 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
   const currentBalance = credits?.current_balance || 0;
   const totalPurchased = credits?.total_purchased || 0;
 
+  // Wrap onSectionChange with logging
+  const handleSectionChange = (section: string) => {
+    console.log('🔍 FIGMANT SIDEBAR - Section change triggered:', section);
+    console.log('🔍 FIGMANT SIDEBAR - Current active section:', activeSection);
+    onSectionChange(section);
+  };
+
   return (
     <SidebarLayout 
       isCollapsed={isCollapsed}
       onToggleCollapse={handleToggleCollapse}
       activeSection={activeSection}
-      onSectionChange={onSectionChange}
+      onSectionChange={handleSectionChange}
       isOwner={isOwner}
       profile={profile}
       user={user}

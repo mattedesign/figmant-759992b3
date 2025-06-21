@@ -57,29 +57,33 @@ const OwnerDashboard = () => {
     // Legacy tabs for backward compatibility
     'wizard', 'revenue-analysis', 'preferences'
   ];
-  console.log('Current tab:', activeTab, 'Current section:', activeSection);
+  console.log('🔍 OWNER DASHBOARD - Current tab:', activeTab, 'Current section:', activeSection);
 
   // Update URL when tab changes
   const handleTabChange = (newTab: string) => {
-    console.log('Changing tab to:', newTab);
+    console.log('🔍 OWNER DASHBOARD - Tab change requested:', newTab);
     setActiveTab(newTab);
     const newSection = migrateNavigationRoute(tabToSectionMap[newTab] || 'dashboard');
     setActiveSection(newSection);
     setSearchParams({
       tab: newTab
     });
+    console.log('🔍 OWNER DASHBOARD - Tab changed to:', newTab, 'Section:', newSection);
   };
 
   // Handle section change from figmant sidebar
   const handleSectionChange = (newSection: string) => {
-    console.log('Changing section to:', newSection);
+    console.log('🔍 OWNER DASHBOARD - Section change requested:', newSection);
     const migratedSection = migrateNavigationRoute(newSection);
+    console.log('🔍 OWNER DASHBOARD - Migrated section:', migratedSection);
     setActiveSection(migratedSection);
     
     // Set the first available tab for the section
     const sectionTabs = Object.entries(tabToSectionMap)
       .filter(([_, section]) => migrateNavigationRoute(section) === migratedSection)
       .map(([tab, _]) => tab);
+    
+    console.log('🔍 OWNER DASHBOARD - Available tabs for section:', sectionTabs);
     
     if (sectionTabs.length > 0) {
       let firstTab = sectionTabs[0];
@@ -95,6 +99,11 @@ const OwnerDashboard = () => {
         if (sectionTabs.includes('users')) {
           firstTab = 'users';
         }
+      } else if (migratedSection === 'competitor-analysis') {
+        // For competitor analysis, prefer 'competitor-analysis' tab
+        if (sectionTabs.includes('competitor-analysis')) {
+          firstTab = 'competitor-analysis';
+        }
       } else if (migratedSection === 'wizard-analysis') {
         // For wizard analysis, prefer 'wizard-analysis' tab
         if (sectionTabs.includes('wizard-analysis')) {
@@ -102,6 +111,7 @@ const OwnerDashboard = () => {
         }
       }
       
+      console.log('🔍 OWNER DASHBOARD - Selected tab:', firstTab);
       setActiveTab(firstTab);
       setSearchParams({
         tab: firstTab
@@ -112,11 +122,11 @@ const OwnerDashboard = () => {
   // Sync tab state with URL changes and handle invalid tabs
   useEffect(() => {
     const currentTab = searchParams.get('tab') || 'design';
-    console.log('URL tab changed to:', currentTab);
+    console.log('🔍 OWNER DASHBOARD - URL tab changed to:', currentTab);
 
     // If the current tab is invalid, redirect to default
     if (!validTabs.includes(currentTab)) {
-      console.log('Invalid tab detected, redirecting to design tab');
+      console.log('🔍 OWNER DASHBOARD - Invalid tab detected, redirecting to design tab');
       setActiveTab('design');
       setActiveSection('dashboard');
       setSearchParams({
@@ -126,10 +136,11 @@ const OwnerDashboard = () => {
       setActiveTab(currentTab);
       const newSection = migrateNavigationRoute(tabToSectionMap[currentTab] || 'dashboard');
       setActiveSection(newSection);
+      console.log('🔍 OWNER DASHBOARD - URL sync - Tab:', currentTab, 'Section:', newSection);
     }
   }, [searchParams, setSearchParams]);
 
-  console.log('Rendering OwnerDashboard with tab:', activeTab, 'section:', activeSection);
+  console.log('🔍 OWNER DASHBOARD - Rendering with tab:', activeTab, 'section:', activeSection);
   
   return (
     <OwnerDashboardErrorBoundary>

@@ -35,9 +35,12 @@ interface TabContentRendererProps {
 }
 
 export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
+  console.log('🎯 SUBSCRIBER TAB CONTENT RENDERER - activeTab received:', activeTab);
+  
   const renderTabContent = (activeTab: string) => {
     switch (activeTab) {
       case 'design':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading AdvancedDesignAnalysisPageContent for tab:', activeTab);
         return (
           <div className="p-6 space-y-6 h-full overflow-y-auto">
             <div className="flex items-center justify-between">
@@ -54,30 +57,37 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
           </div>
         );
       case 'all-analysis':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading AllAnalysisPageWrapper for tab:', activeTab);
         return <AllAnalysisPageWrapper />;
       case 'insights':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading InsightsPage for tab:', activeTab);
         return (
           <Suspense fallback={<LoadingSpinner />}>
             <InsightsPage />
           </Suspense>
         );
       case 'prompts':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading PromptsPage for tab:', activeTab);
         return (
           <Suspense fallback={<LoadingSpinner />}>
             <PromptsPage />
           </Suspense>
         );
       case 'competitor-analysis':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading CompetitorAnalysisPage for tab:', activeTab);
         return (
           <div className="h-full w-full">
             <CompetitorAnalysisPage />
           </div>
         );
       case 'wizard-analysis':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading PremiumAnalysisWizard for tab:', activeTab);
         return <PremiumAnalysisWizard />;
       case 'premium-analysis':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading PremiumAnalysisTabController for tab:', activeTab);
         return <PremiumAnalysisTabController />;
       case 'integrations':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading IntegrationsPage for tab:', activeTab);
         return (
           <Suspense fallback={<LoadingSpinner />}>
             <IntegrationsPage />
@@ -85,6 +95,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
         );
       // Hidden pages - keep functional but not shown in navigation
       case 'batch':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading BatchAnalysisDashboard for tab:', activeTab);
         return (
           <div className="p-6 space-y-6 h-full overflow-y-auto">
             <div className="flex items-center justify-between">
@@ -101,6 +112,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
           </div>
         );
       case 'history':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading UnifiedAnalysisHistory for tab:', activeTab);
         return (
           <div className="p-6 space-y-6 h-full overflow-y-auto">
             <div className="flex items-center justify-between">
@@ -117,6 +129,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
           </div>
         );
       case 'legacy':
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading DesignList for tab:', activeTab);
         return (
           <div className="p-6 space-y-6 h-full overflow-y-auto">
             <div className="flex items-center justify-between">
@@ -133,6 +146,7 @@ export const TabContentRenderer = ({ activeTab }: TabContentRendererProps) => {
           </div>
         );
       default:
+        console.log('✅ SUBSCRIBER TAB RENDERER - Loading default AdvancedDesignAnalysisPageContent for tab:', activeTab);
         return (
           <div className="p-6 space-y-6 h-full overflow-y-auto">
             <div className="flex items-center justify-between">

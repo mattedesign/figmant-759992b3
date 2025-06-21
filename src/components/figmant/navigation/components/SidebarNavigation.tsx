@@ -52,6 +52,13 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
     }))
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+  // Wrap onSectionChange with logging
+  const handleSectionChange = (section: string) => {
+    console.log('🔍 SIDEBAR NAVIGATION - Section change triggered:', section);
+    console.log('🔍 SIDEBAR NAVIGATION - Current active section:', activeSection);
+    onSectionChange(section);
+  };
+
   // On mobile, force expanded view (mobile navigation is handled differently)
   if (isMobile || (!isCollapsed)) {
     return (
@@ -60,7 +67,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           activeTab={activeTab}
           onTabChange={setActiveTab}
           activeSection={activeSection}
-          onSectionChange={onSectionChange}
+          onSectionChange={handleSectionChange}
           isOwner={isOwner}
           allAnalyses={allAnalyses}
         />
@@ -71,7 +78,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <SidebarNavigationCollapsed
-        onSectionChange={onSectionChange}
+        onSectionChange={handleSectionChange}
         isOwner={isOwner}
       />
     </div>
