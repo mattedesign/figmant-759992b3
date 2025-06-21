@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { StepProps } from '../types';
 import { ProcessingState } from '../components/ProcessingState';
@@ -62,19 +63,28 @@ export const Step7Processing: React.FC<StepProps> = ({
   }, [premiumAnalysis.isError, premiumAnalysis.error]);
 
   const handleViewInAnalysis = () => {
-    navigate('/figmant');
+    console.log('🔍 View in Dashboard button clicked');
     
-    toast({
-      title: "Redirecting to Analysis History",
-      description: "You'll find your completed analysis in the History tab of the sidebar.",
-    });
+    try {
+      navigate('/figmant');
+      
+      toast({
+        title: "Redirecting to Analysis History",
+        description: "You'll find your completed analysis in the History tab of the sidebar.",
+      });
+    } catch (error) {
+      console.error('Navigation error:', error);
+      navigate('/figmant');
+    }
   };
 
   const handleBackToAnalysis = () => {
+    console.log('🔙 Back to Analysis button clicked');
     navigate('/figmant/wizard-analysis');
   };
 
   const handleRetry = () => {
+    console.log('🔄 Retry button clicked');
     setProcessingState('processing');
     setError(null);
     setAnalysisResult(null);
@@ -82,16 +92,32 @@ export const Step7Processing: React.FC<StepProps> = ({
   };
 
   const handleDownload = () => {
+    console.log('💾 Download button clicked');
+    
     if (analysisResult?.analysis) {
-      const blob = new Blob([analysisResult.analysis], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${stepData.projectName || 'Analysis'}_${new Date().toISOString().split('T')[0]}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      try {
+        const blob = new Blob([analysisResult.analysis], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${stepData.projectName || 'Analysis'}_${new Date().toISOString().split('T')[0]}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        toast({
+          title: "Download Started",
+          description: "Your analysis is being downloaded.",
+        });
+      } catch (error) {
+        console.error('Download error:', error);
+        toast({
+          title: "Download Failed",
+          description: "There was an error downloading your analysis.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -174,6 +200,7 @@ export const Step7Processing: React.FC<StepProps> = ({
             onClick={handleViewInAnalysis}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
             size="lg"
+            type="button"
           >
             <ExternalLink className="h-4 w-4" />
             View in Dashboard
@@ -184,6 +211,7 @@ export const Step7Processing: React.FC<StepProps> = ({
             variant="outline"
             className="flex items-center gap-2"
             size="lg"
+            type="button"
           >
             <Download className="h-4 w-4" />
             Download Analysis
@@ -194,6 +222,7 @@ export const Step7Processing: React.FC<StepProps> = ({
             variant="outline"
             className="flex items-center gap-2"
             size="lg"
+            type="button"
           >
             <ArrowLeft className="h-4 w-4" />
             New Analysis
