@@ -32,9 +32,6 @@ export const UserManagement: React.FC = () => {
         .from('profiles')
         .select(`
           *,
-          address,
-          city,
-          country,
           subscriptions!inner(
             status,
             current_period_end,
@@ -68,8 +65,12 @@ export const UserManagement: React.FC = () => {
 
       // Transform the data to match UserManagementProfile type
       const transformedData: UserManagementProfile[] = (data || []).map(user => ({
-        ...user,
-        // Ensure address fields are included with fallback values
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+        created_at: user.created_at,
+        avatar_url: user.avatar_url,
         address: user.address || null,
         city: user.city || null,
         country: user.country || null,

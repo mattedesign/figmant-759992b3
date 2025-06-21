@@ -5,10 +5,10 @@ import { UserProfile, Subscription } from '@/types/auth';
 export const createAuthService = () => {
   const fetchUserProfile = async (userId: string): Promise<{ profile: UserProfile | null; subscription: Subscription | null }> => {
     try {
-      // Fetch user profile with all required fields including address, city, country
+      // Fetch user profile with all required fields
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('*, address, city, country')
+        .select('*')
         .eq('id', userId)
         .single();
 
