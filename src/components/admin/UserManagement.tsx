@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +13,8 @@ import { UserDetails } from './user-management/UserDetails';
 import { UserFilters } from './user-management/UserFilters';
 import { UserStats } from './user-management/UserStats';
 import { UserManagementProfile } from '@/types/userManagement';
+
+type ValidSubscriptionStatus = 'active' | 'inactive' | 'cancelled' | 'expired';
 
 export const UserManagement: React.FC = () => {
   const { isOwner } = useAuth();
@@ -50,8 +51,9 @@ export const UserManagement: React.FC = () => {
       }
 
       // Apply status filter for subscriptions - only filter if it's a valid status
-      if (statusFilter !== 'all' && ['active', 'inactive', 'cancelled', 'expired'].includes(statusFilter)) {
-        query = query.eq('subscriptions.status', statusFilter);
+      const validStatuses: ValidSubscriptionStatus[] = ['active', 'inactive', 'cancelled', 'expired'];
+      if (statusFilter !== 'all' && validStatuses.includes(statusFilter as ValidSubscriptionStatus)) {
+        query = query.eq('subscriptions.status', statusFilter as ValidSubscriptionStatus);
       }
 
       const { data, error } = await query;
