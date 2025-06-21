@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { DesignUseCase, AnalysisPreferences } from '@/types/design';
 import { generateImpactSummary } from './batch-upload/impactSummaryGenerator';
@@ -54,7 +55,6 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
       source_type: upload.source_type, 
       file_path: upload.file_path, 
       source_url: upload.source_url,
-      analysis_goals: upload.analysis_goals,
       has_context: contextContent.length > 0
     });
 
@@ -113,11 +113,6 @@ export const triggerAnalysis = async (uploadId: string, useCase: DesignUseCase) 
       enhancedPrompt += '\n\nPlease provide a concise, focused analysis highlighting the most critical points.';
     }
     
-    if (upload.analysis_goals) {
-      enhancedPrompt += `\n\nSpecific Analysis Goals & Context: ${upload.analysis_goals}`;
-      enhancedPrompt += '\n\nPlease tailor your analysis to address these specific goals and provide insights that directly relate to the user\'s objectives.';
-    }
-
     // Add context files content if available
     if (contextContent) {
       enhancedPrompt += contextContent;
@@ -349,7 +344,7 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
     const firstUploadPreferences = uploads[0]?.analysis_preferences ? 
       uploads[0].analysis_preferences as unknown as AnalysisPreferences : null;
 
-    // Save batch analysis results with enhanced metadata and impact summary
+    // Save batch analysis results with enhanced metadata
     const { data: batchAnalysis, error: saveError } = await supabase
       .from('design_batch_analysis')
       .insert({
@@ -358,7 +353,6 @@ export const triggerBatchAnalysis = async (batchId: string, useCase: DesignUseCa
         analysis_type: useCase.name,
         prompt_used: batchPrompt,
         analysis_results: { response: batchAnalysisResponse.analysis || batchAnalysisResponse.response },
-        impact_summary: batchImpactSummary as any, // Cast to any to match Json type
         context_summary: contextSummary,
         analysis_settings: {
           uploads_count: uploads.length,

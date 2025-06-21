@@ -153,47 +153,9 @@ export class AnalysisRecoveryService {
 
     if (error || !analysis) return false;
 
-    const updates: any = {};
-    
-    if (!analysis.impact_summary) {
-      updates.impact_summary = {
-        key_metrics: {
-          overall_score: analysis.confidence_score ? Math.round(analysis.confidence_score * 10) : 8,
-          improvement_areas: ['Cross-design consistency'],
-          strengths: ['Comparative analysis completed']
-        },
-        business_impact: {
-          conversion_potential: 8,
-          user_engagement_score: 8,
-          brand_alignment: 8,
-          competitive_advantage: ['Multiple options evaluated']
-        },
-        user_experience: {
-          usability_score: 8,
-          accessibility_rating: 7,
-          pain_points: ['Minor inconsistencies between variants'],
-          positive_aspects: ['Strong design variety', 'Clear comparison']
-        },
-        recommendations: [
-          {
-            priority: 'medium' as const,
-            category: 'Consistency',
-            description: 'Ensure design consistency across variants',
-            expected_impact: 'Improved user experience consistency'
-          }
-        ]
-      };
-    }
-
-    if (Object.keys(updates).length > 0) {
-      const { error: updateError } = await supabase
-        .from('design_batch_analysis')
-        .update(updates)
-        .eq('id', analysisId);
-
-      return !updateError;
-    }
-
+    // For batch analysis, we don't need to repair impact_summary since it was removed from the schema
+    // Just ensure the basic structure is valid
+    console.log('Batch analysis structure is valid:', analysis.id);
     return true;
   }
 
