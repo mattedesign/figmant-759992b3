@@ -72,21 +72,54 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleFileUpload = useCallback(async (files: File[]) => {
-    const newAttachments: ChatAttachment[] = files.map(file => ({
+    const maxFileSize = 10 * 1024 * 1024; // 10MB limit
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+    
+    const validFiles = [];
+    const invalidFiles = [];
+    
+    for (const file of files) {
+      if (file.size > maxFileSize) {
+        invalidFiles.push(`${file.name} (too large - max 10MB)`);
+        continue;
+      }
+      
+      if (!validTypes.includes(file.type)) {
+        invalidFiles.push(`${file.name} (unsupported type)`);
+        continue;
+      }
+      
+      validFiles.push(file);
+    }
+    
+    if (invalidFiles.length > 0) {
+      toast({
+        variant: "destructive",
+        title: "Some files were rejected",
+        description: invalidFiles.join(', '),
+      });
+    }
+    
+    if (validFiles.length === 0) return;
+
+    const newAttachments: ChatAttachment[] = validFiles.map(file => ({
       id: crypto.randomUUID(),
       type: file.type.startsWith('image/') ? 'image' : 'file',
       name: file.name,
       file,
-      status: 'uploading'
+      status: 'uploading',
+      metadata: {
+        size: file.size
+      }
     }));
 
     setAttachments(prev => [...prev, ...newAttachments]);
 
-    // Simulate upload processing
+    // Process uploads with proper error handling
     for (const attachment of newAttachments) {
       try {
-        // Simulate upload delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Simulate upload process (replace with actual upload logic)
+        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
         
         const uploadPath = `uploads/${attachment.id}/${attachment.name}`;
         setAttachments(prev => prev.map(att => 
@@ -94,22 +127,56 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
             ? { ...att, status: 'uploaded', uploadPath }
             : att
         ));
+        
+        toast({
+          title: "File uploaded",
+          description: `${attachment.name} is ready for analysis.`,
+        });
+        
       } catch (error) {
-        console.error('Upload failed:', error);
+        console.error('Upload failed for:', attachment.name, error);
         setAttachments(prev => prev.map(att => 
           att.id === attachment.id 
-            ? { ...att, status: 'error', error: 'Upload failed' }
+            ? { 
+                ...att, 
+                status: 'error', 
+                error: 'Upload failed',
+                errorMessage: error instanceof Error ? error.message : 'Unknown error'
+              }
             : att
         ));
+        
+        toast({
+          variant: "destructive",
+          title: "Upload failed",
+          description: `Failed to upload ${attachment.name}. Please try again.`,
+        });
       }
     }
-  }, []);
+  }, [toast]);
 
   const handleUrlAdd = useCallback(() => {
     if (!urlInput.trim()) return;
 
     try {
-      const url = new URL(urlInput.trim().startsWith('http') ? urlInput.trim() : `https://${urlInput.trim()}`);
+      // Better URL validation
+      let formattedUrl = urlInput.trim();
+      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+        formattedUrl = `https://${formattedUrl}`;
+      }
+      
+      const url = new URL(formattedUrl);
+      
+      // Check for duplicate URLs
+      const isDuplicate = attachments.some(att => att.url === url.href);
+      if (isDuplicate) {
+        toast({
+          variant: "destructive",
+          title: "URL Already Added",
+          description: "This URL is already in your attachments.",
+        });
+        return;
+      }
       
       const newAttachment: ChatAttachment = {
         id: crypto.randomUUID(),
@@ -122,14 +189,21 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
       setAttachments(prev => [...prev, newAttachment]);
       setUrlInput('');
       setShowUrlInput(false);
+      
+      toast({
+        title: "Website Added",
+        description: `${url.hostname} has been added for analysis.`,
+      });
+      
     } catch (error) {
+      console.error('URL validation failed:', error);
       toast({
         variant: "destructive",
         title: "Invalid URL",
-        description: "Please enter a valid website URL.",
+        description: "Please enter a valid website URL (e.g., example.com or https://example.com)",
       });
     }
-  }, [urlInput, toast]);
+  }, [urlInput, attachments, toast]);
 
   const removeAttachment = useCallback((id: string) => {
     setAttachments(prev => prev.filter(att => att.id !== id));
@@ -278,6 +352,11 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
                 <span className="flex-1 text-sm truncate">
                   {attachment.name}
                 </span>
+                {attachment.metadata?.size && (
+                  <span className="text-xs text-gray-500">
+                    {(attachment.metadata.size / 1024 / 1024).toFixed(1)} MB
+                  </span>
+                )}
                 <div className="flex items-center gap-2">
                   {getStatusIcon(attachment.status)}
                   <Button
@@ -289,6 +368,11 @@ export const DesignChatInterface: React.FC<DesignChatInterfaceProps> = ({
                     <X className="h-3 w-3" />
                   </Button>
                 </div>
+                {attachment.status === 'error' && attachment.errorMessage && (
+                  <div className="text-xs text-red-600 mt-1">
+                    {attachment.errorMessage}
+                  </div>
+                )}
               </div>
             ))}
           </div>
