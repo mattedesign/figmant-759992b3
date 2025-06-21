@@ -88,7 +88,7 @@ export class ProfileService {
     return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
   }
 
-  // Update profile with validation and real-time refresh
+  // Update profile using UPSERT to handle both insert and update cases
   async updateProfile(userId: string, data: ProfileUpdateData): Promise<{ success: boolean; errors?: string[]; profile?: UserProfile }> {
     try {
       console.log('ProfileService: Updating profile for user:', userId, data);
@@ -104,16 +104,27 @@ export class ProfileService {
         Object.entries(data).filter(([_, value]) => value !== undefined)
       );
 
-      // Update profile in database
+      // Get current user data for UPSERT
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || user.id !== userId) {
+        return { success: false, errors: ['Authentication required'] };
+      }
+
+      // Use UPSERT to handle both insert and update cases
       const { data: updatedProfile, error } = await supabase
         .from('profiles')
-        .update(cleanData)
-        .eq('id', userId)
+        .upsert({
+          id: userId,
+          email: user.email,
+          ...cleanData
+        }, {
+          onConflict: 'id'
+        })
         .select()
         .single();
 
       if (error) {
-        console.error('ProfileService: Update error:', error);
+        console.error('ProfileService: UPSERT error:', error);
         return { success: false, errors: [error.message] };
       }
 
@@ -206,6 +217,33 @@ export class ProfileService {
       this.notifyProfileUpdate(result.profile);
     }
     return result.profile;
+  }
+
+  // Create profile if it doesn't exist (recovery function)
+  async ensureProfileExists(userId: string): Promise<{ success: boolean; profile?: UserProfile; error?: string }> {
+    try {
+      // First check if profile exists
+      const existingProfile = await this.getProfile(userId);
+      if (existingProfile.profile) {
+        return { success: true, profile: existingProfile.profile };
+      }
+
+      // Get user data from auth
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || user.id !== userId) {
+        return { success: false, error: 'Authentication required' };
+      }
+
+      // Create minimal profile
+      const result = await this.updateProfile(userId, {
+        full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || ''
+      });
+
+      return result;
+    } catch (error) {
+      console.error('ProfileService: Ensure profile exists error:', error);
+      return { success: false, error: 'Failed to create profile' };
+    }
   }
 }
 

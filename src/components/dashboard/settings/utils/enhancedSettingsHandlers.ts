@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { profileService } from '@/services/profileService';
 import { toast } from 'sonner';
@@ -8,6 +7,16 @@ export const createEnhancedSettingsHandlers = (user: any, refetchUserData?: () =
     try {
       if (!user?.id) {
         toast.error('User not found');
+        return;
+      }
+
+      console.log('Enhanced handlers: Updating profile with data:', data);
+
+      // Ensure profile exists before updating
+      const ensureResult = await profileService.ensureProfileExists(user.id);
+      if (!ensureResult.success) {
+        console.error('Failed to ensure profile exists:', ensureResult.error);
+        toast.error('Failed to initialize profile');
         return;
       }
 
@@ -25,6 +34,7 @@ export const createEnhancedSettingsHandlers = (user: any, refetchUserData?: () =
         }
       } else {
         const errorMessage = result.errors?.join(', ') || 'Failed to update profile';
+        console.error('Profile update failed:', result.errors);
         toast.error(errorMessage);
       }
     } catch (error) {
@@ -37,6 +47,14 @@ export const createEnhancedSettingsHandlers = (user: any, refetchUserData?: () =
     try {
       if (!user?.id) {
         toast.error('User not found');
+        return;
+      }
+
+      // Ensure profile exists before updating
+      const ensureResult = await profileService.ensureProfileExists(user.id);
+      if (!ensureResult.success) {
+        console.error('Failed to ensure profile exists:', ensureResult.error);
+        toast.error('Failed to initialize profile');
         return;
       }
 
@@ -53,6 +71,7 @@ export const createEnhancedSettingsHandlers = (user: any, refetchUserData?: () =
         }
       } else {
         const errorMessage = result.errors?.join(', ') || 'Failed to update contact information';
+        console.error('Contact update failed:', result.errors);
         toast.error(errorMessage);
       }
     } catch (error) {
@@ -65,6 +84,14 @@ export const createEnhancedSettingsHandlers = (user: any, refetchUserData?: () =
     try {
       if (!user?.id) {
         toast.error('User not found');
+        return;
+      }
+
+      // Ensure profile exists before updating
+      const ensureResult = await profileService.ensureProfileExists(user.id);
+      if (!ensureResult.success) {
+        console.error('Failed to ensure profile exists:', ensureResult.error);
+        toast.error('Failed to initialize profile');
         return;
       }
 
@@ -83,6 +110,7 @@ export const createEnhancedSettingsHandlers = (user: any, refetchUserData?: () =
         }
       } else {
         const errorMessage = result.errors?.join(', ') || 'Failed to update address';
+        console.error('Address update failed:', result.errors);
         toast.error(errorMessage);
       }
     } catch (error) {
@@ -98,6 +126,14 @@ export const createEnhancedSettingsHandlers = (user: any, refetchUserData?: () =
         return;
       }
 
+      // Ensure profile exists before updating
+      const ensureResult = await profileService.ensureProfileExists(user.id);
+      if (!ensureResult.success) {
+        console.error('Failed to ensure profile exists:', ensureResult.error);
+        toast.error('Failed to initialize profile');
+        return;
+      }
+
       const result = await profileService.uploadAvatar(user.id, file);
 
       if (result.success) {
@@ -106,6 +142,7 @@ export const createEnhancedSettingsHandlers = (user: any, refetchUserData?: () =
           await refetchUserData();
         }
       } else {
+        console.error('Avatar upload failed:', result.error);
         toast.error(result.error || 'Failed to upload image');
       }
     } catch (error) {
