@@ -2,14 +2,11 @@
 import React from 'react';
 import { AddressTab } from '@/components/dashboard/settings/AddressTab';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { createSettingsHandlers } from '@/components/dashboard/settings/utils/settingsHandlers';
+import { createEnhancedSettingsHandlers } from '@/components/dashboard/settings/utils/enhancedSettingsHandlers';
 
 export const AddressSection: React.FC = () => {
-  const { profile } = useAuth();
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const handlers = createSettingsHandlers(user, toast);
+  const { profile, user, refetchUserData } = useAuth();
+  const handlers = createEnhancedSettingsHandlers(user, refetchUserData);
 
   return (
     <div className="space-y-6">

@@ -3,13 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProfileTab } from '@/components/dashboard/settings/ProfileTab';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { createSettingsHandlers } from '@/components/dashboard/settings/utils/settingsHandlers';
+import { createEnhancedSettingsHandlers } from '@/components/dashboard/settings/utils/enhancedSettingsHandlers';
 
 export const PersonalInfoSection: React.FC = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const handlers = createSettingsHandlers(user, toast);
+  const { user, refetchUserData } = useAuth();
+  const handlers = createEnhancedSettingsHandlers(user, refetchUserData);
 
   return (
     <div className="space-y-6">
@@ -20,7 +18,11 @@ export const PersonalInfoSection: React.FC = () => {
         </p>
       </div>
       
-      <ProfileTab user={user} onUpdateProfile={handlers.handleUpdateProfile} />
+      <ProfileTab 
+        user={user} 
+        onUpdateProfile={handlers.handleUpdateProfile}
+        onUploadAvatar={handlers.handleUploadAvatar}
+      />
     </div>
   );
 };
