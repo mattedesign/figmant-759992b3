@@ -15,6 +15,7 @@ import { getAnalysisCost } from '@/hooks/premium-analysis/creditCostManager';
 
 interface Step1SelectAnalysisTypeProps extends StepProps {
   onCreditCostChange?: (creditCost: number) => void;
+  onNextStep?: () => void;
 }
 
 export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = ({ 
@@ -22,7 +23,8 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
   setStepData, 
   currentStep, 
   totalSteps,
-  onCreditCostChange
+  onCreditCostChange,
+  onNextStep
 }) => {
   const { data: templates = [], isLoading } = useFigmantPromptTemplates();
   const [selectedTemplateCreditCost, setSelectedTemplateCreditCost] = useState<number>(1);
@@ -361,6 +363,10 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
                 <Button onClick={() => {
                   onSelectTemplate(previewTemplate);
                   setShowPreview(false);
+                  // Add the missing onNextStep call to automatically advance to next step
+                  if (onNextStep) {
+                    onNextStep();
+                  }
                 }}>
                   Select This Template
                 </Button>
