@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { StepData } from '../types';
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5; // Updated to include the new results step
 
 export const useWizardState = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -47,6 +47,8 @@ export const useWizardState = () => {
         return Object.keys(stepData.contextualData || {}).length > 0 || 
                !!stepData.analysisGoals?.trim();
       case 4:
+        return true; // Results step - can navigate
+      case 5:
         return false; // Processing step - no next
       default:
         return false;

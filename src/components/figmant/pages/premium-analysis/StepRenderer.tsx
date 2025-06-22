@@ -3,6 +3,7 @@ import React from 'react';
 import { Step1SelectAnalysisType } from './steps/Step1SelectAnalysisType';
 import { Step2SmartUpload } from './steps/Step2SmartUpload';
 import { Step3ContextualFields } from './steps/Step3ContextualFields';
+import { Step4ContextualResults } from './steps/Step4ContextualResults';
 import { Step7Processing } from './steps/Step7Processing';
 import { StepProps } from './types';
 
@@ -22,6 +23,8 @@ export const StepRenderer: React.FC<StepRendererProps> = (props) => {
       case 3:
         return <Step3ContextualFields {...props} />;
       case 4:
+        return <Step4ContextualResults {...props} />;
+      case 7:
         return <Step7Processing {...props} />;
       default:
         return <div>Invalid step</div>;
