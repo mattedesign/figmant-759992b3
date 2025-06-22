@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { EnhancedProfilePageLayout } from '../profile/EnhancedProfilePageLayout';
+import { SettingsContainer } from '@/components/dashboard/settings/SettingsContainer';
 
 export const ProfilePage: React.FC = () => {
-  return <EnhancedProfilePageLayout />;
+  return <SettingsContainer />;
 };

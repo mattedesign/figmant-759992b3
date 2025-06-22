@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,7 +33,7 @@ interface UserManagementProfile {
   emergency_contact_phone: string;
   notification_preferences: any;
   billing_address: any;
-  subscriptions: {
+  subscriptions?: {
     status: string;
     current_period_end: string | null;
     stripe_customer_id: string | null;
@@ -188,7 +189,7 @@ export const UserManagement: React.FC = () => {
                 users={users || []}
                 isLoading={isLoading}
                 selectedUser={selectedUser}
-                onSelectUser={setSelectedUser}
+                onSelectUser={(user) => setSelectedUser(user)}
               />
             </div>
 
