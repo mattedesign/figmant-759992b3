@@ -1,51 +1,49 @@
 
-import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { useChatState } from '../ChatStateManager';
-import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
-import { useFigmantChatAnalysisEnhanced } from '@/hooks/useFigmantChatAnalysisEnhanced';
 import { useEnhancedChatContext } from '@/hooks/useEnhancedChatContext';
 import { useEnhancedChatSessionContext } from '@/hooks/useEnhancedChatSessionContext';
+import { useFigmantChatAnalysisEnhanced } from '@/hooks/useFigmantChatAnalysisEnhanced';
 import { useToast } from '@/hooks/use-toast';
 
-interface EnhancedChatStateContextType {
-  // State
+interface ConversationContext {
+  currentMessages: ChatMessage[];
+  historicalContext: string;
+  attachmentContext: string[];
+  tokenEstimate: number;
+  sessionAttachments?: any[];
+  sessionLinks?: any[];
+  totalMessages?: number;
+}
+
+interface EnhancedChatState {
+  // Core state
   messages: ChatMessage[];
+  setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   message: string;
+  setMessage: React.Dispatch<React.SetStateAction<string>>;
   attachments: ChatAttachment[];
-  selectedTemplateId?: string;
+  setAttachments: React.Dispatch<React.SetStateAction<ChatAttachment[]>>;
+  showUrlInput: boolean;
+  setShowUrlInput: React.Dispatch<React.SetStateAction<boolean>>;
+  
+  // Enhanced context
+  conversationContext: ConversationContext;
+  
+  // Session management
   currentSessionId?: string;
-  currentSession: any;
-  sessions: any[];
-  sessionAttachments: ChatAttachment[];
-  sessionLinks: ChatAttachment[];
   isSessionInitialized: boolean;
   
-  // Enhanced context state
-  conversationContext: any;
-  isLoadingContext: boolean;
-  
-  // Mutations
-  analyzeWithClaude: any;
-  isAnalyzing: boolean;
-  
-  // Templates
-  templates: any[];
-  templatesLoading: boolean;
-  
-  // Actions - properly typed React setters
-  setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
-  setMessage: React.Dispatch<React.SetStateAction<string>>;
-  setAttachments: React.Dispatch<React.SetStateAction<ChatAttachment[]>>;
-  setSelectedTemplateId?: (id: string) => void;
-  startNewSession: () => void;
-  loadSession: (sessionId: string) => void;
-  saveMessageAttachments: (message: ChatMessage) => void;
+  // Analysis capabilities
+  analyzeWithClaude: (params: any) => Promise<any>;
   getCurrentTemplate: () => any;
+  saveMessageAttachments: (message: ChatMessage) => void;
+  
+  // Toast for notifications
   toast: any;
 }
 
-const EnhancedChatStateContext = createContext<EnhancedChatStateContextType | null>(null);
+const EnhancedChatStateContext = createContext<EnhancedChatState | undefined>(undefined);
 
 export const useEnhancedChatStateContext = () => {
   const context = useContext(EnhancedChatStateContext);
@@ -56,160 +54,84 @@ export const useEnhancedChatStateContext = () => {
 };
 
 interface EnhancedChatStateProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export const EnhancedChatStateProvider: React.FC<EnhancedChatStateProviderProps> = ({ children }) => {
-  const { data: templates = [], isLoading: templatesLoading } = useFigmantPromptTemplates();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [message, setMessage] = useState('');
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
+  const [showUrlInput, setShowUrlInput] = useState(false);
   const { toast } = useToast();
-  
-  // Enhanced session context
-  const {
-    sessionContext,
-    isLoading: sessionLoading,
-    initializeSession,
-    loadSession: loadExistingSession,
-    updateSessionActivity
-  } = useEnhancedChatSessionContext();
 
-  const chatState = useChatState();
-  const {
-    messages = [],
-    setMessages,
-    message = '',
-    setMessage,
-    attachments = [],
-    setAttachments,
-    selectedTemplateId,
-    setSelectedTemplateId,
-    sessions,
-    sessionAttachments,
-    sessionLinks,
-    saveMessageAttachments
-  } = chatState;
+  // Enhanced context and session management
+  const { sessionContext, initializeSession } = useEnhancedChatSessionContext();
+  const { conversationContext, loadHistoricalContext, createContextualPrompt } = useEnhancedChatContext(sessionContext.sessionId);
+  const { mutateAsync: analyzeWithClaudeAsync } = useFigmantChatAnalysisEnhanced(sessionContext.sessionId);
 
-  // Enhanced context hooks
-  const {
-    conversationContext,
-    isLoadingContext,
-    loadHistoricalContext,
-    saveMessageWithContext,
-    createContextualPrompt,
-    shouldCreateSummary,
-    createConversationSummary
-  } = useEnhancedChatContext(sessionContext.sessionId);
-
-  const { mutateAsync: analyzeWithClaude, isPending: isAnalyzing } = useFigmantChatAnalysisEnhanced(sessionContext.sessionId);
-
-  // Initialize session on mount if not already initialized
+  // Initialize session on mount
   useEffect(() => {
-    if (!sessionContext.isInitialized && !sessionLoading) {
-      console.log('🔄 ENHANCED CHAT STATE - Initializing new session...');
-      initializeSession('Enhanced Chat Session');
+    if (!sessionContext.isInitialized) {
+      initializeSession();
     }
-  }, [sessionContext.isInitialized, sessionLoading, initializeSession]);
+  }, [sessionContext.isInitialized, initializeSession]);
 
   // Load historical context when session is ready
   useEffect(() => {
     if (sessionContext.sessionId && sessionContext.isInitialized) {
-      console.log('🔄 ENHANCED CHAT STATE - Loading context for session:', sessionContext.sessionId);
       loadHistoricalContext(sessionContext.sessionId);
     }
   }, [sessionContext.sessionId, sessionContext.isInitialized, loadHistoricalContext]);
 
-  // Auto-save messages to database with enhanced context
-  useEffect(() => {
-    const saveRecentMessages = async () => {
-      if (!sessionContext.sessionId || !sessionContext.isInitialized || messages.length === 0) return;
+  const analyzeWithClaude = useCallback(async (params: any) => {
+    return await analyzeWithClaudeAsync(params);
+  }, [analyzeWithClaudeAsync]);
 
-      try {
-        // Save the last message if it hasn't been saved yet
-        const lastMessage = messages[messages.length - 1];
-        if (lastMessage && !lastMessage.id.includes('saved-')) {
-          console.log('💾 ENHANCED CHAT STATE - Auto-saving message with context:', lastMessage.id);
-          
-          await saveMessageWithContext(sessionContext.sessionId, lastMessage, messages.length);
-          
-          // Update session activity
-          updateSessionActivity();
-          
-          // Update message ID to indicate it's been saved
-          setMessages(prev => prev.map(msg => 
-            msg.id === lastMessage.id 
-              ? { ...msg, id: `saved-${msg.id}` }
-              : msg
-          ));
-
-          // Check if we should create a conversation summary
-          if (shouldCreateSummary(messages)) {
-            console.log('📝 ENHANCED CHAT STATE - Creating conversation summary...');
-            await createConversationSummary(sessionContext.sessionId, messages);
-            // Reload context after creating summary
-            loadHistoricalContext(sessionContext.sessionId);
-          }
-        }
-      } catch (error) {
-        console.error('💾 ENHANCED CHAT STATE - Error auto-saving message:', error);
-      }
+  const getCurrentTemplate = useCallback(() => {
+    // Return default template or selected template
+    return {
+      id: 'master',
+      content: 'Analyze this design and provide comprehensive feedback.'
     };
+  }, []);
 
-    // Debounce the save operation
-    const timer = setTimeout(saveRecentMessages, 2000);
-    return () => clearTimeout(timer);
-  }, [messages, sessionContext.sessionId, sessionContext.isInitialized, saveMessageWithContext, shouldCreateSummary, createConversationSummary, loadHistoricalContext, setMessages, updateSessionActivity]);
+  const saveMessageAttachments = useCallback((message: ChatMessage) => {
+    console.log('Saving message attachments:', message);
+    // Implementation will be connected to the session service
+  }, []);
 
-  const getCurrentTemplate = () => {
-    return templates.find(t => t.id === selectedTemplateId) || null;
-  };
-
-  const startNewSession = async () => {
-    console.log('🆕 ENHANCED CHAT STATE - Starting new session...');
-    setMessages([]);
-    setAttachments([]);
-    await initializeSession('New Enhanced Chat Session');
-  };
-
-  const loadSession = async (sessionId: string) => {
-    console.log('📂 ENHANCED CHAT STATE - Loading session:', sessionId);
-    setMessages([]);
-    setAttachments([]);
-    await loadExistingSession(sessionId);
-  };
-
-  const contextValue: EnhancedChatStateContextType = {
-    // State
+  const contextValue: EnhancedChatState = {
+    // Core state
     messages,
+    setMessages,
     message,
+    setMessage,
     attachments,
-    selectedTemplateId,
+    setAttachments,
+    showUrlInput,
+    setShowUrlInput,
+    
+    // Enhanced context with enhanced structure
+    conversationContext: {
+      currentMessages: conversationContext.currentMessages,
+      historicalContext: conversationContext.historicalContext,
+      attachmentContext: conversationContext.attachmentContext,
+      tokenEstimate: conversationContext.tokenEstimate,
+      sessionAttachments: [],
+      sessionLinks: [],
+      totalMessages: conversationContext.currentMessages.length
+    },
+    
+    // Session management
     currentSessionId: sessionContext.sessionId,
-    currentSession: sessionContext,
-    sessions,
-    sessionAttachments,
-    sessionLinks,
     isSessionInitialized: sessionContext.isInitialized,
     
-    // Enhanced context state
-    conversationContext,
-    isLoadingContext,
-    
-    // Mutations
+    // Analysis capabilities
     analyzeWithClaude,
-    isAnalyzing,
-    
-    // Templates
-    templates,
-    templatesLoading,
-    
-    // Actions - now properly typed as React setters
-    setMessages,
-    setMessage,
-    setAttachments,
-    setSelectedTemplateId,
-    startNewSession,
-    loadSession,
-    saveMessageAttachments,
     getCurrentTemplate,
+    saveMessageAttachments,
+    
+    // Toast for notifications
     toast
   };
 

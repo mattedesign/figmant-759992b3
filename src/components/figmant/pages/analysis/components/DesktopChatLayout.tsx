@@ -9,13 +9,40 @@ import { ContextIndicator } from './ContextIndicator';
 import { useEnhancedChatStateContext } from './EnhancedChatStateProvider';
 
 export const DesktopChatLayout: React.FC = () => {
-  const { conversationContext, messages } = useEnhancedChatStateContext();
+  const { 
+    conversationContext, 
+    messages, 
+    attachments,
+    message,
+    setMessage,
+    showUrlInput,
+    setShowUrlInput
+  } = useEnhancedChatStateContext();
+
+  const handleRemoveAttachment = (id: string) => {
+    console.log('Remove attachment:', id);
+    // Implementation will be added by the context provider
+  };
+
+  const handleViewAttachment = (attachment: any) => {
+    console.log('View attachment:', attachment);
+    // Implementation will be added by the context provider
+  };
+
+  const handleToggleUrlInput = () => {
+    setShowUrlInput(!showUrlInput);
+  };
 
   return (
     <div className="flex h-full w-full">
       {/* Left Sidebar - Analysis Navigation */}
       <div className="w-80 border-r border-gray-200 bg-gray-50">
-        <AnalysisNavigationSidebar />
+        <AnalysisNavigationSidebar
+          messages={messages}
+          attachments={attachments}
+          onRemoveAttachment={handleRemoveAttachment}
+          onViewAttachment={handleViewAttachment}
+        />
       </div>
 
       {/* Main Chat Area */}
@@ -40,8 +67,12 @@ export const DesktopChatLayout: React.FC = () => {
           <EnhancedChatMessageHandler>
             {({ handleSendMessage, handleKeyPress, canSend }) => (
               <MessageInputSection
+                message={message}
+                onMessageChange={setMessage}
                 onSendMessage={handleSendMessage}
                 onKeyPress={handleKeyPress}
+                onToggleUrlInput={handleToggleUrlInput}
+                isAnalyzing={false}
                 canSend={canSend}
               />
             )}
@@ -51,7 +82,11 @@ export const DesktopChatLayout: React.FC = () => {
 
       {/* Right Panel - Analysis Details */}
       <div className="w-80 border-l border-gray-200 bg-gray-50">
-        <AnalysisRightPanel />
+        <AnalysisRightPanel 
+          conversationContext={conversationContext}
+          onRemoveAttachment={handleRemoveAttachment}
+          onViewAttachment={handleViewAttachment}
+        />
       </div>
     </div>
   );
