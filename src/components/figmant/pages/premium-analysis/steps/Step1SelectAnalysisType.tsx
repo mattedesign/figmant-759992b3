@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { Lightbulb, Target, TrendingUp, Users, Zap, CheckCircle, Star } from 'lucide-react';
 import { CreditCostDisplay } from '../components/CreditCostDisplay';
@@ -27,6 +28,7 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
   const { data: templates = [], isLoading } = useFigmantPromptTemplates();
   const [selectedTemplateCreditCost, setSelectedTemplateCreditCost] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [previewTemplate, setPreviewTemplate] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [templateCosts, setTemplateCosts] = useState<Record<string, number>>({});
@@ -111,11 +113,13 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
     }
   };
 
-  // Filter templates based on search term
-  const filteredTemplates = templates.filter(template => 
-    template.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    template.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter templates based on search term and category
+  const filteredTemplates = templates.filter(template => {
+    const matchesSearch = template.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         template.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   if (isLoading) {
     return (
@@ -137,13 +141,29 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
       </div>
 
       <div className="max-w-6xl mx-auto">
-        <div className="mb-4">
-          <Input
-            placeholder="Search templates..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full max-w-md"
-          />
+        <div className="mb-4 flex gap-4 items-center">
+          <div className="flex-1">
+            <Input
+              placeholder="Search templates..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="master">Master Analysis</SelectItem>
+              <SelectItem value="competitor">Competitor</SelectItem>
+              <SelectItem value="visual_hierarchy">Visual Design</SelectItem>
+              <SelectItem value="ecommerce_revenue">E-commerce</SelectItem>
+              <SelectItem value="ab_testing">A/B Testing</SelectItem>
+              <SelectItem value="accessibility">Accessibility</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
