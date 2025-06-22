@@ -119,6 +119,44 @@ export type Database = {
           },
         ]
       }
+      chat_conversation_summaries: {
+        Row: {
+          chat_session_id: string
+          created_at: string | null
+          created_by: string
+          id: string
+          messages_included: number
+          summary_content: string
+          token_count_estimate: number | null
+        }
+        Insert: {
+          chat_session_id: string
+          created_at?: string | null
+          created_by: string
+          id?: string
+          messages_included?: number
+          summary_content: string
+          token_count_estimate?: number | null
+        }
+        Update: {
+          chat_session_id?: string
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          messages_included?: number
+          summary_content?: string
+          token_count_estimate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_conversation_summaries_chat_session_id_fkey"
+            columns: ["chat_session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_links: {
         Row: {
           chat_session_id: string
@@ -159,6 +197,96 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "chat_links_chat_session_id_fkey"
+            columns: ["chat_session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_message_attachments: {
+        Row: {
+          attachment_id: string | null
+          attachment_order: number
+          created_at: string | null
+          id: string
+          link_id: string | null
+          message_id: string
+        }
+        Insert: {
+          attachment_id?: string | null
+          attachment_order?: number
+          created_at?: string | null
+          id?: string
+          link_id?: string | null
+          message_id: string
+        }
+        Update: {
+          attachment_id?: string | null
+          attachment_order?: number
+          created_at?: string | null
+          id?: string
+          link_id?: string | null
+          message_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_message_attachments_attachment_id_fkey"
+            columns: ["attachment_id"]
+            isOneToOne: false
+            referencedRelation: "chat_attachments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_message_attachments_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "chat_links"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_message_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          chat_session_id: string
+          content: string
+          created_at: string | null
+          created_by: string
+          id: string
+          message_order: number
+          metadata: Json | null
+          role: string
+        }
+        Insert: {
+          chat_session_id: string
+          content: string
+          created_at?: string | null
+          created_by: string
+          id?: string
+          message_order: number
+          metadata?: Json | null
+          role: string
+        }
+        Update: {
+          chat_session_id?: string
+          content?: string
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          message_order?: number
+          metadata?: Json | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_chat_session_id_fkey"
             columns: ["chat_session_id"]
             isOneToOne: false
             referencedRelation: "chat_sessions"
@@ -1251,6 +1379,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      create_conversation_summary: {
+        Args: {
+          p_session_id: string
+          p_summary_content: string
+          p_messages_included: number
+          p_token_count_estimate?: number
+        }
+        Returns: string
+      }
       create_logo_config: {
         Args: {
           user_id: string
@@ -1350,6 +1487,18 @@ export type Database = {
           created_by: string
         }[]
       }
+      get_session_messages_safe: {
+        Args: { p_session_id: string; p_user_id: string }
+        Returns: {
+          id: string
+          role: string
+          content: string
+          created_at: string
+          message_order: number
+          metadata: Json
+          attachments: Json
+        }[]
+      }
       get_user_journey_analytics: {
         Args: { days_back?: number }
         Returns: {
@@ -1382,6 +1531,18 @@ export type Database = {
           p_page_path?: string
           p_session_duration_seconds?: number
           p_metadata?: Json
+        }
+        Returns: string
+      }
+      save_chat_message: {
+        Args: {
+          p_session_id: string
+          p_role: string
+          p_content: string
+          p_message_order: number
+          p_metadata?: Json
+          p_attachment_ids?: string[]
+          p_link_ids?: string[]
         }
         Returns: string
       }
