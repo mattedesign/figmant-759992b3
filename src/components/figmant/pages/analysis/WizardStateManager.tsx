@@ -140,14 +140,11 @@ export const useWizardState = () => {
       case 1:
         return wizardData.selectedType !== '';
       case 2:
-        // Allow proceeding even if no uploads (uploads are optional)
-        return true;
+        return wizardData.projectName.trim() !== '';
       case 3:
-        // Require at least some contextual data
-        return Object.keys(wizardData.contextualData || {}).length > 0 || 
-               wizardData.additionalContext?.trim() !== '';
+        return wizardData.analysisGoals.trim() !== '';
       case 4:
-        return !isProcessing;
+        return !isProcessing; // Step 4 is results - can proceed if not processing
       default:
         return false;
     }
