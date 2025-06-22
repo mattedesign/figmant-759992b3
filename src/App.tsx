@@ -5,19 +5,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { ErrorBoundary } from 'react-error-boundary';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { QueryClient } from '@/components/QueryClient';
-import { DesignUploadPage } from '@/components/design/DesignUploadPage';
-import { DesignDetailsPage } from '@/components/design/DesignDetailsPage';
-import { BatchUploadPage } from '@/components/batch-upload/BatchUploadPage';
-import { FigmantAnalysisPage } from '@/components/figmant/pages/analysis/FigmantAnalysisPage';
 import { FigmantLayout } from '@/components/figmant/FigmantLayout';
 import { ScreenshotOneConfig } from '@/components/competitor/ScreenshotOneConfig';
-import { FigmantSettingsPage } from '@/components/figmant/pages/FigmantSettingsPage';
-import { FigmantPromptsPage } from '@/components/figmant/pages/FigmantPromptsPage';
-import { FigmantPromptDetailsPage } from '@/components/figmant/pages/FigmantPromptDetailsPage';
-import { FigmantPromptCreatePage } from '@/components/figmant/pages/FigmantPromptCreatePage';
-import { FigmantPromptEditPage } from '@/components/figmant/pages/FigmantPromptEditPage';
-import { PricingPage } from '@/components/pricing/PricingPage';
-import { SubscriptionPage } from '@/components/pricing/SubscriptionPage';
 import { Chat2Page } from '@/components/figmant/pages/Chat2Page';
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
@@ -52,30 +41,9 @@ function App() {
           <Toaster />
           <QueryClient>
             <Routes>
-              <Route path="/" element={<Navigate to="/design" replace />} />
-              <Route path="/login" element={<DesignUploadPage />} />
-              <Route path="/signup" element={<DesignUploadPage />} />
-              <Route path="/design" element={
-                <AuthGuard>
-                  <DesignUploadPage />
-                </AuthGuard>
-              } />
-              <Route path="/design/:id" element={
-                <AuthGuard>
-                  <DesignDetailsPage />
-                </AuthGuard>
-              } />
-              <Route path="/batch" element={
-                <AuthGuard>
-                  <BatchUploadPage />
-                </AuthGuard>
-              } />
-              <Route path="/pricing" element={<PricingPage />} />
-              <Route path="/subscribe" element={
-                <AuthGuard>
-                  <SubscriptionPage />
-                </AuthGuard>
-              } />
+              <Route path="/" element={<Navigate to="/figmant" replace />} />
+              <Route path="/login" element={<div>Login Page - To be implemented</div>} />
+              <Route path="/signup" element={<div>Signup Page - To be implemented</div>} />
               
               {/* Figmant Routes */}
               <Route path="/figmant/*" element={
@@ -83,18 +51,12 @@ function App() {
                   <FigmantLayout />
                 </AuthGuard>
               }>
-                <Route path="analysis" element={<FigmantAnalysisPage />} />
-                <Route path="settings" element={<FigmantSettingsPage />} />
-                <Route path="screenshot-config" element={<ScreenshotOneConfig />} />
-                <Route path="prompts" element={<FigmantPromptsPage />} />
-                <Route path="prompts/:id" element={<FigmantPromptDetailsPage />} />
-                <Route path="prompts/:id/edit" element={<FigmantPromptEditPage />} />
-                <Route path="prompts/create" element={<FigmantPromptCreatePage />} />
                 <Route path="chat2" element={<Chat2Page />} />
+                <Route path="screenshot-config" element={<ScreenshotOneConfig />} />
               </Route>
 
-              {/* Public Figmant Analysis Route (no auth) */}
-              <Route path="/public/figmant/analysis/:uploadId" element={<FigmantAnalysisPage />} />
+              {/* Fallback route */}
+              <Route path="*" element={<Navigate to="/figmant" replace />} />
             </Routes>
           </QueryClient>
         </AuthProvider>
