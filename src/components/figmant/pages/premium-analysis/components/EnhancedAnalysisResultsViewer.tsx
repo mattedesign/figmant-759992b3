@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, Download, Share, Bookmark, FileText, BarChart3, Eye, Save, Loader2 } from 'lucide-react';
+import { CheckCircle, Download, Share, Bookmark, FileText, BarChart3, Eye, Save, Loader2, AlertCircle } from 'lucide-react';
 import { StepData } from '../types';
 import { RecommendationCard } from '@/components/figmant/analysis/RecommendationCard';
 import { AnalysisSummary } from '@/components/figmant/analysis/AnalysisSummary';
@@ -22,6 +22,8 @@ interface EnhancedAnalysisResultsViewerProps {
   onExport?: () => void;
   onShare?: () => void;
   onSave?: () => void;
+  structuredAnalysis?: ContextualAnalysisResult;
+  isSaving?: boolean;
 }
 
 export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsViewerProps> = ({
@@ -30,7 +32,9 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
   templateData,
   onExport,
   onShare,
-  onSave
+  onSave,
+  structuredAnalysis: providedStructuredAnalysis,
+  isSaving = false
 }) => {
   const [selectedAttachment, setSelectedAttachment] = useState<AnalysisAttachment | null>(null);
   const [activeTab, setActiveTab] = useState('recommendations');
@@ -38,8 +42,12 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
   
   const saveAnalysisMutation = useWizardAnalysisSave();
 
-  // Process the analysis into structured format
+  // Process the analysis into structured format (use provided or generate)
   const structuredAnalysis = useMemo<ContextualAnalysisResult>(() => {
+    if (providedStructuredAnalysis) {
+      return providedStructuredAnalysis;
+    }
+    
     // Convert uploaded files to AnalysisAttachment format
     const attachments = processAttachments(stepData.uploadedFiles || []);
     
@@ -49,7 +57,7 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
       templateData?.category || 'analysis',
       stepData.projectName
     );
-  }, [analysisResult, stepData, templateData]);
+  }, [analysisResult, stepData, templateData, providedStructuredAnalysis]);
 
   const handleAttachmentClick = (attachment: AnalysisAttachment) => {
     setSelectedAttachment(attachment);
@@ -66,7 +74,7 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
       
       toast({
         title: "Analysis Saved",
-        description: "Your analysis has been successfully saved to your history.",
+        description: "Your analysis has been successfully saved with enhanced file associations.",
       });
       
       // Call the original onSave if provided
@@ -95,9 +103,14 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
 
   const fileRecommendationCounts = getFileRecommendationRelationships();
 
+  // Calculate file association success rate
+  const totalFiles = structuredAnalysis.attachments.length;
+  const filesWithAssociations = Object.keys(fileRecommendationCounts).length;
+  const associationSuccessRate = totalFiles > 0 ? Math.round((filesWithAssociations / totalFiles) * 100) : 0;
+
   return (
     <div className="w-full min-h-full">
-      {/* Header */}
+      {/* Header with enhanced metrics */}
       <div className="w-full mb-8">
         <div className="flex items-center justify-center gap-2 mb-4">
           <CheckCircle className="h-6 w-6 text-green-500" />
@@ -106,6 +119,18 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
         <p className="text-center text-muted-foreground">
           Your {templateData?.category || 'design'} analysis has been completed with {structuredAnalysis.recommendations.length} recommendations
         </p>
+        
+        {/* File Association Success Indicator */}
+        {totalFiles > 0 && (
+          <div className="text-center mt-2">
+            <Badge 
+              variant={associationSuccessRate >= 70 ? "default" : associationSuccessRate >= 40 ? "secondary" : "outline"}
+              className="text-xs"
+            >
+              {associationSuccessRate}% file association success ({filesWithAssociations}/{totalFiles} files)
+            </Badge>
+          </div>
+        )}
       </div>
 
       <div className="max-w-6xl mx-auto space-y-6">
@@ -114,14 +139,14 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
           <Button 
             variant="default" 
             onClick={handleSaveAnalysis}
-            disabled={saveAnalysisMutation.isPending}
+            disabled={saveAnalysisMutation.isPending || isSaving}
           >
-            {saveAnalysisMutation.isPending ? (
+            {(saveAnalysisMutation.isPending || isSaving) ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <Save className="h-4 w-4 mr-2" />
             )}
-            Save Analysis
+            {(saveAnalysisMutation.isPending || isSaving) ? 'Saving...' : 'Save Analysis'}
           </Button>
           <Button variant="outline" onClick={onExport}>
             <Download className="h-4 w-4 mr-2" />
@@ -133,9 +158,12 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
           </Button>
         </div>
 
-        {/* Analysis Summary */}
+        {/* Analysis Summary with enhanced metrics */}
         <AnalysisSummary 
-          metrics={structuredAnalysis.metrics}
+          metrics={{
+            ...structuredAnalysis.metrics,
+            fileAssociationRate: associationSuccessRate
+          }}
           recommendations={structuredAnalysis.recommendations}
           className="mb-6"
         />
@@ -175,7 +203,8 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
               ) : (
                 <Card>
                   <CardContent className="pt-6 text-center">
-                    <p className="text-muted-foreground">
+                    <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-4">
                       No structured recommendations found. View the full analysis for detailed insights.
                     </p>
                     <Button 
@@ -192,6 +221,37 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
           </TabsContent>
 
           <TabsContent value="attachments" className="space-y-4">
+            {/* File Association Summary */}
+            {totalFiles > 0 && (
+              <Card className="mb-4">
+                <CardHeader>
+                  <CardTitle className="text-base">File Association Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-blue-600">{totalFiles}</div>
+                      <div className="text-xs text-muted-foreground">Total Files</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-green-600">{filesWithAssociations}</div>
+                      <div className="text-xs text-muted-foreground">With Recommendations</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-purple-600">
+                        {Object.values(fileRecommendationCounts).reduce((sum, count) => sum + count, 0)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Total Associations</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-orange-600">{associationSuccessRate}%</div>
+                      <div className="text-xs text-muted-foreground">Success Rate</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {structuredAnalysis.attachments.length > 0 ? (
                 structuredAnalysis.attachments.map((attachment) => (
@@ -201,14 +261,21 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
                       onClick={() => handleAttachmentClick(attachment)}
                       size="medium"
                     />
-                    {/* File-Recommendation Relationship Indicator */}
+                    {/* Enhanced File-Recommendation Relationship Indicator */}
                     {fileRecommendationCounts[attachment.id] && (
-                      <div className="absolute -top-2 -right-2">
+                      <div className="absolute -top-2 -right-2 flex gap-1">
                         <Badge 
                           variant="secondary" 
                           className="bg-blue-100 text-blue-800 text-xs px-2 py-1"
                         >
                           {fileRecommendationCounts[attachment.id]} rec{fileRecommendationCounts[attachment.id] !== 1 ? 's' : ''}
+                        </Badge>
+                      </div>
+                    )}
+                    {!fileRecommendationCounts[attachment.id] && (
+                      <div className="absolute -top-2 -right-2">
+                        <Badge variant="outline" className="text-xs px-2 py-1 bg-gray-50">
+                          No links
                         </Badge>
                       </div>
                     )}

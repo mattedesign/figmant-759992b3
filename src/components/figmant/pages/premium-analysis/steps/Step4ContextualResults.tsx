@@ -4,12 +4,13 @@ import { StepProps } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Download, Share, Bookmark, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Download, Share, Bookmark, Clock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { usePremiumAnalysisSubmission } from '@/hooks/usePremiumAnalysisSubmission';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { EnhancedAnalysisResultsViewer } from '../components/EnhancedAnalysisResultsViewer';
 import { useWizardAnalysisSave } from '../hooks/useWizardAnalysisSave';
+import { useToast } from '@/hooks/use-toast';
 
 export const Step4ContextualResults: React.FC<StepProps> = ({ 
   stepData, 
@@ -20,6 +21,9 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [analysisStarted, setAnalysisStarted] = useState(false);
   const [useEnhancedViewer, setUseEnhancedViewer] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const { toast } = useToast();
   
   console.log('🔍 Step4ContextualResults - Rendering with stepData:', {
     selectedType: stepData.selectedType,
@@ -140,23 +144,55 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
   const handleExport = () => {
     // TODO: Implement export functionality
     console.log('Export analysis results');
+    toast({
+      title: "Export Feature",
+      description: "Export functionality will be available soon.",
+    });
   };
 
   const handleShare = () => {
     // TODO: Implement share functionality
     console.log('Share analysis results');
+    toast({
+      title: "Share Feature",
+      description: "Share functionality will be available soon.",
+    });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (analysisResult && premiumAnalysisMutation.data) {
-      saveAnalysisMutation.mutate({
-        stepData,
-        analysisResults: premiumAnalysisMutation.data,
-        structuredAnalysis: premiumAnalysisMutation.data.structuredAnalysis,
-        confidenceScore: premiumAnalysisMutation.data.confidenceScore
-      });
+      setIsSaving(true);
+      setSaveStatus('saving');
+      
+      try {
+        await saveAnalysisMutation.mutateAsync({
+          stepData,
+          analysisResults: premiumAnalysisMutation.data,
+          structuredAnalysis: premiumAnalysisMutation.data.structuredAnalysis,
+          confidenceScore: premiumAnalysisMutation.data.confidenceScore
+        });
+        
+        setSaveStatus('saved');
+        toast({
+          title: "Analysis Saved",
+          description: "Your analysis has been successfully saved with enhanced file associations.",
+        });
+        
+        // Reset save status after 3 seconds
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      } catch (error) {
+        console.error('Error saving analysis:', error);
+        setSaveStatus('error');
+        toast({
+          title: "Save Failed",
+          description: "Failed to save analysis. Please try again.",
+          variant: "destructive",
+        });
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      } finally {
+        setIsSaving(false);
+      }
     }
-    console.log('Analysis saved successfully');
   };
 
   // Loading state while fetching template or running analysis
@@ -171,7 +207,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
           <p className="text-muted-foreground">
             {isLoadingTemplate 
               ? 'Preparing analysis configuration...' 
-              : `Processing ${templateData?.category || 'design'} analysis...`
+              : `Processing ${templateData?.category || 'design'} analysis with file associations...`
             }
           </p>
         </div>
@@ -208,7 +244,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
             <p className="text-muted-foreground">
               {!templateData 
                 ? "Analysis template not found" 
-                : "Click below to start your analysis"
+                : "Click below to start your analysis with enhanced file associations"
               }
             </p>
             {templateData && (
@@ -227,7 +263,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
     return (
       <div className="w-full min-h-full">
         {/* Viewer Toggle */}
-        <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex justify-between items-center">
           <Button 
             variant="outline" 
             size="sm"
@@ -235,6 +271,28 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
           >
             Switch to {useEnhancedViewer ? 'Simple' : 'Enhanced'} View
           </Button>
+          
+          {/* Save Status Indicator */}
+          <div className="flex items-center gap-2">
+            {saveStatus === 'saved' && (
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Saved
+              </Badge>
+            )}
+            {saveStatus === 'saving' && (
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                Saving...
+              </Badge>
+            )}
+            {saveStatus === 'error' && (
+              <Badge variant="destructive">
+                <AlertCircle className="h-3 w-3 mr-1" />
+                Save Failed
+              </Badge>
+            )}
+          </div>
         </div>
 
         <EnhancedAnalysisResultsViewer
@@ -244,6 +302,8 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
           onExport={handleExport}
           onShare={handleShare}
           onSave={handleSave}
+          structuredAnalysis={premiumAnalysisMutation.data?.structuredAnalysis}
+          isSaving={isSaving}
         />
       </div>
     );
@@ -258,13 +318,13 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
           <h2 className="text-3xl font-bold text-center">Analysis Complete</h2>
         </div>
         <p className="text-center text-muted-foreground">
-          Your {templateData?.category || 'design'} analysis has been completed
+          Your {templateData?.category || 'design'} analysis has been completed with enhanced file associations
         </p>
       </div>
 
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Viewer Toggle */}
-        <div className="flex justify-end">
+        {/* Viewer Toggle and Save Status */}
+        <div className="flex justify-between items-center">
           <Button 
             variant="outline" 
             size="sm"
@@ -272,9 +332,24 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
           >
             Switch to Enhanced View
           </Button>
+          
+          <div className="flex items-center gap-2">
+            {saveStatus === 'saved' && (
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Saved
+              </Badge>
+            )}
+            {saveStatus === 'saving' && (
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                Saving...
+              </Badge>
+            )}
+          </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons with Enhanced Save */}
         <div className="flex justify-center gap-4">
           <Button variant="outline" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
@@ -284,9 +359,17 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
             <Share className="h-4 w-4 mr-2" />
             Share Analysis
           </Button>
-          <Button variant="outline" onClick={handleSave}>
-            <Bookmark className="h-4 w-4 mr-2" />
-            Save for Later
+          <Button 
+            variant="outline" 
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Bookmark className="h-4 w-4 mr-2" />
+            )}
+            {isSaving ? 'Saving...' : 'Save Analysis'}
           </Button>
         </div>
 
