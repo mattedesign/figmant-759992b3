@@ -18,10 +18,11 @@ export const EnhancedPromptTemplateManager = () => {
   const updatePromptMutation = useUpdatePromptExample();
   const { toast } = useToast();
 
-  // Combine both data sources
+  // Combine both data sources with unique keys to prevent duplicate key errors
   const allTemplates = [
     ...claudeExamples.map(example => ({
-      id: example.id,
+      id: `claude-${example.id}`, // Prefix to ensure uniqueness
+      originalId: example.id, // Keep original ID for operations
       title: example.title,
       displayName: example.display_name,
       description: example.description || 'No description available',
@@ -31,10 +32,12 @@ export const EnhancedPromptTemplateManager = () => {
       isTemplate: example.is_template,
       isActive: example.is_active,
       metadata: example.metadata || {},
-      creditCost: example.credit_cost || 3
+      creditCost: example.credit_cost || 3,
+      source: 'claude' as const
     })),
     ...figmantTemplates.map(template => ({
-      id: template.id,
+      id: `figmant-${template.id}`, // Prefix to ensure uniqueness
+      originalId: template.id, // Keep original ID for operations
       title: template.title,
       displayName: template.displayName,
       description: template.description || 'No description available',
@@ -44,9 +47,12 @@ export const EnhancedPromptTemplateManager = () => {
       isTemplate: true,
       isActive: template.isActive,
       metadata: template.metadata || {},
-      creditCost: 3
+      creditCost: 3,
+      source: 'figmant' as const
     }))
   ];
+
+  console.log('All templates with unique keys:', allTemplates.map(t => ({ id: t.id, originalId: t.originalId })));
 
   const getCategoryLabel = (category: string) => {
     const option = CATEGORY_OPTIONS.find(opt => opt.value === category);
@@ -55,9 +61,15 @@ export const EnhancedPromptTemplateManager = () => {
 
   const handleEditTemplate = (templateId: string) => {
     console.log('Edit button clicked for template:', templateId);
-    setSelectedTemplateId(templateId);
+    
+    // Extract the original ID (remove prefix)
+    const originalId = templateId.startsWith('claude-') ? templateId.replace('claude-', '') : 
+                      templateId.startsWith('figmant-') ? templateId.replace('figmant-', '') : templateId;
+    
+    console.log('Using original ID for editing:', originalId);
+    setSelectedTemplateId(originalId);
     setIsEditDialogOpen(true);
-    console.log('Dialog should now be open, selectedTemplateId:', templateId);
+    console.log('Dialog should now be open, selectedTemplateId:', originalId);
   };
 
   const handleCloseEditDialog = () => {
@@ -134,6 +146,9 @@ export const EnhancedPromptTemplateManager = () => {
                       )}
                       <Badge variant="secondary">
                         {template.creditCost} {template.creditCost === 1 ? 'credit' : 'credits'}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {template.source}
                       </Badge>
                     </div>
                   </div>
