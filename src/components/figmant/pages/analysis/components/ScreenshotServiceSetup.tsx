@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -40,7 +39,7 @@ export const ScreenshotServiceSetup: React.FC<ScreenshotServiceSetupProps> = ({
   const checkServiceStatus = async () => {
     setIsLoading(true);
     try {
-      const status = ScreenshotCaptureService.getServiceStatus();
+      const status = await ScreenshotCaptureService.getServiceStatus();
       setServiceStatus(status);
       console.log('📊 SCREENSHOT SETUP - Service status:', status);
       

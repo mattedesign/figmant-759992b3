@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useToast } from '@/hooks/use-toast';
@@ -56,7 +57,7 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
       }
 
       // Check screenshot service status first
-      const serviceStatus = ScreenshotCaptureService.getServiceStatus();
+      const serviceStatus = await ScreenshotCaptureService.getServiceStatus();
       console.log('📸 Screenshot service status:', serviceStatus);
 
       // Create new URL attachment with processing status
