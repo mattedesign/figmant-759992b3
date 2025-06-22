@@ -95,9 +95,9 @@ export class ScreenshotCaptureService {
       return new ScreenshotOneProvider(envApiKey);
     }
     
-    // Try Supabase approach
+    // Try to get API key from Supabase edge function
     try {
-      console.log('📸 SCREENSHOT SERVICE - Checking for API key from Supabase...');
+      console.log('📸 SCREENSHOT SERVICE - Fetching API key from Supabase...');
       
       const response = await fetch('/api/screenshot-config', {
         method: 'GET',
@@ -109,27 +109,24 @@ export class ScreenshotCaptureService {
       console.log('📸 SCREENSHOT SERVICE - Server response status:', response.status);
       
       if (response.ok) {
-        const responseText = await response.text();
-        console.log('📸 SCREENSHOT SERVICE - Server response received');
-        
-        try {
-          const data = JSON.parse(responseText);
-          if (data.apiKey) {
-            console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with Supabase key');
-            return new ScreenshotOneProvider(data.apiKey);
-          }
-        } catch (parseError) {
-          console.error('📸 SCREENSHOT SERVICE - Failed to parse server response:', parseError);
+        const data = await response.json();
+        if (data.apiKey) {
+          console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with Supabase key');
+          return new ScreenshotOneProvider(data.apiKey);
+        } else {
+          console.warn('⚠️ SCREENSHOT SERVICE - No API key in server response');
         }
       } else {
-        console.warn('📸 SCREENSHOT SERVICE - Server returned error status:', response.status);
+        console.warn('⚠️ SCREENSHOT SERVICE - Server returned error status:', response.status);
+        const errorText = await response.text();
+        console.warn('⚠️ SCREENSHOT SERVICE - Server error:', errorText);
       }
     } catch (error) {
-      console.warn('⚠️ SCREENSHOT SERVICE - Failed to fetch API key from Supabase:', error);
+      console.warn('⚠️ SCREENSHOT SERVICE - Failed to fetch API key from server:', error);
     }
     
-    console.warn('⚠️ SCREENSHOT SERVICE - No API key found, using mock service');
-    throw new Error('ScreenshotOne API key not configured. Please add VITE_SCREENSHOTONE_API_KEY to your environment variables or configure it in Supabase.');
+    console.warn('⚠️ SCREENSHOT SERVICE - No API key found, throwing error');
+    throw new Error('ScreenshotOne API key not configured. Please configure SCREENSHOTONE_API_KEY in your Supabase project secrets.');
   }
 
   // Method to test the service connectivity
@@ -153,7 +150,7 @@ export class ScreenshotCaptureService {
     } catch (error) {
       return {
         isWorking: false,
-        provider: 'MockScreenshotProvider',
+        provider: 'error',
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }

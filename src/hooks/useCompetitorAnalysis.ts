@@ -37,7 +37,7 @@ export const useCompetitorAnalysis = () => {
         mobile: results.mobile?.[0]
       };
     } catch (error) {
-      console.warn('Screenshot capture failed, but analysis can continue:', error);
+      console.warn('Screenshot capture failed:', error);
       
       // Return failed results but don't throw - analysis can still proceed
       return {
@@ -73,31 +73,27 @@ export const useCompetitorAnalysis = () => {
       analysisItem.status = 'capturing';
       setAnalysisData(prev => [...prev.filter(item => item.url !== url), analysisItem]);
 
-      // Capture screenshots (with graceful failure handling)
+      // Capture screenshots
       const screenshots = await captureScreenshots(url);
       analysisItem.screenshots = screenshots;
       
-      // Analysis is considered successful even if screenshots fail
+      // Analysis is considered successful if we got at least one screenshot
       const desktopSuccess = screenshots.desktop?.success !== false;
       const mobileSuccess = screenshots.mobile?.success !== false;
       
-      if (desktopSuccess && mobileSuccess) {
+      if (desktopSuccess || mobileSuccess) {
         analysisItem.status = 'completed';
         toast({
           title: "Analysis Complete",
           description: `Successfully analyzed ${validation.hostname} with screenshots`,
         });
-      } else if (desktopSuccess || mobileSuccess) {
-        analysisItem.status = 'completed';
-        toast({
-          title: "Analysis Complete",
-          description: `Analyzed ${validation.hostname} (partial screenshot capture)`,
-        });
       } else {
         analysisItem.status = 'completed';
+        analysisItem.error = 'Screenshots failed to capture but URL validation succeeded';
         toast({
-          title: "Analysis Complete",
-          description: `Analyzed ${validation.hostname} (screenshots unavailable but analysis can proceed)`,
+          title: "Analysis Partially Complete",
+          description: `Analyzed ${validation.hostname} but screenshots are unavailable`,
+          variant: "default"
         });
       }
 
@@ -108,7 +104,7 @@ export const useCompetitorAnalysis = () => {
       toast({
         variant: "destructive",
         title: "Analysis Failed",
-        description: `Failed to analyze ${analysisItem.validation.hostname || url}`,
+        description: `Failed to analyze ${analysisItem.validation.hostname || url}: ${analysisItem.error}`,
       });
     }
 
