@@ -1,6 +1,6 @@
 
 import React, { ReactNode } from 'react';
-import { ChatMessage } from '@/types/chat';
+import { ChatMessage, ChatAttachment } from '@/types/chat';
 import { useChatStateContext } from './ChatStateProvider';
 
 interface ChatMessageHandlerProps {

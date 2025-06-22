@@ -1,7 +1,6 @@
 
 import React, { ReactNode, useState, useCallback } from 'react';
-import { ChatMessage } from '@/types/chat';
-import { ChatAttachment } from '@/components/design/DesignChatInterface';
+import { ChatMessage, ChatAttachment } from '@/types/chat';
 import { useChatStateContext } from './ChatStateProvider';
 import { useToast } from '@/hooks/use-toast';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
@@ -49,7 +48,7 @@ export const EnhancedChatMessageHandler: React.FC<EnhancedChatMessageHandlerProp
         name: file.name,
         file,
         status: 'uploading',
-        file_size: file.size // FIX: Use file_size instead of size to match interface
+        size: file.size
       };
       newAttachments.push(attachment);
     }
