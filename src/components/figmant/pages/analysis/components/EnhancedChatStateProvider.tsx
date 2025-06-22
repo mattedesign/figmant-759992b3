@@ -5,6 +5,7 @@ import { useChatState } from '../ChatStateManager';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { useFigmantChatAnalysisEnhanced } from '@/hooks/useFigmantChatAnalysisEnhanced';
 import { useEnhancedChatContext } from '@/hooks/useEnhancedChatContext';
+import { useEnhancedChatSessionContext } from '@/hooks/useEnhancedChatSessionContext';
 import { useToast } from '@/hooks/use-toast';
 
 interface EnhancedChatStateContextType {
@@ -62,6 +63,15 @@ export const EnhancedChatStateProvider: React.FC<EnhancedChatStateProviderProps>
   const { data: templates = [], isLoading: templatesLoading } = useFigmantPromptTemplates();
   const { toast } = useToast();
   
+  // Enhanced session context
+  const {
+    sessionContext,
+    isLoading: sessionLoading,
+    initializeSession,
+    loadSession: loadExistingSession,
+    updateSessionActivity
+  } = useEnhancedChatSessionContext();
+
   const chatState = useChatState();
   const {
     messages = [],
@@ -72,14 +82,9 @@ export const EnhancedChatStateProvider: React.FC<EnhancedChatStateProviderProps>
     setAttachments,
     selectedTemplateId,
     setSelectedTemplateId,
-    currentSessionId,
-    currentSession,
     sessions,
     sessionAttachments,
     sessionLinks,
-    isSessionInitialized,
-    startNewSession,
-    loadSession,
     saveMessageAttachments
   } = chatState;
 
@@ -92,30 +97,41 @@ export const EnhancedChatStateProvider: React.FC<EnhancedChatStateProviderProps>
     createContextualPrompt,
     shouldCreateSummary,
     createConversationSummary
-  } = useEnhancedChatContext(currentSessionId);
+  } = useEnhancedChatContext(sessionContext.sessionId);
 
-  const { mutateAsync: analyzeWithClaude, isPending: isAnalyzing } = useFigmantChatAnalysisEnhanced(currentSessionId);
+  const { mutateAsync: analyzeWithClaude, isPending: isAnalyzing } = useFigmantChatAnalysisEnhanced(sessionContext.sessionId);
 
-  // Load historical context when session changes
+  // Initialize session on mount if not already initialized
   useEffect(() => {
-    if (currentSessionId && isSessionInitialized) {
-      console.log('🔄 ENHANCED CHAT STATE - Loading context for session:', currentSessionId);
-      loadHistoricalContext(currentSessionId);
+    if (!sessionContext.isInitialized && !sessionLoading) {
+      console.log('🔄 ENHANCED CHAT STATE - Initializing new session...');
+      initializeSession('Enhanced Chat Session');
     }
-  }, [currentSessionId, isSessionInitialized, loadHistoricalContext]);
+  }, [sessionContext.isInitialized, sessionLoading, initializeSession]);
 
-  // Auto-save messages to database
+  // Load historical context when session is ready
+  useEffect(() => {
+    if (sessionContext.sessionId && sessionContext.isInitialized) {
+      console.log('🔄 ENHANCED CHAT STATE - Loading context for session:', sessionContext.sessionId);
+      loadHistoricalContext(sessionContext.sessionId);
+    }
+  }, [sessionContext.sessionId, sessionContext.isInitialized, loadHistoricalContext]);
+
+  // Auto-save messages to database with enhanced context
   useEffect(() => {
     const saveRecentMessages = async () => {
-      if (!currentSessionId || !isSessionInitialized || messages.length === 0) return;
+      if (!sessionContext.sessionId || !sessionContext.isInitialized || messages.length === 0) return;
 
       try {
         // Save the last message if it hasn't been saved yet
         const lastMessage = messages[messages.length - 1];
         if (lastMessage && !lastMessage.id.includes('saved-')) {
-          console.log('💾 ENHANCED CHAT STATE - Auto-saving message:', lastMessage.id);
+          console.log('💾 ENHANCED CHAT STATE - Auto-saving message with context:', lastMessage.id);
           
-          await saveMessageWithContext(currentSessionId, lastMessage, messages.length);
+          await saveMessageWithContext(sessionContext.sessionId, lastMessage, messages.length);
+          
+          // Update session activity
+          updateSessionActivity();
           
           // Update message ID to indicate it's been saved
           setMessages(prev => prev.map(msg => 
@@ -127,9 +143,9 @@ export const EnhancedChatStateProvider: React.FC<EnhancedChatStateProviderProps>
           // Check if we should create a conversation summary
           if (shouldCreateSummary(messages)) {
             console.log('📝 ENHANCED CHAT STATE - Creating conversation summary...');
-            await createConversationSummary(currentSessionId, messages);
+            await createConversationSummary(sessionContext.sessionId, messages);
             // Reload context after creating summary
-            loadHistoricalContext(currentSessionId);
+            loadHistoricalContext(sessionContext.sessionId);
           }
         }
       } catch (error) {
@@ -140,10 +156,24 @@ export const EnhancedChatStateProvider: React.FC<EnhancedChatStateProviderProps>
     // Debounce the save operation
     const timer = setTimeout(saveRecentMessages, 2000);
     return () => clearTimeout(timer);
-  }, [messages, currentSessionId, isSessionInitialized, saveMessageWithContext, shouldCreateSummary, createConversationSummary, loadHistoricalContext, setMessages]);
+  }, [messages, sessionContext.sessionId, sessionContext.isInitialized, saveMessageWithContext, shouldCreateSummary, createConversationSummary, loadHistoricalContext, setMessages, updateSessionActivity]);
 
   const getCurrentTemplate = () => {
     return templates.find(t => t.id === selectedTemplateId) || null;
+  };
+
+  const startNewSession = async () => {
+    console.log('🆕 ENHANCED CHAT STATE - Starting new session...');
+    setMessages([]);
+    setAttachments([]);
+    await initializeSession('New Enhanced Chat Session');
+  };
+
+  const loadSession = async (sessionId: string) => {
+    console.log('📂 ENHANCED CHAT STATE - Loading session:', sessionId);
+    setMessages([]);
+    setAttachments([]);
+    await loadExistingSession(sessionId);
   };
 
   const contextValue: EnhancedChatStateContextType = {
@@ -152,12 +182,12 @@ export const EnhancedChatStateProvider: React.FC<EnhancedChatStateProviderProps>
     message,
     attachments,
     selectedTemplateId,
-    currentSessionId,
-    currentSession,
+    currentSessionId: sessionContext.sessionId,
+    currentSession: sessionContext,
     sessions,
     sessionAttachments,
     sessionLinks,
-    isSessionInitialized,
+    isSessionInitialized: sessionContext.isInitialized,
     
     // Enhanced context state
     conversationContext,

@@ -1,158 +1,102 @@
 
 import { useMutation } from '@tanstack/react-query';
-import { ChatAttachment } from '@/components/design/DesignChatInterface';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useEnhancedChatContext } from './useEnhancedChatContext';
+import { useEnhancedChatContext } from '@/hooks/useEnhancedChatContext';
 
-interface EnhancedAnalysisRequest {
+interface EnhancedAnalysisParams {
   message: string;
-  attachments: ChatAttachment[];
+  attachments: any[];
   template?: any;
   sessionId?: string;
 }
 
-interface EnhancedAnalysisResponse {
+interface EnhancedAnalysisResult {
   analysis: string;
   contextUsed: boolean;
-  tokenCount?: number;
-  processingTime?: number;
+  tokenEstimate: number;
+  attachmentCount: number;
 }
 
 export const useFigmantChatAnalysisEnhanced = (sessionId?: string) => {
   const { toast } = useToast();
-  const { createContextualPrompt, conversationContext } = useEnhancedChatContext(sessionId);
+  const { createContextualPrompt } = useEnhancedChatContext(sessionId);
 
-  return useMutation<EnhancedAnalysisResponse, Error, EnhancedAnalysisRequest>({
-    mutationFn: async ({ message, attachments, template, sessionId }) => {
-      console.log('🚀 ENHANCED ANALYSIS - Starting analysis with context...');
-      
-      const startTime = Date.now();
+  return useMutation({
+    mutationFn: async (params: EnhancedAnalysisParams): Promise<EnhancedAnalysisResult> => {
+      console.log('🚀 ENHANCED CHAT ANALYSIS - Starting analysis with context:', {
+        messageLength: params.message.length,
+        attachmentsCount: params.attachments.length,
+        hasTemplate: !!params.template,
+        sessionId: params.sessionId
+      });
 
       try {
-        // Create contextual prompt with conversation history
-        const contextualPrompt = createContextualPrompt(message, template);
-        
-        console.log('🎯 ENHANCED ANALYSIS - Using contextual prompt:', {
-          originalLength: message.length,
+        // Create contextual prompt using conversation history
+        const contextualPrompt = createContextualPrompt(params.message, params.template);
+        const contextUsed = contextualPrompt !== params.message;
+
+        console.log('🎯 ENHANCED CHAT ANALYSIS - Contextual prompt created:', {
+          originalLength: params.message.length,
           contextualLength: contextualPrompt.length,
-          hasContext: conversationContext.historicalContext.length > 0,
-          tokenEstimate: conversationContext.tokenEstimate
+          contextUsed
         });
 
-        // Prepare analysis request with enhanced context
-        const analysisRequest = {
-          message: contextualPrompt,
-          attachments: attachments.map(att => ({
-            id: att.id,
-            type: att.type,
-            name: att.name,
-            uploadPath: att.uploadPath,
-            url: att.url
-          })),
-          requestType: 'enhanced_figmant_chat',
-          contextMetadata: {
-            hasHistoricalContext: conversationContext.historicalContext.length > 0,
-            hasAttachmentContext: conversationContext.attachmentContext.length > 0,
-            tokenEstimate: conversationContext.tokenEstimate,
-            sessionId
+        // Call the edge function with the contextual prompt
+        const { data, error } = await supabase.functions.invoke('figmant-chat-analysis', {
+          body: {
+            message: contextualPrompt,
+            attachments: params.attachments,
+            template: params.template,
+            sessionId: params.sessionId,
+            enhanced: true // Flag to indicate this is an enhanced analysis
           }
-        };
-
-        console.log('📡 ENHANCED ANALYSIS - Sending to Claude with context...');
-
-        const response = await fetch('/api/claude-ai', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(analysisRequest),
         });
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `Analysis failed: ${response.status}`);
+        if (error) {
+          console.error('❌ ENHANCED CHAT ANALYSIS - Edge function error:', error);
+          throw new Error(`Analysis failed: ${error.message}`);
         }
 
-        const result = await response.json();
-        const processingTime = Date.now() - startTime;
+        if (!data || !data.analysis) {
+          console.error('❌ ENHANCED CHAT ANALYSIS - Invalid response:', data);
+          throw new Error('Invalid response from analysis service');
+        }
 
-        console.log('✅ ENHANCED ANALYSIS - Analysis completed:', {
-          analysisLength: result.analysis?.length || 0,
-          processingTime,
-          contextUsed: true
+        console.log('✅ ENHANCED CHAT ANALYSIS - Analysis completed successfully:', {
+          analysisLength: data.analysis.length,
+          contextUsed,
+          attachmentCount: params.attachments.length
         });
 
         return {
-          analysis: result.analysis || result.response || 'Analysis completed.',
-          contextUsed: true,
-          tokenCount: result.tokenCount,
-          processingTime
+          analysis: data.analysis,
+          contextUsed,
+          tokenEstimate: Math.ceil(contextualPrompt.length / 4),
+          attachmentCount: params.attachments.length
         };
 
       } catch (error) {
-        const processingTime = Date.now() - startTime;
-        console.error('❌ ENHANCED ANALYSIS - Error:', error);
-
-        // Fallback to regular analysis if context analysis fails
-        console.log('🔄 ENHANCED ANALYSIS - Falling back to regular analysis...');
+        console.error('❌ ENHANCED CHAT ANALYSIS - Analysis failed:', error);
         
-        try {
-          const fallbackResponse = await fetch('/api/claude-ai', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              message,
-              attachments: attachments.map(att => ({
-                id: att.id,
-                type: att.type,
-                name: att.name,
-                uploadPath: att.uploadPath,
-                url: att.url
-              })),
-              requestType: 'fallback_chat'
-            }),
-          });
-
-          if (fallbackResponse.ok) {
-            const fallbackResult = await fallbackResponse.json();
-            console.log('✅ ENHANCED ANALYSIS - Fallback successful');
-            
-            return {
-              analysis: fallbackResult.analysis || fallbackResult.response || 'Analysis completed.',
-              contextUsed: false,
-              processingTime: Date.now() - startTime
-            };
-          }
-        } catch (fallbackError) {
-          console.error('❌ ENHANCED ANALYSIS - Fallback also failed:', fallbackError);
-        }
-
+        toast({
+          variant: "destructive",
+          title: "Enhanced Analysis Failed",
+          description: error instanceof Error ? error.message : 'Unknown error occurred',
+        });
+        
         throw error;
       }
     },
-    onError: (error) => {
-      console.error('ENHANCED ANALYSIS - Mutation error:', error);
-      toast({
-        variant: "destructive",
-        title: "Enhanced Analysis Failed",
-        description: error.message || "Failed to analyze with conversation context",
+    onSuccess: (result) => {
+      console.log('🎉 ENHANCED CHAT ANALYSIS - Mutation completed successfully:', {
+        contextUsed: result.contextUsed,
+        tokenEstimate: result.tokenEstimate,
+        attachmentCount: result.attachmentCount
       });
     },
-    onSuccess: (data) => {
-      console.log('ENHANCED ANALYSIS - Mutation success:', {
-        analysisLength: data.analysis.length,
-        contextUsed: data.contextUsed,
-        processingTime: data.processingTime
-      });
-      
-      toast({
-        title: data.contextUsed ? "Enhanced Analysis Complete" : "Analysis Complete",
-        description: data.contextUsed 
-          ? "Analysis completed using full conversation context"
-          : "Analysis completed successfully",
-      });
+    onError: (error) => {
+      console.error('💥 ENHANCED CHAT ANALYSIS - Mutation failed:', error);
     }
   });
 };
