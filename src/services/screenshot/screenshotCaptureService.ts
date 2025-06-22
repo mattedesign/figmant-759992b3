@@ -17,7 +17,7 @@ export class ScreenshotCaptureService {
     try {
       console.log('📸 SCREENSHOT SERVICE - Capturing screenshot for:', url, 'with options:', opts);
       
-      const provider = await this.getProvider();
+      const provider = this.getProvider();
       console.log('📸 SCREENSHOT SERVICE - Using provider:', provider.constructor.name);
       
       const result = await provider.captureScreenshot(url, opts);
@@ -60,7 +60,7 @@ export class ScreenshotCaptureService {
     console.log('📸 SCREENSHOT SERVICE - Capturing multiple screenshots for:', urls.length, 'URLs');
     
     // Check service status first
-    const status = await this.getServiceStatus();
+    const status = this.getServiceStatus();
     if (!status.isWorking && status.provider === 'MockScreenshotProvider') {
       console.warn('📸 SCREENSHOT SERVICE - Using mock provider, results will be simulated');
     }
@@ -83,7 +83,7 @@ export class ScreenshotCaptureService {
     });
     
     // Check service status before proceeding
-    const status = await this.getServiceStatus();
+    const status = this.getServiceStatus();
     console.log('📸 SCREENSHOT SERVICE - Service status:', status);
     
     const results: { desktop?: ScreenshotResult[]; mobile?: ScreenshotResult[] } = {};
@@ -118,50 +118,15 @@ export class ScreenshotCaptureService {
     return results;
   }
 
-  private static async getProvider() {
+  private static getProvider() {
     console.log('📸 SCREENSHOT SERVICE - Getting provider...');
     
-    // Check environment variable first
+    // Check environment variable
     const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
     if (envApiKey && envApiKey.trim()) {
       console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with environment key');
       this.apiKeyStatus = 'valid';
       return new ScreenshotOneProvider(envApiKey);
-    }
-    
-    // Try Supabase approach (fallback)
-    try {
-      console.log('📸 SCREENSHOT SERVICE - Checking for API key from Supabase...');
-      
-      const response = await fetch('/api/screenshot-config', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      console.log('📸 SCREENSHOT SERVICE - Server response status:', response.status);
-      
-      if (response.ok) {
-        const responseText = await response.text();
-        console.log('📸 SCREENSHOT SERVICE - Server response received');
-        
-        try {
-          const data = JSON.parse(responseText);
-          if (data.apiKey && data.apiKey.trim()) {
-            console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with Supabase key');
-            this.apiKeyStatus = 'valid';
-            return new ScreenshotOneProvider(data.apiKey);
-          }
-        } catch (parseError) {
-          console.error('📸 SCREENSHOT SERVICE - Failed to parse server response:', parseError);
-        }
-      } else {
-        const responseText = await response.text();
-        console.log('📸 SCREENSHOT SERVICE - Server error response:', responseText);
-      }
-    } catch (error) {
-      console.warn('⚠️ SCREENSHOT SERVICE - Failed to fetch API key from Supabase:', error);
     }
     
     console.warn('⚠️ SCREENSHOT SERVICE - No API key found, using mock service');
@@ -171,16 +136,16 @@ export class ScreenshotCaptureService {
   }
 
   // Enhanced service status method
-  static async getServiceStatus(): Promise<{ 
+  static getServiceStatus(): { 
     isWorking: boolean; 
     provider: string; 
     apiKeyStatus: string;
     error?: string;
     hasApiKey: boolean;
     setupInstructions?: string;
-  }> {
+  } {
     try {
-      const provider = await this.getProvider();
+      const provider = this.getProvider();
       const providerName = provider.constructor.name;
       
       // Check if we have an API key configured
@@ -198,29 +163,12 @@ export class ScreenshotCaptureService {
         };
       }
       
-      // Test with a simple URL if we have an API key
-      if (hasApiKey) {
-        const testResult = await provider.captureScreenshot('https://example.com', {
-          width: 400,
-          height: 300,
-          format: 'png'
-        });
-        
-        return {
-          isWorking: testResult.success,
-          provider: providerName,
-          apiKeyStatus: this.apiKeyStatus,
-          hasApiKey: true,
-          error: testResult.error
-        };
-      }
-      
       return {
-        isWorking: false,
+        isWorking: hasApiKey,
         provider: providerName,
         apiKeyStatus: this.apiKeyStatus,
-        hasApiKey: false,
-        error: this.lastErrorMessage || 'Service not configured'
+        hasApiKey: hasApiKey,
+        error: this.lastErrorMessage
       };
     } catch (error) {
       return {
@@ -236,7 +184,7 @@ export class ScreenshotCaptureService {
   // Test service method for debugger component
   static async testService(): Promise<{ isWorking: boolean; provider: string; error?: string }> {
     try {
-      const provider = await this.getProvider();
+      const provider = this.getProvider();
       const providerName = provider.constructor.name;
       
       // Test with a simple URL

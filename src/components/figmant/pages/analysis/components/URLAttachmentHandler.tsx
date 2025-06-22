@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useToast } from '@/hooks/use-toast';
@@ -57,7 +56,7 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
       }
 
       // Check screenshot service status first
-      const serviceStatus = await ScreenshotCaptureService.getServiceStatus();
+      const serviceStatus = ScreenshotCaptureService.getServiceStatus();
       console.log('📸 Screenshot service status:', serviceStatus);
 
       // Create new URL attachment with processing status
@@ -85,7 +84,7 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
       if (!serviceStatus.isWorking) {
         toast({
           title: "Website Added",
-          description: `${hostname} added. Screenshots disabled - analysis will continue without images.`,
+          description: `${hostname} added. Using mock screenshots - analysis will continue.`,
         });
       } else {
         toast({
@@ -94,7 +93,7 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
         });
       }
 
-      // Attempt screenshot capture regardless of service status
+      // Attempt screenshot capture - this should always work now (either real or mock)
       try {
         console.log('📸 Starting screenshot capture for:', formattedUrl);
         
@@ -145,24 +144,18 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
         const mobileSuccess = screenshotResults.mobile?.[0]?.success;
 
         if (desktopSuccess || mobileSuccess) {
+          const screenshotType = serviceStatus.isWorking ? 'real' : 'mock';
           toast({
-            title: "Screenshots Captured",
-            description: `Successfully captured ${desktopSuccess && mobileSuccess ? 'desktop and mobile' : desktopSuccess ? 'desktop' : 'mobile'} screenshots for ${hostname}.`,
+            title: "Screenshots Ready",
+            description: `Successfully captured ${desktopSuccess && mobileSuccess ? 'desktop and mobile' : desktopSuccess ? 'desktop' : 'mobile'} ${screenshotType} screenshots for ${hostname}.`,
           });
         } else {
-          // Provide helpful error message based on service status
-          if (!serviceStatus.isWorking) {
-            toast({
-              title: "Screenshots Disabled",
-              description: `Screenshot service not configured. ${hostname} will be analyzed without images.`,
-            });
-          } else {
-            toast({
-              variant: "destructive",
-              title: "Screenshot Capture Failed",
-              description: `Unable to capture screenshots for ${hostname}. Website will still be analyzed.`,
-            });
-          }
+          // This shouldn't happen with mock provider, but just in case
+          toast({
+            variant: "destructive",
+            title: "Screenshot Capture Failed",
+            description: `Unable to capture screenshots for ${hostname}. Website will still be analyzed.`,
+          });
         }
 
       } catch (screenshotError) {
@@ -180,12 +173,12 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
                   desktop: { 
                     success: false, 
                     url: formattedUrl, 
-                    error: 'Screenshot service unavailable'
+                    error: 'Screenshot service error - analysis will continue without images'
                   },
                   mobile: { 
                     success: false, 
                     url: formattedUrl, 
-                    error: 'Screenshot service unavailable'
+                    error: 'Screenshot service error - analysis will continue without images'
                   }
                 }
               }
@@ -194,20 +187,11 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
           return att;
         }));
 
-        // Show appropriate error message
-        const serviceStatus = await ScreenshotCaptureService.getServiceStatus();
-        if (!serviceStatus.hasApiKey) {
-          toast({
-            title: "Screenshots Disabled",
-            description: `Screenshot service not configured. ${hostname} will be analyzed without images.`,
-          });
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Screenshot Capture Failed",
-            description: `Screenshots unavailable for ${hostname}. Website will still be analyzed.`,
-          });
-        }
+        // Always show a helpful error message but don't block the user
+        toast({
+          title: "Screenshots Unavailable",
+          description: `Could not capture screenshots for ${hostname}, but website analysis will continue without images.`,
+        });
       }
 
     } catch (error) {

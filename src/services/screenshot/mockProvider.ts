@@ -8,33 +8,61 @@ export class MockScreenshotProvider implements ScreenshotProvider {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
     
-    // Generate mock screenshot URLs (using placeholder service)
+    // Generate mock screenshot URLs using placehold.co (more reliable than via.placeholder.com)
     const deviceType = options.mobile ? 'mobile' : 'desktop';
     const width = options.width || (options.mobile ? 375 : 1920);
     const height = options.height || (options.mobile ? 812 : 1080);
     
-    // Use a placeholder service that can generate screenshots
-    const mockScreenshotUrl = `https://via.placeholder.com/${width}x${height}/f0f0f0/333333?text=${encodeURIComponent(`${deviceType.toUpperCase()}\nScreenshot\n${new URL(url).hostname}`)}`;
-    const mockThumbnailUrl = `https://via.placeholder.com/400x300/f0f0f0/333333?text=${encodeURIComponent(`${deviceType}\n${new URL(url).hostname}`)}`;
-    
-    console.log('🎭 MockScreenshotProvider: Generated mock URLs:', {
-      screenshotUrl: mockScreenshotUrl,
-      thumbnailUrl: mockThumbnailUrl
-    });
-    
-    return {
-      success: true,
-      url,
-      screenshotUrl: mockScreenshotUrl,
-      thumbnailUrl: mockThumbnailUrl,
-      metadata: {
-        width: width,
-        height: height,
-        format: options.format || 'png',
-        size: Math.floor(Math.random() * 500000) + 100000,
-        capturedAt: new Date().toISOString(),
-        deviceType: options.mobile ? 'mobile' : 'desktop'
-      }
-    };
+    try {
+      const hostname = new URL(url).hostname;
+      const displayText = `${deviceType.toUpperCase()}%0AScreenshot%0A${hostname}`;
+      const thumbnailText = `${deviceType}%0A${hostname}`;
+      
+      // Use placehold.co service with proper encoding
+      const mockScreenshotUrl = `https://placehold.co/${width}x${height}/f0f0f0/333333/png?text=${displayText}`;
+      const mockThumbnailUrl = `https://placehold.co/400x300/f0f0f0/333333/png?text=${thumbnailText}`;
+      
+      console.log('🎭 MockScreenshotProvider: Generated mock URLs:', {
+        screenshotUrl: mockScreenshotUrl,
+        thumbnailUrl: mockThumbnailUrl
+      });
+      
+      return {
+        success: true,
+        url,
+        screenshotUrl: mockScreenshotUrl,
+        thumbnailUrl: mockThumbnailUrl,
+        metadata: {
+          width: width,
+          height: height,
+          format: options.format || 'png',
+          size: Math.floor(Math.random() * 500000) + 100000,
+          capturedAt: new Date().toISOString(),
+          deviceType: options.mobile ? 'mobile' : 'desktop'
+        }
+      };
+    } catch (error) {
+      console.error('🎭 MockScreenshotProvider: Error generating URLs:', error);
+      
+      // Fallback with simple text if URL parsing fails
+      const fallbackText = `${deviceType.toUpperCase()}%0AScreenshot%0AWebsite`;
+      const mockScreenshotUrl = `https://placehold.co/${width}x${height}/f0f0f0/333333/png?text=${fallbackText}`;
+      const mockThumbnailUrl = `https://placehold.co/400x300/f0f0f0/333333/png?text=${deviceType}%0AWebsite`;
+      
+      return {
+        success: true,
+        url,
+        screenshotUrl: mockScreenshotUrl,
+        thumbnailUrl: mockThumbnailUrl,
+        metadata: {
+          width: width,
+          height: height,
+          format: options.format || 'png',
+          size: 150000,
+          capturedAt: new Date().toISOString(),
+          deviceType: options.mobile ? 'mobile' : 'desktop'
+        }
+      };
+    }
   }
 }
