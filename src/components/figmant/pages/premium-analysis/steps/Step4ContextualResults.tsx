@@ -37,7 +37,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
                 </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <div className="text-2xl font-bold text-green-600">
-                    {stepData.attachments?.length || 0}
+                    {stepData.uploadedFiles?.length || 0}
                   </div>
                   <div className="text-sm text-green-700">Files Analyzed</div>
                 </div>
