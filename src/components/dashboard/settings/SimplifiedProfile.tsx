@@ -54,29 +54,20 @@ export const SimplifiedProfile: React.FC = () => {
 
   const loadUserProfile = async () => {
     try {
-      console.log('🔍 Starting loadUserProfile...');
-      
       const { data: { user } } = await supabase.auth.getUser();
-      console.log('👤 Auth user:', user);
       
       if (!user) {
-        console.log('❌ No authenticated user found');
         setLoading(false);
         return;
       }
 
-      console.log('🔎 Querying profiles table for user ID:', user.id);
-      
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-      console.log('📊 Database query result:', { profile, error });
-
       if (error) {
-        console.error('❌ Database error:', error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -87,18 +78,9 @@ export const SimplifiedProfile: React.FC = () => {
       }
 
       if (profile) {
-        console.log('✅ Profile data received:', profile);
-        
-        // Debug the JSON parsing
-        console.log('🔍 Raw notification_preferences:', profile.notification_preferences);
-        console.log('🔍 Raw billing_address:', profile.billing_address);
-        
         // Safe parsing of JSON fields with fallbacks
         const notificationPrefs = profile.notification_preferences as any;
         const billingAddr = profile.billing_address as any;
-        
-        console.log('🔄 Parsed notification_preferences:', notificationPrefs);
-        console.log('🔄 Parsed billing_address:', billingAddr);
         
         const newProfileData = {
           full_name: profile.full_name || '',
@@ -118,20 +100,15 @@ export const SimplifiedProfile: React.FC = () => {
           },
         };
         
-        console.log('🎯 Final profileData being set:', newProfileData);
         setProfileData(newProfileData);
-      } else {
-        console.log('❌ No profile data found');
       }
     } catch (error) {
-      console.error('💥 Error in loadUserProfile:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to load profile data",
       });
     } finally {
-      console.log('🏁 loadUserProfile completed, setting loading to false');
       setLoading(false);
     }
   };
@@ -185,7 +162,6 @@ export const SimplifiedProfile: React.FC = () => {
         .eq('id', user.id);
 
       if (error) {
-        console.error('Error saving profile:', error);
         toast({
           variant: "destructive",
           title: "Save Failed",
@@ -201,7 +177,6 @@ export const SimplifiedProfile: React.FC = () => {
         duration: 4000,
       });
     } catch (error) {
-      console.error('Error saving profile:', error);
       toast({
         variant: "destructive",
         title: "Save Failed",
@@ -229,18 +204,6 @@ export const SimplifiedProfile: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* DEBUG INFO - Remove after fixing */}
-      {!loading && (
-        <div className="mb-4 p-4 bg-gray-100 rounded text-xs">
-          <details>
-            <summary>🐛 Debug Info (Click to expand)</summary>
-            <pre className="mt-2 text-xs">
-              {JSON.stringify(profileData, null, 2)}
-            </pre>
-          </details>
-        </div>
-      )}
-
       <Card className={`transition-all duration-300 ${saving ? 'opacity-75' : ''}`}>
         <CardHeader>
           <CardTitle>Profile Settings</CardTitle>
