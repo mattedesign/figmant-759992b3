@@ -197,13 +197,20 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
           {sortedTemplates.map((template) => (
             <Card
               key={template.id}
-              className={`cursor-pointer transition-all hover:shadow-lg ${
+              className={`relative cursor-pointer transition-all hover:shadow-lg ${
                 stepData.selectedType === template.id 
                   ? 'border-blue-500 bg-blue-50 shadow-md' 
                   : 'border-gray-200 hover:border-gray-300'
               }`}
               onClick={() => handleTemplateSelect(template.id)}
             >
+              {/* Most Popular Badge */}
+              {(templateCosts[template.id] || 3) <= 3 && (
+                <Badge className="absolute top-2 right-2 bg-yellow-500 text-yellow-900 text-xs">
+                  Most Popular
+                </Badge>
+              )}
+
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
