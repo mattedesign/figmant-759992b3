@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, AlertTriangle, CheckCircle, Clock, BarChart3, Link } from 'lucide-react';
+import { TrendingUp, AlertTriangle, CheckCircle, Clock, BarChart3 } from 'lucide-react';
 import { AnalysisSummaryProps } from '@/types/contextualAnalysis';
 
 export const AnalysisSummary: React.FC<AnalysisSummaryProps> = ({
@@ -22,16 +22,6 @@ export const AnalysisSummary: React.FC<AnalysisSummaryProps> = ({
     return <AlertTriangle className="h-4 w-4" />;
   };
 
-  const getAssociationRateColor = (rate: number) => {
-    if (rate >= 70) return 'text-green-600';
-    if (rate >= 40) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  // Determine grid columns based on whether file association rate is available
-  const gridCols = metrics.fileAssociationRate !== undefined ? 
-    'grid-cols-2 md:grid-cols-5' : 'grid-cols-2 md:grid-cols-4';
-
   return (
     <Card className={className}>
       <CardHeader>
@@ -41,7 +31,7 @@ export const AnalysisSummary: React.FC<AnalysisSummaryProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className={`grid ${gridCols} gap-4`}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {/* Total Recommendations */}
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">
@@ -74,17 +64,6 @@ export const AnalysisSummary: React.FC<AnalysisSummaryProps> = ({
             </div>
             <div className="text-sm text-gray-600">Files Analyzed</div>
           </div>
-
-          {/* File Association Rate - Only show if available */}
-          {metrics.fileAssociationRate !== undefined && (
-            <div className="text-center">
-              <div className={`text-2xl font-bold flex items-center justify-center gap-1 ${getAssociationRateColor(metrics.fileAssociationRate)}`}>
-                <Link className="h-4 w-4" />
-                {metrics.fileAssociationRate}%
-              </div>
-              <div className="text-sm text-gray-600">File Associations</div>
-            </div>
-          )}
         </div>
 
         {/* Categories and Implementation Time */}
@@ -108,27 +87,13 @@ export const AnalysisSummary: React.FC<AnalysisSummaryProps> = ({
               </span>
             </div>
           )}
-
-          {/* File Association Details - Only show if available */}
-          {metrics.fileAssociationRate !== undefined && (
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <Link className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-800">File Association Analysis</span>
-              </div>
-              <p className="text-xs text-blue-700">
-                {metrics.fileAssociationRate}% of uploaded files have been linked to specific recommendations, 
-                providing contextual insights for your design assets.
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Priority Breakdown */}
         <div className="mt-6">
           <h4 className="text-sm font-medium text-gray-700 mb-3">Priority Breakdown:</h4>
           <div className="space-y-2">
-            {(['high', 'medium', 'low'] as const).map((priority) => {
+            {['high', 'medium', 'low'].map((priority) => {
               const count = recommendations.filter(r => r.priority === priority).length;
               const percentage = metrics.totalRecommendations > 0 
                 ? Math.round((count / metrics.totalRecommendations) * 100) 
@@ -142,7 +107,7 @@ export const AnalysisSummary: React.FC<AnalysisSummaryProps> = ({
 
               return (
                 <div key={priority} className="flex items-center gap-3">
-                  <Badge className={`capitalize ${priorityColors[priority]}`}>
+                  <Badge className={`capitalize ${priorityColors[priority as keyof typeof priorityColors]}`}>
                     {priority}
                   </Badge>
                   <div className="flex-1 bg-gray-200 rounded-full h-2">

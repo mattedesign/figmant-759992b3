@@ -4,8 +4,6 @@ import { PremiumAnalysisRequest, PremiumAnalysisResult, AnalysisResults } from '
 import { buildContextPrompt } from './contextPromptBuilder';
 import { FileUploadService } from './fileUploadService';
 import { AccessValidationService } from './accessValidationService';
-import { EnhancedContextualAnalysisProcessor } from '@/utils/enhancedContextualAnalysisProcessor';
-import { processAttachments } from '@/utils/contextualAnalysisProcessor';
 
 export class PremiumAnalysisService {
   async executeAnalysis(request: PremiumAnalysisRequest): Promise<PremiumAnalysisResult> {
@@ -79,45 +77,6 @@ export class PremiumAnalysisService {
       responseLength: (claudeResponse?.analysis || claudeResponse?.response || '').length
     });
 
-    // Process structured analysis from Claude response
-    let structuredAnalysis = null;
-    let confidenceScore = claudeResponse.confidence_score || 0.85;
-
-    try {
-      // Convert uploaded files to analysis attachments format
-      const analysisAttachments = processAttachments(uploadedFileAttachments.map(file => ({
-        id: file.id || `file-${Date.now()}`,
-        name: file.name,
-        type: file.type,
-        url: file.path,
-        file_path: file.path,
-        file_size: file.size,
-        mimeType: file.type
-      })));
-
-      // Process the Claude response into structured format
-      structuredAnalysis = EnhancedContextualAnalysisProcessor.processAnalysisResponse(
-        claudeResponse.analysis || claudeResponse.response,
-        analysisAttachments,
-        selectedPrompt.category,
-        stepData.projectName
-      );
-
-      // Use the structured analysis confidence score if available
-      if (structuredAnalysis.metrics.averageConfidence) {
-        confidenceScore = structuredAnalysis.metrics.averageConfidence / 100;
-      }
-
-      console.log('🔍 Structured analysis processed:', {
-        recommendationsCount: structuredAnalysis.recommendations.length,
-        attachmentsCount: structuredAnalysis.attachments.length,
-        confidence: confidenceScore
-      });
-    } catch (error) {
-      console.warn('🔍 Failed to process structured analysis:', error);
-      // Continue without structured analysis - it's optional
-    }
-
     // Save the analysis and return result
     const savedAnalysisId = await this.saveAnalysisToDatabase(
       user.id,
@@ -131,17 +90,13 @@ export class PremiumAnalysisService {
     const finalResult: PremiumAnalysisResult = {
       analysis: claudeResponse.analysis || claudeResponse.response,
       savedAnalysisId,
-      debugInfo: claudeResponse.debugInfo,
-      structuredAnalysis,
-      confidenceScore
+      debugInfo: claudeResponse.debugInfo
     };
 
     console.log('🔍 Returning final result:', {
       hasAnalysis: !!finalResult.analysis,
       analysisLength: finalResult.analysis?.length || 0,
-      savedAnalysisId: finalResult.savedAnalysisId,
-      hasStructuredAnalysis: !!finalResult.structuredAnalysis,
-      confidenceScore: finalResult.confidenceScore
+      savedAnalysisId: finalResult.savedAnalysisId
     });
 
     return finalResult;
