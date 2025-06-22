@@ -151,7 +151,7 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
                    template.metadata !== null &&
                    Array.isArray((template.metadata as any).contextual_fields) &&
                    (template.metadata as any).contextual_fields.length > 0 && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs" style={{ display: 'none' }}>
                       Customizable
                     </Badge>
                   )}
