@@ -9,8 +9,8 @@ export const PremiumAnalysisController: React.FC = () => {
   const [currentCreditCost, setCurrentCreditCost] = useState<number>(1);
   const [stepData, setStepData] = useState<StepData>({
     selectedType: '',
-    projectName: 'Untitled Analysis', // Set default project name
-    analysisGoals: '', // Keep this field but it won't be collected via the form
+    projectName: 'Untitled Analysis',
+    analysisGoals: '',
     contextualData: {},
     stakeholders: [],
     referenceLinks: [''],
@@ -36,7 +36,7 @@ export const PremiumAnalysisController: React.FC = () => {
   const goToNextStep = useCallback(() => {
     console.log('🔍 Going to next step, current:', currentStep);
     setCurrentStep(prev => {
-      const nextStep = prev + 1;
+      const nextStep = Math.min(prev + 1, 4); // Cap at step 4
       console.log('🔍 Next step:', nextStep);
       return nextStep;
     });
@@ -53,7 +53,7 @@ export const PremiumAnalysisController: React.FC = () => {
 
   const goToStep = useCallback((step: number) => {
     console.log('🔍 Going to specific step:', step);
-    setCurrentStep(step);
+    setCurrentStep(Math.max(1, Math.min(step, 4))); // Ensure step is between 1-4
   }, []);
 
   return (
@@ -61,7 +61,7 @@ export const PremiumAnalysisController: React.FC = () => {
       <AnalysisNavigationHeader creditCost={currentCreditCost} />
       <StepRenderer
         currentStep={currentStep}
-        totalSteps={5}
+        totalSteps={4}
         stepData={stepData}
         setStepData={setStepData}
         onNextStep={goToNextStep}
