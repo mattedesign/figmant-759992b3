@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useToast } from '@/hooks/use-toast';
@@ -108,18 +107,6 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
                 }
               }
             };
-
-            // Also set direct screenshot URLs on the attachment for easier access
-            const desktopResult = screenshotResults.desktop?.[0];
-            const mobileResult = screenshotResults.mobile?.[0];
-            
-            if (desktopResult?.success && desktopResult.screenshotUrl) {
-              updatedAtt.screenshotUrl = desktopResult.screenshotUrl;
-              updatedAtt.thumbnailUrl = desktopResult.thumbnailUrl || desktopResult.screenshotUrl;
-            } else if (mobileResult?.success && mobileResult.screenshotUrl) {
-              updatedAtt.screenshotUrl = mobileResult.screenshotUrl;
-              updatedAtt.thumbnailUrl = mobileResult.thumbnailUrl || mobileResult.screenshotUrl;
-            }
 
             console.log('🔗 Updated attachment with screenshots:', updatedAtt);
             return updatedAtt;
