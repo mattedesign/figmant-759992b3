@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SplitScreenLayout } from './SplitScreenLayout';
 import { ModernSplitSignInForm } from './ModernSplitSignInForm';
@@ -29,10 +28,11 @@ export const SplitScreenAuth: React.FC = () => {
       };
     }
     
+    // Sign-in and password reset use the new sign-in image
     return {
-      type: 'video' as const,
-      url: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/video/2025-06-17/clrcpd7ij_Brand.mp4',
-      alt: 'Brand video background'
+      type: 'image' as const,
+      url: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-22/0mww5bcyz_signin.svg',
+      alt: 'Sign in background'
     };
   };
 
