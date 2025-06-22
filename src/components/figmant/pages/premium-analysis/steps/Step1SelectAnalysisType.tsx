@@ -72,13 +72,17 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
     <div className="space-y-6">
       <StepHeader
         title={preSelectedTemplate ? "Template Selected" : "Select Analysis Type"}
-        description={preSelectedTemplate 
-          ? `You've selected the ${preSelectedTemplate.title} template. You can change this selection or proceed to the next step.`
-          : "Choose the type of analysis you want to perform"
-        }
         currentStep={currentStep}
         totalSteps={totalSteps}
       />
+      
+      {/* Description text handled separately */}
+      <div className="text-center text-gray-600 mb-6">
+        {preSelectedTemplate 
+          ? `You've selected the ${preSelectedTemplate.title} template. You can change this selection or proceed to the next step.`
+          : "Choose the type of analysis you want to perform"
+        }
+      </div>
 
       {preSelectedTemplate && (
         <div className="mb-6">
