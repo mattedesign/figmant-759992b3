@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Star, Copy, Trash2 } from 'lucide-react';
+import { Edit2, Star, Copy, Trash2 } from 'lucide-react';
 import { useClaudePromptExamples, useUpdatePromptExample } from '@/hooks/useClaudePromptExamples';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { CATEGORY_OPTIONS } from '@/types/promptTypes';
@@ -153,7 +153,7 @@ export const EnhancedPromptTemplateManager = () => {
                     onClick={() => handleEditTemplate(template.id)}
                     className="hover:bg-gray-100 cursor-pointer"
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit2 className="h-4 w-4" />
                     Edit
                   </Button>
                 </div>
