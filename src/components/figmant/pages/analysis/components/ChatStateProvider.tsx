@@ -5,7 +5,31 @@ import { useChatState } from '../ChatStateManager';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
 import { useEnhancedChatContext } from '@/hooks/useEnhancedChatContext';
+import { useEnhancedChatSessionContext } from '@/hooks/useEnhancedChatSessionContext';
 import { useToast } from '@/hooks/use-toast';
+
+interface ConversationContext {
+  currentMessages: ChatMessage[];
+  historicalContext: string;
+  attachmentContext: string[];
+  tokenEstimate: number;
+  sessionAttachments?: any[];
+  sessionLinks?: any[];
+  totalMessages?: number;
+  sessionId: string;
+  messages: Array<{
+    role: string;
+    content: string;
+    timestamp: string;
+    attachments?: number;
+  }>;
+}
+
+interface AutoSaveState {
+  status: 'saving' | 'saved' | 'error' | 'idle';
+  lastSaved?: Date;
+  messageCount: number;
+}
 
 interface ChatStateContextType {
   // State
@@ -20,9 +44,9 @@ interface ChatStateContextType {
   sessionLinks: ChatAttachment[];
   isSessionInitialized: boolean;
   
-  // Enhanced Context
-  conversationContext: any;
-  autoSaveState: any;
+  // Enhanced Context - Added from EnhancedChatStateProvider
+  conversationContext: ConversationContext;
+  autoSaveState: AutoSaveState;
   isLoadingContext: boolean;
   
   // Mutations
@@ -43,10 +67,11 @@ interface ChatStateContextType {
   saveMessageAttachments: (message: ChatMessage) => void;
   getCurrentTemplate: () => any;
   
-  // Enhanced Context Actions
+  // Enhanced Context Actions - Added from EnhancedChatStateProvider
   triggerAutoSave: (messages: ChatMessage[]) => void;
   createContextualPrompt: (message: string, template?: any) => string;
   saveConversation: (messages: ChatMessage[]) => Promise<void>;
+  loadHistoricalContext: (sessionId: string) => void;
   
   toast: any;
 }
@@ -61,6 +86,9 @@ export const useChatStateContext = () => {
   return context;
 };
 
+// Add this alias for backward compatibility
+export const useEnhancedChatStateContext = useChatStateContext;
+
 interface ChatStateProviderProps {
   children: ReactNode;
 }
@@ -72,6 +100,9 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
   
   const chatState = useChatState();
   
+  // Enhanced session management
+  const { sessionContext, initializeSession } = useEnhancedChatSessionContext();
+  
   // Enhanced chat context integration
   const {
     conversationContext,
@@ -79,8 +110,16 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
     isLoadingContext,
     triggerAutoSave,
     createContextualPrompt,
-    saveConversation
-  } = useEnhancedChatContext(chatState.currentSessionId);
+    saveConversation,
+    loadHistoricalContext
+  } = useEnhancedChatContext(chatState.currentSessionId || sessionContext.sessionId);
+  
+  // Initialize session on mount if needed
+  React.useEffect(() => {
+    if (!sessionContext.isInitialized && !chatState.currentSessionId) {
+      initializeSession();
+    }
+  }, [sessionContext.isInitialized, chatState.currentSessionId, initializeSession]);
   
   if (!chatState.setAttachments || !chatState.setMessages || !chatState.setMessage) {
     console.error('🚨 CHAT STATE PROVIDER - Chat state functions not available!');
@@ -113,19 +152,23 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
 
   // Enhanced context integration - auto-save when messages change
   React.useEffect(() => {
-    if (messages.length > 0 && currentSessionId) {
+    if (messages.length > 0 && (currentSessionId || sessionContext.sessionId)) {
       triggerAutoSave(messages);
     }
-  }, [messages.length, currentSessionId, triggerAutoSave]);
+  }, [messages.length, currentSessionId, sessionContext.sessionId, triggerAutoSave]);
 
-  // Update conversation context with current messages
-  React.useEffect(() => {
-    if (currentSessionId && conversationContext.sessionId === currentSessionId) {
-      // Update the conversation context with current messages for real-time context
-      conversationContext.currentMessages = messages;
-      conversationContext.totalMessages = Math.max(conversationContext.totalMessages, messages.length);
-    }
-  }, [messages, currentSessionId, conversationContext]);
+  // Enhanced conversation context with current session data
+  const enhancedConversationContext: ConversationContext = {
+    currentMessages: messages,
+    historicalContext: conversationContext.historicalContext,
+    attachmentContext: conversationContext.attachmentContext,
+    tokenEstimate: conversationContext.tokenEstimate,
+    sessionAttachments: conversationContext.sessionAttachments || [],
+    sessionLinks: conversationContext.sessionLinks || [],
+    totalMessages: Math.max(conversationContext.totalMessages, messages.length),
+    sessionId: currentSessionId || sessionContext.sessionId || conversationContext.sessionId,
+    messages: conversationContext.messages || []
+  };
 
   const contextValue: ChatStateContextType = {
     // State
@@ -133,15 +176,15 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
     message,
     attachments,
     selectedTemplateId,
-    currentSessionId,
+    currentSessionId: currentSessionId || sessionContext.sessionId,
     currentSession,
     sessions,
     sessionAttachments,
     sessionLinks,
-    isSessionInitialized,
+    isSessionInitialized: isSessionInitialized || sessionContext.isInitialized,
     
     // Enhanced Context
-    conversationContext,
+    conversationContext: enhancedConversationContext,
     autoSaveState,
     isLoadingContext,
     
@@ -167,6 +210,7 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
     triggerAutoSave,
     createContextualPrompt,
     saveConversation,
+    loadHistoricalContext,
     
     toast
   };

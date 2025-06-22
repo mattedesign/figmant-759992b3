@@ -1,22 +1,15 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { AutoSaveIndicator } from './AutoSaveIndicator';
-import { 
-  MessageSquare, 
-  FileText, 
-  Brain, 
-  Zap 
-} from 'lucide-react';
+import { CheckCircle, AlertCircle, Clock, Save } from 'lucide-react';
 
 interface ContextIndicatorProps {
   hasHistoricalContext: boolean;
   hasAttachmentContext: boolean;
   messageCount: number;
   tokenEstimate: number;
-  autoSaveStatus?: 'saving' | 'saved' | 'error' | 'idle';
+  autoSaveStatus: 'saving' | 'saved' | 'error' | 'idle';
   lastSaved?: Date;
-  className?: string;
 }
 
 export const ContextIndicator: React.FC<ContextIndicatorProps> = ({
@@ -24,101 +17,63 @@ export const ContextIndicator: React.FC<ContextIndicatorProps> = ({
   hasAttachmentContext,
   messageCount,
   tokenEstimate,
-  autoSaveStatus = 'idle',
-  lastSaved,
-  className = ""
+  autoSaveStatus,
+  lastSaved
 }) => {
-  const getContextLevel = () => {
-    if (hasHistoricalContext && hasAttachmentContext) return 'premium';
-    if (hasHistoricalContext || hasAttachmentContext) return 'enhanced';
-    return 'basic';
-  };
-
-  const contextLevel = getContextLevel();
-
-  const getContextDescription = () => {
-    switch (contextLevel) {
-      case 'premium':
-        return 'Premium context with full conversation history and attachments';
-      case 'enhanced':
-        return hasHistoricalContext 
-          ? 'Enhanced context with conversation history'
-          : 'Enhanced context with attached materials';
+  const getAutoSaveIndicator = () => {
+    switch (autoSaveStatus) {
+      case 'saving':
+        return (
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <Save className="h-3 w-3 animate-pulse" />
+            Saving...
+          </Badge>
+        );
+      case 'saved':
+        return (
+          <Badge variant="default" className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200">
+            <CheckCircle className="h-3 w-3" />
+            Saved
+          </Badge>
+        );
+      case 'error':
+        return (
+          <Badge variant="destructive" className="flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" />
+            Save Error
+          </Badge>
+        );
       default:
-        return 'Basic context - start chatting to build conversation memory';
-    }
-  };
-
-  const getContextBadgeVariant = () => {
-    switch (contextLevel) {
-      case 'premium':
-        return 'default'; // Blue
-      case 'enhanced':
-        return 'secondary'; // Gray
-      default:
-        return 'outline'; // White with border
-    }
-  };
-
-  const getContextIcon = () => {
-    switch (contextLevel) {
-      case 'premium':
-        return <Zap className="h-3 w-3" />;
-      case 'enhanced':
-        return <Brain className="h-3 w-3" />;
-      default:
-        return <MessageSquare className="h-3 w-3" />;
+        return null;
     }
   };
 
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
-      {/* Context Level Indicator */}
-      <Badge 
-        variant={getContextBadgeVariant()}
-        className="flex items-center gap-1 text-xs"
-        title={getContextDescription()}
-      >
-        {getContextIcon()}
-        <span className="capitalize">{contextLevel} Context</span>
-      </Badge>
-      
-      {/* Message Count */}
-      <Badge variant="outline" className="flex items-center gap-1 text-xs">
-        <MessageSquare className="h-3 w-3" />
-        {messageCount} messages
-      </Badge>
-
-      {/* Attachment Indicator */}
-      {hasAttachmentContext && (
-        <Badge variant="outline" className="flex items-center gap-1 text-xs">
-          <FileText className="h-3 w-3" />
-          Files attached
-        </Badge>
-      )}
-
-      {/* Token Usage (for premium context) */}
-      {tokenEstimate > 0 && (
-        <Badge 
-          variant="outline" 
-          className={`flex items-center gap-1 text-xs ${
-            tokenEstimate > 8000 ? 'bg-yellow-50 text-yellow-700' : ''
-          }`}
-          title={`Context size: ${tokenEstimate} tokens`}
-        >
-          <Brain className="h-3 w-3" />
-          {Math.ceil(tokenEstimate / 100)}% context
-        </Badge>
-      )}
-
-      {/* Auto-save Status */}
-      <div className="ml-auto">
-        <AutoSaveIndicator
-          status={autoSaveStatus}
-          lastSaved={lastSaved}
-          messageCount={messageCount}
-        />
+    <div className="flex items-center gap-3 text-sm">
+      <div className="flex items-center gap-2">
+        <span className="text-gray-600">Messages: {messageCount}</span>
+        
+        {hasHistoricalContext && (
+          <Badge variant="outline" className="text-xs">
+            Enhanced Context
+          </Badge>
+        )}
+        
+        {hasAttachmentContext && (
+          <Badge variant="outline" className="text-xs">
+            Attachments
+          </Badge>
+        )}
       </div>
+      
+      {getAutoSaveIndicator()}
+      
+      {lastSaved && autoSaveStatus === 'saved' && (
+        <div className="flex items-center gap-1 text-xs text-gray-500">
+          <Clock className="h-3 w-3" />
+          {lastSaved.toLocaleTimeString()}
+        </div>
+      )}
     </div>
   );
 };
