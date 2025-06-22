@@ -3,17 +3,15 @@ import { useState, useCallback, useEffect } from 'react';
 import { ChatMessage } from '@/components/design/DesignChatInterface';
 import { ChatSessionService } from '@/services/chatSessionService';
 import { useToast } from '@/hooks/use-toast';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 interface ConversationContext {
+  sessionId: string;
   currentMessages: ChatMessage[];
   historicalContext: string;
   attachmentContext: string[];
   tokenEstimate: number;
   lastSummaryAt?: Date;
-}
-
-interface ConversationSummary {
-  sessionId: string;
   messages: Array<{
     role: string;
     content: string;
@@ -25,142 +23,149 @@ interface ConversationSummary {
   sessionLinks: any[];
 }
 
+interface AutoSaveState {
+  status: 'saving' | 'saved' | 'error' | 'idle';
+  lastSaved?: Date;
+  messageCount: number;
+}
+
 export const useEnhancedChatContext = (sessionId?: string) => {
   const [conversationContext, setConversationContext] = useState<ConversationContext>({
+    sessionId: sessionId || '',
     currentMessages: [],
     historicalContext: '',
     attachmentContext: [],
-    tokenEstimate: 0
+    tokenEstimate: 0,
+    messages: [],
+    totalMessages: 0,
+    sessionAttachments: [],
+    sessionLinks: []
   });
-  const [isLoadingContext, setIsLoadingContext] = useState(false);
+  
+  const [autoSaveState, setAutoSaveState] = useState<AutoSaveState>({
+    status: 'idle',
+    messageCount: 0
+  });
+
   const { toast } = useToast();
 
-  // Load historical context from database
-  const loadHistoricalContext = useCallback(async (sessionId: string) => {
-    if (!sessionId) return;
+  // Query to load conversation context
+  const { data: contextData, isLoading: isLoadingContext, refetch: refetchContext } = useQuery({
+    queryKey: ['conversation-context', sessionId],
+    queryFn: async () => {
+      if (!sessionId) return null;
+      console.log('🔄 ENHANCED CHAT CONTEXT - Loading context for session:', sessionId);
+      return await ChatSessionService.getConversationSummary(sessionId);
+    },
+    enabled: !!sessionId,
+    staleTime: 30000, // Cache for 30 seconds
+  });
 
-    setIsLoadingContext(true);
-    try {
-      console.log('🔄 ENHANCED CHAT CONTEXT - Loading historical context for session:', sessionId);
+  // Auto-save mutation
+  const autoSaveMutation = useMutation({
+    mutationFn: async (messages: ChatMessage[]) => {
+      if (!sessionId || messages.length === 0) return;
       
-      // Load messages from database
-      const messages = await ChatSessionService.loadMessages(sessionId);
-      console.log('📚 ENHANCED CHAT CONTEXT - Loaded messages:', messages.length);
+      console.log('💾 ENHANCED CHAT CONTEXT - Auto-saving conversation:', {
+        sessionId,
+        messageCount: messages.length
+      });
 
-      // Load conversation summaries
-      const summaries = await ChatSessionService.getSummaries(sessionId);
-      console.log('📝 ENHANCED CHAT CONTEXT - Loaded summaries:', summaries.length);
-
-      // Convert database messages to ChatMessage format
-      const chatMessages: ChatMessage[] = messages.map(msg => ({
-        id: msg.id,
-        role: msg.role,
-        content: msg.content,
-        timestamp: new Date(msg.created_at),
-        attachments: msg.attachments?.map(att => ({
-          id: att.id || crypto.randomUUID(),
-          type: att.type === 'url' ? 'url' : 'file',
-          name: att.name || 'Unknown',
-          url: att.url,
-          uploadPath: att.path,
-          status: 'uploaded' as const
-        }))
-      }));
-
-      // Create historical context from summaries and recent messages
-      let historicalContext = '';
-      if (summaries.length > 0) {
-        const latestSummary = summaries[0];
-        historicalContext = `Previous conversation summary: ${latestSummary.summary_content}\n\n`;
+      await ChatSessionService.saveConversationContext(sessionId, messages, 'auto_save');
+      
+      // Create summary if needed
+      if (shouldCreateSummary(messages)) {
+        await createConversationSummary(sessionId, messages);
       }
+    },
+    onMutate: () => {
+      setAutoSaveState(prev => ({ ...prev, status: 'saving' }));
+    },
+    onSuccess: () => {
+      setAutoSaveState(prev => ({
+        ...prev,
+        status: 'saved',
+        lastSaved: new Date()
+      }));
+      
+      // Refetch context to get updated data
+      refetchContext();
+    },
+    onError: (error) => {
+      console.error('❌ ENHANCED CHAT CONTEXT - Auto-save failed:', error);
+      setAutoSaveState(prev => ({ ...prev, status: 'error' }));
+      
+      toast({
+        variant: "destructive",
+        title: "Auto-save Failed",
+        description: "Your conversation couldn't be saved automatically. Manual save recommended.",
+      });
+    }
+  });
 
-      // Add recent messages context (last 10 messages)
-      const recentMessages = chatMessages.slice(-10);
+  // Update conversation context when data loads
+  useEffect(() => {
+    if (contextData && sessionId) {
+      console.log('✅ ENHANCED CHAT CONTEXT - Context loaded:', {
+        sessionId: contextData.sessionId,
+        totalMessages: contextData.totalMessages,
+        attachments: contextData.sessionAttachments?.length || 0,
+        links: contextData.sessionLinks?.length || 0
+      });
+
+      // Create enhanced historical context
+      const recentMessages = contextData.messages.slice(-10);
+      let historicalContext = '';
+      
       if (recentMessages.length > 0) {
-        historicalContext += 'Recent conversation:\n';
+        historicalContext = 'Previous conversation context:\n';
         recentMessages.forEach(msg => {
           historicalContext += `${msg.role}: ${msg.content.substring(0, 200)}${msg.content.length > 200 ? '...' : ''}\n`;
         });
       }
 
-      // Estimate token count (rough approximation: 1 token ≈ 4 characters)
+      // Create attachment context
+      const attachmentContext = [
+        ...contextData.sessionAttachments?.map(att => `File: ${att.file_name}`) || [],
+        ...contextData.sessionLinks?.map(link => `URL: ${link.url}`) || []
+      ].slice(-5);
+
       const tokenEstimate = Math.ceil(historicalContext.length / 4);
 
-      // Extract attachment context
-      const attachmentContext = chatMessages
-        .filter(msg => msg.attachments && msg.attachments.length > 0)
-        .map(msg => `User uploaded: ${msg.attachments?.map(att => att.name).join(', ')}`)
-        .slice(-5); // Last 5 attachment contexts
-
       setConversationContext({
-        currentMessages: chatMessages,
+        sessionId: contextData.sessionId,
+        currentMessages: [], // Will be populated by the parent component
         historicalContext,
         attachmentContext,
         tokenEstimate,
-        lastSummaryAt: summaries.length > 0 ? new Date(summaries[0].created_at) : undefined
+        messages: contextData.messages,
+        totalMessages: contextData.totalMessages,
+        sessionAttachments: contextData.sessionAttachments || [],
+        sessionLinks: contextData.sessionLinks || []
       });
 
-      console.log('✅ ENHANCED CHAT CONTEXT - Context loaded:', {
-        messagesCount: chatMessages.length,
-        summariesCount: summaries.length,
-        tokenEstimate,
-        hasAttachments: attachmentContext.length > 0
-      });
-
-    } catch (error) {
-      console.error('❌ ENHANCED CHAT CONTEXT - Error loading context:', error);
-      toast({
-        variant: "destructive",
-        title: "Context Loading Failed",
-        description: "Could not load conversation history. Starting fresh.",
-      });
-    } finally {
-      setIsLoadingContext(false);
-    }
-  }, [toast]);
-
-  // Save message with context
-  const saveMessageWithContext = useCallback(async (
-    sessionId: string,
-    message: ChatMessage,
-    messageOrder: number
-  ) => {
-    try {
-      console.log('💾 ENHANCED CHAT CONTEXT - Saving message with context:', message.role);
-      
-      // Extract attachment IDs if present
-      const attachmentIds: string[] = [];
-      const linkIds: string[] = [];
-      
-      if (message.attachments) {
-        message.attachments.forEach(att => {
-          if (att.type === 'file' && att.uploadPath) {
-            attachmentIds.push(att.id);
-          } else if (att.type === 'url' && att.url) {
-            linkIds.push(att.id);
-          }
+      // Show restoration notification if there's meaningful context
+      if (contextData.totalMessages > 2) {
+        toast({
+          title: "Conversation Restored",
+          description: `Loaded ${contextData.totalMessages} messages with full context for enhanced analysis.`,
         });
       }
-
-      await ChatSessionService.saveMessage(
-        sessionId,
-        message.role,
-        message.content,
-        messageOrder,
-        { timestamp: message.timestamp.toISOString() },
-        attachmentIds,
-        linkIds
-      );
-
-      console.log('✅ ENHANCED CHAT CONTEXT - Message saved successfully');
-      
-    } catch (error) {
-      console.error('❌ ENHANCED CHAT CONTEXT - Error saving message:', error);
-      throw error;
     }
-  }, []);
+  }, [contextData, sessionId, toast]);
 
-  // Create contextual prompt with conversation history
+  // Auto-save trigger - save every 5 messages
+  const triggerAutoSave = useCallback((messages: ChatMessage[]) => {
+    const messageCount = messages.length;
+    setAutoSaveState(prev => ({ ...prev, messageCount }));
+
+    if (messageCount > 0 && messageCount % 5 === 0) {
+      console.log('🔄 ENHANCED CHAT CONTEXT - Triggering auto-save at message:', messageCount);
+      autoSaveMutation.mutate(messages);
+    }
+  }, [autoSaveMutation]);
+
+  // Create contextual prompt with full conversation history
   const createContextualPrompt = useCallback((
     currentMessage: string,
     template?: any
@@ -169,25 +174,25 @@ export const useEnhancedChatContext = (sessionId?: string) => {
 
     // Add historical context if available
     if (conversationContext.historicalContext) {
-      contextualPrompt += `CONVERSATION CONTEXT:\n${conversationContext.historicalContext}\n\n`;
+      contextualPrompt += `CONVERSATION HISTORY:\n${conversationContext.historicalContext}\n\n`;
     }
 
-    // Add attachment context if available
+    // Add attachment context if available  
     if (conversationContext.attachmentContext.length > 0) {
-      contextualPrompt += `ATTACHMENT CONTEXT:\n${conversationContext.attachmentContext.join('\n')}\n\n`;
+      contextualPrompt += `REFERENCED MATERIALS:\n${conversationContext.attachmentContext.join('\n')}\n\n`;
     }
 
     // Add template if provided
     if (template && template.content) {
-      contextualPrompt += `ANALYSIS TEMPLATE:\n${template.content}\n\n`;
+      contextualPrompt += `ANALYSIS FRAMEWORK:\n${template.content}\n\n`;
     }
 
     // Add current message
     contextualPrompt += `CURRENT REQUEST:\n${currentMessage}`;
 
-    // Add instruction for context usage
+    // Add enhanced context instruction
     if (conversationContext.historicalContext || conversationContext.attachmentContext.length > 0) {
-      contextualPrompt += `\n\nIMPORTANT: Use the conversation context above to provide more relevant and personalized analysis. Reference previous discussions and uploaded files when appropriate.`;
+      contextualPrompt += `\n\nIMPORTANT: Use the conversation history and referenced materials above to provide contextual, personalized analysis that builds on our previous discussions. Reference specific points from our conversation when relevant.`;
     }
 
     console.log('🎯 ENHANCED CHAT CONTEXT - Created contextual prompt:', {
@@ -216,34 +221,83 @@ export const useEnhancedChatContext = (sessionId?: string) => {
     try {
       console.log('📝 ENHANCED CHAT CONTEXT - Creating conversation summary...');
       
-      // Create a summary of the conversation
-      const recentMessages = messages.slice(-15); // Last 15 messages
+      // Create a summary of recent conversation
+      const recentMessages = messages.slice(-15);
       const summaryContent = recentMessages.map(msg => 
         `${msg.role}: ${msg.content.substring(0, 300)}${msg.content.length > 300 ? '...' : ''}`
       ).join('\n');
 
-      const summary = `Summary of recent conversation:\n${summaryContent}`;
+      const summary = `Recent conversation summary (${recentMessages.length} messages):\n${summaryContent}`;
       
       await ChatSessionService.createSummary(
         sessionId,
         summary,
         recentMessages.length,
-        Math.ceil(summary.length / 4) // Token estimate
+        Math.ceil(summary.length / 4)
       );
 
       console.log('✅ ENHANCED CHAT CONTEXT - Summary created successfully');
       
+      toast({
+        title: "Conversation Summarized", 
+        description: "Long conversation archived to maintain optimal performance.",
+      });
+      
     } catch (error) {
       console.error('❌ ENHANCED CHAT CONTEXT - Error creating summary:', error);
     }
-  }, []);
+  }, [toast]);
+
+  // Manual save function
+  const saveConversation = useCallback(async (messages: ChatMessage[]) => {
+    if (!sessionId) return;
+    
+    try {
+      setAutoSaveState(prev => ({ ...prev, status: 'saving' }));
+      await ChatSessionService.saveConversationContext(sessionId, messages);
+      
+      setAutoSaveState(prev => ({
+        ...prev,
+        status: 'saved',
+        lastSaved: new Date()
+      }));
+      
+      toast({
+        title: "Conversation Saved",
+        description: "Your analysis session has been saved successfully.",
+      });
+      
+    } catch (error) {
+      setAutoSaveState(prev => ({ ...prev, status: 'error' }));
+      throw error;
+    }
+  }, [sessionId, toast]);
+
+  // Update session context when sessionId changes
+  useEffect(() => {
+    if (sessionId) {
+      setConversationContext(prev => ({
+        ...prev,
+        sessionId
+      }));
+      
+      // Reset auto-save state for new session
+      setAutoSaveState({
+        status: 'idle',
+        messageCount: 0
+      });
+      
+      console.log('🔄 ENHANCED CHAT CONTEXT - Session changed to:', sessionId);
+    }
+  }, [sessionId]);
 
   return {
     conversationContext,
+    autoSaveState,
     isLoadingContext,
-    loadHistoricalContext,
-    saveMessageWithContext,
+    triggerAutoSave,
     createContextualPrompt,
+    saveConversation,
     shouldCreateSummary,
     createConversationSummary
   };

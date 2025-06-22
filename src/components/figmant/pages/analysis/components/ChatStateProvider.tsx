@@ -4,6 +4,7 @@ import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInter
 import { useChatState } from '../ChatStateManager';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
+import { useEnhancedChatContext } from '@/hooks/useEnhancedChatContext';
 import { useToast } from '@/hooks/use-toast';
 
 interface ChatStateContextType {
@@ -18,6 +19,11 @@ interface ChatStateContextType {
   sessionAttachments: ChatAttachment[];
   sessionLinks: ChatAttachment[];
   isSessionInitialized: boolean;
+  
+  // Enhanced Context
+  conversationContext: any;
+  autoSaveState: any;
+  isLoadingContext: boolean;
   
   // Mutations
   analyzeWithClaude: any;
@@ -36,6 +42,12 @@ interface ChatStateContextType {
   loadSession: (sessionId: string) => void;
   saveMessageAttachments: (message: ChatMessage) => void;
   getCurrentTemplate: () => any;
+  
+  // Enhanced Context Actions
+  triggerAutoSave: (messages: ChatMessage[]) => void;
+  createContextualPrompt: (message: string, template?: any) => string;
+  saveConversation: (messages: ChatMessage[]) => Promise<void>;
+  
   toast: any;
 }
 
@@ -59,6 +71,16 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
   const { toast } = useToast();
   
   const chatState = useChatState();
+  
+  // Enhanced chat context integration
+  const {
+    conversationContext,
+    autoSaveState,
+    isLoadingContext,
+    triggerAutoSave,
+    createContextualPrompt,
+    saveConversation
+  } = useEnhancedChatContext(chatState.currentSessionId);
   
   if (!chatState.setAttachments || !chatState.setMessages || !chatState.setMessage) {
     console.error('🚨 CHAT STATE PROVIDER - Chat state functions not available!');
@@ -89,6 +111,22 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
     return templates.find(t => t.id === selectedTemplateId) || null;
   };
 
+  // Enhanced context integration - auto-save when messages change
+  React.useEffect(() => {
+    if (messages.length > 0 && currentSessionId) {
+      triggerAutoSave(messages);
+    }
+  }, [messages.length, currentSessionId, triggerAutoSave]);
+
+  // Update conversation context with current messages
+  React.useEffect(() => {
+    if (currentSessionId && conversationContext.sessionId === currentSessionId) {
+      // Update the conversation context with current messages for real-time context
+      conversationContext.currentMessages = messages;
+      conversationContext.totalMessages = Math.max(conversationContext.totalMessages, messages.length);
+    }
+  }, [messages, currentSessionId, conversationContext]);
+
   const contextValue: ChatStateContextType = {
     // State
     messages,
@@ -102,6 +140,11 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
     sessionLinks,
     isSessionInitialized,
     
+    // Enhanced Context
+    conversationContext,
+    autoSaveState,
+    isLoadingContext,
+    
     // Mutations
     analyzeWithClaude,
     isAnalyzing,
@@ -110,7 +153,7 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
     templates,
     templatesLoading,
     
-    // Actions - now properly typed as React setters
+    // Actions - properly typed as React setters
     setMessages,
     setMessage,
     setAttachments,
@@ -119,6 +162,12 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
     loadSession,
     saveMessageAttachments,
     getCurrentTemplate,
+    
+    // Enhanced Context Actions
+    triggerAutoSave,
+    createContextualPrompt,
+    saveConversation,
+    
     toast
   };
 

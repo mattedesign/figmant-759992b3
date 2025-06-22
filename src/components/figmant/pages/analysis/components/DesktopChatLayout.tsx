@@ -1,48 +1,71 @@
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { ChatMessages } from '../ChatMessages';
 import { MessageInputSection } from '../MessageInputSection';
 import { AnalysisNavigationSidebar } from './AnalysisNavigationSidebar';
 import { AnalysisRightPanel } from './AnalysisRightPanel';
 import { EnhancedChatMessageHandler } from './EnhancedChatMessageHandler';
 import { ContextIndicator } from './ContextIndicator';
-import { useEnhancedChatStateContext } from './EnhancedChatStateProvider';
+import { useChatStateContext } from './ChatStateProvider';
+import { Button } from '@/components/ui/button';
+import { PanelRightClose, PanelRightOpen } from 'lucide-react';
 
 export const DesktopChatLayout: React.FC = () => {
   const { 
     conversationContext, 
+    autoSaveState,
     messages, 
     attachments,
     message,
     setMessage,
-    showUrlInput,
-    setShowUrlInput,
     currentSessionId,
-    isSessionInitialized
-  } = useEnhancedChatStateContext();
+    isSessionInitialized,
+    saveConversation,
+    createContextualPrompt
+  } = useChatStateContext();
 
-  const handleRemoveAttachment = (id: string) => {
+  const [showRightPanel, setShowRightPanel] = useState(true);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+
+  const handleRemoveAttachment = useCallback((id: string) => {
     console.log('🗑️ DESKTOP CHAT LAYOUT - Remove attachment:', id);
-    // Implementation will be added by the context provider
-  };
+    // This will be handled by the attachment management system
+  }, []);
 
-  const handleViewAttachment = (attachment: any) => {
+  const handleViewAttachment = useCallback((attachment: any) => {
     console.log('👁️ DESKTOP CHAT LAYOUT - View attachment:', attachment);
-    // Implementation will be added by the context provider
-  };
+    // This will open the attachment in a modal or new tab
+    if (attachment.type === 'url' && attachment.url) {
+      window.open(attachment.url, '_blank', 'noopener,noreferrer');
+    }
+  }, []);
 
-  const handleToggleUrlInput = () => {
+  const handleToggleUrlInput = useCallback(() => {
     setShowUrlInput(!showUrlInput);
-  };
+  }, [showUrlInput]);
+
+  const handleToggleRightPanel = useCallback(() => {
+    setShowRightPanel(!showRightPanel);
+  }, [showRightPanel]);
+
+  const handleManualSave = useCallback(async () => {
+    try {
+      await saveConversation(messages);
+    } catch (error) {
+      console.error('Manual save failed:', error);
+    }
+  }, [saveConversation, messages]);
 
   console.log('🖥️ DESKTOP CHAT LAYOUT - Rendering with enhanced context:', {
     sessionId: currentSessionId,
     isInitialized: isSessionInitialized,
     messagesCount: messages.length,
     attachmentsCount: attachments.length,
-    hasHistoricalContext: conversationContext.historicalContext.length > 0,
-    hasAttachmentContext: conversationContext.attachmentContext.length > 0,
-    tokenEstimate: conversationContext.tokenEstimate
+    hasHistoricalContext: !!conversationContext.historicalContext,
+    hasAttachmentContext: conversationContext.attachmentContext?.length > 0,
+    tokenEstimate: conversationContext.tokenEstimate,
+    autoSaveStatus: autoSaveState.status,
+    showRightPanel
   });
 
   return (
@@ -59,14 +82,46 @@ export const DesktopChatLayout: React.FC = () => {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Context Indicator - Shows enhanced context status */}
-        <div className="p-2 border-b border-gray-100 bg-white">
-          <ContextIndicator
-            hasHistoricalContext={conversationContext.historicalContext.length > 0}
-            hasAttachmentContext={conversationContext.attachmentContext.length > 0}
-            messageCount={conversationContext.currentMessages.length}
-            tokenEstimate={conversationContext.tokenEstimate}
-          />
+        {/* Enhanced Context Indicator */}
+        <div className="p-3 border-b border-gray-100 bg-white">
+          <div className="flex items-center justify-between">
+            <ContextIndicator
+              hasHistoricalContext={!!conversationContext.historicalContext}
+              hasAttachmentContext={conversationContext.attachmentContext?.length > 0}
+              messageCount={messages.length}
+              tokenEstimate={conversationContext.tokenEstimate}
+              autoSaveStatus={autoSaveState.status}
+              lastSaved={autoSaveState.lastSaved}
+            />
+            
+            {/* Right Panel Toggle */}
+            <div className="flex items-center gap-2">
+              {autoSaveState.status === 'error' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleManualSave}
+                  className="text-xs"
+                >
+                  Manual Save
+                </Button>
+              )}
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleToggleRightPanel}
+                className="p-2"
+                title={showRightPanel ? 'Hide Details Panel' : 'Show Details Panel'}
+              >
+                {showRightPanel ? (
+                  <PanelRightClose className="h-4 w-4" />
+                ) : (
+                  <PanelRightOpen className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Messages Area */}
@@ -74,7 +129,7 @@ export const DesktopChatLayout: React.FC = () => {
           <ChatMessages messages={messages} />
         </div>
 
-        {/* Input Section with Enhanced Handlers */}
+        {/* Enhanced Input Section */}
         <div className="border-t border-gray-200 bg-white">
           <EnhancedChatMessageHandler>
             {({ handleSendMessage, handleKeyPress, canSend }) => (
@@ -92,15 +147,20 @@ export const DesktopChatLayout: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Panel - Enhanced Analysis Details */}
-      <div className="w-80 border-l border-gray-200 bg-gray-50">
-        <AnalysisRightPanel 
-          currentSessionId={currentSessionId}
-          conversationContext={conversationContext}
-          onRemoveAttachment={handleRemoveAttachment}
-          onViewAttachment={handleViewAttachment}
-        />
-      </div>
+      {/* Enhanced Right Panel - Collapsible */}
+      {showRightPanel && (
+        <div className="border-l border-gray-200 bg-gray-50">
+          <AnalysisRightPanel 
+            currentSessionId={currentSessionId}
+            conversationContext={conversationContext}
+            autoSaveStatus={autoSaveState.status}
+            messageCount={autoSaveState.messageCount}
+            lastSaved={autoSaveState.lastSaved}
+            onRemoveAttachment={handleRemoveAttachment}
+            onViewAttachment={handleViewAttachment}
+          />
+        </div>
+      )}
     </div>
   );
 };
