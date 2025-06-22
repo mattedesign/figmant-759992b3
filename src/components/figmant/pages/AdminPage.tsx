@@ -12,7 +12,7 @@ import { AdminAssetDashboard } from '@/components/admin/AdminAssetDashboard';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { DebugPanel } from '@/components/admin/DebugPanel';
 import { SimplifiedProfile } from '@/components/dashboard/settings/SimplifiedProfile';
-import { PromptsPage } from '@/components/design/PromptsPage';
+import { SimplePromptTemplateList } from '@/components/design/prompts/SimplePromptTemplateList';
 import { SubscriptionPlansManager } from './admin/SubscriptionPlansManager';
 
 interface AdminPageProps {
@@ -163,7 +163,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
             </TabsContent>
 
             <TabsContent value="prompts" className="m-0 h-full">
-              <PromptsPage />
+              <div className="p-6">
+                <SimplePromptTemplateList />
+              </div>
             </TabsContent>
 
             <TabsContent value="plans" className="m-0 h-full">
