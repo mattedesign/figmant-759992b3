@@ -34,7 +34,13 @@ export const PersistentChatInput: React.FC<PersistentChatInputProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { handleFileUpload } = useFileUploadHandler({
-    setAttachments
+    setAttachments: (attachmentsUpdater) => {
+      if (typeof attachmentsUpdater === 'function') {
+        setAttachments(attachmentsUpdater);
+      } else {
+        setAttachments(attachmentsUpdater);
+      }
+    }
   });
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
