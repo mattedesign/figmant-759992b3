@@ -12,6 +12,19 @@ interface ConversationContext {
   lastSummaryAt?: Date;
 }
 
+interface ConversationSummary {
+  sessionId: string;
+  messages: Array<{
+    role: string;
+    content: string;
+    timestamp: string;
+    attachments?: number;
+  }>;
+  totalMessages: number;
+  sessionAttachments: any[];
+  sessionLinks: any[];
+}
+
 export const useEnhancedChatContext = (sessionId?: string) => {
   const [conversationContext, setConversationContext] = useState<ConversationContext>({
     currentMessages: [],

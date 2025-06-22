@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { ChatMessage } from '@/types/chat';
 
 export interface SavedChatMessage {
   id: string;
@@ -17,6 +18,19 @@ export interface ConversationSummary {
   messages_included: number;
   token_count_estimate: number;
   created_at: string;
+}
+
+export interface ConversationContext {
+  sessionId: string;
+  messages: Array<{
+    role: string;
+    content: string;
+    timestamp: string;
+    attachments?: number;
+  }>;
+  totalMessages: number;
+  sessionAttachments: any[];
+  sessionLinks: any[];
 }
 
 export class ChatSessionService {
@@ -189,5 +203,107 @@ export class ChatSessionService {
     }
 
     return data || [];
+  }
+
+  // Method to save conversation context to analysis history
+  static async saveConversationContext(
+    sessionId: string,
+    messages: ChatMessage[],
+    analysisType: string = 'conversation_context'
+  ): Promise<string | null> {
+    const { data, error } = await supabase
+      .from('chat_analysis_history')
+      .insert({
+        user_id: (await supabase.auth.getUser()).data.user?.id,
+        prompt_used: `Conversation in session: ${sessionId}`,
+        analysis_results: {
+          session_id: sessionId,
+          conversation_history: messages.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+            timestamp: msg.timestamp.toISOString(),
+            attachments_count: msg.attachments?.length || 0
+          })),
+          message_count: messages.length,
+          last_updated: new Date().toISOString()
+        },
+        analysis_type: analysisType,
+        confidence_score: 1.0
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error saving conversation context:', error);
+      return null;
+    }
+
+    return data.id;
+  }
+
+  // Method to load conversation context
+  static async loadConversationContext(sessionId: string): Promise<ChatMessage[]> {
+    const { data, error } = await supabase
+      .from('chat_analysis_history')
+      .select('*')
+      .eq('analysis_type', 'conversation_context')
+      .contains('analysis_results', { session_id: sessionId })
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error || !data || data.length === 0) {
+      console.log('No conversation context found for session:', sessionId);
+      return [];
+    }
+
+    const context = data[0].analysis_results as any;
+    
+    // Convert stored conversation back to ChatMessage format
+    return context.conversation_history.map((msg: any, index: number) => ({
+      id: `restored-${index}-${Date.now()}`,
+      role: msg.role,
+      content: msg.content,
+      timestamp: new Date(msg.timestamp),
+      attachments: msg.attachments_count > 0 ? [] : undefined // Will be loaded separately
+    }));
+  }
+
+  // Method to get conversation summary for Claude context
+  static async getConversationSummary(sessionId: string): Promise<ConversationContext | null> {
+    try {
+      // Load conversation history
+      const messages = await this.loadConversationContext(sessionId);
+      
+      // Load attachments and links
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) throw new Error('User not authenticated');
+
+      const [attachmentsData, linksData] = await Promise.all([
+        supabase.rpc('get_session_attachments_safe', {
+          p_session_id: sessionId,
+          p_user_id: user.id
+        }),
+        supabase.rpc('get_session_links_safe', {
+          p_session_id: sessionId,
+          p_user_id: user.id
+        })
+      ]);
+
+      return {
+        sessionId,
+        messages: messages.map(msg => ({
+          role: msg.role,
+          content: msg.content,
+          timestamp: msg.timestamp.toISOString(),
+          attachments: msg.attachments?.length
+        })),
+        totalMessages: messages.length,
+        sessionAttachments: attachmentsData.data || [],
+        sessionLinks: linksData.data || []
+      };
+    } catch (error) {
+      console.error('Error getting conversation summary:', error);
+      return null;
+    }
   }
 }

@@ -16,22 +16,34 @@ export const DesktopChatLayout: React.FC = () => {
     message,
     setMessage,
     showUrlInput,
-    setShowUrlInput
+    setShowUrlInput,
+    currentSessionId,
+    isSessionInitialized
   } = useEnhancedChatStateContext();
 
   const handleRemoveAttachment = (id: string) => {
-    console.log('Remove attachment:', id);
+    console.log('🗑️ DESKTOP CHAT LAYOUT - Remove attachment:', id);
     // Implementation will be added by the context provider
   };
 
   const handleViewAttachment = (attachment: any) => {
-    console.log('View attachment:', attachment);
+    console.log('👁️ DESKTOP CHAT LAYOUT - View attachment:', attachment);
     // Implementation will be added by the context provider
   };
 
   const handleToggleUrlInput = () => {
     setShowUrlInput(!showUrlInput);
   };
+
+  console.log('🖥️ DESKTOP CHAT LAYOUT - Rendering with enhanced context:', {
+    sessionId: currentSessionId,
+    isInitialized: isSessionInitialized,
+    messagesCount: messages.length,
+    attachmentsCount: attachments.length,
+    hasHistoricalContext: conversationContext.historicalContext.length > 0,
+    hasAttachmentContext: conversationContext.attachmentContext.length > 0,
+    tokenEstimate: conversationContext.tokenEstimate
+  });
 
   return (
     <div className="flex h-full w-full">
@@ -47,7 +59,7 @@ export const DesktopChatLayout: React.FC = () => {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Context Indicator */}
+        {/* Context Indicator - Shows enhanced context status */}
         <div className="p-2 border-b border-gray-100 bg-white">
           <ContextIndicator
             hasHistoricalContext={conversationContext.historicalContext.length > 0}
@@ -62,7 +74,7 @@ export const DesktopChatLayout: React.FC = () => {
           <ChatMessages messages={messages} />
         </div>
 
-        {/* Input Section */}
+        {/* Input Section with Enhanced Handlers */}
         <div className="border-t border-gray-200 bg-white">
           <EnhancedChatMessageHandler>
             {({ handleSendMessage, handleKeyPress, canSend }) => (
@@ -80,9 +92,10 @@ export const DesktopChatLayout: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Panel - Analysis Details */}
+      {/* Right Panel - Enhanced Analysis Details */}
       <div className="w-80 border-l border-gray-200 bg-gray-50">
         <AnalysisRightPanel 
+          currentSessionId={currentSessionId}
           conversationContext={conversationContext}
           onRemoveAttachment={handleRemoveAttachment}
           onViewAttachment={handleViewAttachment}
