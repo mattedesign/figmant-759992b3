@@ -1,238 +1,227 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
-import { ChatSessionService, SavedChatMessage } from '@/services/chatSessionService';
+import { ChatMessage } from '@/components/design/DesignChatInterface';
+import { ChatSessionService } from '@/services/chatSessionService';
+import { useToast } from '@/hooks/use-toast';
 
 interface ConversationContext {
   currentMessages: ChatMessage[];
   historicalContext: string;
-  attachmentContext: string;
+  attachmentContext: string[];
   tokenEstimate: number;
+  lastSummaryAt?: Date;
 }
 
 export const useEnhancedChatContext = (sessionId?: string) => {
   const [conversationContext, setConversationContext] = useState<ConversationContext>({
     currentMessages: [],
     historicalContext: '',
-    attachmentContext: '',
+    attachmentContext: [],
     tokenEstimate: 0
   });
   const [isLoadingContext, setIsLoadingContext] = useState(false);
+  const { toast } = useToast();
 
-  // Load historical context when session changes
-  useEffect(() => {
-    if (sessionId) {
-      loadHistoricalContext(sessionId);
-    }
-  }, [sessionId]);
-
+  // Load historical context from database
   const loadHistoricalContext = useCallback(async (sessionId: string) => {
-    try {
-      setIsLoadingContext(true);
-      console.log('📚 ENHANCED CONTEXT - Loading historical context for session:', sessionId);
+    if (!sessionId) return;
 
-      // Load saved messages
-      const savedMessages = await ChatSessionService.loadMessages(sessionId);
-      console.log('📚 ENHANCED CONTEXT - Loaded', savedMessages.length, 'saved messages');
+    setIsLoadingContext(true);
+    try {
+      console.log('🔄 ENHANCED CHAT CONTEXT - Loading historical context for session:', sessionId);
+      
+      // Load messages from database
+      const messages = await ChatSessionService.loadMessages(sessionId);
+      console.log('📚 ENHANCED CHAT CONTEXT - Loaded messages:', messages.length);
 
       // Load conversation summaries
       const summaries = await ChatSessionService.getSummaries(sessionId);
-      console.log('📚 ENHANCED CONTEXT - Loaded', summaries.length, 'conversation summaries');
+      console.log('📝 ENHANCED CHAT CONTEXT - Loaded summaries:', summaries.length);
 
-      // Convert saved messages to current format
-      const historicalMessages: ChatMessage[] = savedMessages.map(msg => ({
+      // Convert database messages to ChatMessage format
+      const chatMessages: ChatMessage[] = messages.map(msg => ({
         id: msg.id,
         role: msg.role,
         content: msg.content,
         timestamp: new Date(msg.created_at),
         attachments: msg.attachments?.map(att => ({
-          id: att.id,
-          type: att.type,
-          name: att.name,
+          id: att.id || crypto.randomUUID(),
+          type: att.type === 'url' ? 'url' : 'file',
+          name: att.name || 'Unknown',
           url: att.url,
           uploadPath: att.path,
           status: 'uploaded' as const
-        })) || []
+        }))
       }));
 
-      // Build historical context string
+      // Create historical context from summaries and recent messages
       let historicalContext = '';
-      
-      // Add conversation summaries if available
       if (summaries.length > 0) {
-        historicalContext += '## Previous Conversation Summary:\n';
-        summaries.forEach(summary => {
-          historicalContext += `${summary.summary_content}\n\n`;
-        });
+        const latestSummary = summaries[0];
+        historicalContext = `Previous conversation summary: ${latestSummary.summary_content}\n\n`;
       }
 
-      // Add recent message context (last 10 messages for context)
-      if (historicalMessages.length > 0) {
-        const recentMessages = historicalMessages.slice(-10);
-        historicalContext += '## Recent Conversation Context:\n';
+      // Add recent messages context (last 10 messages)
+      const recentMessages = chatMessages.slice(-10);
+      if (recentMessages.length > 0) {
+        historicalContext += 'Recent conversation:\n';
         recentMessages.forEach(msg => {
           historicalContext += `${msg.role}: ${msg.content.substring(0, 200)}${msg.content.length > 200 ? '...' : ''}\n`;
         });
       }
 
-      // Build attachment context
-      let attachmentContext = '';
-      const allAttachments = historicalMessages
-        .flatMap(msg => msg.attachments || [])
-        .filter(Boolean);
+      // Estimate token count (rough approximation: 1 token ≈ 4 characters)
+      const tokenEstimate = Math.ceil(historicalContext.length / 4);
 
-      if (allAttachments.length > 0) {
-        attachmentContext = '## Available Context Files:\n';
-        allAttachments.forEach(att => {
-          attachmentContext += `- ${att.name} (${att.type})\n`;
-        });
-      }
-
-      // Estimate token count (rough approximation: 4 chars = 1 token)
-      const tokenEstimate = Math.ceil((historicalContext.length + attachmentContext.length) / 4);
+      // Extract attachment context
+      const attachmentContext = chatMessages
+        .filter(msg => msg.attachments && msg.attachments.length > 0)
+        .map(msg => `User uploaded: ${msg.attachments?.map(att => att.name).join(', ')}`)
+        .slice(-5); // Last 5 attachment contexts
 
       setConversationContext({
-        currentMessages: historicalMessages,
+        currentMessages: chatMessages,
         historicalContext,
         attachmentContext,
-        tokenEstimate
+        tokenEstimate,
+        lastSummaryAt: summaries.length > 0 ? new Date(summaries[0].created_at) : undefined
       });
 
-      console.log('📚 ENHANCED CONTEXT - Context built:', {
-        messagesCount: historicalMessages.length,
-        attachmentsCount: allAttachments.length,
+      console.log('✅ ENHANCED CHAT CONTEXT - Context loaded:', {
+        messagesCount: chatMessages.length,
+        summariesCount: summaries.length,
         tokenEstimate,
-        contextLength: historicalContext.length
+        hasAttachments: attachmentContext.length > 0
       });
 
     } catch (error) {
-      console.error('📚 ENHANCED CONTEXT - Error loading context:', error);
+      console.error('❌ ENHANCED CHAT CONTEXT - Error loading context:', error);
+      toast({
+        variant: "destructive",
+        title: "Context Loading Failed",
+        description: "Could not load conversation history. Starting fresh.",
+      });
     } finally {
       setIsLoadingContext(false);
     }
-  }, []);
+  }, [toast]);
 
+  // Save message with context
   const saveMessageWithContext = useCallback(async (
     sessionId: string,
     message: ChatMessage,
     messageOrder: number
   ) => {
     try {
-      console.log('💾 ENHANCED CONTEXT - Saving message:', message.id);
-
-      // Extract attachment and link IDs
+      console.log('💾 ENHANCED CHAT CONTEXT - Saving message with context:', message.role);
+      
+      // Extract attachment IDs if present
       const attachmentIds: string[] = [];
       const linkIds: string[] = [];
-
+      
       if (message.attachments) {
         message.attachments.forEach(att => {
-          if (att.type === 'file') {
+          if (att.type === 'file' && att.uploadPath) {
             attachmentIds.push(att.id);
-          } else if (att.type === 'url') {
+          } else if (att.type === 'url' && att.url) {
             linkIds.push(att.id);
           }
         });
       }
 
-      // Save the message
-      const savedMessageId = await ChatSessionService.saveMessage(
+      await ChatSessionService.saveMessage(
         sessionId,
         message.role,
         message.content,
         messageOrder,
-        {
-          timestamp: message.timestamp?.toISOString(),
-          uploadIds: message.uploadIds,
-          batchId: message.batchId
-        },
+        { timestamp: message.timestamp.toISOString() },
         attachmentIds,
         linkIds
       );
 
-      console.log('💾 ENHANCED CONTEXT - Message saved with ID:', savedMessageId);
-      return savedMessageId;
-
+      console.log('✅ ENHANCED CHAT CONTEXT - Message saved successfully');
+      
     } catch (error) {
-      console.error('💾 ENHANCED CONTEXT - Error saving message:', error);
+      console.error('❌ ENHANCED CHAT CONTEXT - Error saving message:', error);
       throw error;
     }
   }, []);
 
-  const createContextualPrompt = useCallback((userMessage: string, template?: any) => {
-    let enhancedPrompt = '';
+  // Create contextual prompt with conversation history
+  const createContextualPrompt = useCallback((
+    currentMessage: string,
+    template?: any
+  ) => {
+    let contextualPrompt = '';
 
-    // Add conversation context if available
+    // Add historical context if available
     if (conversationContext.historicalContext) {
-      enhancedPrompt += conversationContext.historicalContext + '\n\n';
+      contextualPrompt += `CONVERSATION CONTEXT:\n${conversationContext.historicalContext}\n\n`;
     }
 
     // Add attachment context if available
-    if (conversationContext.attachmentContext) {
-      enhancedPrompt += conversationContext.attachmentContext + '\n\n';
+    if (conversationContext.attachmentContext.length > 0) {
+      contextualPrompt += `ATTACHMENT CONTEXT:\n${conversationContext.attachmentContext.join('\n')}\n\n`;
     }
 
-    // Add template context if provided
-    if (template) {
-      enhancedPrompt += `## Analysis Template: ${template.title}\n`;
-      enhancedPrompt += `${template.original_prompt}\n\n`;
+    // Add template if provided
+    if (template && template.content) {
+      contextualPrompt += `ANALYSIS TEMPLATE:\n${template.content}\n\n`;
     }
 
-    // Add current user message
-    enhancedPrompt += `## Current Request:\n${userMessage}`;
+    // Add current message
+    contextualPrompt += `CURRENT REQUEST:\n${currentMessage}`;
 
-    console.log('🎯 ENHANCED CONTEXT - Created contextual prompt:', {
-      totalLength: enhancedPrompt.length,
-      hasHistoricalContext: !!conversationContext.historicalContext,
-      hasAttachmentContext: !!conversationContext.attachmentContext,
-      hasTemplate: !!template,
+    // Add instruction for context usage
+    if (conversationContext.historicalContext || conversationContext.attachmentContext.length > 0) {
+      contextualPrompt += `\n\nIMPORTANT: Use the conversation context above to provide more relevant and personalized analysis. Reference previous discussions and uploaded files when appropriate.`;
+    }
+
+    console.log('🎯 ENHANCED CHAT CONTEXT - Created contextual prompt:', {
+      originalLength: currentMessage.length,
+      contextualLength: contextualPrompt.length,
+      hasHistory: !!conversationContext.historicalContext,
+      hasAttachments: conversationContext.attachmentContext.length > 0,
       tokenEstimate: conversationContext.tokenEstimate
     });
 
-    return enhancedPrompt;
+    return contextualPrompt;
   }, [conversationContext]);
 
+  // Check if we should create a conversation summary
   const shouldCreateSummary = useCallback((messages: ChatMessage[]) => {
-    // Create summary if we have more than 20 messages
-    // or if the conversation is getting long (estimated > 4000 tokens)
-    return messages.length > 20 || conversationContext.tokenEstimate > 4000;
+    // Create summary every 20 messages or if token estimate is high
+    return messages.length > 0 && 
+           (messages.length % 20 === 0 || conversationContext.tokenEstimate > 8000);
   }, [conversationContext.tokenEstimate]);
 
+  // Create conversation summary
   const createConversationSummary = useCallback(async (
     sessionId: string,
     messages: ChatMessage[]
   ) => {
     try {
-      console.log('📝 ENHANCED CONTEXT - Creating conversation summary for', messages.length, 'messages');
-
+      console.log('📝 ENHANCED CHAT CONTEXT - Creating conversation summary...');
+      
       // Create a summary of the conversation
-      const messagesToSummarize = messages.slice(0, -5); // Keep last 5 messages unsummarized
-      let summaryContent = 'Conversation Summary:\n\n';
+      const recentMessages = messages.slice(-15); // Last 15 messages
+      const summaryContent = recentMessages.map(msg => 
+        `${msg.role}: ${msg.content.substring(0, 300)}${msg.content.length > 300 ? '...' : ''}`
+      ).join('\n');
 
-      messagesToSummarize.forEach((msg, index) => {
-        if (index < 10) { // Limit to key points
-          summaryContent += `${msg.role}: ${msg.content.substring(0, 150)}${msg.content.length > 150 ? '...' : ''}\n`;
-        }
-      });
-
-      summaryContent += '\nKey Discussion Points:\n';
-      summaryContent += '- User requests and AI responses have been summarized above\n';
-      summaryContent += '- Full context maintained for analysis continuity\n';
-
-      const tokenEstimate = Math.ceil(summaryContent.length / 4);
-
-      const summaryId = await ChatSessionService.createSummary(
+      const summary = `Summary of recent conversation:\n${summaryContent}`;
+      
+      await ChatSessionService.createSummary(
         sessionId,
-        summaryContent,
-        messagesToSummarize.length,
-        tokenEstimate
+        summary,
+        recentMessages.length,
+        Math.ceil(summary.length / 4) // Token estimate
       );
 
-      console.log('📝 ENHANCED CONTEXT - Summary created with ID:', summaryId);
-      return summaryId;
-
+      console.log('✅ ENHANCED CHAT CONTEXT - Summary created successfully');
+      
     } catch (error) {
-      console.error('📝 ENHANCED CONTEXT - Error creating summary:', error);
-      throw error;
+      console.error('❌ ENHANCED CHAT CONTEXT - Error creating summary:', error);
     }
   }, []);
 
