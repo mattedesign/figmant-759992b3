@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { StepProps } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +9,7 @@ import { usePremiumAnalysisSubmission } from '@/hooks/usePremiumAnalysisSubmissi
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { EnhancedAnalysisResultsViewer } from '../components/EnhancedAnalysisResultsViewer';
+import { useWizardAnalysisSave } from '../hooks/useWizardAnalysisSave';
 
 export const Step4ContextualResults: React.FC<StepProps> = ({ 
   stepData, 
@@ -24,6 +26,9 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
     projectName: stepData.projectName,
     uploadedFilesCount: stepData.uploadedFiles?.length || 0
   });
+
+  // Initialize save mutation
+  const saveAnalysisMutation = useWizardAnalysisSave();
 
   // Fetch the actual template by ID instead of by category
   const { data: templateData, isLoading: isLoadingTemplate } = useQuery({
@@ -47,6 +52,16 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
     },
     enabled: !!stepData.selectedType
   });
+
+  // Update stepData with templateData when template is loaded
+  useEffect(() => {
+    if (templateData && !stepData.templateData) {
+      setStepData(prev => ({
+        ...prev,
+        templateData
+      }));
+    }
+  }, [templateData, stepData.templateData, setStepData]);
 
   // Premium analysis mutation
   const premiumAnalysisMutation = usePremiumAnalysisSubmission();
@@ -133,6 +148,14 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
   };
 
   const handleSave = () => {
+    if (analysisResult && premiumAnalysisMutation.data) {
+      saveAnalysisMutation.mutate({
+        stepData,
+        analysisResults: premiumAnalysisMutation.data,
+        structuredAnalysis: premiumAnalysisMutation.data.structuredAnalysis,
+        confidenceScore: premiumAnalysisMutation.data.confidenceScore
+      });
+    }
     console.log('Analysis saved successfully');
   };
 
@@ -215,7 +238,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
         </div>
 
         <EnhancedAnalysisResultsViewer
-          stepData={{ ...stepData, templateData }}
+          stepData={stepData}
           analysisResult={analysisResult}
           templateData={templateData}
           onExport={handleExport}

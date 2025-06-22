@@ -8,6 +8,7 @@ export interface StepData {
   customPrompt: string;
   stakeholders: Stakeholder[];
   referenceLinks: string[];
+  templateData?: any; // Add templateData as optional property
   uploads?: {
     images: File[];
     urls: string[];
