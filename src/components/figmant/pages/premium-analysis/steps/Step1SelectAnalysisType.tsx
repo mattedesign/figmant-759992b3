@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
-import { Lightbulb, Target, TrendingUp, Users, Zap, CheckCircle } from 'lucide-react';
+import { Lightbulb, Target, TrendingUp, Users, Zap, CheckCircle, Star } from 'lucide-react';
 import { CreditCostDisplay } from '../components/CreditCostDisplay';
 import { supabase } from '@/integrations/supabase/client';
 import { useTemplateCreditStore } from '@/stores/templateCreditStore';
@@ -159,9 +159,19 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
               </CardHeader>
               
               <CardContent className="pt-0">
-                <CardDescription className="text-sm">
+                <CardDescription className="text-sm mb-3">
                   {template.description}
                 </CardDescription>
+                
+                <div className="flex items-center gap-1 mb-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star 
+                      key={i} 
+                      className={`w-4 h-4 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                    />
+                  ))}
+                  <span className="text-xs text-gray-500 ml-1">(4/5)</span>
+                </div>
               </CardContent>
             </Card>
           ))}
