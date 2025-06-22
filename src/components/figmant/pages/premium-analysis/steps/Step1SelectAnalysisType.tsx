@@ -124,7 +124,7 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
                       <CardTitle className="text-lg">{template.title}</CardTitle>
                       <div className="mt-1 flex items-center gap-2">
                         {template.category && (
-                          <Badge variant="outline">
+                          <Badge variant="outline" style={{ display: 'none' }}>
                             {template.category}
                           </Badge>
                         )}
