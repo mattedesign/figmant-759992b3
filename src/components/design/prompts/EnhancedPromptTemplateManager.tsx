@@ -7,12 +7,12 @@ import { Edit2, Star, Copy, Trash2 } from 'lucide-react';
 import { useClaudePromptExamples, useUpdatePromptExample } from '@/hooks/useClaudePromptExamples';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { CATEGORY_OPTIONS } from '@/types/promptTypes';
-import { EditPromptTemplateDialog } from './EditPromptTemplateDialog';
+import { PromptEditorOverlay } from './enhanced-editor/PromptEditorOverlay';
 import { useToast } from '@/hooks/use-toast';
 
 export const EnhancedPromptTemplateManager = () => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
   const { data: claudeExamples = [] } = useClaudePromptExamples();
   const { data: figmantTemplates = [] } = useFigmantPromptTemplates();
   const updatePromptMutation = useUpdatePromptExample();
@@ -68,13 +68,12 @@ export const EnhancedPromptTemplateManager = () => {
     
     console.log('Using original ID for editing:', originalId);
     setSelectedTemplateId(originalId);
-    setIsEditDialogOpen(true);
-    console.log('Dialog should now be open, selectedTemplateId:', originalId);
+    setIsEditorOpen(true);
   };
 
-  const handleCloseEditDialog = () => {
-    console.log('Closing edit dialog');
-    setIsEditDialogOpen(false);
+  const handleCloseEditor = () => {
+    console.log('Closing enhanced editor');
+    setIsEditorOpen(false);
     setSelectedTemplateId(null);
   };
 
@@ -97,7 +96,7 @@ export const EnhancedPromptTemplateManager = () => {
         description: "Template updated successfully",
       });
       
-      handleCloseEditDialog();
+      handleCloseEditor();
     } catch (error) {
       console.error('Error updating template:', error);
       toast({
@@ -122,7 +121,7 @@ export const EnhancedPromptTemplateManager = () => {
         <div>
           <h2 className="text-2xl font-bold">Prompt Templates</h2>
           <p className="text-muted-foreground">
-            Manage and edit analysis prompt templates
+            Manage and edit analysis prompt templates with the enhanced editor
           </p>
         </div>
       </div>
@@ -184,11 +183,12 @@ export const EnhancedPromptTemplateManager = () => {
         ))}
       </div>
 
+      {/* Enhanced Editor Overlay */}
       {selectedTemplateId && (
-        <EditPromptTemplateDialog
-          isOpen={isEditDialogOpen}
-          onClose={handleCloseEditDialog}
+        <PromptEditorOverlay
+          isOpen={isEditorOpen}
           templateId={selectedTemplateId}
+          onClose={handleCloseEditor}
           onSave={handleSaveTemplate}
           isLoading={updatePromptMutation.isPending}
         />
