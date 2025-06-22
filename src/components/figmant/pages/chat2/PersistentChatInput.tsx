@@ -8,7 +8,6 @@ import { Send, Paperclip, X, Loader2, Image, Link } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { SingleAttachmentDisplay } from './SingleAttachmentDisplay';
 import { URLInputHandler } from '../analysis/components/URLInputHandler';
-import { useFileUploadHandler } from '../analysis/useFileUploadHandler';
 
 interface PersistentChatInputProps {
   message: string;
@@ -33,16 +32,6 @@ export const PersistentChatInput: React.FC<PersistentChatInputProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { handleFileUpload } = useFileUploadHandler({
-    setAttachments: (attachmentsUpdater) => {
-      if (typeof attachmentsUpdater === 'function') {
-        setAttachments(attachmentsUpdater);
-      } else {
-        setAttachments(attachmentsUpdater);
-      }
-    }
-  });
-
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -59,14 +48,14 @@ export const PersistentChatInput: React.FC<PersistentChatInputProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     files.forEach(file => {
-      // Create a FileList-like object with a single file
-      const fileList = {
-        0: file,
-        length: 1,
-        item: (index: number) => index === 0 ? file : null,
-        [Symbol.iterator]: function* () { yield file; }
-      } as FileList;
-      handleFileUpload(fileList);
+      const newAttachment: ChatAttachment = {
+        id: crypto.randomUUID(),
+        type: 'file',
+        name: file.name,
+        file: file,
+        status: 'uploading'
+      };
+      setAttachments(prev => [...prev, newAttachment]);
     });
     e.target.value = '';
   };
