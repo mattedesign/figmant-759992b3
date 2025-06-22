@@ -1,5 +1,6 @@
 
 import { StepData } from '@/components/figmant/pages/premium-analysis/types';
+import { ContextualAnalysisResult } from '@/types/contextualAnalysis';
 
 export interface PremiumAnalysisRequest {
   stepData: StepData;
@@ -10,6 +11,8 @@ export interface PremiumAnalysisResult {
   analysis: string;
   savedAnalysisId: string;
   debugInfo?: any;
+  structuredAnalysis?: ContextualAnalysisResult;
+  confidenceScore?: number;
 }
 
 export interface AnalysisResults {
@@ -22,7 +25,7 @@ export interface AnalysisResults {
   desired_outcome: string;
   files_uploaded: number;
   reference_links: number;
-  uploaded_file_paths: string[]; // Add this missing property
+  uploaded_file_paths: string[];
   is_premium: boolean;
   premium_type: string;
   credits_used: number;
