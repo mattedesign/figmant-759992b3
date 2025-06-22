@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ImageIcon, AlertCircle } from 'lucide-react';
+import { ImageIcon, AlertCircle, Camera } from 'lucide-react';
 import { ImageService } from '@/services/imageService';
 
 interface EnhancedImageProps {
@@ -21,6 +21,7 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [isScreenshotOneUrl, setIsScreenshotOneUrl] = useState(false);
 
   useEffect(() => {
     const loadImage = async () => {
@@ -50,7 +51,20 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
         if (url) {
           console.log('🖼️ ENHANCED IMAGE - Resolved URL:', url);
           
-          // Validate the URL before setting it
+          // Check if it's a ScreenshotOne URL
+          const isScreenshotOne = ImageService.isScreenshotOneUrl(url);
+          setIsScreenshotOneUrl(isScreenshotOne);
+          
+          if (isScreenshotOne) {
+            // For ScreenshotOne URLs, set them directly without validation
+            // The browser will handle the loading and we'll catch errors in onError
+            console.log('🖼️ ENHANCED IMAGE - ScreenshotOne URL detected, using directly');
+            setImageUrl(url);
+            setIsLoading(false);
+            return;
+          }
+          
+          // For non-ScreenshotOne URLs, validate before setting
           const isValid = await ImageService.validateImageUrl(url);
           if (isValid) {
             setImageUrl(url);
@@ -66,6 +80,7 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
         if (fallbackUrl) {
           console.log('🖼️ ENHANCED IMAGE - Using fallback URL:', fallbackUrl);
           setImageUrl(fallbackUrl);
+          setIsScreenshotOneUrl(ImageService.isScreenshotOneUrl(fallbackUrl));
         } else {
           console.log('🖼️ ENHANCED IMAGE - No valid URL found');
           setHasError(true);
@@ -81,14 +96,32 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
     loadImage();
   }, [attachment]);
 
-  const handleImageError = () => {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.target as HTMLImageElement;
     console.log('🖼️ ENHANCED IMAGE - Image load error for URL:', imageUrl);
+    console.log('🖼️ ENHANCED IMAGE - Error details:', {
+      src: target.src,
+      naturalWidth: target.naturalWidth,
+      naturalHeight: target.naturalHeight,
+      complete: target.complete
+    });
+    
+    // For ScreenshotOne URLs, this might be expected during loading
+    if (isScreenshotOneUrl) {
+      console.log('🖼️ ENHANCED IMAGE - ScreenshotOne URL failed to load, this might be normal');
+    }
+    
     setHasError(true);
     setIsLoading(false);
   };
 
-  const handleImageLoad = () => {
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.target as HTMLImageElement;
     console.log('🖼️ ENHANCED IMAGE - Image loaded successfully:', imageUrl);
+    console.log('🖼️ ENHANCED IMAGE - Image dimensions:', {
+      naturalWidth: target.naturalWidth,
+      naturalHeight: target.naturalHeight
+    });
     setIsLoading(false);
     setHasError(false);
   };
@@ -107,13 +140,15 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
     return (
       <div className={`bg-gray-100 flex items-center justify-center ${className}`} onClick={onClick}>
         <div className="text-center text-gray-500">
-          {hasError ? (
+          {isScreenshotOneUrl ? (
+            <Camera className="h-6 w-6 mx-auto mb-1" />
+          ) : hasError ? (
             <AlertCircle className="h-6 w-6 mx-auto mb-1" />
           ) : (
             <ImageIcon className="h-6 w-6 mx-auto mb-1" />
           )}
           <span className="text-xs">
-            {hasError ? 'Failed to load' : 'No image'}
+            {isScreenshotOneUrl ? 'Screenshot loading...' : hasError ? 'Failed to load' : 'No image'}
           </span>
         </div>
       </div>
@@ -129,6 +164,8 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
       onError={handleImageError}
       onLoad={handleImageLoad}
       style={{ cursor: onClick ? 'pointer' : 'default' }}
+      // For ScreenshotOne URLs, add crossorigin attribute to handle CORS properly
+      crossOrigin={isScreenshotOneUrl ? 'anonymous' : undefined}
     />
   );
 };

@@ -1,9 +1,10 @@
 
 import React from 'react';
-import { Globe, Image as ImageIcon, AlertTriangle, Camera } from 'lucide-react';
+import { Globe, Image as ImageIcon, AlertTriangle, Camera, Zap } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { EnhancedImage } from './EnhancedImage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ImageService } from '@/services/imageService';
 
 interface ScreenshotDisplayProps {
   attachment: ChatAttachment;
@@ -18,8 +19,13 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({
   const hasDesktopScreenshot = attachment.metadata?.screenshots?.desktop?.success;
   const hasMobileScreenshot = attachment.metadata?.screenshots?.mobile?.success;
   
-  const desktopUrl = hasDesktopScreenshot ? attachment.metadata.screenshots.desktop.thumbnailUrl || attachment.metadata.screenshots.desktop.url : null;
-  const mobileUrl = hasMobileScreenshot ? attachment.metadata.screenshots.mobile.thumbnailUrl || attachment.metadata.screenshots.mobile.url : null;
+  const desktopUrl = hasDesktopScreenshot ? attachment.metadata.screenshots.desktop.screenshotUrl || attachment.metadata.screenshots.desktop.thumbnailUrl || attachment.metadata.screenshots.desktop.url : null;
+  const mobileUrl = hasMobileScreenshot ? attachment.metadata.screenshots.mobile.screenshotUrl || attachment.metadata.screenshots.mobile.thumbnailUrl || attachment.metadata.screenshots.mobile.url : null;
+
+  // Check if we're using ScreenshotOne URLs
+  const isDesktopScreenshotOne = desktopUrl ? ImageService.isScreenshotOneUrl(desktopUrl) : false;
+  const isMobileScreenshotOne = mobileUrl ? ImageService.isScreenshotOneUrl(mobileUrl) : false;
+  const isUsingScreenshotOne = isDesktopScreenshotOne || isMobileScreenshotOne;
 
   // Get error messages if screenshots failed
   const desktopError = attachment.metadata?.screenshots?.desktop?.error;
@@ -49,6 +55,12 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({
           <div className="flex items-center gap-2 text-white text-sm">
             <Globe className="w-4 h-4 flex-shrink-0" />
             <span className="truncate">{attachment.name}</span>
+            {isUsingScreenshotOne && (
+              <div className="flex items-center gap-1 text-xs bg-blue-500/20 px-2 py-1 rounded">
+                <Zap className="w-3 h-3" />
+                Real
+              </div>
+            )}
           </div>
         </div>
       </div>
