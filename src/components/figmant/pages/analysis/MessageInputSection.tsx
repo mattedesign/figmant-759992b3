@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Link, Upload } from 'lucide-react';
@@ -10,6 +10,7 @@ interface MessageInputSectionProps {
   onSendMessage: () => void;
   onKeyPress?: (e: React.KeyboardEvent) => void;
   onToggleUrlInput: () => void;
+  onFileUpload?: (files: FileList) => void;
   isAnalyzing: boolean;
   canSend: boolean;
 }
@@ -20,9 +21,12 @@ export const MessageInputSection: React.FC<MessageInputSectionProps> = ({
   onSendMessage,
   onKeyPress,
   onToggleUrlInput,
+  onFileUpload,
   isAnalyzing,
   canSend
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -33,8 +37,45 @@ export const MessageInputSection: React.FC<MessageInputSectionProps> = ({
     onKeyPress?.(e);
   };
 
+  const handleFileUploadClick = () => {
+    console.log('📁 FILE UPLOAD BUTTON CLICKED');
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0 && onFileUpload) {
+      console.log('📁 FILES SELECTED:', files.length);
+      onFileUpload(files);
+      // Reset the input so the same file can be selected again
+      e.target.value = '';
+    }
+  };
+
+  const handleUrlButtonClick = () => {
+    console.log('🔗 URL BUTTON CLICKED');
+    onToggleUrlInput();
+  };
+
+  const handleSendButtonClick = () => {
+    console.log('🚀 SEND BUTTON CLICKED');
+    if (canSend && !isAnalyzing) {
+      onSendMessage();
+    }
+  };
+
   return (
     <div className="p-4 bg-white border-t border-gray-200">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*,.pdf,.doc,.docx,.txt"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
       <div className="space-y-3">
         {/* Message Input */}
         <div className="relative">
@@ -49,7 +90,7 @@ export const MessageInputSection: React.FC<MessageInputSectionProps> = ({
           
           {/* Send Button */}
           <Button
-            onClick={onSendMessage}
+            onClick={handleSendButtonClick}
             disabled={!canSend || isAnalyzing}
             size="sm"
             className="absolute bottom-2 right-2 h-8 w-8 p-0"
@@ -64,7 +105,8 @@ export const MessageInputSection: React.FC<MessageInputSectionProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={onToggleUrlInput}
+              onClick={handleUrlButtonClick}
+              disabled={isAnalyzing}
               className="text-xs"
             >
               <Link className="h-3 w-3 mr-1" />
@@ -74,6 +116,8 @@ export const MessageInputSection: React.FC<MessageInputSectionProps> = ({
             <Button
               variant="outline"
               size="sm"
+              onClick={handleFileUploadClick}
+              disabled={isAnalyzing}
               className="text-xs"
             >
               <Upload className="h-3 w-3 mr-1" />

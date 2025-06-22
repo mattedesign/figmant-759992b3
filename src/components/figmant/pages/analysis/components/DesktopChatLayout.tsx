@@ -2,6 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { ChatMessages } from '../ChatMessages';
 import { MessageInputSection } from '../MessageInputSection';
+import { URLInputModal } from './URLInputModal';
 import { AnalysisNavigationSidebar } from './AnalysisNavigationSidebar';
 import { AnalysisRightPanel } from '../AnalysisRightPanel';
 import { EnhancedChatMessageHandler } from './EnhancedChatMessageHandler';
@@ -38,6 +39,7 @@ export const DesktopChatLayout: React.FC = () => {
   }, []);
 
   const handleToggleUrlInput = useCallback(() => {
+    console.log('🔗 TOGGLE URL INPUT:', !showUrlInput);
     setShowUrlInput(!showUrlInput);
   }, [showUrlInput]);
 
@@ -53,6 +55,10 @@ export const DesktopChatLayout: React.FC = () => {
     }
   }, [saveConversation, messages]);
 
+  const handleCloseUrlInput = useCallback(() => {
+    setShowUrlInput(false);
+  }, []);
+
   console.log('🖥️ DESKTOP CHAT LAYOUT - Rendering with enhanced context:', {
     sessionId: currentSessionId,
     isInitialized: isSessionInitialized,
@@ -62,7 +68,8 @@ export const DesktopChatLayout: React.FC = () => {
     hasAttachmentContext: conversationContext.attachmentContext?.length > 0,
     tokenEstimate: conversationContext.tokenEstimate,
     autoSaveStatus: autoSaveState.status,
-    showRightPanel
+    showRightPanel,
+    showUrlInput
   });
 
   return (
@@ -129,16 +136,31 @@ export const DesktopChatLayout: React.FC = () => {
         {/* Enhanced Input Section */}
         <div className="border-t border-gray-200 bg-white">
           <EnhancedChatMessageHandler>
-            {({ handleSendMessage, handleKeyPress, canSend }) => (
-              <MessageInputSection
-                message={message}
-                onMessageChange={setMessage}
-                onSendMessage={handleSendMessage}
-                onKeyPress={handleKeyPress}
-                onToggleUrlInput={handleToggleUrlInput}
-                isAnalyzing={false}
-                canSend={canSend}
-              />
+            {({ handleSendMessage, handleKeyPress, handleAddUrl, handleFileUpload, canSend, isProcessing }) => (
+              <>
+                {/* URL Input Modal */}
+                {showUrlInput && (
+                  <div className="p-4 border-b">
+                    <URLInputModal
+                      isOpen={showUrlInput}
+                      onClose={handleCloseUrlInput}
+                      onAddUrl={handleAddUrl}
+                    />
+                  </div>
+                )}
+
+                {/* Message Input */}
+                <MessageInputSection
+                  message={message}
+                  onMessageChange={setMessage}
+                  onSendMessage={handleSendMessage}
+                  onKeyPress={handleKeyPress}
+                  onToggleUrlInput={handleToggleUrlInput}
+                  onFileUpload={handleFileUpload}
+                  isAnalyzing={isProcessing}
+                  canSend={canSend}
+                />
+              </>
             )}
           </EnhancedChatMessageHandler>
         </div>
