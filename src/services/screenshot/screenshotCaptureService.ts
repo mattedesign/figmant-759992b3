@@ -1,3 +1,4 @@
+
 import { ScreenshotCaptureOptions, ScreenshotResult } from './types';
 import { DEFAULT_OPTIONS } from './config';
 import { ScreenshotOneProvider } from './screenshotOneProvider';
@@ -87,16 +88,14 @@ export class ScreenshotCaptureService {
   private static async getProvider() {
     console.log('📸 SCREENSHOT SERVICE - Getting provider...');
     
-    // For now, let's temporarily hardcode the API key for testing
-    // Replace with your actual ScreenshotOne API key
-    const testApiKey = 'Qd6TmvADx_A3ug';
-    
-    if (testApiKey) {
-      console.log('✅ SCREENSHOT SERVICE - Using hardcoded API key for testing');
-      return new ScreenshotOneProvider(testApiKey);
+    // Check for environment variable first
+    const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
+    if (envApiKey) {
+      console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with environment key');
+      return new ScreenshotOneProvider(envApiKey);
     }
     
-    // Try Supabase approach (currently failing)
+    // Try Supabase approach
     try {
       console.log('📸 SCREENSHOT SERVICE - Checking for API key from Supabase...');
       
@@ -108,11 +107,10 @@ export class ScreenshotCaptureService {
       });
       
       console.log('📸 SCREENSHOT SERVICE - Server response status:', response.status);
-      console.log('📸 SCREENSHOT SERVICE - Server response headers:', response.headers.get('content-type'));
       
       if (response.ok) {
         const responseText = await response.text();
-        console.log('📸 SCREENSHOT SERVICE - Server response text:', responseText);
+        console.log('📸 SCREENSHOT SERVICE - Server response received');
         
         try {
           const data = JSON.parse(responseText);
@@ -124,22 +122,14 @@ export class ScreenshotCaptureService {
           console.error('📸 SCREENSHOT SERVICE - Failed to parse server response:', parseError);
         }
       } else {
-        const responseText = await response.text();
-        console.log('📸 SCREENSHOT SERVICE - Server error response:', responseText);
+        console.warn('📸 SCREENSHOT SERVICE - Server returned error status:', response.status);
       }
     } catch (error) {
       console.warn('⚠️ SCREENSHOT SERVICE - Failed to fetch API key from Supabase:', error);
     }
     
-    // Fallback to environment variable
-    const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
-    if (envApiKey) {
-      console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with environment key');
-      return new ScreenshotOneProvider(envApiKey);
-    }
-    
     console.warn('⚠️ SCREENSHOT SERVICE - No API key found, using mock service');
-    return new MockScreenshotProvider();
+    throw new Error('ScreenshotOne API key not configured. Please add VITE_SCREENSHOTONE_API_KEY to your environment variables or configure it in Supabase.');
   }
 
   // Method to test the service connectivity
@@ -163,8 +153,46 @@ export class ScreenshotCaptureService {
     } catch (error) {
       return {
         isWorking: false,
-        provider: 'unknown',
+        provider: 'MockScreenshotProvider',
         error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  // Method to check if service is properly configured
+  static async isConfigured(): Promise<{ configured: boolean; source?: string; error?: string }> {
+    try {
+      // Check environment variable
+      const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
+      if (envApiKey) {
+        return { configured: true, source: 'environment' };
+      }
+
+      // Check Supabase
+      try {
+        const response = await fetch('/api/screenshot-config', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.apiKey) {
+            return { configured: true, source: 'supabase' };
+          }
+        }
+      } catch (supabaseError) {
+        console.warn('Supabase API key check failed:', supabaseError);
+      }
+
+      return { 
+        configured: false, 
+        error: 'ScreenshotOne API key not found in environment variables or Supabase configuration' 
+      };
+    } catch (error) {
+      return { 
+        configured: false, 
+        error: error instanceof Error ? error.message : 'Configuration check failed' 
       };
     }
   }

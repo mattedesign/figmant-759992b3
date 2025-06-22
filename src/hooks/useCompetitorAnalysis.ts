@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { URLValidationService, URLValidationResult } from '@/services/urlValidationService';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
@@ -28,12 +29,22 @@ export const useCompetitorAnalysis = () => {
     url: string,
     options?: ScreenshotCaptureOptions
   ): Promise<{ desktop?: ScreenshotResult; mobile?: ScreenshotResult }> => {
-    const results = await ScreenshotCaptureService.captureCompetitorSet([url], true, true);
-    
-    return {
-      desktop: results.desktop?.[0],
-      mobile: results.mobile?.[0]
-    };
+    try {
+      const results = await ScreenshotCaptureService.captureCompetitorSet([url], true, true);
+      
+      return {
+        desktop: results.desktop?.[0],
+        mobile: results.mobile?.[0]
+      };
+    } catch (error) {
+      console.warn('Screenshot capture failed, but analysis can continue:', error);
+      
+      // Return failed results but don't throw - analysis can still proceed
+      return {
+        desktop: { success: false, url, error: 'Screenshot service unavailable' },
+        mobile: { success: false, url, error: 'Screenshot service unavailable' }
+      };
+    }
   }, []);
 
   const analyzeCompetitor = useCallback(async (url: string): Promise<CompetitorAnalysisData> => {
@@ -62,11 +73,11 @@ export const useCompetitorAnalysis = () => {
       analysisItem.status = 'capturing';
       setAnalysisData(prev => [...prev.filter(item => item.url !== url), analysisItem]);
 
-      // Capture screenshots
+      // Capture screenshots (with graceful failure handling)
       const screenshots = await captureScreenshots(url);
       analysisItem.screenshots = screenshots;
       
-      // Check if both screenshots were successful
+      // Analysis is considered successful even if screenshots fail
       const desktopSuccess = screenshots.desktop?.success !== false;
       const mobileSuccess = screenshots.mobile?.success !== false;
       
@@ -74,15 +85,19 @@ export const useCompetitorAnalysis = () => {
         analysisItem.status = 'completed';
         toast({
           title: "Analysis Complete",
-          description: `Successfully analyzed ${validation.hostname}`,
+          description: `Successfully analyzed ${validation.hostname} with screenshots`,
+        });
+      } else if (desktopSuccess || mobileSuccess) {
+        analysisItem.status = 'completed';
+        toast({
+          title: "Analysis Complete",
+          description: `Analyzed ${validation.hostname} (partial screenshot capture)`,
         });
       } else {
-        analysisItem.status = 'failed';
-        analysisItem.error = 'Screenshot capture failed';
+        analysisItem.status = 'completed';
         toast({
-          variant: "destructive",
-          title: "Partial Failure",
-          description: `Analysis completed with errors for ${validation.hostname}`,
+          title: "Analysis Complete",
+          description: `Analyzed ${validation.hostname} (screenshots unavailable but analysis can proceed)`,
         });
       }
 
