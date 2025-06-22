@@ -43,22 +43,27 @@ export class ImageService {
     // For ScreenshotOne URLs, always consider them valid since they're API endpoints
     // The actual validation will happen when the image loads in the browser
     if (this.isScreenshotOneUrl(url)) {
-      console.log('🔍 SCREENSHOT URL - ScreenshotOne URL detected, skipping validation:', url);
+      console.log('🔍 SCREENSHOT URL - ScreenshotOne URL detected, considering valid:', url);
       return true;
     }
     
-    // For regular URLs, use the standard validation
+    // For regular URLs, use the standard validation with improved timeout
     return new Promise((resolve) => {
       const img = new Image();
-      const timeoutId = setTimeout(() => resolve(false), 5000);
+      const timeoutId = setTimeout(() => {
+        console.log('🔍 IMAGE VALIDATION - Timeout for URL:', url);
+        resolve(false);
+      }, 3000); // Reduced timeout for faster response
       
       img.onload = () => {
         clearTimeout(timeoutId);
+        console.log('🔍 IMAGE VALIDATION - Success for URL:', url);
         resolve(true);
       };
       
       img.onerror = () => {
         clearTimeout(timeoutId);
+        console.log('🔍 IMAGE VALIDATION - Failed for URL:', url);
         resolve(false);
       };
       
@@ -71,6 +76,15 @@ export class ImageService {
    */
   static resolveImageUrl(attachment: any): string | null {
     if (!attachment) return null;
+
+    console.log('🔍 RESOLVE IMAGE URL - Processing attachment:', {
+      id: attachment.id,
+      name: attachment.name,
+      type: attachment.type,
+      url: attachment.url,
+      file_path: attachment.file_path,
+      path: attachment.path
+    });
 
     // Handle blob URLs - these are temporary and should be ignored for stored files
     const skipBlobUrls = true;
@@ -95,33 +109,44 @@ export class ImageService {
           const designUrl = this.getPublicUrl(candidate, 'design-uploads');
           
           // Return the first one that looks valid (non-empty path)
-          return candidate.includes('analysis') ? analysisUrl : designUrl;
+          const resolvedUrl = candidate.includes('analysis') ? analysisUrl : designUrl;
+          console.log('🔍 RESOLVE IMAGE URL - Resolved storage path to:', resolvedUrl);
+          return resolvedUrl;
         }
+        console.log('🔍 RESOLVE IMAGE URL - Using direct URL:', candidate);
         return candidate;
       }
     }
 
+    console.log('🔍 RESOLVE IMAGE URL - No valid URL found');
     return null;
   }
 
   /**
-   * Get the best available image URL with fallback handling
-   * Enhanced to handle ScreenshotOne URLs properly
+   * Get the best available image URL with enhanced validation for different URL types
    */
   static async getBestImageUrl(attachment: any): Promise<string | null> {
     const primaryUrl = this.resolveImageUrl(attachment);
     
-    if (!primaryUrl) return null;
+    if (!primaryUrl) {
+      console.log('🔍 BEST IMAGE URL - No primary URL found');
+      return null;
+    }
     
-    // For ScreenshotOne URLs, return them directly since they're API endpoints
+    // For ScreenshotOne URLs, return them directly since validation will happen in the browser
     if (this.isScreenshotOneUrl(primaryUrl)) {
-      console.log('🔍 SCREENSHOT URL - Returning ScreenshotOne URL directly:', primaryUrl);
+      console.log('🔍 BEST IMAGE URL - Returning ScreenshotOne URL directly:', primaryUrl);
       return primaryUrl;
     }
     
     // Test if the primary URL works for non-ScreenshotOne URLs
     const isValid = await this.validateImageUrl(primaryUrl);
-    if (isValid) return primaryUrl;
+    if (isValid) {
+      console.log('🔍 BEST IMAGE URL - Primary URL validated successfully:', primaryUrl);
+      return primaryUrl;
+    }
+    
+    console.log('🔍 BEST IMAGE URL - Primary URL validation failed, trying fallbacks');
     
     // If primary URL fails, try other storage-based options with different buckets
     const fallbackCandidates = [
@@ -136,97 +161,110 @@ export class ImageService {
       if (candidate.path && !candidate.path.startsWith('http')) {
         const resolvedUrl = this.getPublicUrl(candidate.path, candidate.bucket);
         const isValid = await this.validateImageUrl(resolvedUrl);
-        if (isValid) return resolvedUrl;
+        if (isValid) {
+          console.log('🔍 BEST IMAGE URL - Fallback URL validated successfully:', resolvedUrl);
+          return resolvedUrl;
+        }
       }
     }
     
+    console.log('🔍 BEST IMAGE URL - All validation attempts failed');
     return null;
   }
 
   /**
-   * Handle screenshot metadata and return best image URL
-   * Enhanced to properly handle ScreenshotOne URLs
+   * Handle screenshot metadata and return best image URL with proper ScreenshotOne handling
    */
   static getScreenshotUrl(attachment: any): string | null {
-    // Check if we have screenshot data in metadata
-    const hasDesktopScreenshot = attachment.metadata?.screenshots?.desktop?.success;
-    const hasMobileScreenshot = attachment.metadata?.screenshots?.mobile?.success;
+    if (!attachment?.metadata?.screenshots) {
+      console.log('🔍 SCREENSHOT URL - No screenshot metadata found');
+      return null;
+    }
+
+    const { desktop, mobile } = attachment.metadata.screenshots;
     
-    if (hasDesktopScreenshot) {
-      const desktop = attachment.metadata.screenshots.desktop;
-      // For ScreenshotOne, prefer screenshotUrl over file paths
-      if (desktop.screenshotUrl && this.isScreenshotOneUrl(desktop.screenshotUrl)) {
-        return desktop.screenshotUrl;
+    // Helper function to get the best URL from screenshot data
+    const getBestScreenshotUrl = (screenshotData: any) => {
+      if (!screenshotData) return null;
+      
+      // For ScreenshotOne, prioritize API URLs over file paths
+      if (screenshotData.screenshotUrl && this.isScreenshotOneUrl(screenshotData.screenshotUrl)) {
+        console.log('🔍 SCREENSHOT URL - Using ScreenshotOne screenshotUrl:', screenshotData.screenshotUrl);
+        return screenshotData.screenshotUrl;
       }
-      // Then try thumbnail URL
-      if (desktop.thumbnailUrl && this.isScreenshotOneUrl(desktop.thumbnailUrl)) {
-        return desktop.thumbnailUrl;
+      
+      if (screenshotData.thumbnailUrl && this.isScreenshotOneUrl(screenshotData.thumbnailUrl)) {
+        console.log('🔍 SCREENSHOT URL - Using ScreenshotOne thumbnailUrl:', screenshotData.thumbnailUrl);
+        return screenshotData.thumbnailUrl;
       }
-      // Fall back to storage paths
-      return desktop.file_path || desktop.path || desktop.thumbnailUrl || desktop.url;
+      
+      // Fall back to storage paths or other URLs
+      const fallbackUrl = screenshotData.file_path || screenshotData.path || screenshotData.thumbnailUrl || screenshotData.url;
+      if (fallbackUrl) {
+        console.log('🔍 SCREENSHOT URL - Using fallback URL:', fallbackUrl);
+        return fallbackUrl;
+      }
+      
+      return null;
+    };
+
+    // Check desktop first, then mobile
+    if (desktop?.success) {
+      const desktopUrl = getBestScreenshotUrl(desktop);
+      if (desktopUrl) return desktopUrl;
     }
     
-    if (hasMobileScreenshot) {
-      const mobile = attachment.metadata.screenshots.mobile;
-      // For ScreenshotOne, prefer screenshotUrl over file paths
-      if (mobile.screenshotUrl && this.isScreenshotOneUrl(mobile.screenshotUrl)) {
-        return mobile.screenshotUrl;
-      }
-      // Then try thumbnail URL
-      if (mobile.thumbnailUrl && this.isScreenshotOneUrl(mobile.thumbnailUrl)) {
-        return mobile.thumbnailUrl;
-      }
-      // Fall back to storage paths
-      return mobile.file_path || mobile.path || mobile.thumbnailUrl || mobile.url;
+    if (mobile?.success) {
+      const mobileUrl = getBestScreenshotUrl(mobile);
+      if (mobileUrl) return mobileUrl;
     }
     
+    console.log('🔍 SCREENSHOT URL - No valid screenshot URL found');
     return null;
   }
 
   /**
-   * Enhanced URL resolution specifically for analysis attachments
-   * Improved to handle ScreenshotOne URLs properly
+   * Enhanced URL resolution specifically for analysis attachments with improved ScreenshotOne handling
    */
   static resolveAnalysisAttachmentUrl(attachment: any): string | null {
     if (!attachment) return null;
 
-    console.log('🔍 RESOLVING ANALYSIS ATTACHMENT:', {
+    console.log('🔍 ANALYSIS ATTACHMENT - Resolving URL for:', {
       id: attachment.id,
       name: attachment.name,
       type: attachment.type,
-      url: attachment.url,
-      file_path: attachment.file_path,
-      path: attachment.path,
-      thumbnailUrl: attachment.thumbnailUrl,
-      metadata: attachment.metadata
+      hasMetadata: !!attachment.metadata,
+      hasScreenshots: !!attachment.metadata?.screenshots
     });
 
-    // For URL-type attachments, check for screenshots first
+    // For URL-type attachments, prioritize screenshots
     if (attachment.type === 'url' || attachment.url) {
       const screenshotUrl = this.getScreenshotUrl(attachment);
       if (screenshotUrl) {
         // For ScreenshotOne URLs, return them directly
         if (this.isScreenshotOneUrl(screenshotUrl)) {
-          console.log('📸 SCREENSHOTONE URL RESOLVED:', screenshotUrl);
+          console.log('🔍 ANALYSIS ATTACHMENT - Using ScreenshotOne URL:', screenshotUrl);
           return screenshotUrl;
         }
         // For other URLs, convert storage paths to public URLs
-        const resolvedUrl = screenshotUrl.startsWith('http') ? screenshotUrl : this.getPublicUrl(screenshotUrl, 'analysis-attachments');
-        console.log('📸 SCREENSHOT URL RESOLVED:', resolvedUrl);
+        const resolvedUrl = screenshotUrl.startsWith('http') ? 
+          screenshotUrl : 
+          this.getPublicUrl(screenshotUrl, 'analysis-attachments');
+        console.log('🔍 ANALYSIS ATTACHMENT - Using screenshot URL:', resolvedUrl);
         return resolvedUrl;
       }
     }
 
-    // For file attachments, prioritize storage paths with correct bucket
+    // For file attachments, use standard resolution
     if (attachment.type === 'file' || attachment.file_path || attachment.path) {
       const resolvedUrl = this.resolveImageUrl(attachment);
-      console.log('📁 FILE URL RESOLVED:', resolvedUrl);
+      console.log('🔍 ANALYSIS ATTACHMENT - Using file URL:', resolvedUrl);
       return resolvedUrl;
     }
 
     // Fallback to general resolution
     const fallbackUrl = this.resolveImageUrl(attachment);
-    console.log('🔄 FALLBACK URL RESOLVED:', fallbackUrl);
+    console.log('🔍 ANALYSIS ATTACHMENT - Using fallback URL:', fallbackUrl);
     return fallbackUrl;
   }
 }

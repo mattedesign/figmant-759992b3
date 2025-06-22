@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ImageIcon, AlertCircle, Camera } from 'lucide-react';
+import { ImageIcon, AlertCircle, Camera, RefreshCw } from 'lucide-react';
 import { ImageService } from '@/services/imageService';
 
 interface EnhancedImageProps {
@@ -22,6 +22,7 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isScreenshotOneUrl, setIsScreenshotOneUrl] = useState(false);
+  const [loadAttempts, setLoadAttempts] = useState(0);
 
   useEffect(() => {
     const loadImage = async () => {
@@ -33,6 +34,7 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
 
       setIsLoading(true);
       setHasError(false);
+      setLoadAttempts(0);
       
       try {
         console.log('🖼️ ENHANCED IMAGE - Loading attachment:', {
@@ -56,9 +58,9 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
           setIsScreenshotOneUrl(isScreenshotOne);
           
           if (isScreenshotOne) {
-            // For ScreenshotOne URLs, set them directly without validation
-            // The browser will handle the loading and we'll catch errors in onError
-            console.log('🖼️ ENHANCED IMAGE - ScreenshotOne URL detected, using directly');
+            // For ScreenshotOne URLs, set them directly
+            // The browser will handle loading and we'll catch errors in onError
+            console.log('🖼️ ENHANCED IMAGE - Using ScreenshotOne URL directly');
             setImageUrl(url);
             setIsLoading(false);
             return;
@@ -98,17 +100,30 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const target = e.target as HTMLImageElement;
-    console.log('🖼️ ENHANCED IMAGE - Image load error for URL:', imageUrl);
-    console.log('🖼️ ENHANCED IMAGE - Error details:', {
+    const currentAttempts = loadAttempts + 1;
+    setLoadAttempts(currentAttempts);
+    
+    console.log('🖼️ ENHANCED IMAGE - Image load error (attempt ' + currentAttempts + '):', {
+      url: imageUrl,
       src: target.src,
       naturalWidth: target.naturalWidth,
       naturalHeight: target.naturalHeight,
-      complete: target.complete
+      complete: target.complete,
+      isScreenshotOne: isScreenshotOneUrl
     });
     
-    // For ScreenshotOne URLs, this might be expected during loading
-    if (isScreenshotOneUrl) {
-      console.log('🖼️ ENHANCED IMAGE - ScreenshotOne URL failed to load, this might be normal');
+    // For ScreenshotOne URLs, give them more attempts as they might need time to generate
+    if (isScreenshotOneUrl && currentAttempts < 3) {
+      console.log('🖼️ ENHANCED IMAGE - Retrying ScreenshotOne URL in 2 seconds...');
+      setTimeout(() => {
+        // Force reload by adding a timestamp parameter
+        if (imageUrl) {
+          const separator = imageUrl.includes('?') ? '&' : '?';
+          const retryUrl = `${imageUrl}${separator}_retry=${Date.now()}`;
+          setImageUrl(retryUrl);
+        }
+      }, 2000);
+      return;
     }
     
     setHasError(true);
@@ -117,19 +132,26 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
 
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const target = e.target as HTMLImageElement;
-    console.log('🖼️ ENHANCED IMAGE - Image loaded successfully:', imageUrl);
-    console.log('🖼️ ENHANCED IMAGE - Image dimensions:', {
+    console.log('🖼️ ENHANCED IMAGE - Image loaded successfully:', {
+      url: imageUrl,
       naturalWidth: target.naturalWidth,
-      naturalHeight: target.naturalHeight
+      naturalHeight: target.naturalHeight,
+      isScreenshotOne: isScreenshotOneUrl
     });
     setIsLoading(false);
     setHasError(false);
+    setLoadAttempts(0);
   };
 
   if (isLoading) {
     return (
       <div className={`bg-gray-100 flex items-center justify-center ${className}`}>
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          {isScreenshotOneUrl && (
+            <div className="text-xs text-gray-500">Generating screenshot...</div>
+          )}
+        </div>
       </div>
     );
   }
@@ -141,15 +163,23 @@ export const EnhancedImage: React.FC<EnhancedImageProps> = ({
       <div className={`bg-gray-100 flex items-center justify-center ${className}`} onClick={onClick}>
         <div className="text-center text-gray-500">
           {isScreenshotOneUrl ? (
-            <Camera className="h-6 w-6 mx-auto mb-1" />
+            <>
+              <Camera className="h-6 w-6 mx-auto mb-1" />
+              <span className="text-xs">
+                {loadAttempts > 0 ? 'Screenshot generation failed' : 'Screenshot loading...'}
+              </span>
+            </>
           ) : hasError ? (
-            <AlertCircle className="h-6 w-6 mx-auto mb-1" />
+            <>
+              <AlertCircle className="h-6 w-6 mx-auto mb-1" />
+              <span className="text-xs">Failed to load</span>
+            </>
           ) : (
-            <ImageIcon className="h-6 w-6 mx-auto mb-1" />
+            <>
+              <ImageIcon className="h-6 w-6 mx-auto mb-1" />
+              <span className="text-xs">No image</span>
+            </>
           )}
-          <span className="text-xs">
-            {isScreenshotOneUrl ? 'Screenshot loading...' : hasError ? 'Failed to load' : 'No image'}
-          </span>
         </div>
       </div>
     );

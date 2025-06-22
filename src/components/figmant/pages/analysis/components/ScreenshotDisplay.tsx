@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Globe, Image as ImageIcon, AlertTriangle, Camera, Zap } from 'lucide-react';
+import { Globe, Image as ImageIcon, AlertTriangle, Camera, Zap, RefreshCw } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { EnhancedImage } from './EnhancedImage';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -34,21 +34,20 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({
 
   // If we have screenshots, show them
   if (hasDesktopScreenshot || hasMobileScreenshot) {
+    const primaryUrl = desktopUrl || mobileUrl;
+    const isScreenshotOneUrl = isDesktopScreenshotOne || isMobileScreenshotOne;
+    
     return (
       <div className={`relative ${className}`}>
-        {hasDesktopScreenshot && desktopUrl ? (
-          <EnhancedImage
-            attachment={{ ...attachment, url: desktopUrl, thumbnailUrl: desktopUrl }}
-            className="w-full h-full"
-            alt={`Desktop screenshot of ${attachment.name}`}
-          />
-        ) : hasMobileScreenshot && mobileUrl ? (
-          <EnhancedImage
-            attachment={{ ...attachment, url: mobileUrl, thumbnailUrl: mobileUrl }}
-            className="w-full h-full"
-            alt={`Mobile screenshot of ${attachment.name}`}
-          />
-        ) : null}
+        <EnhancedImage
+          attachment={{ 
+            ...attachment, 
+            url: primaryUrl, 
+            thumbnailUrl: primaryUrl 
+          }}
+          className="w-full h-full"
+          alt={`${hasDesktopScreenshot && hasMobileScreenshot ? 'Desktop and mobile' : hasDesktopScreenshot ? 'Desktop' : 'Mobile'} screenshot of ${attachment.name}`}
+        />
         
         {/* Overlay with website info */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
@@ -58,7 +57,13 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({
             {isUsingScreenshotOne && (
               <div className="flex items-center gap-1 text-xs bg-blue-500/20 px-2 py-1 rounded">
                 <Zap className="w-3 h-3" />
-                Real
+                Live
+              </div>
+            )}
+            {hasDesktopScreenshot && hasMobileScreenshot && (
+              <div className="flex items-center gap-1 text-xs bg-green-500/20 px-2 py-1 rounded">
+                <Camera className="w-3 h-3" />
+                Both
               </div>
             )}
           </div>
@@ -67,27 +72,43 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({
     );
   }
 
-  // Show error state for URL attachments when screenshots failed
+  // Show error state or processing state for URL attachments
   if (attachment.type === 'url') {
+    const isProcessing = attachment.status === 'processing';
+    
     return (
       <div className={`bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-4 ${className}`}>
         <div className="text-center">
           <div className="flex items-center justify-center mb-3">
             <div className="relative">
-              <Globe className="w-8 h-8 text-gray-400" />
-              {hasScreenshotErrors && (
-                <div className="absolute -top-1 -right-1 bg-yellow-100 rounded-full p-1">
-                  <AlertTriangle className="w-3 h-3 text-yellow-600" />
-                </div>
+              {isProcessing ? (
+                <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
+              ) : (
+                <>
+                  <Globe className="w-8 h-8 text-gray-400" />
+                  {hasScreenshotErrors && (
+                    <div className="absolute -top-1 -right-1 bg-yellow-100 rounded-full p-1">
+                      <AlertTriangle className="w-3 h-3 text-yellow-600" />
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
           
           <p className="text-sm font-medium text-gray-700 mb-1">{attachment.name}</p>
           
-          {hasScreenshotErrors ? (
+          {isProcessing ? (
             <div className="space-y-2">
-              <p className="text-xs text-gray-500">Screenshot capture failed</p>
+              <p className="text-xs text-blue-600">Capturing screenshots...</p>
+              <div className="flex items-center justify-center gap-1 text-xs text-gray-500">
+                <Camera className="w-3 h-3" />
+                <span>This may take a few moments</span>
+              </div>
+            </div>
+          ) : hasScreenshotErrors ? (
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500">Screenshot capture encountered issues</p>
               {(desktopError || mobileError) && (
                 <Alert className="text-left">
                   <AlertTriangle className="h-3 w-3" />
@@ -96,13 +117,13 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({
                   </AlertDescription>
                 </Alert>
               )}
-              <p className="text-xs text-blue-600">Website will still be analyzed</p>
+              <p className="text-xs text-blue-600">Website analysis will continue</p>
             </div>
           ) : (
             <div className="space-y-2">
               <div className="flex items-center justify-center gap-1 text-xs text-gray-500">
                 <Camera className="w-3 h-3" />
-                <span>Processing screenshot...</span>
+                <span>No screenshots available</span>
               </div>
             </div>
           )}
