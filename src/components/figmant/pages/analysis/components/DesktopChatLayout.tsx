@@ -20,8 +20,7 @@ export const DesktopChatLayout: React.FC = () => {
     setMessage,
     currentSessionId,
     isSessionInitialized,
-    saveConversation,
-    createContextualPrompt
+    saveConversation
   } = useChatStateContext();
 
   const [showRightPanel, setShowRightPanel] = useState(true);
@@ -29,12 +28,10 @@ export const DesktopChatLayout: React.FC = () => {
 
   const handleRemoveAttachment = useCallback((id: string) => {
     console.log('🗑️ DESKTOP CHAT LAYOUT - Remove attachment:', id);
-    // This will be handled by the attachment management system
   }, []);
 
   const handleViewAttachment = useCallback((attachment: any) => {
     console.log('👁️ DESKTOP CHAT LAYOUT - View attachment:', attachment);
-    // This will open the attachment in a modal or new tab
     if (attachment.type === 'url' && attachment.url) {
       window.open(attachment.url, '_blank', 'noopener,noreferrer');
     }
@@ -152,7 +149,16 @@ export const DesktopChatLayout: React.FC = () => {
         <div className="border-l border-gray-200 bg-gray-50">
           <AnalysisRightPanel 
             currentSessionId={currentSessionId}
-            conversationContext={conversationContext}
+            conversationContext={{
+              sessionId: conversationContext.sessionId,
+              messages: conversationContext.messages,
+              totalMessages: conversationContext.totalMessages || 0,
+              sessionAttachments: conversationContext.sessionAttachments || [],
+              sessionLinks: conversationContext.sessionLinks || [],
+              historicalContext: conversationContext.historicalContext,
+              attachmentContext: conversationContext.attachmentContext,
+              tokenEstimate: conversationContext.tokenEstimate
+            }}
             autoSaveStatus={autoSaveState.status}
             messageCount={autoSaveState.messageCount}
             lastSaved={autoSaveState.lastSaved}

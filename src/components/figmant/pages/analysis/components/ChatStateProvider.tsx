@@ -8,7 +8,8 @@ import { useEnhancedChatContext } from '@/hooks/useEnhancedChatContext';
 import { useEnhancedChatSessionContext } from '@/hooks/useEnhancedChatSessionContext';
 import { useToast } from '@/hooks/use-toast';
 
-interface ConversationContext {
+// Unified conversation context interface to avoid conflicts
+interface ChatStateConversationContext {
   currentMessages: ChatMessage[];
   historicalContext: string;
   attachmentContext: string[];
@@ -44,8 +45,8 @@ interface ChatStateContextType {
   sessionLinks: ChatAttachment[];
   isSessionInitialized: boolean;
   
-  // Enhanced Context - Added from EnhancedChatStateProvider
-  conversationContext: ConversationContext;
+  // Enhanced Context
+  conversationContext: ChatStateConversationContext;
   autoSaveState: AutoSaveState;
   isLoadingContext: boolean;
   
@@ -67,7 +68,7 @@ interface ChatStateContextType {
   saveMessageAttachments: (message: ChatMessage) => void;
   getCurrentTemplate: () => any;
   
-  // Enhanced Context Actions - Added from EnhancedChatStateProvider
+  // Enhanced Context Actions
   triggerAutoSave: (messages: ChatMessage[]) => void;
   createContextualPrompt: (message: string, template?: any) => string;
   saveConversation: (messages: ChatMessage[]) => Promise<void>;
@@ -158,14 +159,14 @@ export const ChatStateProvider: React.FC<ChatStateProviderProps> = ({ children }
   }, [messages.length, currentSessionId, sessionContext.sessionId, triggerAutoSave]);
 
   // Enhanced conversation context with current session data
-  const enhancedConversationContext: ConversationContext = {
+  const enhancedConversationContext: ChatStateConversationContext = {
     currentMessages: messages,
     historicalContext: conversationContext.historicalContext,
     attachmentContext: conversationContext.attachmentContext,
     tokenEstimate: conversationContext.tokenEstimate,
     sessionAttachments: conversationContext.sessionAttachments || [],
     sessionLinks: conversationContext.sessionLinks || [],
-    totalMessages: Math.max(conversationContext.totalMessages, messages.length),
+    totalMessages: Math.max(conversationContext.totalMessages || 0, messages.length),
     sessionId: currentSessionId || sessionContext.sessionId || conversationContext.sessionId,
     messages: conversationContext.messages || []
   };
