@@ -3,10 +3,13 @@ import { ScreenshotCaptureOptions, ScreenshotResult } from './types';
 import { DEFAULT_OPTIONS } from './config';
 import { ScreenshotOneProvider } from './screenshotOneProvider';
 import { MockScreenshotProvider } from './mockProvider';
+import { supabase } from '@/integrations/supabase/client';
 
 export class ScreenshotCaptureService {
   private static apiKeyStatus: 'unchecked' | 'valid' | 'invalid' | 'missing' = 'unchecked';
   private static lastErrorMessage: string | null = null;
+  private static cachedApiKey: string | null = null;
+  private static apiKeySource: 'server' | 'environment' | 'none' = 'none';
 
   static async captureScreenshot(
     url: string, 
@@ -17,7 +20,7 @@ export class ScreenshotCaptureService {
     try {
       console.log('📸 SCREENSHOT SERVICE - Capturing screenshot for:', url, 'with options:', opts);
       
-      const provider = this.getProvider();
+      const provider = await this.getProvider();
       console.log('📸 SCREENSHOT SERVICE - Using provider:', provider.constructor.name);
       
       const result = await provider.captureScreenshot(url, opts);
@@ -60,7 +63,7 @@ export class ScreenshotCaptureService {
     console.log('📸 SCREENSHOT SERVICE - Capturing multiple screenshots for:', urls.length, 'URLs');
     
     // Check service status first
-    const status = this.getServiceStatus();
+    const status = await this.getServiceStatus();
     if (!status.isWorking && status.provider === 'MockScreenshotProvider') {
       console.warn('📸 SCREENSHOT SERVICE - Using mock provider, results will be simulated');
     }
@@ -83,7 +86,7 @@ export class ScreenshotCaptureService {
     });
     
     // Check service status before proceeding
-    const status = this.getServiceStatus();
+    const status = await this.getServiceStatus();
     console.log('📸 SCREENSHOT SERVICE - Service status:', status);
     
     const results: { desktop?: ScreenshotResult[]; mobile?: ScreenshotResult[] } = {};
@@ -118,48 +121,89 @@ export class ScreenshotCaptureService {
     return results;
   }
 
-  private static getProvider() {
+  private static async fetchApiKeyFromServer(): Promise<string | null> {
+    try {
+      console.log('🔑 SCREENSHOT SERVICE - Attempting to fetch API key from Supabase...');
+      
+      const { data, error } = await supabase.functions.invoke('screenshot-config');
+      
+      if (error) {
+        console.warn('🔑 SCREENSHOT SERVICE - Supabase function error:', error);
+        return null;
+      }
+      
+      if (data?.apiKey) {
+        console.log('✅ SCREENSHOT SERVICE - API key retrieved from Supabase');
+        this.apiKeySource = 'server';
+        return data.apiKey;
+      }
+      
+      console.log('⚠️ SCREENSHOT SERVICE - No API key found in Supabase response');
+      return null;
+    } catch (error) {
+      console.warn('🔑 SCREENSHOT SERVICE - Failed to fetch from Supabase:', error);
+      return null;
+    }
+  }
+
+  private static async getProvider() {
     console.log('📸 SCREENSHOT SERVICE - Getting provider...');
     
-    // Check environment variable only
-    const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
-    if (envApiKey && envApiKey.trim()) {
-      console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with environment key');
+    // Try to get API key from cache first
+    if (!this.cachedApiKey) {
+      // Try Supabase secrets first
+      this.cachedApiKey = await this.fetchApiKeyFromServer();
+      
+      // Fallback to environment variable if Supabase fails
+      if (!this.cachedApiKey) {
+        const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
+        if (envApiKey && envApiKey.trim()) {
+          console.log('✅ SCREENSHOT SERVICE - Using environment API key as fallback');
+          this.cachedApiKey = envApiKey;
+          this.apiKeySource = 'environment';
+        }
+      }
+    }
+    
+    if (this.cachedApiKey && this.cachedApiKey.trim()) {
+      console.log(`✅ SCREENSHOT SERVICE - Using ScreenshotOne API with ${this.apiKeySource} key`);
       this.apiKeyStatus = 'valid';
-      return new ScreenshotOneProvider(envApiKey);
+      return new ScreenshotOneProvider(this.cachedApiKey);
     }
     
     console.warn('⚠️ SCREENSHOT SERVICE - No API key found, using mock service');
     this.apiKeyStatus = 'missing';
-    this.lastErrorMessage = 'ScreenshotOne API key not configured. Add VITE_SCREENSHOTONE_API_KEY to environment variables.';
+    this.apiKeySource = 'none';
+    this.lastErrorMessage = 'ScreenshotOne API key not configured. Configure via Supabase secrets or add VITE_SCREENSHOTONE_API_KEY to environment variables.';
     return new MockScreenshotProvider();
   }
 
   // Enhanced service status method
-  static getServiceStatus(): { 
+  static async getServiceStatus(): Promise<{ 
     isWorking: boolean; 
     provider: string; 
     apiKeyStatus: string;
+    apiKeySource: string;
     error?: string;
     hasApiKey: boolean;
     setupInstructions?: string;
-  } {
+  }> {
     try {
-      const provider = this.getProvider();
+      const provider = await this.getProvider();
       const providerName = provider.constructor.name;
       
       // Check if we have an API key configured
-      const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
-      const hasApiKey = !!(envApiKey && envApiKey.trim());
+      const hasApiKey = !!(this.cachedApiKey && this.cachedApiKey.trim());
       
       if (!hasApiKey && providerName === 'MockScreenshotProvider') {
         return {
           isWorking: false,
           provider: providerName,
           apiKeyStatus: this.apiKeyStatus,
+          apiKeySource: this.apiKeySource,
           hasApiKey: false,
           error: 'No API key configured',
-          setupInstructions: 'Add VITE_SCREENSHOTONE_API_KEY to your environment variables to enable screenshot capture.'
+          setupInstructions: 'Configure API key via Supabase secrets or add VITE_SCREENSHOTONE_API_KEY to your environment variables to enable screenshot capture.'
         };
       }
       
@@ -167,6 +211,7 @@ export class ScreenshotCaptureService {
         isWorking: hasApiKey,
         provider: providerName,
         apiKeyStatus: this.apiKeyStatus,
+        apiKeySource: this.apiKeySource,
         hasApiKey: hasApiKey,
         error: this.lastErrorMessage
       };
@@ -175,6 +220,7 @@ export class ScreenshotCaptureService {
         isWorking: false,
         provider: 'unknown',
         apiKeyStatus: this.apiKeyStatus,
+        apiKeySource: this.apiKeySource,
         hasApiKey: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       };
@@ -182,9 +228,9 @@ export class ScreenshotCaptureService {
   }
 
   // Test service method for debugger component
-  static async testService(): Promise<{ isWorking: boolean; provider: string; error?: string }> {
+  static async testService(): Promise<{ isWorking: boolean; provider: string; apiKeySource: string; error?: string }> {
     try {
-      const provider = this.getProvider();
+      const provider = await this.getProvider();
       const providerName = provider.constructor.name;
       
       // Test with a simple URL
@@ -197,36 +243,46 @@ export class ScreenshotCaptureService {
       return {
         isWorking: testResult.success,
         provider: providerName,
+        apiKeySource: this.apiKeySource,
         error: testResult.error
       };
     } catch (error) {
       return {
         isWorking: false,
         provider: 'unknown',
+        apiKeySource: this.apiKeySource,
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   }
 
   // Get current API key status without testing
-  static getApiKeyStatus(): {
+  static async getApiKeyStatus(): Promise<{
     status: string;
     hasKey: boolean;
+    source: string;
     lastError: string | null;
-  } {
-    const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
-    const hasKey = !!(envApiKey && envApiKey.trim());
+  }> {
+    // Ensure we have checked for API key
+    if (!this.cachedApiKey && this.apiKeyStatus === 'unchecked') {
+      await this.getProvider();
+    }
+    
+    const hasKey = !!(this.cachedApiKey && this.cachedApiKey.trim());
     
     return {
       status: this.apiKeyStatus,
       hasKey,
+      source: this.apiKeySource,
       lastError: this.lastErrorMessage
     };
   }
 
-  // Reset status (useful for testing)
+  // Reset status and cache (useful for testing)
   static resetStatus(): void {
     this.apiKeyStatus = 'unchecked';
     this.lastErrorMessage = null;
+    this.cachedApiKey = null;
+    this.apiKeySource = 'none';
   }
 }

@@ -9,7 +9,10 @@ import {
   AlertTriangle, 
   RefreshCw,
   ExternalLink,
-  Zap
+  Zap,
+  Server,
+  FileText,
+  XCircle
 } from 'lucide-react';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
 
@@ -28,7 +31,7 @@ export const ScreenshotStatusIndicator: React.FC<ScreenshotStatusIndicatorProps>
   const checkStatus = async () => {
     setIsLoading(true);
     try {
-      const status = ScreenshotCaptureService.getServiceStatus();
+      const status = await ScreenshotCaptureService.getServiceStatus();
       setServiceStatus(status);
     } catch (error) {
       console.error('Failed to check screenshot service status:', error);
@@ -40,6 +43,22 @@ export const ScreenshotStatusIndicator: React.FC<ScreenshotStatusIndicatorProps>
   useEffect(() => {
     checkStatus();
   }, []);
+
+  const getApiKeySourceIcon = (source: string) => {
+    switch (source) {
+      case 'server': return <Server className="h-3 w-3" />;
+      case 'environment': return <FileText className="h-3 w-3" />;
+      default: return <XCircle className="h-3 w-3" />;
+    }
+  };
+
+  const getApiKeySourceLabel = (source: string) => {
+    switch (source) {
+      case 'server': return 'Supabase Secrets';
+      case 'environment': return 'Environment Variable';
+      default: return 'Not Configured';
+    }
+  };
 
   const getStatusBadge = () => {
     if (isLoading) {
@@ -112,12 +131,22 @@ export const ScreenshotStatusIndicator: React.FC<ScreenshotStatusIndicatorProps>
               <span>Provider:</span>
               <span className="font-mono text-xs">{serviceStatus?.provider || 'Unknown'}</span>
             </div>
+
+            {serviceStatus?.hasApiKey && (
+              <div className="flex items-center justify-between text-sm">
+                <span>API Key Source:</span>
+                <div className="flex items-center gap-1">
+                  {getApiKeySourceIcon(serviceStatus.apiKeySource)}
+                  <span className="font-mono text-xs">{getApiKeySourceLabel(serviceStatus.apiKeySource)}</span>
+                </div>
+              </div>
+            )}
           </div>
           
           {!serviceStatus?.hasApiKey && (
             <div className="pt-2 border-t space-y-2">
               <p className="text-xs text-gray-600">
-                Enable real screenshots by adding your ScreenshotOne API key
+                Enable real screenshots by configuring your ScreenshotOne API key
               </p>
               <Button variant="outline" size="sm" className="w-full" asChild>
                 <a 
@@ -130,6 +159,14 @@ export const ScreenshotStatusIndicator: React.FC<ScreenshotStatusIndicatorProps>
                   Get API Key
                 </a>
               </Button>
+            </div>
+          )}
+
+          {serviceStatus?.apiKeySource === 'environment' && (
+            <div className="pt-2 border-t">
+              <p className="text-xs text-orange-600">
+                Using environment variable. Consider Supabase secrets for production.
+              </p>
             </div>
           )}
         </div>

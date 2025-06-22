@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -11,7 +12,9 @@ import {
   ExternalLink, 
   RefreshCw,
   Info,
-  Settings
+  Settings,
+  Server,
+  FileText
 } from 'lucide-react';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +34,7 @@ export const ScreenshotServiceStatus: React.FC<ScreenshotServiceStatusProps> = (
     isWorking: boolean;
     provider: string;
     apiKeyStatus: string;
+    apiKeySource: string;
     error?: string;
     hasApiKey: boolean;
     setupInstructions?: string;
@@ -51,6 +55,7 @@ export const ScreenshotServiceStatus: React.FC<ScreenshotServiceStatusProps> = (
         isWorking: false,
         provider: 'unknown',
         apiKeyStatus: 'error',
+        apiKeySource: 'none',
         hasApiKey: false,
         error: 'Failed to check service status'
       });
@@ -90,6 +95,22 @@ export const ScreenshotServiceStatus: React.FC<ScreenshotServiceStatusProps> = (
       });
     } finally {
       setIsTesting(false);
+    }
+  };
+
+  const getApiKeySourceIcon = (source: string) => {
+    switch (source) {
+      case 'server': return <Server className="h-3 w-3" />;
+      case 'environment': return <FileText className="h-3 w-3" />;
+      default: return <XCircle className="h-3 w-3" />;
+    }
+  };
+
+  const getApiKeySourceLabel = (source: string) => {
+    switch (source) {
+      case 'server': return 'Supabase Secrets';
+      case 'environment': return 'Environment Variable';
+      default: return 'Not Configured';
     }
   };
 
@@ -170,15 +191,21 @@ export const ScreenshotServiceStatus: React.FC<ScreenshotServiceStatusProps> = (
           )}
         </div>
 
-        {/* API Key Status */}
+        {/* API Key Status with Source */}
         {serviceStatus && (
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">API Key:</span>
             {serviceStatus.hasApiKey ? (
-              <Badge variant="default" className="bg-green-100 text-green-800">
-                <CheckCircle className="h-3 w-3 mr-1" />
-                Configured
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="default" className="bg-green-100 text-green-800">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Configured
+                </Badge>
+                <Badge variant="outline" className="flex items-center gap-1">
+                  {getApiKeySourceIcon(serviceStatus.apiKeySource)}
+                  {getApiKeySourceLabel(serviceStatus.apiKeySource)}
+                </Badge>
+              </div>
             ) : (
               <Badge variant="secondary" className="bg-red-100 text-red-800">
                 <XCircle className="h-3 w-3 mr-1" />
@@ -214,10 +241,22 @@ export const ScreenshotServiceStatus: React.FC<ScreenshotServiceStatusProps> = (
                 <p>To enable high-quality screenshot capture, you need a ScreenshotOne API key.</p>
                 <ol className="list-decimal list-inside text-sm space-y-1 mt-2">
                   <li>Get an API key from ScreenshotOne</li>
-                  <li>Add it as <code className="bg-gray-100 px-1 rounded">VITE_SCREENSHOTONE_API_KEY</code> environment variable</li>
-                  <li>Restart your development server</li>
+                  <li>Configure it via Supabase secrets (preferred) or add as <code className="bg-gray-100 px-1 rounded">VITE_SCREENSHOTONE_API_KEY</code> environment variable</li>
+                  <li>Restart your development server if using environment variables</li>
                 </ol>
               </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Priority Information */}
+        {serviceStatus && serviceStatus.apiKeySource === 'environment' && (
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              <p className="text-sm">
+                Currently using environment variable. For production, consider configuring the API key via Supabase secrets for better security.
+              </p>
             </AlertDescription>
           </Alert>
         )}

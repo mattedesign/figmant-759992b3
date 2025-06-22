@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, XCircle, AlertTriangle, Camera, RefreshCw } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Camera, RefreshCw, Server, FileText } from 'lucide-react';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
 
 interface ServiceStatus {
@@ -27,36 +27,9 @@ export const ScreenshotServiceDebugger: React.FC = () => {
       const result = await ScreenshotCaptureService.testService();
       console.log('🔍 SCREENSHOT DEBUGGER - Service test result:', result);
       
-      // Check API key sources
-      let apiKeySource: 'server' | 'environment' | 'none' = 'none';
-      
-      try {
-        const response = await fetch('/api/screenshot-config', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('sb-okvsvrcphudxxrdonfvp-auth-token')}`
-          }
-        });
-        
-        if (response.ok) {
-          const { apiKey } = await response.json();
-          if (apiKey) {
-            apiKeySource = 'server';
-          }
-        }
-      } catch (error) {
-        console.warn('Server API key check failed:', error);
-      }
-      
-      if (apiKeySource === 'none') {
-        const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
-        if (envApiKey) {
-          apiKeySource = 'environment';
-        }
-      }
-      
       setStatus({
         ...result,
-        apiKeySource,
+        apiKeySource: result.apiKeySource as 'server' | 'environment' | 'none',
         lastChecked: new Date()
       });
     } catch (error) {
@@ -80,15 +53,31 @@ export const ScreenshotServiceDebugger: React.FC = () => {
   const getStatusIcon = () => {
     if (!status) return <RefreshCw className="h-4 w-4 animate-spin" />;
     if (status.isWorking) return <CheckCircle className="h-4 w-4 text-green-600" />;
-    if (status.provider === 'mock') return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+    if (status.provider === 'MockScreenshotProvider') return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
     return <XCircle className="h-4 w-4 text-red-600" />;
   };
 
   const getStatusBadge = () => {
     if (!status) return <Badge variant="secondary">Checking...</Badge>;
-    if (status.isWorking && status.provider === 'screenshotone') return <Badge className="bg-green-100 text-green-800">ScreenshotOne Active</Badge>;
-    if (status.provider === 'mock') return <Badge className="bg-yellow-100 text-yellow-800">Mock Service</Badge>;
+    if (status.isWorking && status.provider === 'ScreenshotOneProvider') return <Badge className="bg-green-100 text-green-800">ScreenshotOne Active</Badge>;
+    if (status.provider === 'MockScreenshotProvider') return <Badge className="bg-yellow-100 text-yellow-800">Mock Service</Badge>;
     return <Badge variant="destructive">Service Error</Badge>;
+  };
+
+  const getApiKeySourceIcon = (source: string) => {
+    switch (source) {
+      case 'server': return <Server className="h-3 w-3" />;
+      case 'environment': return <FileText className="h-3 w-3" />;
+      default: return <XCircle className="h-3 w-3" />;
+    }
+  };
+
+  const getApiKeySourceLabel = (source: string) => {
+    switch (source) {
+      case 'server': return 'Supabase Secrets';
+      case 'environment': return 'Environment Variable';
+      default: return 'Not Configured';
+    }
   };
 
   return (
@@ -122,7 +111,13 @@ export const ScreenshotServiceDebugger: React.FC = () => {
           <>
             <div className="text-xs space-y-1">
               <div>Provider: <span className="font-mono">{status.provider}</span></div>
-              <div>API Key: <span className="font-mono">{status.apiKeySource}</span></div>
+              <div className="flex items-center gap-2">
+                <span>API Key:</span>
+                <div className="flex items-center gap-1">
+                  {getApiKeySourceIcon(status.apiKeySource)}
+                  <span className="font-mono">{getApiKeySourceLabel(status.apiKeySource)}</span>
+                </div>
+              </div>
               <div>Last Checked: <span className="font-mono">{status.lastChecked.toLocaleTimeString()}</span></div>
             </div>
 
@@ -134,11 +129,11 @@ export const ScreenshotServiceDebugger: React.FC = () => {
               </Alert>
             )}
 
-            {status.provider === 'mock' && (
+            {status.provider === 'MockScreenshotProvider' && (
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription className="text-xs">
-                  Using mock data. To use real screenshots, configure your ScreenshotOne API key.
+                  Using mock data. To use real screenshots, configure your ScreenshotOne API key via Supabase secrets or environment variables.
                 </AlertDescription>
               </Alert>
             )}
@@ -147,7 +142,16 @@ export const ScreenshotServiceDebugger: React.FC = () => {
               <Alert variant="destructive">
                 <XCircle className="h-4 w-4" />
                 <AlertDescription className="text-xs">
-                  No ScreenshotOne API key found. Please add VITE_SCREENSHOTONE_API_KEY to your environment or configure it via Supabase secrets.
+                  No ScreenshotOne API key found. Please configure it via Supabase secrets or add VITE_SCREENSHOTONE_API_KEY to your environment variables.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {status.apiKeySource === 'environment' && (
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  Using environment variable. For production, consider configuring via Supabase secrets for better security.
                 </AlertDescription>
               </Alert>
             )}
