@@ -16,6 +16,7 @@ export interface SavedChatAnalysis {
   confidence_score: number;
   analysis_type: string;
   created_at: string;
+  batch_uploads?: any[];
 }
 
 export const useChatAnalysisHistory = () => {
