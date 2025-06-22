@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { SplitScreenLayout } from './SplitScreenLayout';
 import { ModernSplitSignInForm } from './ModernSplitSignInForm';
@@ -79,8 +80,7 @@ export const SplitScreenAuth: React.FC = () => {
 
   return (
     <SplitScreenLayout
-      backgroundVideo={backgroundMedia.type === 'video' ? backgroundMedia.url : undefined}
-      backgroundImage={backgroundMedia.type === 'image' ? backgroundMedia.url : undefined}
+      backgroundImage={backgroundMedia.url}
       imageAlt={backgroundMedia.alt}
     >
       {renderForm()}
