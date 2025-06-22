@@ -1,13 +1,14 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Globe, Check, AlertCircle, X, Loader2 } from 'lucide-react';
+import { Globe, Check, AlertCircle, X, Loader2, Settings } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useToast } from '@/hooks/use-toast';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
-import { ScreenshotServiceDebugger } from './ScreenshotServiceDebugger';
+import { ScreenshotServiceStatus } from './ScreenshotServiceStatus';
 
 interface URLInputHandlerProps {
   showUrlInput: boolean;
@@ -27,7 +28,7 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
   const [urlInput, setUrlInput] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [showDebugger, setShowDebugger] = useState(false);
+  const [showServiceStatus, setShowServiceStatus] = useState(false);
   const { toast } = useToast();
 
   if (!showUrlInput) return null;
@@ -78,6 +79,10 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
     setValidationError(null);
 
     try {
+      // Check screenshot service status first
+      const serviceStatus = await ScreenshotCaptureService.getServiceStatus();
+      console.log('📸 Screenshot service status:', serviceStatus);
+
       // Create attachment immediately for UI feedback
       const newAttachment: ChatAttachment = {
         id: crypto.randomUUID(),
@@ -101,10 +106,18 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
       onClose();
       setIsValidating(false);
 
-      toast({
-        title: "Website Added",
-        description: `${validation.hostname} added. Capturing screenshots...`,
-      });
+      // Show different messages based on service status
+      if (!serviceStatus.isWorking) {
+        toast({
+          title: "Website Added",
+          description: `${validation.hostname} added. Screenshots disabled - will analyze without images.`,
+        });
+      } else {
+        toast({
+          title: "Website Added",
+          description: `${validation.hostname} added. Capturing screenshots...`,
+        });
+      }
 
       // Capture screenshots in background
       try {
@@ -125,6 +138,7 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
               success: screenshotResults.desktop?.[0]?.success || false,
               url: validation.formattedUrl,
               screenshotUrl: screenshotResults.desktop?.[0]?.screenshotUrl,
+              thumbnailUrl: screenshotResults.desktop?.[0]?.thumbnailUrl,
               error: screenshotResults.desktop?.[0]?.success === false ? 
                 (screenshotResults.desktop?.[0]?.error || 'Desktop screenshot failed') : undefined
             },
@@ -132,6 +146,7 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
               success: screenshotResults.mobile?.[0]?.success || false,
               url: validation.formattedUrl,
               screenshotUrl: screenshotResults.mobile?.[0]?.screenshotUrl,
+              thumbnailUrl: screenshotResults.mobile?.[0]?.thumbnailUrl,
               error: screenshotResults.mobile?.[0]?.success === false ? 
                 (screenshotResults.mobile?.[0]?.error || 'Mobile screenshot failed') : undefined
             }
@@ -154,11 +169,19 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
             description: `Successfully captured ${desktopSuccess && mobileSuccess ? 'desktop and mobile' : desktopSuccess ? 'desktop' : 'mobile'} screenshots.`,
           });
         } else {
-          toast({
-            variant: "destructive",
-            title: "Screenshot Capture Failed",
-            description: `Unable to capture screenshots for ${validation.hostname}. The website will still be analyzed.`,
-          });
+          // Show appropriate message based on service status
+          if (!serviceStatus.isWorking) {
+            toast({
+              title: "Screenshots Disabled",
+              description: `Screenshot service not configured. Analysis will continue without images.`,
+            });
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Screenshot Capture Failed",
+              description: `Unable to capture screenshots for ${validation.hostname}. Website will still be analyzed.`,
+            });
+          }
         }
 
       } catch (screenshotError) {
@@ -174,11 +197,20 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
           }
         });
 
-        toast({
-          variant: "destructive",
-          title: "Screenshot Capture Failed",
-          description: `Screenshots unavailable for ${validation.hostname}. The website will still be analyzed.`,
-        });
+        // Check service status for appropriate error message
+        const currentStatus = await ScreenshotCaptureService.getServiceStatus();
+        if (!currentStatus.hasApiKey) {
+          toast({
+            title: "Screenshots Disabled",
+            description: `Screenshot service not configured. ${validation.hostname} will be analyzed without images.`,
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Screenshot Capture Failed",
+            description: `Screenshots unavailable for ${validation.hostname}. Website will still be analyzed.`,
+          });
+        }
       }
 
     } catch (error) {
@@ -222,12 +254,13 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <Button
-            onClick={() => setShowDebugger(!showDebugger)}
+            onClick={() => setShowServiceStatus(!showServiceStatus)}
             variant="ghost"
             size="sm"
-            className="h-6 w-16 p-0 text-xs"
+            className="h-6 px-2 text-xs"
           >
-            Debug
+            <Settings className="h-3 w-3 mr-1" />
+            Setup
           </Button>
           <Button
             onClick={onClose}
@@ -240,8 +273,12 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
         </div>
       </div>
 
-      {/* Service Debugger */}
-      {showDebugger && <ScreenshotServiceDebugger />}
+      {/* Service Status */}
+      {showServiceStatus && (
+        <div className="mb-4">
+          <ScreenshotServiceStatus showCompact={true} />
+        </div>
+      )}
 
       <div className="space-y-3">
         <div className="flex gap-2">

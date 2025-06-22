@@ -56,6 +56,10 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
         return;
       }
 
+      // Check screenshot service status first
+      const serviceStatus = await ScreenshotCaptureService.getServiceStatus();
+      console.log('📸 Screenshot service status:', serviceStatus);
+
       // Create new URL attachment with processing status
       const newAttachment: ChatAttachment = {
         id: crypto.randomUUID(),
@@ -71,18 +75,26 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
         }
       };
 
-      console.log('Creating new URL attachment with screenshot capture:', newAttachment);
+      console.log('Creating new URL attachment:', newAttachment);
       setAttachments(prev => [...prev, newAttachment]);
       
       setUrlInput('');
       setShowUrlInput(false);
       
-      toast({
-        title: "Website Added",
-        description: `${hostname} has been added. Capturing screenshots...`,
-      });
+      // Show different messages based on service status
+      if (!serviceStatus.isWorking) {
+        toast({
+          title: "Website Added",
+          description: `${hostname} added. Screenshots disabled - analysis will continue without images.`,
+        });
+      } else {
+        toast({
+          title: "Website Added",
+          description: `${hostname} added. Capturing screenshots...`,
+        });
+      }
 
-      // Capture screenshots in the background
+      // Attempt screenshot capture regardless of service status
       try {
         console.log('📸 Starting screenshot capture for:', formattedUrl);
         
@@ -97,14 +109,31 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
         // Update the attachment with screenshot data
         setAttachments(prev => prev.map(att => {
           if (att.id === newAttachment.id) {
+            const desktopResult = screenshotResults.desktop?.[0];
+            const mobileResult = screenshotResults.mobile?.[0];
+            
             return {
               ...att,
               status: 'uploaded',
               metadata: {
                 ...att.metadata,
                 screenshots: {
-                  desktop: screenshotResults.desktop?.[0] || { success: false, url: formattedUrl, error: 'Desktop screenshot failed' },
-                  mobile: screenshotResults.mobile?.[0] || { success: false, url: formattedUrl, error: 'Mobile screenshot failed' }
+                  desktop: {
+                    success: desktopResult?.success || false,
+                    url: formattedUrl,
+                    screenshotUrl: desktopResult?.screenshotUrl,
+                    thumbnailUrl: desktopResult?.thumbnailUrl,
+                    error: desktopResult?.success === false ? 
+                      (desktopResult?.error || 'Desktop screenshot failed') : undefined
+                  },
+                  mobile: {
+                    success: mobileResult?.success || false,
+                    url: formattedUrl,
+                    screenshotUrl: mobileResult?.screenshotUrl,
+                    thumbnailUrl: mobileResult?.thumbnailUrl,
+                    error: mobileResult?.success === false ? 
+                      (mobileResult?.error || 'Mobile screenshot failed') : undefined
+                  }
                 }
               }
             };
@@ -121,11 +150,19 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
             description: `Successfully captured ${desktopSuccess && mobileSuccess ? 'desktop and mobile' : desktopSuccess ? 'desktop' : 'mobile'} screenshots for ${hostname}.`,
           });
         } else {
-          toast({
-            variant: "destructive",
-            title: "Screenshot Capture Failed",
-            description: `Unable to capture screenshots for ${hostname}. The website will still be analyzed.`,
-          });
+          // Provide helpful error message based on service status
+          if (!serviceStatus.isWorking) {
+            toast({
+              title: "Screenshots Disabled",
+              description: `Screenshot service not configured. ${hostname} will be analyzed without images.`,
+            });
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Screenshot Capture Failed",
+              description: `Unable to capture screenshots for ${hostname}. Website will still be analyzed.`,
+            });
+          }
         }
 
       } catch (screenshotError) {
@@ -140,8 +177,16 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
               metadata: {
                 ...att.metadata,
                 screenshots: {
-                  desktop: { success: false, url: formattedUrl, error: 'Screenshot service unavailable' },
-                  mobile: { success: false, url: formattedUrl, error: 'Screenshot service unavailable' }
+                  desktop: { 
+                    success: false, 
+                    url: formattedUrl, 
+                    error: 'Screenshot service unavailable'
+                  },
+                  mobile: { 
+                    success: false, 
+                    url: formattedUrl, 
+                    error: 'Screenshot service unavailable'
+                  }
                 }
               }
             };
@@ -149,11 +194,20 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
           return att;
         }));
 
-        toast({
-          variant: "destructive",
-          title: "Screenshot Capture Failed",
-          description: `Unable to capture screenshots for ${hostname}. The website will still be analyzed.`,
-        });
+        // Show appropriate error message
+        const serviceStatus = await ScreenshotCaptureService.getServiceStatus();
+        if (!serviceStatus.hasApiKey) {
+          toast({
+            title: "Screenshots Disabled",
+            description: `Screenshot service not configured. ${hostname} will be analyzed without images.`,
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Screenshot Capture Failed",
+            description: `Screenshots unavailable for ${hostname}. Website will still be analyzed.`,
+          });
+        }
       }
 
     } catch (error) {

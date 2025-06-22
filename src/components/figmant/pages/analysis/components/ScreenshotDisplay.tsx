@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Globe, Image as ImageIcon } from 'lucide-react';
+import { Globe, Image as ImageIcon, AlertTriangle, Camera } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { EnhancedImage } from './EnhancedImage';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ScreenshotDisplayProps {
   attachment: ChatAttachment;
@@ -19,6 +20,11 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({
   
   const desktopUrl = hasDesktopScreenshot ? attachment.metadata.screenshots.desktop.thumbnailUrl || attachment.metadata.screenshots.desktop.url : null;
   const mobileUrl = hasMobileScreenshot ? attachment.metadata.screenshots.mobile.thumbnailUrl || attachment.metadata.screenshots.mobile.url : null;
+
+  // Get error messages if screenshots failed
+  const desktopError = attachment.metadata?.screenshots?.desktop?.error;
+  const mobileError = attachment.metadata?.screenshots?.mobile?.error;
+  const hasScreenshotErrors = desktopError || mobileError;
 
   // If we have screenshots, show them
   if (hasDesktopScreenshot || hasMobileScreenshot) {
@@ -49,14 +55,45 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({
     );
   }
 
-  // Fallback for URL attachments without screenshots
+  // Show error state for URL attachments when screenshots failed
   if (attachment.type === 'url') {
     return (
-      <div className={`bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center ${className}`}>
-        <div className="text-center text-gray-600">
-          <Globe className="w-8 h-8 mx-auto mb-2 text-blue-500" />
-          <p className="text-sm font-medium">{attachment.name}</p>
-          <p className="text-xs text-gray-500 mt-1">Website Link</p>
+      <div className={`bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-4 ${className}`}>
+        <div className="text-center">
+          <div className="flex items-center justify-center mb-3">
+            <div className="relative">
+              <Globe className="w-8 h-8 text-gray-400" />
+              {hasScreenshotErrors && (
+                <div className="absolute -top-1 -right-1 bg-yellow-100 rounded-full p-1">
+                  <AlertTriangle className="w-3 h-3 text-yellow-600" />
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <p className="text-sm font-medium text-gray-700 mb-1">{attachment.name}</p>
+          
+          {hasScreenshotErrors ? (
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500">Screenshot capture failed</p>
+              {(desktopError || mobileError) && (
+                <Alert className="text-left">
+                  <AlertTriangle className="h-3 w-3" />
+                  <AlertDescription className="text-xs">
+                    {desktopError || mobileError}
+                  </AlertDescription>
+                </Alert>
+              )}
+              <p className="text-xs text-blue-600">Website will still be analyzed</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center justify-center gap-1 text-xs text-gray-500">
+                <Camera className="w-3 h-3" />
+                <span>Processing screenshot...</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
