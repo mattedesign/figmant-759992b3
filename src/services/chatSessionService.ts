@@ -82,7 +82,11 @@ export class ChatSessionService {
       throw new Error('Failed to load messages');
     }
 
-    return data || [];
+    // Type cast the role field to ensure TypeScript compatibility
+    return (data || []).map(msg => ({
+      ...msg,
+      role: msg.role as 'user' | 'assistant'  // Explicit casting to fix type error
+    }));
   }
 
   // Save file attachment
