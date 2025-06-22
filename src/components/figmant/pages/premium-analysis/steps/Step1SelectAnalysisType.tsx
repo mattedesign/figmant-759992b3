@@ -12,6 +12,7 @@ import { CreditCostDisplay } from '../components/CreditCostDisplay';
 import { TemplatePreviewModal } from '../components/TemplatePreviewModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useTemplateCreditStore } from '@/stores/templateCreditStore';
+import { getAnalysisCost } from '@/hooks/premium-analysis/creditCostManager';
 
 interface Step1SelectAnalysisTypeProps extends StepProps {
   onCreditCostChange?: (creditCost: number) => void;
@@ -65,9 +66,9 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
     return [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'cost-low':
-          return (a.credit_cost || 3) - (b.credit_cost || 3);
+          return getAnalysisCost(a.id) - getAnalysisCost(b.id);
         case 'cost-high':
-          return (b.credit_cost || 3) - (a.credit_cost || 3);
+          return getAnalysisCost(b.id) - getAnalysisCost(a.id);
         case 'rating':
           return (b.effectiveness_rating || 0) - (a.effectiveness_rating || 0);
         case 'popular':
@@ -286,11 +287,11 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
                         {[...Array(5)].map((_, i) => (
                           <Star 
                             key={i} 
-                            className={`w-3 h-3 ${i < template.effectiveness_rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                            className={`w-3 h-3 ${i < (template.effectiveness_rating || 4) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
                           />
                         ))}
                       </div>
-                      <span className="text-xs text-gray-500">({template.effectiveness_rating}/5)</span>
+                      <span className="text-xs text-gray-500">({template.effectiveness_rating || 4}/5)</span>
                     </div>
                   </div>
                 )}
@@ -298,7 +299,7 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
                 {/* Action Buttons */}
                 <div className="flex items-center justify-between mt-4">
                   <div className="flex items-center gap-1">
-                    <span className="font-bold text-lg text-blue-600">{template.credit_cost || 3}</span>
+                    <span className="font-bold text-lg text-blue-600">{getAnalysisCost(template.id)}</span>
                     <span className="text-xs text-gray-500">credits</span>
                   </div>
                   
