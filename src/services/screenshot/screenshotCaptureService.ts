@@ -233,6 +233,33 @@ export class ScreenshotCaptureService {
     }
   }
 
+  // Test service method for debugger component
+  static async testService(): Promise<{ isWorking: boolean; provider: string; error?: string }> {
+    try {
+      const provider = await this.getProvider();
+      const providerName = provider.constructor.name;
+      
+      // Test with a simple URL
+      const testResult = await provider.captureScreenshot('https://example.com', {
+        width: 800,
+        height: 600,
+        format: 'png'
+      });
+      
+      return {
+        isWorking: testResult.success,
+        provider: providerName,
+        error: testResult.error
+      };
+    } catch (error) {
+      return {
+        isWorking: false,
+        provider: 'unknown',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
   // Get current API key status without testing
   static getApiKeyStatus(): {
     status: string;
