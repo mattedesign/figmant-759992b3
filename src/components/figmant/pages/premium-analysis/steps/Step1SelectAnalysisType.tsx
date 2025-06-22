@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { StepProps } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { Lightbulb, Target, TrendingUp, Users, Zap, CheckCircle, Star } from 'lucide-react';
 import { CreditCostDisplay } from '../components/CreditCostDisplay';
@@ -24,6 +24,8 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
   const { data: templates = [], isLoading } = useFigmantPromptTemplates();
   const [selectedTemplateCreditCost, setSelectedTemplateCreditCost] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [previewTemplate, setPreviewTemplate] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
   const { setTemplateCreditCost, resetCreditCost } = useTemplateCreditStore();
 
   // Reset credit cost when leaving the page
@@ -171,6 +173,21 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
                     />
                   ))}
                   <span className="text-xs text-gray-500 ml-1">(4/5)</span>
+                </div>
+                
+                <div className="mt-3">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewTemplate(template);
+                      setShowPreview(true);
+                    }}
+                    className="w-full"
+                  >
+                    Preview Template
+                  </Button>
                 </div>
               </CardContent>
             </Card>
