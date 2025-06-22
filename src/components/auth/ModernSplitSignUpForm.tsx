@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,7 +51,10 @@ export const ModernSplitSignUpForm: React.FC<ModernSplitSignUpFormProps> = ({ on
   return (
     <div className="w-full">
       <div className="mb-8">
-        <h2 className="text-3xl font-normal text-gray-900 mb-2">Create your account</h2>
+        <h2 className="text-4xl font-bold text-gray-900 mb-2">
+          Don't give a hoot.<br />
+          Owl we want is you.
+        </h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
