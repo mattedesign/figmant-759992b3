@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Save, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,6 +29,7 @@ export const SimplifiedProfile: React.FC = () => {
   const { user, profile, refetchUserData } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   // Initialize form data with profile data or defaults
   const [formData, setFormData] = useState({
@@ -86,9 +88,11 @@ export const SimplifiedProfile: React.FC = () => {
       if (error) throw error;
 
       await refetchUserData();
+      setLastSaved(new Date());
       toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated.",
+        title: "✅ Profile Updated",
+        description: "Your profile has been saved successfully.",
+        duration: 4000,
       });
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -104,7 +108,7 @@ export const SimplifiedProfile: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Card>
+      <Card className={`transition-all duration-300 ${loading ? 'opacity-75' : ''}`}>
         <CardHeader>
           <CardTitle>Profile Settings</CardTitle>
           <CardDescription>
@@ -260,10 +264,35 @@ export const SimplifiedProfile: React.FC = () => {
 
           <Separator />
 
-          {/* Save Button */}
-          <div className="flex justify-end">
-            <Button onClick={handleSave} disabled={loading}>
-              {loading ? 'Saving...' : 'Save Changes'}
+          {/* Last Saved Indicator */}
+          {lastSaved && (
+            <div className="flex justify-end mb-4">
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>Last saved: {lastSaved.toLocaleTimeString()}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Save Button with Enhanced Feedback */}
+          <div className="flex justify-end space-x-3">
+            <Button 
+              onClick={handleSave} 
+              disabled={loading}
+              className="flex items-center space-x-2 min-w-[140px]"
+              variant={loading ? "secondary" : "default"}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  <span>Save Changes</span>
+                </>
+              )}
             </Button>
           </div>
         </CardContent>
