@@ -105,6 +105,36 @@ export class ChatSessionService {
     }));
   }
 
+  // Get session attachments safely
+  static async getSessionAttachmentsSafe(sessionId: string, userId: string) {
+    const { data, error } = await supabase.rpc('get_session_attachments_safe', {
+      p_session_id: sessionId,
+      p_user_id: userId
+    });
+
+    if (error) {
+      console.error('Error loading session attachments:', error);
+      throw new Error('Failed to load session attachments');
+    }
+
+    return data || [];
+  }
+
+  // Get session links safely
+  static async getSessionLinksSafe(sessionId: string, userId: string) {
+    const { data, error } = await supabase.rpc('get_session_links_safe', {
+      p_session_id: sessionId,
+      p_user_id: userId
+    });
+
+    if (error) {
+      console.error('Error loading session links:', error);
+      throw new Error('Failed to load session links');
+    }
+
+    return data || [];
+  }
+
   // Save file attachment
   static async saveAttachment(
     sessionId: string,
@@ -279,14 +309,8 @@ export class ChatSessionService {
       if (!user) throw new Error('User not authenticated');
 
       const [attachmentsData, linksData] = await Promise.all([
-        supabase.rpc('get_session_attachments_safe', {
-          p_session_id: sessionId,
-          p_user_id: user.id
-        }),
-        supabase.rpc('get_session_links_safe', {
-          p_session_id: sessionId,
-          p_user_id: user.id
-        })
+        this.getSessionAttachmentsSafe(sessionId, user.id),
+        this.getSessionLinksSafe(sessionId, user.id)
       ]);
 
       return {
@@ -298,8 +322,8 @@ export class ChatSessionService {
           attachments: msg.attachments?.length
         })),
         totalMessages: messages.length,
-        sessionAttachments: attachmentsData.data || [],
-        sessionLinks: linksData.data || []
+        sessionAttachments: attachmentsData,
+        sessionLinks: linksData
       };
     } catch (error) {
       console.error('Error getting conversation summary:', error);

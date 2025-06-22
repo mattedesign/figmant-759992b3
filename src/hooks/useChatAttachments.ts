@@ -1,5 +1,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { ChatSessionService } from '@/services/chatSessionService';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useToast } from '@/hooks/use-toast';
