@@ -44,6 +44,7 @@ export interface AnalysisSummaryMetrics {
   attachmentsAnalyzed: number;
   categoriesIdentified: string[];
   estimatedImplementationTime?: string;
+  fileAssociationRate?: number; // Optional percentage of files with recommendations
 }
 
 export interface ContextualAnalysisResult {

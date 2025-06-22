@@ -1,434 +1,299 @@
 
-import { AnalysisAttachment, ContextualRecommendation, ContextualAnalysisResult, AnalysisSummaryMetrics } from '@/types/contextualAnalysis';
+import { ContextualAnalysisResult, ContextualRecommendation, AnalysisAttachment, AnalysisSummaryMetrics } from '@/types/contextualAnalysis';
 
-/**
- * Enhanced processor for converting raw Claude analysis into structured recommendations
- */
 export class EnhancedContextualAnalysisProcessor {
-  
-  /**
-   * Main method to process Claude's analysis response into structured format
-   */
   static processAnalysisResponse(
-    analysisResponse: string,
+    analysisText: string,
     attachments: AnalysisAttachment[],
-    analysisType: string,
-    projectName: string
+    analysisType: string = 'general',
+    projectName: string = 'Analysis'
   ): ContextualAnalysisResult {
-    const recommendations = this.extractRecommendations(analysisResponse, attachments);
+    console.log('🔄 Processing enhanced contextual analysis...');
+    
+    const recommendations = this.extractRecommendations(analysisText, attachments);
     const metrics = this.calculateMetrics(recommendations, attachments);
     
-    return {
+    // Calculate file association rate if we have attachments
+    if (attachments.length > 0) {
+      const attachmentsWithRecommendations = new Set(
+        recommendations.flatMap(rec => rec.relatedAttachmentIds)
+      ).size;
+      metrics.fileAssociationRate = Math.round((attachmentsWithRecommendations / attachments.length) * 100);
+    }
+
+    const result: ContextualAnalysisResult = {
       id: `analysis-${Date.now()}`,
-      summary: this.extractSummary(analysisResponse),
+      summary: this.extractSummary(analysisText),
       recommendations,
       attachments,
       metrics,
       createdAt: new Date().toISOString(),
       analysisType
     };
+
+    console.log('✅ Enhanced contextual analysis processed:', {
+      recommendationsCount: recommendations.length,
+      attachmentsCount: attachments.length,
+      fileAssociationRate: metrics.fileAssociationRate
+    });
+
+    return result;
   }
 
-  /**
-   * Extract structured recommendations from Claude's text response
-   */
   private static extractRecommendations(
-    analysisResponse: string,
+    analysisText: string,
     attachments: AnalysisAttachment[]
   ): ContextualRecommendation[] {
     const recommendations: ContextualRecommendation[] = [];
     
-    // Split by common section markers
-    const sections = this.splitIntoSections(analysisResponse);
-    
-    sections.forEach((section, index) => {
-      if (this.isRecommendationSection(section)) {
-        const recommendation = this.parseRecommendationSection(section, index, attachments);
-        if (recommendation) {
-          recommendations.push(recommendation);
+    // Try to parse structured recommendations from the analysis text
+    const lines = analysisText.split('\n');
+    let currentRecommendation: Partial<ContextualRecommendation> | null = null;
+    let recommendationCounter = 1;
+
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      
+      // Look for recommendation headers
+      if (this.isRecommendationHeader(trimmedLine)) {
+        // Save previous recommendation if exists
+        if (currentRecommendation && currentRecommendation.title) {
+          recommendations.push(this.finalizeRecommendation(currentRecommendation, recommendationCounter++, attachments));
+        }
+        
+        // Start new recommendation
+        currentRecommendation = {
+          title: this.extractTitle(trimmedLine),
+          description: '',
+          category: this.determineCategory(trimmedLine),
+          priority: this.determinePriority(trimmedLine),
+          confidence: this.extractConfidence(trimmedLine),
+          relatedAttachmentIds: this.findRelatedAttachments(trimmedLine, attachments),
+          specificFindings: [],
+          suggestedActions: []
+        };
+      } else if (currentRecommendation && trimmedLine) {
+        // Accumulate description and other details
+        if (this.isActionItem(trimmedLine)) {
+          currentRecommendation.suggestedActions = currentRecommendation.suggestedActions || [];
+          currentRecommendation.suggestedActions.push(trimmedLine.replace(/^[-•*]\s*/, ''));
+        } else if (this.isFinding(trimmedLine)) {
+          currentRecommendation.specificFindings = currentRecommendation.specificFindings || [];
+          currentRecommendation.specificFindings.push(trimmedLine.replace(/^[-•*]\s*/, ''));
+        } else {
+          currentRecommendation.description += (currentRecommendation.description ? ' ' : '') + trimmedLine;
         }
       }
-    });
+    }
 
-    // If no structured recommendations found, create from paragraphs
+    // Don't forget the last recommendation
+    if (currentRecommendation && currentRecommendation.title) {
+      recommendations.push(this.finalizeRecommendation(currentRecommendation, recommendationCounter, attachments));
+    }
+
+    // If no structured recommendations found, create general ones
     if (recommendations.length === 0) {
-      return this.createRecommendationsFromParagraphs(analysisResponse, attachments);
+      recommendations.push(...this.createFallbackRecommendations(analysisText, attachments));
     }
 
     return recommendations;
   }
 
-  /**
-   * Split analysis into logical sections based on markers
-   */
-  private static splitIntoSections(text: string): string[] {
-    // Common section markers in Claude responses
-    const sectionMarkers = [
-      /^\d+\.\s+/gm,           // "1. ", "2. ", etc.
-      /^#{1,3}\s+/gm,          // Markdown headers
-      /^\*\*[^*]+\*\*$/gm,     // Bold headers
-      /^[A-Z][^:]+:$/gm,       // Title case headers ending with colon
-      /^-\s+/gm                // Bullet points
+  private static isRecommendationHeader(line: string): boolean {
+    const patterns = [
+      /^\d+\.\s+/,  // "1. "
+      /^[-•*]\s+/,  // "- " or "• " or "* "
+      /recommendation/i,
+      /suggestion/i,
+      /improve/i,
+      /consider/i,
+      /^\s*#{1,6}\s+/  // Markdown headers
     ];
-
-    let sections = [text];
     
-    sectionMarkers.forEach(marker => {
-      sections = sections.flatMap(section => 
-        section.split(marker).filter(s => s.trim().length > 50)
-      );
-    });
-
-    return sections.filter(section => section.trim().length > 100);
+    return patterns.some(pattern => pattern.test(line));
   }
 
-  /**
-   * Check if a section contains recommendation content
-   */
-  private static isRecommendationSection(section: string): boolean {
-    const recommendationKeywords = [
-      'recommend', 'suggest', 'improve', 'optimize', 'enhance', 
-      'consider', 'should', 'could', 'would', 'better',
-      'issue', 'problem', 'opportunity', 'change'
-    ];
-
-    const lowerSection = section.toLowerCase();
-    return recommendationKeywords.some(keyword => lowerSection.includes(keyword));
-  }
-
-  /**
-   * Parse a section into a structured recommendation
-   */
-  private static parseRecommendationSection(
-    section: string,
-    index: number,
-    attachments: AnalysisAttachment[]
-  ): ContextualRecommendation | null {
-    const lines = section.split('\n').filter(line => line.trim());
-    if (lines.length === 0) return null;
-
-    const title = this.extractTitle(lines[0]) || `Recommendation ${index + 1}`;
-    const description = section.trim();
-    const category = this.categorizeRecommendation(section);
-    const priority = this.determinePriority(section);
-    const confidence = this.calculateConfidence(section);
-    
-    return {
-      id: `rec-${Date.now()}-${index}`,
-      title,
-      description,
-      category,
-      priority,
-      confidence,
-      relatedAttachmentIds: this.findRelatedAttachments(section, attachments),
-      specificFindings: this.extractFindings(section),
-      suggestedActions: this.extractActions(section),
-      estimatedImpact: this.extractImpact(section)
-    };
-  }
-
-  /**
-   * Extract title from the first line of a section
-   */
-  private static extractTitle(firstLine: string): string {
-    // Remove markdown formatting and numbers
-    return firstLine
+  private static extractTitle(line: string): string {
+    // Remove numbering, bullets, and common prefixes
+    return line
       .replace(/^\d+\.\s*/, '')
-      .replace(/^#+\s*/, '')
-      .replace(/^\*\*([^*]+)\*\*/, '$1')
-      .replace(/:$/, '')
+      .replace(/^[-•*]\s*/, '')
+      .replace(/^#{1,6}\s*/, '')
+      .replace(/^(recommendation|suggestion):\s*/i, '')
       .trim()
-      .substring(0, 100);
+      .substring(0, 100); // Limit title length
   }
 
-  /**
-   * Categorize recommendation based on content
-   */
-  private static categorizeRecommendation(content: string): ContextualRecommendation['category'] {
-    const lowerContent = content.toLowerCase();
+  private static determineCategory(text: string): ContextualRecommendation['category'] {
+    const lowerText = text.toLowerCase();
     
-    if (lowerContent.includes('conversion') || lowerContent.includes('cta') || lowerContent.includes('button')) {
-      return 'conversion';
-    }
-    if (lowerContent.includes('accessibility') || lowerContent.includes('contrast') || lowerContent.includes('screen reader')) {
-      return 'accessibility';
-    }
-    if (lowerContent.includes('performance') || lowerContent.includes('speed') || lowerContent.includes('load')) {
-      return 'performance';
-    }
-    if (lowerContent.includes('brand') || lowerContent.includes('logo') || lowerContent.includes('color')) {
-      return 'branding';
-    }
-    if (lowerContent.includes('content') || lowerContent.includes('copy') || lowerContent.includes('text')) {
-      return 'content';
-    }
+    if (lowerText.includes('conversion') || lowerText.includes('cta') || lowerText.includes('button')) return 'conversion';
+    if (lowerText.includes('accessibility') || lowerText.includes('a11y') || lowerText.includes('wcag')) return 'accessibility';
+    if (lowerText.includes('performance') || lowerText.includes('speed') || lowerText.includes('loading')) return 'performance';
+    if (lowerText.includes('brand') || lowerText.includes('color') || lowerText.includes('logo')) return 'branding';
+    if (lowerText.includes('content') || lowerText.includes('text') || lowerText.includes('copy')) return 'content';
     
-    return 'ux';
+    return 'ux'; // Default category
   }
 
-  /**
-   * Determine priority based on urgency indicators
-   */
-  private static determinePriority(content: string): ContextualRecommendation['priority'] {
-    const lowerContent = content.toLowerCase();
+  private static determinePriority(text: string): ContextualRecommendation['priority'] {
+    const lowerText = text.toLowerCase();
     
-    if (lowerContent.includes('critical') || lowerContent.includes('urgent') || lowerContent.includes('high impact')) {
-      return 'high';
-    }
-    if (lowerContent.includes('minor') || lowerContent.includes('low impact') || lowerContent.includes('consider')) {
-      return 'low';
-    }
+    if (lowerText.includes('critical') || lowerText.includes('urgent') || lowerText.includes('high')) return 'high';
+    if (lowerText.includes('low') || lowerText.includes('minor') || lowerText.includes('nice')) return 'low';
     
-    return 'medium';
+    return 'medium'; // Default priority
   }
 
-  /**
-   * Calculate confidence score based on language certainty
-   */
-  private static calculateConfidence(content: string): number {
-    const lowerContent = content.toLowerCase();
-    let confidence = 75; // Base confidence
+  private static extractConfidence(text: string): number {
+    // Look for confidence indicators in the text
+    const confidenceMatch = text.match(/(\d+)%/);
+    if (confidenceMatch) {
+      return parseInt(confidenceMatch[1], 10);
+    }
     
-    // Increase confidence for definitive language
-    if (lowerContent.includes('definitely') || lowerContent.includes('clearly')) confidence += 15;
-    if (lowerContent.includes('obviously') || lowerContent.includes('certainly')) confidence += 10;
+    // Default confidence based on content quality
+    const lowerText = text.toLowerCase();
+    if (lowerText.includes('data') || lowerText.includes('research') || lowerText.includes('study')) return 90;
+    if (lowerText.includes('best practice') || lowerText.includes('standard')) return 85;
+    if (lowerText.includes('suggest') || lowerText.includes('consider')) return 70;
     
-    // Decrease confidence for uncertain language
-    if (lowerContent.includes('might') || lowerContent.includes('possibly')) confidence -= 15;
-    if (lowerContent.includes('perhaps') || lowerContent.includes('maybe')) confidence -= 10;
-    
-    return Math.min(95, Math.max(60, confidence));
+    return 75; // Default confidence
   }
 
-  /**
-   * Enhanced method to find attachments related to this recommendation
-   */
-  private static findRelatedAttachments(content: string, attachments: AnalysisAttachment[]): string[] {
-    const lowerContent = content.toLowerCase();
+  private static findRelatedAttachments(text: string, attachments: AnalysisAttachment[]): string[] {
     const relatedIds: string[] = [];
     
+    // Look for file name mentions in the text
     attachments.forEach(attachment => {
-      let relevanceScore = 0;
+      const fileName = attachment.name.toLowerCase();
+      const baseName = fileName.replace(/\.[^/.]+$/, ''); // Remove extension
       
-      // Direct file name mentions (highest score)
-      if (lowerContent.includes(attachment.name.toLowerCase())) {
-        relevanceScore += 100;
-      }
-      
-      // Domain mentions for URLs
-      if (attachment.type === 'url' && attachment.metadata?.domain) {
-        if (lowerContent.includes(attachment.metadata.domain.toLowerCase())) {
-          relevanceScore += 80;
-        }
-      }
-      
-      // Semantic content matching
-      relevanceScore += this.calculateSemanticRelevance(content, attachment);
-      
-      // Type-based contextual matching
-      relevanceScore += this.calculateTypeBasedRelevance(content, attachment);
-      
-      // Include if relevance score is above threshold
-      if (relevanceScore >= 30) {
+      if (text.toLowerCase().includes(fileName) || text.toLowerCase().includes(baseName)) {
         relatedIds.push(attachment.id);
       }
     });
-    
+
+    // If no specific mentions, associate with all attachments for general recommendations
+    if (relatedIds.length === 0 && attachments.length > 0) {
+      return [attachments[0].id]; // Associate with first attachment as fallback
+    }
+
     return relatedIds;
   }
 
-  /**
-   * Calculate semantic relevance between recommendation content and attachment
-   */
-  private static calculateSemanticRelevance(content: string, attachment: AnalysisAttachment): number {
-    const lowerContent = content.toLowerCase();
-    let score = 0;
+  private static isActionItem(line: string): boolean {
+    const actionPatterns = [
+      /^[-•*]\s*(add|remove|change|update|improve|fix|implement)/i,
+      /action/i,
+      /should/i,
+      /must/i,
+      /need to/i
+    ];
     
-    // Keywords associated with different types of analysis
-    const visualKeywords = ['design', 'layout', 'visual', 'ui', 'interface', 'appearance', 'style'];
-    const functionalKeywords = ['navigation', 'menu', 'button', 'link', 'form', 'interaction'];
-    const contentKeywords = ['text', 'copy', 'heading', 'title', 'description', 'content'];
+    return actionPatterns.some(pattern => pattern.test(line));
+  }
+
+  private static isFinding(line: string): boolean {
+    const findingPatterns = [
+      /^[-•*]\s*(found|observed|noticed|issue|problem)/i,
+      /finding/i,
+      /issue/i,
+      /problem/i
+    ];
     
-    // Image attachments - higher relevance for visual/design content
-    if (attachment.type === 'image') {
-      if (visualKeywords.some(keyword => lowerContent.includes(keyword))) score += 25;
-      if (functionalKeywords.some(keyword => lowerContent.includes(keyword))) score += 15;
-    }
-    
-    // URL attachments - higher relevance for functional/interactive content
-    if (attachment.type === 'url') {
-      if (functionalKeywords.some(keyword => lowerContent.includes(keyword))) score += 25;
-      if (contentKeywords.some(keyword => lowerContent.includes(keyword))) score += 20;
-      if (visualKeywords.some(keyword => lowerContent.includes(keyword))) score += 15;
-    }
-    
-    // File attachments - contextual based on file type
-    if (attachment.type === 'file') {
-      if (attachment.mimeType?.includes('image') && visualKeywords.some(keyword => lowerContent.includes(keyword))) {
-        score += 20;
+    return findingPatterns.some(pattern => pattern.test(line));
+  }
+
+  private static finalizeRecommendation(
+    rec: Partial<ContextualRecommendation>,
+    index: number,
+    attachments: AnalysisAttachment[]
+  ): ContextualRecommendation {
+    return {
+      id: `rec-${index}-${Date.now()}`,
+      title: rec.title || `Recommendation ${index}`,
+      description: rec.description || 'No description available',
+      category: rec.category || 'ux',
+      priority: rec.priority || 'medium',
+      confidence: rec.confidence || 75,
+      relatedAttachmentIds: rec.relatedAttachmentIds || [],
+      specificFindings: rec.specificFindings || [],
+      suggestedActions: rec.suggestedActions || [],
+      estimatedImpact: {
+        implementation: 'medium'
       }
-    }
-    
-    return score;
+    };
   }
 
-  /**
-   * Calculate type-based relevance
-   */
-  private static calculateTypeBasedRelevance(content: string, attachment: AnalysisAttachment): number {
-    const lowerContent = content.toLowerCase();
-    let score = 0;
-    
-    // Category-specific matching
-    if (lowerContent.includes('accessibility')) {
-      if (attachment.type === 'image') score += 15; // Screenshots for accessibility analysis
-      if (attachment.type === 'url') score += 20; // Live sites for accessibility testing
-    }
-    
-    if (lowerContent.includes('conversion') || lowerContent.includes('cta')) {
-      if (attachment.type === 'url') score += 25; // Landing pages for conversion analysis
-      if (attachment.type === 'image' && attachment.name.toLowerCase().includes('landing')) score += 20;
-    }
-    
-    if (lowerContent.includes('performance')) {
-      if (attachment.type === 'url') score += 30; // URLs for performance testing
-    }
-    
-    if (lowerContent.includes('branding') || lowerContent.includes('brand')) {
-      if (attachment.type === 'image') score += 20; // Visual assets for branding
-    }
-    
-    return score;
-  }
-
-  /**
-   * Extract specific findings from the content
-   */
-  private static extractFindings(content: string): string[] {
-    const findings: string[] = [];
-    const lines = content.split('\n');
-    
-    lines.forEach(line => {
-      const trimmed = line.trim();
-      if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*')) {
-        const finding = trimmed.replace(/^[•\-*]\s*/, '').trim();
-        if (finding.length > 10 && finding.length < 200) {
-          findings.push(finding);
-        }
-      }
-    });
-    
-    return findings.slice(0, 5); // Limit to 5 findings
-  }
-
-  /**
-   * Extract suggested actions from the content
-   */
-  private static extractActions(content: string): string[] {
-    const actions: string[] = [];
-    const actionVerbs = ['change', 'update', 'modify', 'add', 'remove', 'improve', 'optimize'];
-    const lines = content.split('\n');
-    
-    lines.forEach(line => {
-      const lowerLine = line.toLowerCase();
-      if (actionVerbs.some(verb => lowerLine.includes(verb))) {
-        const cleaned = line.trim().replace(/^[•\-*]\s*/, '');
-        if (cleaned.length > 15 && cleaned.length < 200) {
-          actions.push(cleaned);
-        }
-      }
-    });
-    
-    return actions.slice(0, 4); // Limit to 4 actions
-  }
-
-  /**
-   * Extract impact estimates from the content
-   */
-  private static extractImpact(content: string): ContextualRecommendation['estimatedImpact'] {
-    const lowerContent = content.toLowerCase();
-    let implementation: 'easy' | 'medium' | 'complex' = 'medium';
-    
-    if (lowerContent.includes('simple') || lowerContent.includes('easy') || lowerContent.includes('quick')) {
-      implementation = 'easy';
-    } else if (lowerContent.includes('complex') || lowerContent.includes('difficult') || lowerContent.includes('significant effort')) {
-      implementation = 'complex';
-    }
-    
-    return { implementation };
-  }
-
-  /**
-   * Create recommendations from paragraphs when no structure is found
-   */
-  private static createRecommendationsFromParagraphs(
-    analysisResponse: string,
+  private static createFallbackRecommendations(
+    analysisText: string,
     attachments: AnalysisAttachment[]
   ): ContextualRecommendation[] {
-    const paragraphs = analysisResponse.split('\n\n').filter(p => p.trim().length > 100);
+    // Create a general recommendation from the analysis text
+    const attachmentIds = attachments.map(att => att.id);
     
-    return paragraphs.slice(0, 6).map((paragraph, index) => ({
-      id: `rec-para-${Date.now()}-${index}`,
-      title: `Analysis Point ${index + 1}`,
-      description: paragraph.trim(),
-      category: this.categorizeRecommendation(paragraph),
-      priority: this.determinePriority(paragraph),
-      confidence: this.calculateConfidence(paragraph),
-      relatedAttachmentIds: this.findRelatedAttachments(paragraph, attachments),
+    return [{
+      id: `rec-general-${Date.now()}`,
+      title: 'General Analysis Insights',
+      description: analysisText.substring(0, 500) + (analysisText.length > 500 ? '...' : ''),
+      category: 'ux' as const,
+      priority: 'medium' as const,
+      confidence: 70,
+      relatedAttachmentIds: attachmentIds,
       specificFindings: [],
       suggestedActions: [],
-      estimatedImpact: { implementation: 'medium' }
-    }));
+      estimatedImpact: {
+        implementation: 'medium' as const
+      }
+    }];
   }
 
-  /**
-   * Extract summary from the analysis
-   */
-  private static extractSummary(analysisResponse: string): string {
-    const lines = analysisResponse.split('\n').filter(line => line.trim());
-    const firstParagraph = lines.slice(0, 3).join(' ').trim();
-    
-    if (firstParagraph.length > 200) {
-      return firstParagraph.substring(0, 197) + '...';
-    }
-    
-    return firstParagraph || 'Analysis completed successfully.';
+  private static extractSummary(analysisText: string): string {
+    // Extract the first paragraph or first 200 characters as summary
+    const firstParagraph = analysisText.split('\n\n')[0];
+    return firstParagraph.length > 200 
+      ? firstParagraph.substring(0, 200) + '...'
+      : firstParagraph;
   }
 
-  /**
-   * Calculate summary metrics
-   */
   private static calculateMetrics(
     recommendations: ContextualRecommendation[],
     attachments: AnalysisAttachment[]
   ): AnalysisSummaryMetrics {
     const highPriorityCount = recommendations.filter(r => r.priority === 'high').length;
+    const totalConfidence = recommendations.reduce((sum, r) => sum + r.confidence, 0);
     const averageConfidence = recommendations.length > 0 
-      ? Math.round(recommendations.reduce((sum, r) => sum + r.confidence, 0) / recommendations.length)
+      ? Math.round(totalConfidence / recommendations.length) 
       : 0;
-    
-    const categoriesIdentified = [...new Set(recommendations.map(r => r.category))];
+
+    const categories = [...new Set(recommendations.map(r => r.category))];
     
     return {
       totalRecommendations: recommendations.length,
       highPriorityCount,
       averageConfidence,
       attachmentsAnalyzed: attachments.length,
-      categoriesIdentified,
+      categoriesIdentified: categories,
       estimatedImplementationTime: this.estimateImplementationTime(recommendations)
     };
   }
 
-  /**
-   * Estimate implementation time based on recommendations
-   */
   private static estimateImplementationTime(recommendations: ContextualRecommendation[]): string {
-    const complexCount = recommendations.filter(r => r.estimatedImpact?.implementation === 'complex').length;
-    const totalCount = recommendations.length;
+    const complexCount = recommendations.filter(r => 
+      r.estimatedImpact?.implementation === 'complex'
+    ).length;
+    const mediumCount = recommendations.filter(r => 
+      r.estimatedImpact?.implementation === 'medium'
+    ).length;
+    const easyCount = recommendations.filter(r => 
+      r.estimatedImpact?.implementation === 'easy'
+    ).length;
+
+    const totalHours = (complexCount * 8) + (mediumCount * 4) + (easyCount * 1);
     
-    if (complexCount > 3) return '3-4 weeks';
-    if (totalCount > 8) return '2-3 weeks';
-    if (totalCount > 4) return '1-2 weeks';
-    return '3-5 days';
+    if (totalHours < 8) return `${totalHours} hours`;
+    if (totalHours < 40) return `${Math.ceil(totalHours / 8)} days`;
+    return `${Math.ceil(totalHours / 40)} weeks`;
   }
 }
