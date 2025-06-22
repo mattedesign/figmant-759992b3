@@ -19,11 +19,13 @@ import {
 interface FigmantRightSidebarProps {
   mode: string;
   activeSection: string;
+  showAnalysisHeader?: boolean; // New prop to control analysis-specific UI
 }
 
 export const FigmantRightSidebar: React.FC<FigmantRightSidebarProps> = ({
   mode,
-  activeSection
+  activeSection,
+  showAnalysisHeader = false // Default to false for non-analysis pages
 }) => {
   const [attachments, setAttachments] = useState([
     {
@@ -44,7 +46,7 @@ export const FigmantRightSidebar: React.FC<FigmantRightSidebarProps> = ({
 
   const renderAttachmentsMode = () => (
     <div className="h-full flex flex-col">
-      {/* Header */}
+      {/* Header - Only show analysis-specific content when showAnalysisHeader is true */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold">Attachments</h3>

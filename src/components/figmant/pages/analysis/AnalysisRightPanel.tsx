@@ -64,11 +64,12 @@ export const AnalysisRightPanel: React.FC<AnalysisRightPanelProps> = ({
 
   return (
     <div className="w-80 max-w-[240px] border-l border-gray-200 flex flex-col h-full" style={{ backgroundColor: '#FFF' }}>
-      {/* Fixed Header with Tabs */}
+      {/* Fixed Header with Tabs - Pass showAnalysisHeader as true for analysis page */}
       <AnalysisRightPanelHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}
         totalAttachments={totalAttachments}
+        showAnalysisHeader={true}
       />
 
       {/* Loading State */}

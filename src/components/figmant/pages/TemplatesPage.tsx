@@ -40,11 +40,11 @@ export const TemplatesPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleUseTemplate = (template) => {
-    // Navigate to analysis page with the selected template
-    navigate('/figmant', { 
+    // Navigate to wizard-analysis page with the selected template
+    navigate('/figmant/wizard-analysis', { 
       state: { 
-        activeSection: 'analysis',
-        selectedTemplate: template
+        selectedTemplate: template,
+        preSelectedTemplate: true
       }
     });
   };
