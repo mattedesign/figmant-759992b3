@@ -15,8 +15,8 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
   currentStep, 
   totalSteps 
 }) => {
-  const [selectedPrompt, setSelectedPrompt] = useState<any>(null);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [analysisStarted, setAnalysisStarted] = useState(false);
   
   console.log('🔍 Step4ContextualResults - Rendering with stepData:', {
     selectedType: stepData.selectedType,
@@ -24,60 +24,59 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
     uploadedFilesCount: stepData.uploadedFiles?.length || 0
   });
 
-  // Fetch the prompt template based on selected analysis type
-  const { data: promptTemplates, isLoading: isLoadingPrompts } = useQuery({
-    queryKey: ['premium-prompts', stepData.selectedType],
+  // Fetch the actual template by ID instead of by category
+  const { data: templateData, isLoading: isLoadingTemplate } = useQuery({
+    queryKey: ['template-by-id', stepData.selectedType],
     queryFn: async () => {
-      console.log('🔍 Fetching prompt templates for:', stepData.selectedType);
+      console.log('🔍 Fetching template by ID:', stepData.selectedType);
       const { data, error } = await supabase
         .from('claude_prompt_examples')
         .select('*')
-        .eq('category', stepData.selectedType)
+        .eq('id', stepData.selectedType)
         .eq('is_active', true)
-        .limit(1);
+        .single();
       
       if (error) {
-        console.error('🔍 Error fetching prompt templates:', error);
+        console.error('🔍 Error fetching template:', error);
         throw error;
       }
       
-      console.log('🔍 Fetched prompt templates:', data);
+      console.log('🔍 Fetched template:', data);
       return data;
     },
     enabled: !!stepData.selectedType
   });
 
-  // Set selected prompt when templates are loaded
-  useEffect(() => {
-    if (promptTemplates && promptTemplates.length > 0 && !selectedPrompt) {
-      const template = promptTemplates[0];
-      console.log('🔍 Setting selected prompt template:', template);
-      setSelectedPrompt(template);
-    }
-  }, [promptTemplates, selectedPrompt]);
-
   // Premium analysis mutation
   const premiumAnalysisMutation = usePremiumAnalysisSubmission();
 
-  // Start analysis when component mounts and we have all required data
+  // Start analysis when we have the template and haven't started yet
   useEffect(() => {
-    const shouldStartAnalysis = selectedPrompt && 
+    const shouldStartAnalysis = templateData && 
                                stepData.selectedType && 
                                !analysisResult && 
+                               !analysisStarted &&
                                !premiumAnalysisMutation.isPending;
 
     if (shouldStartAnalysis) {
-      console.log('🔍 Starting premium analysis with:', {
-        selectedPrompt: selectedPrompt.id,
-        stepData: stepData.selectedType
-      });
+      console.log('🔍 Starting premium analysis with template:', templateData);
+      setAnalysisStarted(true);
+      
+      // Create a properly formatted prompt object
+      const selectedPrompt = {
+        id: templateData.id,
+        title: templateData.title || templateData.display_name,
+        category: templateData.category,
+        original_prompt: templateData.original_prompt,
+        contextual_fields: templateData.contextual_fields || []
+      };
       
       premiumAnalysisMutation.mutate({
         stepData,
         selectedPrompt
       });
     }
-  }, [selectedPrompt, stepData, analysisResult, premiumAnalysisMutation.isPending]);
+  }, [templateData, stepData, analysisResult, analysisStarted, premiumAnalysisMutation.isPending]);
 
   // Handle successful analysis
   useEffect(() => {
@@ -88,9 +87,19 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
   }, [premiumAnalysisMutation.isSuccess, premiumAnalysisMutation.data]);
 
   const startAnalysis = () => {
-    if (selectedPrompt) {
+    if (templateData) {
       console.log('🔍 Manually starting analysis');
       setAnalysisResult(null);
+      setAnalysisStarted(true);
+      
+      const selectedPrompt = {
+        id: templateData.id,
+        title: templateData.title || templateData.display_name,
+        category: templateData.category,
+        original_prompt: templateData.original_prompt,
+        contextual_fields: templateData.contextual_fields || []
+      };
+
       premiumAnalysisMutation.mutate({
         stepData,
         selectedPrompt
@@ -98,19 +107,19 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
     }
   };
 
-  // Loading state while fetching prompts or running analysis
-  if (isLoadingPrompts || premiumAnalysisMutation.isPending) {
+  // Loading state while fetching template or running analysis
+  if (isLoadingTemplate || premiumAnalysisMutation.isPending) {
     return (
       <div className="w-full min-h-full flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
           <h2 className="text-2xl font-semibold">
-            {isLoadingPrompts ? 'Loading Analysis Template...' : 'Analyzing Your Design'}
+            {isLoadingTemplate ? 'Loading Analysis Template...' : 'Analyzing Your Design'}
           </h2>
           <p className="text-muted-foreground">
-            {isLoadingPrompts 
+            {isLoadingTemplate 
               ? 'Preparing analysis configuration...' 
-              : `Processing ${stepData.selectedType.replace('-', ' ')} analysis...`
+              : `Processing ${templateData?.category || 'design'} analysis...`
             }
           </p>
         </div>
@@ -136,8 +145,8 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
     );
   }
 
-  // Ready to analyze state
-  if (!selectedPrompt || !analysisResult) {
+  // Ready to analyze state (if no template found or not started)
+  if (!templateData || (!analysisResult && !analysisStarted)) {
     return (
       <div className="w-full min-h-full flex items-center justify-center">
         <Card className="max-w-md">
@@ -145,13 +154,13 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
             <Clock className="h-12 w-12 text-blue-500 mx-auto" />
             <h3 className="text-lg font-semibold">Ready to Analyze</h3>
             <p className="text-muted-foreground">
-              {!selectedPrompt 
-                ? "Loading analysis template..." 
+              {!templateData 
+                ? "Analysis template not found" 
                 : "Click below to start your analysis"
               }
             </p>
-            {selectedPrompt && (
-              <Button onClick={startAnalysis} disabled={!selectedPrompt}>
+            {templateData && (
+              <Button onClick={startAnalysis} disabled={!templateData}>
                 Start Analysis
               </Button>
             )}
@@ -170,7 +179,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
           <h2 className="text-3xl font-bold text-center">Analysis Complete</h2>
         </div>
         <p className="text-center text-muted-foreground">
-          Your {stepData.selectedType.replace('-', ' ')} analysis has been completed
+          Your {templateData?.category || 'design'} analysis has been completed
         </p>
       </div>
 
@@ -200,7 +209,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
             </CardTitle>
             <div className="flex gap-2">
               <Badge variant="secondary">
-                {stepData.selectedType.replace('-', ' ').toUpperCase()}
+                {templateData?.category?.toUpperCase() || 'ANALYSIS'}
               </Badge>
               <Badge variant="outline">
                 Claude AI Powered
@@ -235,7 +244,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
                   <span className="font-medium">Project:</span> {stepData.projectName}
                 </p>
                 <p className="text-sm text-gray-600 mb-1">
-                  <span className="font-medium">Analysis Type:</span> {stepData.selectedType.replace('-', ' ')}
+                  <span className="font-medium">Analysis Type:</span> {templateData?.category || 'Analysis'}
                 </p>
                 {stepData.analysisGoals && (
                   <p className="text-sm text-gray-600">
