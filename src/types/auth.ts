@@ -18,6 +18,8 @@ export interface UserProfile {
   postal_code: string | null;
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
+  notification_preferences: any | null;
+  billing_address: any | null;
 }
 
 export interface Subscription {

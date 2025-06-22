@@ -40,7 +40,9 @@ export const SimplifiedProfile: React.FC = () => {
     email_notifications: true,
     push_notifications: false,
     marketing_emails: false,
-    ...(profile?.notification_preferences as NotificationPreferences || {})
+    ...(profile?.notification_preferences ? 
+        (typeof profile.notification_preferences === 'object' ? profile.notification_preferences : {}) 
+        : {})
   });
 
   const [billingAddress, setBillingAddress] = useState<BillingAddress>({
@@ -49,7 +51,9 @@ export const SimplifiedProfile: React.FC = () => {
     state: '',
     zip: '',
     country: 'United States',
-    ...(profile?.billing_address as BillingAddress || {})
+    ...(profile?.billing_address ? 
+        (typeof profile.billing_address === 'object' ? profile.billing_address : {}) 
+        : {})
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -74,8 +78,8 @@ export const SimplifiedProfile: React.FC = () => {
         .update({
           full_name: formData.full_name,
           phone_number: formData.phone_number,
-          notification_preferences: notificationPreferences,
-          billing_address: billingAddress,
+          notification_preferences: notificationPreferences as any,
+          billing_address: billingAddress as any,
         })
         .eq('id', user.id);
 
