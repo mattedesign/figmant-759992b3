@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Step1SelectAnalysisType } from './steps/Step1SelectAnalysisType';
+import { Step2SmartUpload } from './steps/Step2SmartUpload';
 import { Step4ProjectDetails } from './steps/Step4ProjectDetails';
 import { Step5UploadFiles } from './steps/Step5UploadFiles';
 import { Step6CustomPrompt } from './steps/Step6CustomPrompt';
@@ -19,12 +20,10 @@ export const StepRenderer: React.FC<StepRendererProps> = (props) => {
       case 1:
         return <Step1SelectAnalysisType {...props} />;
       case 2:
-        return <Step4ProjectDetails {...props} />;
+        return <Step2SmartUpload {...props} />;
       case 3:
-        return <Step5UploadFiles {...props} />;
+        return <Step4ProjectDetails {...props} />;
       case 4:
-        return <Step6CustomPrompt {...props} />;
-      case 5:
         return <Step7Processing {...props} />;
       default:
         return <div>Invalid step</div>;
