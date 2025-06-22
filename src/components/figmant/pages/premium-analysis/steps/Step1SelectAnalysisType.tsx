@@ -29,6 +29,7 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
   const [searchTerm, setSearchTerm] = useState('');
   const [previewTemplate, setPreviewTemplate] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [templateCosts, setTemplateCosts] = useState<Record<string, number>>({});
   const { setTemplateCreditCost, resetCreditCost } = useTemplateCreditStore();
 
   // Reset credit cost when leaving the page
@@ -37,6 +38,26 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
       resetCreditCost();
     };
   }, [resetCreditCost]);
+
+  // Load template costs asynchronously
+  useEffect(() => {
+    const loadCosts = async () => {
+      const costs: Record<string, number> = {};
+      for (const template of templates) {
+        try {
+          costs[template.id] = await getAnalysisCost(template.id);
+        } catch (error) {
+          console.error(`Error loading cost for template ${template.id}:`, error);
+          costs[template.id] = 3; // fallback
+        }
+      }
+      setTemplateCosts(costs);
+    };
+    
+    if (templates.length > 0) {
+      loadCosts();
+    }
+  }, [templates]);
 
   const handleTemplateSelect = async (templateId: string) => {
     setStepData(prev => ({ ...prev, selectedType: templateId }));
@@ -225,7 +246,9 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">Credit Cost</h4>
-                    <span className="text-xl font-bold">{getAnalysisCost(previewTemplate.id)} credits</span>
+                    <span className="text-xl font-bold">
+                      {templateCosts[previewTemplate.id] || previewTemplate.credit_cost || 3} credits
+                    </span>
                   </div>
                 </div>
                 
