@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { StepProps } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -193,88 +192,113 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
           </Select>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {sortedTemplates.map((template) => (
-            <Card
-              key={template.id}
-              className={`relative cursor-pointer transition-all hover:shadow-lg ${
-                stepData.selectedType === template.id 
-                  ? 'border-blue-500 bg-blue-50 shadow-md' 
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-              onClick={() => handleTemplateSelect(template.id)}
-            >
-              {/* Most Popular Badge */}
-              {(templateCosts[template.id] || 3) <= 3 && (
-                <Badge className="absolute top-2 right-2 bg-yellow-500 text-yellow-900 text-xs">
-                  Most Popular
-                </Badge>
-              )}
+        {/* Template Count Indicator */}
+        <div className="mb-4 text-sm text-gray-600">
+          Showing {sortedTemplates.length} of {templates.length} templates
+        </div>
 
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${
-                      stepData.selectedType === template.id 
-                        ? 'bg-blue-100 text-blue-600' 
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
-                      {getIcon(template.category)}
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{template.title}</CardTitle>
-                      <div className="mt-1 flex items-center gap-2">
-                        {template.category && (
-                          <Badge variant="outline" className="text-xs capitalize">
-                            {template.category.replace('_', ' ')}
-                          </Badge>
-                        )}
-                        <CreditCostDisplay 
-                          templateId={template.id} 
-                          isSelected={stepData.selectedType === template.id}
-                        />
+        {/* Empty State */}
+        {sortedTemplates.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No templates match your search criteria.</p>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedCategory('all');
+              }}
+              className="mt-2"
+            >
+              Clear Filters
+            </Button>
+          </div>
+        )}
+
+        {/* Templates Grid */}
+        {sortedTemplates.length > 0 && (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {sortedTemplates.map((template) => (
+              <Card
+                key={template.id}
+                className={`relative cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group ${
+                  stepData.selectedType === template.id 
+                    ? 'border-blue-500 bg-blue-50 shadow-md' 
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => handleTemplateSelect(template.id)}
+              >
+                {/* Most Popular Badge */}
+                {(templateCosts[template.id] || 3) <= 3 && (
+                  <Badge className="absolute top-2 right-2 bg-yellow-500 text-yellow-900 text-xs">
+                    Most Popular
+                  </Badge>
+                )}
+
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${
+                        stepData.selectedType === template.id 
+                          ? 'bg-blue-100 text-blue-600' 
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {getIcon(template.category)}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{template.title}</CardTitle>
+                        <div className="mt-1 flex items-center gap-2">
+                          {template.category && (
+                            <Badge variant="outline" className="text-xs capitalize">
+                              {template.category.replace('_', ' ')}
+                            </Badge>
+                          )}
+                          <CreditCostDisplay 
+                            templateId={template.id} 
+                            isSelected={stepData.selectedType === template.id}
+                          />
+                        </div>
                       </div>
                     </div>
+                    {stepData.selectedType === template.id && (
+                      <CheckCircle className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                    )}
                   </div>
-                  {stepData.selectedType === template.id && (
-                    <CheckCircle className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                  )}
-                </div>
-              </CardHeader>
-              
-              <CardContent className="pt-0">
-                <CardDescription className="text-sm mb-3">
-                  {template.description}
-                </CardDescription>
+                </CardHeader>
                 
-                <div className="flex items-center gap-1 mb-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className={`w-4 h-4 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
-                    />
-                  ))}
-                  <span className="text-xs text-gray-500 ml-1">(4/5)</span>
-                </div>
-                
-                <div className="mt-3">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPreviewTemplate(template);
-                      setShowPreview(true);
-                    }}
-                    className="w-full"
-                  >
-                    Preview Template
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                <CardContent className="pt-0">
+                  <CardDescription className="text-sm mb-3">
+                    {template.description}
+                  </CardDescription>
+                  
+                  <div className="flex items-center gap-1 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star 
+                        key={i} 
+                        className={`w-4 h-4 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                      />
+                    ))}
+                    <span className="text-xs text-gray-500 ml-1">(4/5)</span>
+                  </div>
+                  
+                  <div className="mt-3">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewTemplate(template);
+                        setShowPreview(true);
+                      }}
+                      className="w-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      Preview Template
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Template Preview Modal */}
