@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { ErrorBoundary } from 'react-error-boundary';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
@@ -40,24 +40,26 @@ function App() {
         <AuthProvider>
           <Toaster />
           <QueryClient>
-            <Routes>
-              <Route path="/" element={<Navigate to="/figmant" replace />} />
-              <Route path="/login" element={<div>Login Page - To be implemented</div>} />
-              <Route path="/signup" element={<div>Signup Page - To be implemented</div>} />
-              
-              {/* Figmant Routes */}
-              <Route path="/figmant/*" element={
-                <AuthGuard>
-                  <FigmantLayout />
-                </AuthGuard>
-              }>
-                <Route path="chat2" element={<Chat2Page />} />
-                <Route path="screenshot-config" element={<ScreenshotOneConfig />} />
-              </Route>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Navigate to="/figmant" replace />} />
+                <Route path="/login" element={<div>Login Page - To be implemented</div>} />
+                <Route path="/signup" element={<div>Signup Page - To be implemented</div>} />
+                
+                {/* Figmant Routes */}
+                <Route path="/figmant/*" element={
+                  <AuthGuard>
+                    <FigmantLayout />
+                  </AuthGuard>
+                }>
+                  <Route path="chat2" element={<Chat2Page />} />
+                  <Route path="screenshot-config" element={<ScreenshotOneConfig />} />
+                </Route>
 
-              {/* Fallback route */}
-              <Route path="*" element={<Navigate to="/figmant" replace />} />
-            </Routes>
+                {/* Fallback route */}
+                <Route path="*" element={<Navigate to="/figmant" replace />} />
+              </Routes>
+            </BrowserRouter>
           </QueryClient>
         </AuthProvider>
       </ErrorBoundary>
