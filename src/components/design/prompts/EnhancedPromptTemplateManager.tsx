@@ -54,18 +54,26 @@ export const EnhancedPromptTemplateManager = () => {
   };
 
   const handleEditTemplate = (templateId: string) => {
+    console.log('Edit button clicked for template:', templateId);
     setSelectedTemplateId(templateId);
     setIsEditDialogOpen(true);
+    console.log('Dialog should now be open, selectedTemplateId:', templateId);
   };
 
   const handleCloseEditDialog = () => {
+    console.log('Closing edit dialog');
     setIsEditDialogOpen(false);
     setSelectedTemplateId(null);
   };
 
   const handleSaveTemplate = async (updatedData: any) => {
-    if (!selectedTemplateId) return;
+    if (!selectedTemplateId) {
+      console.error('No template ID selected for saving');
+      return;
+    }
 
+    console.log('Saving template updates:', { selectedTemplateId, updatedData });
+    
     try {
       await updatePromptMutation.mutateAsync({
         id: selectedTemplateId,
@@ -79,6 +87,7 @@ export const EnhancedPromptTemplateManager = () => {
       
       handleCloseEditDialog();
     } catch (error) {
+      console.error('Error updating template:', error);
       toast({
         title: "Error",
         description: "Failed to update template",
@@ -134,6 +143,7 @@ export const EnhancedPromptTemplateManager = () => {
                     variant="ghost" 
                     size="sm"
                     onClick={() => handleCopyTemplate(template)}
+                    className="hover:bg-gray-100 cursor-pointer"
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -141,6 +151,7 @@ export const EnhancedPromptTemplateManager = () => {
                     variant="ghost" 
                     size="sm"
                     onClick={() => handleEditTemplate(template.id)}
+                    className="hover:bg-gray-100 cursor-pointer"
                   >
                     <Edit className="h-4 w-4" />
                     Edit

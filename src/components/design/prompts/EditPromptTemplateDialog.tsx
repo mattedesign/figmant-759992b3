@@ -56,9 +56,13 @@ export const EditPromptTemplateDialog: React.FC<EditPromptTemplateDialogProps> =
 
   // Load template data when dialog opens
   useEffect(() => {
+    console.log('Dialog effect triggered:', { isOpen, templateId, templatesLength: templates.length });
+    
     if (isOpen && templateId) {
       setIsFormLoading(true);
       const template = templates.find(t => t.id === templateId);
+      
+      console.log('Found template for editing:', template);
       
       if (template) {
         setFormData({
@@ -73,12 +77,16 @@ export const EditPromptTemplateDialog: React.FC<EditPromptTemplateDialogProps> =
           credit_cost: template.credit_cost || 3,
           metadata: template.metadata || {}
         });
+        console.log('Form data loaded:', formData);
+      } else {
+        console.warn('Template not found in data:', templateId);
       }
       setIsFormLoading(false);
     }
   }, [isOpen, templateId, templates]);
 
   const handleInputChange = (field: string, value: any) => {
+    console.log('Form field changed:', field, value);
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -86,14 +94,18 @@ export const EditPromptTemplateDialog: React.FC<EditPromptTemplateDialogProps> =
   };
 
   const handleSave = async () => {
+    console.log('Save button clicked, form data:', formData);
+    
     try {
       await onSave(formData);
+      console.log('Template saved successfully');
     } catch (error) {
       console.error('Error saving template:', error);
     }
   };
 
   const handleClose = () => {
+    console.log('Dialog closing');
     onClose();
     // Reset form data
     setFormData({
@@ -109,6 +121,8 @@ export const EditPromptTemplateDialog: React.FC<EditPromptTemplateDialogProps> =
       metadata: {}
     });
   };
+
+  console.log('Dialog render state:', { isOpen, isFormLoading, templateId });
 
   if (isFormLoading) {
     return (
@@ -143,6 +157,7 @@ export const EditPromptTemplateDialog: React.FC<EditPromptTemplateDialogProps> =
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
                 placeholder="Enter template title"
+                className="w-full"
               />
             </div>
             <div className="space-y-2">
@@ -152,6 +167,7 @@ export const EditPromptTemplateDialog: React.FC<EditPromptTemplateDialogProps> =
                 value={formData.display_name}
                 onChange={(e) => handleInputChange('display_name', e.target.value)}
                 placeholder="Enter display name"
+                className="w-full"
               />
             </div>
           </div>
@@ -165,6 +181,7 @@ export const EditPromptTemplateDialog: React.FC<EditPromptTemplateDialogProps> =
               onChange={(e) => handleInputChange('description', e.target.value)}
               placeholder="Enter template description"
               rows={3}
+              className="w-full resize-none"
             />
           </div>
 
@@ -176,7 +193,7 @@ export const EditPromptTemplateDialog: React.FC<EditPromptTemplateDialogProps> =
                 value={formData.category}
                 onValueChange={(value) => handleInputChange('category', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -198,6 +215,7 @@ export const EditPromptTemplateDialog: React.FC<EditPromptTemplateDialogProps> =
                 step="0.1"
                 value={formData.effectiveness_rating}
                 onChange={(e) => handleInputChange('effectiveness_rating', parseFloat(e.target.value) || 0)}
+                className="w-full"
               />
             </div>
             <div className="space-y-2">
@@ -209,6 +227,7 @@ export const EditPromptTemplateDialog: React.FC<EditPromptTemplateDialogProps> =
                 max="10"
                 value={formData.credit_cost}
                 onChange={(e) => handleInputChange('credit_cost', parseInt(e.target.value) || 3)}
+                className="w-full"
               />
             </div>
           </div>
@@ -222,7 +241,7 @@ export const EditPromptTemplateDialog: React.FC<EditPromptTemplateDialogProps> =
               onChange={(e) => handleInputChange('original_prompt', e.target.value)}
               placeholder="Enter the prompt template content"
               rows={8}
-              className="font-mono"
+              className="font-mono w-full resize-none"
             />
           </div>
 
@@ -234,7 +253,7 @@ export const EditPromptTemplateDialog: React.FC<EditPromptTemplateDialogProps> =
                 checked={formData.is_template}
                 onCheckedChange={(checked) => handleInputChange('is_template', checked)}
               />
-              <Label htmlFor="is_template">Is Template</Label>
+              <Label htmlFor="is_template" className="cursor-pointer">Is Template</Label>
             </div>
             <div className="flex items-center space-x-2">
               <Switch
@@ -242,7 +261,7 @@ export const EditPromptTemplateDialog: React.FC<EditPromptTemplateDialogProps> =
                 checked={formData.is_active}
                 onCheckedChange={(checked) => handleInputChange('is_active', checked)}
               />
-              <Label htmlFor="is_active">Active</Label>
+              <Label htmlFor="is_active" className="cursor-pointer">Active</Label>
             </div>
           </div>
         </div>
