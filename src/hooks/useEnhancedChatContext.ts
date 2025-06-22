@@ -165,6 +165,12 @@ export const useEnhancedChatContext = (sessionId?: string) => {
     }
   }, [autoSaveMutation]);
 
+  // Load historical context method (added to fix build error)
+  const loadHistoricalContext = useCallback((sessionId: string) => {
+    console.log('📚 ENHANCED CHAT CONTEXT - Loading historical context for session:', sessionId);
+    refetchContext();
+  }, [refetchContext]);
+
   // Create contextual prompt with full conversation history
   const createContextualPrompt = useCallback((
     currentMessage: string,
@@ -296,6 +302,7 @@ export const useEnhancedChatContext = (sessionId?: string) => {
     autoSaveState,
     isLoadingContext,
     triggerAutoSave,
+    loadHistoricalContext, // Added missing method
     createContextualPrompt,
     saveConversation,
     shouldCreateSummary,

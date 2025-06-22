@@ -3,7 +3,7 @@ import React, { useState, useCallback } from 'react';
 import { ChatMessages } from '../ChatMessages';
 import { MessageInputSection } from '../MessageInputSection';
 import { AnalysisNavigationSidebar } from './AnalysisNavigationSidebar';
-import { AnalysisRightPanel } from './AnalysisRightPanel';
+import { AnalysisRightPanel } from '../AnalysisRightPanel';
 import { EnhancedChatMessageHandler } from './EnhancedChatMessageHandler';
 import { ContextIndicator } from './ContextIndicator';
 import { useChatStateContext } from './ChatStateProvider';

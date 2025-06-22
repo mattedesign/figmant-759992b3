@@ -66,7 +66,12 @@ export const EnhancedChatStateProvider: React.FC<EnhancedChatStateProviderProps>
 
   // Enhanced context and session management
   const { sessionContext, initializeSession } = useEnhancedChatSessionContext();
-  const { conversationContext, loadHistoricalContext, createContextualPrompt } = useEnhancedChatContext(sessionContext.sessionId);
+  const { 
+    conversationContext, 
+    loadHistoricalContext, 
+    createContextualPrompt 
+  } = useEnhancedChatContext(sessionContext.sessionId);
+  
   const { mutateAsync: analyzeWithClaudeAsync } = useFigmantChatAnalysisEnhanced(sessionContext.sessionId);
 
   // Initialize session on mount
