@@ -8,6 +8,12 @@ export interface StepData {
   customPrompt: string;
   stakeholders: Stakeholder[];
   referenceLinks: string[];
+  uploads?: {
+    images: File[];
+    urls: string[];
+    files: File[];
+    screenshots: any[];
+  };
 }
 
 export interface StepProps {

@@ -27,18 +27,13 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
   }, []);
 
   const handleFileUpload = async (files: File[]) => {
-    const currentUploads = stepData.uploads || { images: [], files: [], urls: [], screenshots: [] };
-    const newUploads = { ...currentUploads };
+    const currentFiles = stepData.uploadedFiles || [];
+    const newFiles = [...currentFiles, ...files];
     
-    for (const file of files) {
-      if (file.type.startsWith('image/')) {
-        newUploads.images = [...(newUploads.images || []), file];
-      } else {
-        newUploads.files = [...(newUploads.files || []), file];
-      }
-    }
-    
-    setStepData(prev => ({ ...prev, uploads: newUploads, uploadedFiles: files }));
+    setStepData(prev => ({ 
+      ...prev, 
+      uploadedFiles: newFiles
+    }));
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,11 +49,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     setUrls(updatedUrls);
     setStepData(prev => ({ 
       ...prev, 
-      referenceLinks: updatedUrls,
-      uploads: {
-        ...prev.uploads,
-        urls: updatedUrls.filter(url => url.trim() !== '')
-      }
+      referenceLinks: updatedUrls
     }));
   };
 
@@ -76,27 +67,22 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     setUrls(updatedUrls);
     setStepData(prev => ({ 
       ...prev, 
-      referenceLinks: updatedUrls.length > 0 ? updatedUrls : [''],
-      uploads: {
-        ...prev.uploads,
-        urls: updatedUrls.filter(url => url.trim() !== '')
-      }
+      referenceLinks: updatedUrls.length > 0 ? updatedUrls : ['']
     }));
   };
 
-  const removeFile = (type: 'images' | 'files', index: number) => {
-    const currentUploads = stepData.uploads || { images: [], files: [], urls: [], screenshots: [] };
-    const newUploads = { ...currentUploads };
-    newUploads[type] = newUploads[type].filter((_, i) => i !== index);
+  const removeFile = (index: number) => {
+    const currentFiles = stepData.uploadedFiles || [];
+    const newFiles = currentFiles.filter((_, i) => i !== index);
     
-    setStepData(prev => ({ ...prev, uploads: newUploads }));
+    setStepData(prev => ({ ...prev, uploadedFiles: newFiles }));
   };
 
   const handleChooseFiles = () => {
     fileInputRef.current?.click();
   };
 
-  const totalFiles = (stepData.uploads?.images?.length || 0) + (stepData.uploads?.files?.length || 0);
+  const totalFiles = stepData.uploadedFiles?.length || 0;
   const hasContent = totalFiles > 0 || urls.some(url => url.trim() !== '');
 
   return (
@@ -197,26 +183,13 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {stepData.uploads?.images?.map((file: File, index: number) => (
-                  <div key={`img-${index}`} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                    <Image className="w-4 h-4 text-blue-600" />
-                    <span className="flex-1 truncate text-sm">{file.name}</span>
-                    <span className="text-xs text-gray-500">
-                      {(file.size / 1024 / 1024).toFixed(1)}MB
-                    </span>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => removeFile('images', index)}
-                      type="button"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-                {stepData.uploads?.files?.map((file: File, index: number) => (
+                {stepData.uploadedFiles?.map((file: File, index: number) => (
                   <div key={`file-${index}`} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                    <FileText className="w-4 h-4 text-green-600" />
+                    {file.type.startsWith('image/') ? (
+                      <Image className="w-4 h-4 text-blue-600" />
+                    ) : (
+                      <FileText className="w-4 h-4 text-green-600" />
+                    )}
                     <span className="flex-1 truncate text-sm">{file.name}</span>
                     <span className="text-xs text-gray-500">
                       {(file.size / 1024 / 1024).toFixed(1)}MB
@@ -224,7 +197,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => removeFile('files', index)}
+                      onClick={() => removeFile(index)}
                       type="button"
                     >
                       <X className="w-4 h-4" />
