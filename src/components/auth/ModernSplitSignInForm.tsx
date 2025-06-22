@@ -51,7 +51,10 @@ export const ModernSplitSignInForm: React.FC<ModernSplitSignInFormProps> = ({ on
   return (
     <div className="w-full">
       <div className="mb-8">
-        <h2 className="text-4xl font-bold text-gray-900 mb-2">Get back in here.</h2>
+        <h2 className="text-4xl text-gray-900 mb-2 text-center">
+          <span className="font-normal">Get back </span>
+          <span className="font-bold">in here.</span>
+        </h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
