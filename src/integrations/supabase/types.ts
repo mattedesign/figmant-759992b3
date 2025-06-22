@@ -848,6 +848,7 @@ export type Database = {
         Row: {
           address: string | null
           avatar_url: string | null
+          billing_address: Json | null
           bio: string | null
           city: string | null
           country: string | null
@@ -857,6 +858,7 @@ export type Database = {
           emergency_contact_phone: string | null
           full_name: string | null
           id: string
+          notification_preferences: Json | null
           phone_number: string | null
           postal_code: string | null
           provider: string | null
@@ -869,6 +871,7 @@ export type Database = {
         Insert: {
           address?: string | null
           avatar_url?: string | null
+          billing_address?: Json | null
           bio?: string | null
           city?: string | null
           country?: string | null
@@ -878,6 +881,7 @@ export type Database = {
           emergency_contact_phone?: string | null
           full_name?: string | null
           id: string
+          notification_preferences?: Json | null
           phone_number?: string | null
           postal_code?: string | null
           provider?: string | null
@@ -890,6 +894,7 @@ export type Database = {
         Update: {
           address?: string | null
           avatar_url?: string | null
+          billing_address?: Json | null
           bio?: string | null
           city?: string | null
           country?: string | null
@@ -899,6 +904,7 @@ export type Database = {
           emergency_contact_phone?: string | null
           full_name?: string | null
           id?: string
+          notification_preferences?: Json | null
           phone_number?: string | null
           postal_code?: string | null
           provider?: string | null
