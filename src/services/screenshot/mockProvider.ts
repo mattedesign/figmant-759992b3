@@ -18,7 +18,7 @@ export class MockScreenshotProvider implements ScreenshotProvider {
       const displayText = encodeURIComponent(`${deviceType.toUpperCase()}\nScreenshot\n${hostname}`);
       const thumbnailText = encodeURIComponent(`${deviceType}\n${hostname}`);
       
-      // Use placehold.co service with proper encoding
+      // Use placehold.co service with proper encoding and /png format
       const mockScreenshotUrl = `https://placehold.co/${width}x${height}/f0f0f0/333333/png?text=${displayText}`;
       const mockThumbnailUrl = `https://placehold.co/400x300/f0f0f0/333333/png?text=${thumbnailText}`;
       
