@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { StepProps } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { Lightbulb, Target, TrendingUp, Users, Zap, CheckCircle } from 'lucide-react';
 import { CreditCostDisplay } from '../components/CreditCostDisplay';
@@ -22,6 +23,7 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
 }) => {
   const { data: templates = [], isLoading } = useFigmantPromptTemplates();
   const [selectedTemplateCreditCost, setSelectedTemplateCreditCost] = useState<number>(1);
+  const [searchTerm, setSearchTerm] = useState('');
   const { setTemplateCreditCost, resetCreditCost } = useTemplateCreditStore();
 
   // Reset credit cost when leaving the page
@@ -79,6 +81,12 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
     }
   };
 
+  // Filter templates based on search term
+  const filteredTemplates = templates.filter(template => 
+    template.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    template.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (isLoading) {
     return (
       <div className="w-full min-h-full">
@@ -99,8 +107,17 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
       </div>
 
       <div className="max-w-6xl mx-auto">
+        <div className="mb-4">
+          <Input
+            placeholder="Search templates..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full max-w-md"
+          />
+        </div>
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {templates.map((template) => (
+          {filteredTemplates.map((template) => (
             <Card
               key={template.id}
               className={`cursor-pointer transition-all hover:shadow-lg ${
