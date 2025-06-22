@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PromptContentEditor } from '../components/PromptContentEditor';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { PROMPT_LIMITS } from '@/constants/promptLimits';
 
 interface ContentSectionProps {
   formData: any;
@@ -34,7 +35,7 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
             value={formData.original_prompt || ''}
             onChange={(value) => onChange('original_prompt', value)}
             placeholder="Enter your prompt template here. Use {variableName} for dynamic variables."
-            maxLength={2000}
+            maxLength={PROMPT_LIMITS.PROMPT_CONTENT_MAX}
             validationError={validationErrors.original_prompt}
           />
         </CardContent>
@@ -53,8 +54,14 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
               onChange={(e) => onChange('claude_response', e.target.value)}
               placeholder="Provide an example of what a good Claude response looks like for this prompt"
               rows={8}
+              maxLength={PROMPT_LIMITS.RESPONSE_MAX}
               className={validationErrors.claude_response ? 'border-destructive' : ''}
             />
+            <div className="flex justify-between items-center text-sm text-muted-foreground">
+              <span>
+                {formData.claude_response?.length || 0} / {PROMPT_LIMITS.RESPONSE_MAX} characters
+              </span>
+            </div>
             {validationErrors.claude_response && (
               <p className="text-sm text-destructive">{validationErrors.claude_response}</p>
             )}

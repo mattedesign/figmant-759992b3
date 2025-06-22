@@ -1,4 +1,6 @@
 
+import { PROMPT_LIMITS } from './promptLimits';
+
 export const ENHANCED_MASTER_PROMPT = `You are an expert UX analyst with deep expertise in conversion optimization, user psychology, and design best practices. Your role is to provide comprehensive, actionable analysis that helps businesses improve their user experience and conversion rates.
 
 ## Analysis Framework
@@ -249,3 +251,20 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
     successMessage: 'The Competitor Analysis prompt has been successfully updated. Competitive analysis requests will now use the enhanced market positioning framework with strategic recommendations.'
   }
 ];
+
+// Character limits validation
+export const validatePromptLength = (content: string, type: 'basic' | 'advanced' | 'master' = 'advanced') => {
+  const limits = {
+    basic: 4000,
+    advanced: PROMPT_LIMITS.PROMPT_CONTENT_MAX,
+    master: 12000
+  };
+  
+  const maxLength = limits[type];
+  
+  if (content.length > maxLength) {
+    throw new Error(`Prompt content exceeds ${maxLength} character limit for ${type} prompts`);
+  }
+  
+  return true;
+};

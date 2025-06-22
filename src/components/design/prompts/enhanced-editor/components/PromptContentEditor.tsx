@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { PROMPT_LIMITS, getPromptLimitStatus, getPromptLimitMessage } from '@/constants/promptLimits';
 
 interface PromptContentEditorProps {
   value: string;
@@ -30,7 +31,7 @@ export const PromptContentEditor: React.FC<PromptContentEditorProps> = ({
   value,
   onChange,
   placeholder = "Enter your prompt template...",
-  maxLength = 2000,
+  maxLength = PROMPT_LIMITS.PROMPT_CONTENT_MAX,
   validationError
 }) => {
   const [showVariablePicker, setShowVariablePicker] = useState(false);
@@ -68,16 +69,32 @@ export const PromptContentEditor: React.FC<PromptContentEditorProps> = ({
     return sections;
   }, [value]);
 
+  const limitStatus = getPromptLimitStatus(value.length, maxLength);
+  const limitMessage = getPromptLimitMessage(value.length, maxLength);
+
+  const getCharacterCountStyle = () => {
+    switch (limitStatus) {
+      case 'error':
+        return "text-red-700 bg-red-100 border border-red-300";
+      case 'danger':
+        return "text-orange-700 bg-orange-100 border border-orange-300";
+      case 'warning':
+        return "text-yellow-700 bg-yellow-100 border border-yellow-300";
+      default:
+        return "text-muted-foreground bg-gray-50";
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Label className="text-base font-medium">Prompt Template Content *</Label>
         <div className="flex items-center gap-4">
           <span className={cn(
-            "text-sm",
-            value.length > maxLength * 0.9 ? "text-destructive" : "text-muted-foreground"
+            "text-sm font-medium px-3 py-1 rounded-full",
+            getCharacterCountStyle()
           )}>
-            {value.length} / {maxLength} characters
+            {limitMessage}
           </span>
           <Button
             variant="outline"
@@ -99,7 +116,7 @@ export const PromptContentEditor: React.FC<PromptContentEditorProps> = ({
           }}
           onSelect={(e: any) => setCursorPosition(e.target.selectionStart || 0)}
           className={cn(
-            "min-h-[400px] font-mono text-sm leading-relaxed resize-none",
+            "min-h-[500px] font-mono text-sm leading-relaxed resize-none",
             validationError && "border-destructive"
           )}
           placeholder={placeholder}
@@ -173,15 +190,30 @@ export const PromptContentEditor: React.FC<PromptContentEditorProps> = ({
         </Alert>
       )}
       
-      {/* Character count warning */}
-      {value.length > maxLength * 0.9 && (
-        <Alert variant={value.length > maxLength ? "destructive" : "default"}>
+      {/* Progressive warnings */}
+      {limitStatus === 'warning' && (
+        <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            {value.length > maxLength
-              ? "Content exceeds maximum length"
-              : "Approaching maximum character limit"
-            }
+            Approaching character limit. Consider breaking down complex prompts into smaller templates.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {limitStatus === 'danger' && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Very close to character limit. You may want to optimize your prompt for better performance.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {limitStatus === 'error' && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Content exceeds maximum length. Please reduce the prompt size or consider splitting into multiple templates.
           </AlertDescription>
         </Alert>
       )}
