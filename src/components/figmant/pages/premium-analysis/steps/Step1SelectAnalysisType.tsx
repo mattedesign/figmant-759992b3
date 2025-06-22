@@ -29,6 +29,7 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
   const [selectedTemplateCreditCost, setSelectedTemplateCreditCost] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('popular');
   const [previewTemplate, setPreviewTemplate] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [templateCosts, setTemplateCosts] = useState<Record<string, number>>({});
@@ -121,6 +122,21 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
     return matchesSearch && matchesCategory;
   });
 
+  // Add sorting logic after filtering
+  const sortedTemplates = [...filteredTemplates].sort((a, b) => {
+    switch (sortBy) {
+      case 'cost-low': 
+        return (templateCosts[a.id] || 3) - (templateCosts[b.id] || 3);
+      case 'cost-high': 
+        return (templateCosts[b.id] || 3) - (templateCosts[a.id] || 3);
+      case 'alphabetical': 
+        return (a.title || '').localeCompare(b.title || '');
+      case 'popular':
+      default:
+        return 0; // Keep original order for now
+    }
+  });
+
   if (isLoading) {
     return (
       <div className="w-full min-h-full">
@@ -164,10 +180,21 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
               <SelectItem value="accessibility">Accessibility</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Sort by..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="popular">Most Popular</SelectItem>
+              <SelectItem value="cost-low">Lowest Cost</SelectItem>
+              <SelectItem value="cost-high">Highest Cost</SelectItem>
+              <SelectItem value="alphabetical">A-Z</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredTemplates.map((template) => (
+          {sortedTemplates.map((template) => (
             <Card
               key={template.id}
               className={`cursor-pointer transition-all hover:shadow-lg ${
