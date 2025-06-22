@@ -161,7 +161,7 @@ export const Step3ContextualFields: React.FC<StepProps> = ({
           <CardContent>
             <div className="space-y-2 text-sm">
               <p><strong>Template:</strong> {selectedTemplate?.title}</p>
-              <p><strong>Credit Cost:</strong> {selectedTemplate?.credit_cost || 3} credits</p>
+              <p><strong>Credit Cost:</strong> 3 credits</p>
               <p><strong>Uploaded Files:</strong> {stepData.uploadedFiles?.length || 0} files</p>
               <p><strong>URLs:</strong> {stepData.referenceLinks?.filter(url => url.trim()).length || 0} URLs</p>
               <p><strong>Configuration Fields:</strong> {Object.keys(contextualData).length} filled</p>
