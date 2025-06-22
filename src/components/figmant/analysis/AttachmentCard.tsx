@@ -10,12 +10,24 @@ export interface AttachmentCardProps {
     id: string;
     name: string;
     url?: string;
-    type: 'file' | 'link' | 'image';
+    type: 'file' | 'link' | 'image' | 'url' | 'figma';
     thumbnailUrl?: string;
     file_name?: string;
     file_path?: string;
     file_size?: number;
     created_at?: string;
+    fileSize?: number;
+    mimeType?: string;
+    uploadPath?: string;
+    metadata?: {
+      dimensions?: { width: number; height: number };
+      domain?: string;
+      figmaFileKey?: string;
+      screenshots?: {
+        desktop?: { url: string; success: boolean };
+        mobile?: { url: string; success: boolean };
+      };
+    };
   };
   onClick?: () => void;
   showDownload?: boolean;
@@ -26,12 +38,27 @@ export const AttachmentCard: React.FC<AttachmentCardProps> = ({
   onClick,
   showDownload = false
 }) => {
-  const isUrl = attachment.type === 'link' || attachment.url;
+  const isUrl = attachment.type === 'link' || attachment.type === 'url' || attachment.url;
   const isImage = attachment.type === 'image' || attachment.thumbnailUrl;
+  const isFigma = attachment.type === 'figma';
 
   const handleDownload = () => {
     if (attachment.url) {
       window.open(attachment.url, '_blank');
+    }
+  };
+
+  const getDisplayType = () => {
+    switch (attachment.type) {
+      case 'url':
+      case 'link':
+        return 'URL';
+      case 'figma':
+        return 'Figma';
+      case 'image':
+        return 'Image';
+      default:
+        return 'File';
     }
   };
 
@@ -49,7 +76,7 @@ export const AttachmentCard: React.FC<AttachmentCardProps> = ({
               className="w-full h-full"
               showFallback={true}
             />
-          ) : isUrl ? (
+          ) : isUrl || isFigma ? (
             <Globe className="h-6 w-6 text-blue-500" />
           ) : (
             <FileText className="h-6 w-6 text-gray-500" />
@@ -69,12 +96,12 @@ export const AttachmentCard: React.FC<AttachmentCardProps> = ({
           
           <div className="flex items-center gap-2 mt-2">
             <Badge variant="outline" className="text-xs">
-              {attachment.type === 'link' ? 'URL' : attachment.type === 'image' ? 'Image' : 'File'}
+              {getDisplayType()}
             </Badge>
             
-            {attachment.file_size && (
+            {(attachment.file_size || attachment.fileSize) && (
               <Badge variant="secondary" className="text-xs">
-                {(attachment.file_size / 1024).toFixed(1)} KB
+                {((attachment.file_size || attachment.fileSize || 0) / 1024).toFixed(1)} KB
               </Badge>
             )}
           </div>

@@ -38,6 +38,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     { value: 'markdown', label: 'Markdown', description: 'Text format for documentation' }
   ];
 
+  const handleCheckboxChange = (setter: (value: boolean) => void) => {
+    return (checked: boolean | 'indeterminate') => {
+      setter(checked === true);
+    };
+  };
+
   const handleExport = async () => {
     setIsExporting(true);
     
@@ -118,7 +124,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <Checkbox 
                   id="recommendations" 
                   checked={includeRecommendations}
-                  onCheckedChange={setIncludeRecommendations}
+                  onCheckedChange={handleCheckboxChange(setIncludeRecommendations)}
                 />
                 <Label htmlFor="recommendations" className="text-sm cursor-pointer">
                   Recommendations ({analysisResult.recommendations.length})
@@ -129,7 +135,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <Checkbox 
                   id="metrics" 
                   checked={includeMetrics}
-                  onCheckedChange={setIncludeMetrics}
+                  onCheckedChange={handleCheckboxChange(setIncludeMetrics)}
                 />
                 <Label htmlFor="metrics" className="text-sm cursor-pointer">
                   Analysis Metrics & Summary
@@ -140,7 +146,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <Checkbox 
                   id="attachments" 
                   checked={includeAttachments}
-                  onCheckedChange={setIncludeAttachments}
+                  onCheckedChange={handleCheckboxChange(setIncludeAttachments)}
                 />
                 <Label htmlFor="attachments" className="text-sm cursor-pointer">
                   File Information ({analysisResult.attachments.length})

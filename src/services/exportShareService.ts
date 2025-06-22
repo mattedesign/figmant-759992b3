@@ -95,7 +95,6 @@ export class ExportShareService {
       projectData: {
         name: stepData.projectName,
         goals: stepData.analysisGoals,
-        outcome: stepData.desiredOutcome,
         files: stepData.uploadedFiles?.map(f => ({ name: f.name, size: f.size, type: f.type })) || []
       },
       exportOptions: options,
