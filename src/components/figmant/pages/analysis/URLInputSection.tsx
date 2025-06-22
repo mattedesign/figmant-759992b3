@@ -4,12 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Globe, Check, AlertCircle, Loader2 } from 'lucide-react';
-import { useChatStateContext } from './components/ChatStateProvider';
 
 interface URLInputSectionProps {
   urlInput: string;
   setUrlInput: (value: string) => void;
-  onAddUrl: () => void;
+  onAddUrl: (url: string) => Promise<void>; // FIX: Direct function instead of complex handler
   onCancel: () => void;
 }
 
@@ -42,11 +41,8 @@ export const URLInputSection: React.FC<URLInputSectionProps> = ({
     setIsAdding(true);
     
     try {
-      // Get the enhanced message handler to add the URL
-      const { enhancedMessageHandler } = useChatStateContext();
-      if (enhancedMessageHandler?.handleAddUrl) {
-        await enhancedMessageHandler.handleAddUrl(urlInput);
-      }
+      // FIX: Use the passed onAddUrl function directly
+      await onAddUrl(urlInput);
       
       // Clear input and close
       setUrlInput('');

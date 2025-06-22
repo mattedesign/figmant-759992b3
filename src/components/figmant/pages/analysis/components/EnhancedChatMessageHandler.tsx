@@ -49,7 +49,7 @@ export const EnhancedChatMessageHandler: React.FC<EnhancedChatMessageHandlerProp
         name: file.name,
         file,
         status: 'uploading',
-        size: file.size
+        file_size: file.size // FIX: Use file_size instead of size to match interface
       };
       newAttachments.push(attachment);
     }

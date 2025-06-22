@@ -1,35 +1,26 @@
 
-import { ChatAttachment } from '@/components/design/DesignChatInterface';
-
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
   attachments?: ChatAttachment[];
-  mode?: 'chat' | 'analyze';
 }
 
-export interface SavedChatMessage {
+export interface ChatAttachment {
   id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  created_at: string;
-  message_order: number;
-  metadata: any;
-  attachments: any[];
-}
-
-export interface MessageHistoryState {
-  isLoading: boolean;
-  messages: ChatMessage[];
-  hasMore: boolean;
-  error?: string;
-}
-
-export interface MessageContextData {
-  sessionId: string;
-  messageCount: number;
-  recentMessages: ChatMessage[];
-  conversationSummary?: string;
+  type: 'file' | 'url';
+  name: string;
+  file?: File;
+  url?: string;
+  uploadPath?: string;
+  status: 'uploading' | 'processing' | 'uploaded' | 'error';
+  file_size?: number; // FIX: Add file_size property for compatibility
+  size?: number; // Also keep size for backward compatibility
+  metadata?: {
+    screenshots?: {
+      desktop: { success: boolean; url: string; error?: string };
+      mobile: { success: boolean; url: string; error?: string };
+    };
+  };
 }

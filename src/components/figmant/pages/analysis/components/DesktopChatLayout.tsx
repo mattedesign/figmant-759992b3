@@ -133,7 +133,7 @@ export const DesktopChatLayout: React.FC = () => {
           <ChatMessages messages={messages} />
         </div>
 
-        {/* Enhanced Input Section */}
+        {/* Enhanced Input Section with Fixed Handlers */}
         <div className="border-t border-gray-200 bg-white">
           <EnhancedChatMessageHandler>
             {({ handleSendMessage, handleKeyPress, handleAddUrl, handleFileUpload, canSend, isProcessing }) => (
@@ -144,12 +144,12 @@ export const DesktopChatLayout: React.FC = () => {
                     <URLInputModal
                       isOpen={showUrlInput}
                       onClose={handleCloseUrlInput}
-                      onAddUrl={handleAddUrl}
+                      onAddUrl={handleAddUrl} // FIX: Pass handler directly
                     />
                   </div>
                 )}
 
-                {/* Message Input */}
+                {/* Message Input with Fixed Event Handlers */}
                 <MessageInputSection
                   message={message}
                   onMessageChange={setMessage}
