@@ -15,7 +15,13 @@ export const PremiumAnalysisController: React.FC = () => {
     stakeholders: [],
     referenceLinks: [''],
     uploadedFiles: [],
-    customPrompt: ''
+    customPrompt: '',
+    uploads: {
+      images: [],
+      urls: [],
+      files: [],
+      screenshots: []
+    }
   });
 
   console.log('🔍 PremiumAnalysisController render:', {
