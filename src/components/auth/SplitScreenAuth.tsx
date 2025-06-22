@@ -20,21 +20,12 @@ export const SplitScreenAuth: React.FC = () => {
     setView('signin');
   };
 
-  const getBackgroundMedia = () => {
-    if (view === 'signup') {
-      return {
-        type: 'image' as const,
-        url: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-22/z7ayun9fe_Image-2.svg',
-        alt: 'Sign up background'
-      };
-    }
-    
-    // Sign-in and password reset use the new sign-in image
-    return {
-      type: 'image' as const,
-      url: 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/image/2025-06-22/0mww5bcyz_signin.svg',
-      alt: 'Sign in background'
-    };
+  const getBackgroundVideo = () => {
+    return 'https://okvsvrcphudxxrdonfvp.supabase.co/storage/v1/object/public/design-uploads/assets/content/video/2025-06-17/clrcpd7ij_Brand.mp4';
+  };
+
+  const getImageAlt = () => {
+    return 'Brand video background';
   };
 
   const renderForm = () => {
@@ -76,12 +67,10 @@ export const SplitScreenAuth: React.FC = () => {
     }
   };
 
-  const backgroundMedia = getBackgroundMedia();
-
   return (
     <SplitScreenLayout
-      backgroundImage={backgroundMedia.url}
-      imageAlt={backgroundMedia.alt}
+      backgroundVideo={getBackgroundVideo()}
+      imageAlt={getImageAlt()}
     >
       {renderForm()}
     </SplitScreenLayout>

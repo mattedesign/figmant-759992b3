@@ -13,52 +13,30 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({
   attachment,
   className = ''
 }) => {
-  console.log('🖼️ SCREENSHOT DISPLAY - Rendering attachment:', {
-    id: attachment.id,
-    name: attachment.name,
-    type: attachment.type,
-    url: attachment.url,
-    metadata: attachment.metadata
-  });
-
   // Check if we have screenshot data in metadata
   const hasDesktopScreenshot = attachment.metadata?.screenshots?.desktop?.success;
   const hasMobileScreenshot = attachment.metadata?.screenshots?.mobile?.success;
   
-  const desktopUrl = hasDesktopScreenshot ? 
-    (attachment.metadata.screenshots.desktop.thumbnailUrl || attachment.metadata.screenshots.desktop.screenshotUrl) : null;
-  const mobileUrl = hasMobileScreenshot ? 
-    (attachment.metadata.screenshots.mobile.thumbnailUrl || attachment.metadata.screenshots.mobile.screenshotUrl) : null;
+  const desktopUrl = hasDesktopScreenshot ? attachment.metadata.screenshots.desktop.thumbnailUrl || attachment.metadata.screenshots.desktop.url : null;
+  const mobileUrl = hasMobileScreenshot ? attachment.metadata.screenshots.mobile.thumbnailUrl || attachment.metadata.screenshots.mobile.url : null;
 
-  console.log('🖼️ SCREENSHOT DISPLAY - Checking metadata screenshots:', {
-    hasDesktopScreenshot,
-    hasMobileScreenshot,
-    desktopUrl,
-    mobileUrl
-  });
-
-  // If we have screenshots in metadata, show them
+  // If we have screenshots, show them
   if (hasDesktopScreenshot || hasMobileScreenshot) {
-    const preferredUrl = desktopUrl || mobileUrl;
-    console.log('🖼️ SCREENSHOT DISPLAY - Using metadata screenshot URL:', preferredUrl);
-    
     return (
       <div className={`relative ${className}`}>
-        {preferredUrl ? (
+        {hasDesktopScreenshot && desktopUrl ? (
           <EnhancedImage
-            attachment={{ ...attachment, url: preferredUrl }}
+            attachment={{ ...attachment, url: desktopUrl, thumbnailUrl: desktopUrl }}
             className="w-full h-full"
-            alt={`Screenshot of ${attachment.name}`}
+            alt={`Desktop screenshot of ${attachment.name}`}
           />
-        ) : (
-          <div className={`bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center ${className}`}>
-            <div className="text-center text-gray-600">
-              <Globe className="w-8 h-8 mx-auto mb-2 text-blue-500" />
-              <p className="text-sm font-medium">{attachment.name}</p>
-              <p className="text-xs text-gray-500 mt-1">Screenshot Processing...</p>
-            </div>
-          </div>
-        )}
+        ) : hasMobileScreenshot && mobileUrl ? (
+          <EnhancedImage
+            attachment={{ ...attachment, url: mobileUrl, thumbnailUrl: mobileUrl }}
+            className="w-full h-full"
+            alt={`Mobile screenshot of ${attachment.name}`}
+          />
+        ) : null}
         
         {/* Overlay with website info */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
@@ -72,8 +50,6 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({
   }
 
   // Fallback for URL attachments without screenshots
-  console.log('🖼️ SCREENSHOT DISPLAY - No screenshots found, showing fallback');
-  
   if (attachment.type === 'url') {
     return (
       <div className={`bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center ${className}`}>

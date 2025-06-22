@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useToast } from '@/hooks/use-toast';
@@ -70,7 +71,7 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
         }
       };
 
-      console.log('🔗 Creating new URL attachment with screenshot capture:', newAttachment);
+      console.log('Creating new URL attachment with screenshot capture:', newAttachment);
       setAttachments(prev => [...prev, newAttachment]);
       
       setUrlInput('');
@@ -96,9 +97,9 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
         // Update the attachment with screenshot data
         setAttachments(prev => prev.map(att => {
           if (att.id === newAttachment.id) {
-            const updatedAtt = {
+            return {
               ...att,
-              status: 'uploaded' as const,
+              status: 'uploaded',
               metadata: {
                 ...att.metadata,
                 screenshots: {
@@ -107,9 +108,6 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
                 }
               }
             };
-
-            console.log('🔗 Updated attachment with screenshots:', updatedAtt);
-            return updatedAtt;
           }
           return att;
         }));
@@ -159,7 +157,7 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
       }
 
     } catch (error) {
-      console.error('🔗 URL validation error:', error);
+      console.error('URL validation error:', error);
       toast({
         variant: "destructive",
         title: "Invalid URL",

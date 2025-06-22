@@ -1,4 +1,3 @@
-
 import { ScreenshotCaptureOptions, ScreenshotResult } from './types';
 import { DEFAULT_OPTIONS } from './config';
 import { ScreenshotOneProvider } from './screenshotOneProvider';
@@ -88,16 +87,18 @@ export class ScreenshotCaptureService {
   private static async getProvider() {
     console.log('📸 SCREENSHOT SERVICE - Getting provider...');
     
-    // Check for environment variable first
-    const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
-    if (envApiKey) {
-      console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with environment key');
-      return new ScreenshotOneProvider(envApiKey);
+    // For now, let's temporarily hardcode the API key for testing
+    // Replace with your actual ScreenshotOne API key
+    const testApiKey = 'Qd6TmvADx_A3ug';
+    
+    if (testApiKey) {
+      console.log('✅ SCREENSHOT SERVICE - Using hardcoded API key for testing');
+      return new ScreenshotOneProvider(testApiKey);
     }
     
-    // Try to get API key from Supabase edge function
+    // Try Supabase approach (currently failing)
     try {
-      console.log('📸 SCREENSHOT SERVICE - Fetching API key from Supabase...');
+      console.log('📸 SCREENSHOT SERVICE - Checking for API key from Supabase...');
       
       const response = await fetch('/api/screenshot-config', {
         method: 'GET',
@@ -107,26 +108,38 @@ export class ScreenshotCaptureService {
       });
       
       console.log('📸 SCREENSHOT SERVICE - Server response status:', response.status);
+      console.log('📸 SCREENSHOT SERVICE - Server response headers:', response.headers.get('content-type'));
       
       if (response.ok) {
-        const data = await response.json();
-        if (data.apiKey) {
-          console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with Supabase key');
-          return new ScreenshotOneProvider(data.apiKey);
-        } else {
-          console.warn('⚠️ SCREENSHOT SERVICE - No API key in server response');
+        const responseText = await response.text();
+        console.log('📸 SCREENSHOT SERVICE - Server response text:', responseText);
+        
+        try {
+          const data = JSON.parse(responseText);
+          if (data.apiKey) {
+            console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with Supabase key');
+            return new ScreenshotOneProvider(data.apiKey);
+          }
+        } catch (parseError) {
+          console.error('📸 SCREENSHOT SERVICE - Failed to parse server response:', parseError);
         }
       } else {
-        console.warn('⚠️ SCREENSHOT SERVICE - Server returned error status:', response.status);
-        const errorText = await response.text();
-        console.warn('⚠️ SCREENSHOT SERVICE - Server error:', errorText);
+        const responseText = await response.text();
+        console.log('📸 SCREENSHOT SERVICE - Server error response:', responseText);
       }
     } catch (error) {
-      console.warn('⚠️ SCREENSHOT SERVICE - Failed to fetch API key from server:', error);
+      console.warn('⚠️ SCREENSHOT SERVICE - Failed to fetch API key from Supabase:', error);
     }
     
-    console.warn('⚠️ SCREENSHOT SERVICE - No API key found, throwing error');
-    throw new Error('ScreenshotOne API key not configured. Please configure SCREENSHOTONE_API_KEY in your Supabase project secrets.');
+    // Fallback to environment variable
+    const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
+    if (envApiKey) {
+      console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with environment key');
+      return new ScreenshotOneProvider(envApiKey);
+    }
+    
+    console.warn('⚠️ SCREENSHOT SERVICE - No API key found, using mock service');
+    return new MockScreenshotProvider();
   }
 
   // Method to test the service connectivity
@@ -150,46 +163,8 @@ export class ScreenshotCaptureService {
     } catch (error) {
       return {
         isWorking: false,
-        provider: 'error',
+        provider: 'unknown',
         error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
-
-  // Method to check if service is properly configured
-  static async isConfigured(): Promise<{ configured: boolean; source?: string; error?: string }> {
-    try {
-      // Check environment variable
-      const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
-      if (envApiKey) {
-        return { configured: true, source: 'environment' };
-      }
-
-      // Check Supabase
-      try {
-        const response = await fetch('/api/screenshot-config', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.apiKey) {
-            return { configured: true, source: 'supabase' };
-          }
-        }
-      } catch (supabaseError) {
-        console.warn('Supabase API key check failed:', supabaseError);
-      }
-
-      return { 
-        configured: false, 
-        error: 'ScreenshotOne API key not found in environment variables or Supabase configuration' 
-      };
-    } catch (error) {
-      return { 
-        configured: false, 
-        error: error instanceof Error ? error.message : 'Configuration check failed' 
       };
     }
   }

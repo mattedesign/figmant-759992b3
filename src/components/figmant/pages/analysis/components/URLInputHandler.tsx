@@ -125,7 +125,6 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
               success: screenshotResults.desktop?.[0]?.success || false,
               url: validation.formattedUrl,
               screenshotUrl: screenshotResults.desktop?.[0]?.screenshotUrl,
-              thumbnailUrl: screenshotResults.desktop?.[0]?.thumbnailUrl,
               error: screenshotResults.desktop?.[0]?.success === false ? 
                 (screenshotResults.desktop?.[0]?.error || 'Desktop screenshot failed') : undefined
             },
@@ -133,7 +132,6 @@ export const URLInputHandler: React.FC<URLInputHandlerProps> = ({
               success: screenshotResults.mobile?.[0]?.success || false,
               url: validation.formattedUrl,
               screenshotUrl: screenshotResults.mobile?.[0]?.screenshotUrl,
-              thumbnailUrl: screenshotResults.mobile?.[0]?.thumbnailUrl,
               error: screenshotResults.mobile?.[0]?.success === false ? 
                 (screenshotResults.mobile?.[0]?.error || 'Mobile screenshot failed') : undefined
             }

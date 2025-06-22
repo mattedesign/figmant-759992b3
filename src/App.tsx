@@ -1,70 +1,132 @@
 
+// src/App.tsx
+
 import React from 'react';
-import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
-import { Toaster } from '@/components/ui/toaster';
-import { ErrorBoundary } from 'react-error-boundary';
-import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { QueryClient } from '@/components/QueryClient';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from 'react-router-dom';
+import Auth from '@/pages/Auth';
+import Subscription from '@/pages/Subscription';
+import PaymentSuccess from '@/pages/PaymentSuccess';
+import DesignAnalysis from '@/pages/DesignAnalysis';
+import StripeWebhookTest from '@/pages/StripeWebhookTest';
+import AdminAssets from '@/pages/AdminAssets';
 import { FigmantLayout } from '@/components/figmant/FigmantLayout';
-import { ScreenshotOneConfig } from '@/components/competitor/ScreenshotOneConfig';
-import { Chat2Page } from '@/components/figmant/pages/Chat2Page';
+import { AuthGuard } from '@/components/auth/AuthGuard';
+import ProfilePage from './pages/ProfilePage';
+import { EnhancedProfileSync } from '@/components/auth/EnhancedProfileSync';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { Toaster } from '@/components/Toaster';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
-function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+const App: React.FC = () => {
   return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre style={{ color: 'red' }}>{error.message}</pre>
-      <button onClick={resetErrorBoundary}>Try again</button>
-    </div>
-  )
-}
-
-function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
-}
-
-function App() {
-  return (
-    <div className="App">
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
+    <ErrorBoundary>
+      <ThemeProvider>
         <AuthProvider>
-          <Toaster />
-          <QueryClient>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Navigate to="/figmant" replace />} />
-                <Route path="/login" element={<div>Login Page - To be implemented</div>} />
-                <Route path="/signup" element={<div>Signup Page - To be implemented</div>} />
-                
-                {/* Figmant Routes */}
-                <Route path="/figmant/*" element={
-                  <AuthGuard>
-                    <FigmantLayout />
-                  </AuthGuard>
-                }>
-                  <Route path="chat2" element={<Chat2Page />} />
-                  <Route path="screenshot-config" element={<ScreenshotOneConfig />} />
-                </Route>
-
-                {/* Fallback route */}
-                <Route path="*" element={<Navigate to="/figmant" replace />} />
-              </Routes>
-            </BrowserRouter>
-          </QueryClient>
+          <TooltipProvider delayDuration={300}>
+            <EnhancedProfileSync />
+            <div className="min-h-screen bg-gray-50">
+              <Router>
+                <Routes>
+                  <Route path="/auth" element={<Auth />} />
+                  
+                  {/* Updated Figmant routing with dynamic sections */}
+                  <Route
+                    path="/figmant/:section"
+                    element={
+                      <AuthGuard>
+                        <FigmantLayout />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/figmant"
+                    element={
+                      <AuthGuard>
+                        <FigmantLayout />
+                      </AuthGuard>
+                    }
+                  />
+                  
+                  {/* Root redirect to figmant dashboard */}
+                  <Route path="/" element={<Navigate to="/figmant/dashboard" replace />} />
+                  
+                  {/* Legacy dashboard routes - redirect to figmant */}
+                  <Route
+                    path="/dashboard"
+                    element={<Navigate to="/figmant/dashboard" replace />}
+                  />
+                  <Route
+                    path="/owner"
+                    element={
+                      <AuthGuard requireOwner>
+                        <Navigate to="/figmant/admin" replace />
+                      </AuthGuard>
+                    }
+                  />
+                  
+                  {/* Legacy profile route - redirect to new figmant profile */}
+                  <Route
+                    path="/profile"
+                    element={<Navigate to="/figmant/profile" replace />}
+                  />
+                  
+                  {/* Preserve other important routes */}
+                  <Route
+                    path="/analysis"
+                    element={
+                      <AuthGuard>
+                        <DesignAnalysis />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/subscription"
+                    element={
+                      <AuthGuard>
+                        <Subscription />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/payment-success"
+                    element={
+                      <AuthGuard>
+                        <PaymentSuccess />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/admin/assets"
+                    element={
+                      <AuthGuard>
+                        <AdminAssets />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/stripe-webhook-test"
+                    element={
+                      <AuthGuard requireOwner>
+                        <StripeWebhookTest />
+                      </AuthGuard>
+                    }
+                  />
+                </Routes>
+              </Router>
+            </div>
+            <Toaster />
+          </TooltipProvider>
         </AuthProvider>
-      </ErrorBoundary>
-    </div>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
-}
+};
 
 export default App;
