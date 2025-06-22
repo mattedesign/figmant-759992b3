@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { ErrorBoundary } from 'react-error-boundary';
-import { AuthProvider, useAuth } from '@/context/AuthContext';
-import { QueryClient } from '@/components/QueryClientProvider';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { QueryClient } from '@/components/QueryClient';
 import { DesignUploadPage } from '@/components/design/DesignUploadPage';
 import { DesignDetailsPage } from '@/components/design/DesignDetailsPage';
 import { BatchUploadPage } from '@/components/batch-upload/BatchUploadPage';

@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Send, Paperclip, X, Loader2, Image, Link } from 'lucide-react';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
-import { AttachmentDisplay } from '../analysis/components/AttachmentDisplay';
+import { SingleAttachmentDisplay } from './SingleAttachmentDisplay';
 import { URLInputHandler } from '../analysis/components/URLInputHandler';
 import { useFileUploadHandler } from '../analysis/useFileUploadHandler';
 
@@ -34,7 +34,6 @@ export const PersistentChatInput: React.FC<PersistentChatInputProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { handleFileUpload } = useFileUploadHandler({
-    attachments,
     setAttachments
   });
 
@@ -53,7 +52,16 @@ export const PersistentChatInput: React.FC<PersistentChatInputProps> = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    files.forEach(file => handleFileUpload(file));
+    files.forEach(file => {
+      // Create a FileList-like object with a single file
+      const fileList = {
+        0: file,
+        length: 1,
+        item: (index: number) => index === 0 ? file : null,
+        [Symbol.iterator]: function* () { yield file; }
+      } as FileList;
+      handleFileUpload(fileList);
+    });
     e.target.value = '';
   };
 
@@ -96,19 +104,12 @@ export const PersistentChatInput: React.FC<PersistentChatInputProps> = ({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {attachments.map((attachment) => (
               <div key={attachment.id} className="relative group">
-                <AttachmentDisplay
+                <SingleAttachmentDisplay
                   attachment={attachment}
                   size="sm"
-                  showRemove={false}
+                  showRemove={true}
+                  onRemove={removeAttachment}
                 />
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="absolute -top-2 -right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => removeAttachment(attachment.id)}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
                 {attachment.status && (
                   <Badge 
                     variant={attachment.status === 'uploaded' ? 'default' : 'secondary'}

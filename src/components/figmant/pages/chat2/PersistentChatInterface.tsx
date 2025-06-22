@@ -19,6 +19,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
+import { ExtendedChatMessage } from './types';
 import { PersistentChatMessages } from './PersistentChatMessages';
 import { PersistentChatInput } from './PersistentChatInput';
 import { ChatSessionSidebar } from './ChatSessionSidebar';
@@ -44,7 +45,7 @@ export const PersistentChatInterface: React.FC<PersistentChatInterfaceProps> = (
   } = useChatStateContext();
 
   const [showSidebar, setShowSidebar] = useState(true);
-  const [persistedMessages, setPersistedMessages] = useState<ChatMessage[]>([]);
+  const [persistedMessages, setPersistedMessages] = useState<ExtendedChatMessage[]>([]);
   const [isLoadingSession, setIsLoadingSession] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -78,7 +79,7 @@ export const PersistentChatInterface: React.FC<PersistentChatInterfaceProps> = (
       // Here you would load messages from the database
       // For now, we'll merge in-memory messages with persisted ones
       console.log('📨 Loading session messages for:', currentSessionId);
-      setPersistedMessages(messages);
+      setPersistedMessages(messages.map(msg => ({ ...msg } as ExtendedChatMessage)));
     } catch (error) {
       console.error('Failed to load session messages:', error);
       toast({
@@ -102,7 +103,7 @@ export const PersistentChatInterface: React.FC<PersistentChatInterfaceProps> = (
       return;
     }
 
-    const newUserMessage: ChatMessage = {
+    const newUserMessage: ExtendedChatMessage = {
       id: crypto.randomUUID(),
       role: 'user',
       content: message,
@@ -113,11 +114,11 @@ export const PersistentChatInterface: React.FC<PersistentChatInterfaceProps> = (
     // Add to in-memory state
     const updatedMessages = [...persistedMessages, newUserMessage];
     setPersistedMessages(updatedMessages);
-    setMessages(updatedMessages);
+    setMessages(updatedMessages as ChatMessage[]);
 
     // Save message attachments
     if (newUserMessage.attachments && newUserMessage.attachments.length > 0) {
-      await saveMessageAttachments(newUserMessage);
+      await saveMessageAttachments(newUserMessage as ChatMessage);
     }
 
     // Clear input
@@ -133,7 +134,7 @@ export const PersistentChatInterface: React.FC<PersistentChatInterfaceProps> = (
       });
 
       if (analysisResult?.analysis) {
-        const aiResponse: ChatMessage = {
+        const aiResponse: ExtendedChatMessage = {
           id: crypto.randomUUID(),
           role: 'assistant',
           content: analysisResult.analysis,
@@ -147,16 +148,16 @@ export const PersistentChatInterface: React.FC<PersistentChatInterfaceProps> = (
 
         const finalMessages = [...updatedMessages, aiResponse];
         setPersistedMessages(finalMessages);
-        setMessages(finalMessages);
+        setMessages(finalMessages as ChatMessage[]);
 
         // Save AI response
-        await saveMessageAttachments(aiResponse);
+        await saveMessageAttachments(aiResponse as ChatMessage);
       }
 
     } catch (error) {
       console.error('Analysis failed:', error);
       
-      const errorMessage: ChatMessage = {
+      const errorMessage: ExtendedChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
         content: 'I apologize, but I encountered an error processing your request. Please try again.',
@@ -166,7 +167,7 @@ export const PersistentChatInterface: React.FC<PersistentChatInterfaceProps> = (
 
       const errorMessages = [...updatedMessages, errorMessage];
       setPersistedMessages(errorMessages);
-      setMessages(errorMessages);
+      setMessages(errorMessages as ChatMessage[]);
 
       toast({
         variant: "destructive",

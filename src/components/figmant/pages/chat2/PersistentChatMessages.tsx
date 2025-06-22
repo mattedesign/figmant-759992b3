@@ -4,12 +4,12 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Bot, User, Clock, Zap } from 'lucide-react';
-import { ChatMessage } from '@/components/design/DesignChatInterface';
-import { AttachmentDisplay } from '../analysis/components/AttachmentDisplay';
 import { formatDistanceToNow } from 'date-fns';
+import { ExtendedChatMessage } from './types';
+import { SingleAttachmentDisplay } from './SingleAttachmentDisplay';
 
 interface PersistentChatMessagesProps {
-  messages: ChatMessage[];
+  messages: ExtendedChatMessage[];
   isAnalyzing?: boolean;
 }
 
@@ -62,7 +62,7 @@ export const PersistentChatMessages: React.FC<PersistentChatMessagesProps> = ({
               <div className="mb-3">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {message.attachments.map((attachment, attachIndex) => (
-                    <AttachmentDisplay
+                    <SingleAttachmentDisplay
                       key={attachment.id || attachIndex}
                       attachment={attachment}
                       size="sm"
