@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, Download, Share, Bookmark, FileText, BarChart3, Eye } from 'lucide-react';
+import { CheckCircle, Download, Share, Bookmark, FileText, BarChart3, Eye, Save, Loader2 } from 'lucide-react';
 import { StepData } from '../types';
 import { RecommendationCard } from '@/components/figmant/analysis/RecommendationCard';
 import { AnalysisSummary } from '@/components/figmant/analysis/AnalysisSummary';
@@ -12,6 +12,8 @@ import { AttachmentReference } from '@/components/figmant/analysis/AttachmentRef
 import { EnhancedContextualAnalysisProcessor } from '@/utils/enhancedContextualAnalysisProcessor';
 import { processAttachments } from '@/utils/contextualAnalysisProcessor';
 import { ContextualAnalysisResult, AnalysisAttachment } from '@/types/contextualAnalysis';
+import { useWizardAnalysisSave } from '../hooks/useWizardAnalysisSave';
+import { useToast } from '@/hooks/use-toast';
 
 interface EnhancedAnalysisResultsViewerProps {
   stepData: StepData;
@@ -32,6 +34,9 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
 }) => {
   const [selectedAttachment, setSelectedAttachment] = useState<AnalysisAttachment | null>(null);
   const [activeTab, setActiveTab] = useState('recommendations');
+  const { toast } = useToast();
+  
+  const saveAnalysisMutation = useWizardAnalysisSave();
 
   // Process the analysis into structured format
   const structuredAnalysis = useMemo<ContextualAnalysisResult>(() => {
@@ -50,6 +55,46 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
     setSelectedAttachment(attachment);
   };
 
+  const handleSaveAnalysis = async () => {
+    try {
+      await saveAnalysisMutation.mutateAsync({
+        stepData,
+        analysisResults: { analysis: analysisResult },
+        structuredAnalysis,
+        confidenceScore: structuredAnalysis.metrics.averageConfidence / 100
+      });
+      
+      toast({
+        title: "Analysis Saved",
+        description: "Your analysis has been successfully saved to your history.",
+      });
+      
+      // Call the original onSave if provided
+      onSave?.();
+    } catch (error) {
+      console.error('Error saving analysis:', error);
+      toast({
+        title: "Save Failed",
+        description: "Failed to save analysis. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getFileRecommendationRelationships = () => {
+    const relationships: { [fileId: string]: number } = {};
+    
+    structuredAnalysis.recommendations.forEach(rec => {
+      rec.relatedAttachmentIds.forEach(attachmentId => {
+        relationships[attachmentId] = (relationships[attachmentId] || 0) + 1;
+      });
+    });
+    
+    return relationships;
+  };
+
+  const fileRecommendationCounts = getFileRecommendationRelationships();
+
   return (
     <div className="w-full min-h-full">
       {/* Header */}
@@ -66,6 +111,18 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Action Buttons */}
         <div className="flex justify-center gap-4">
+          <Button 
+            variant="default" 
+            onClick={handleSaveAnalysis}
+            disabled={saveAnalysisMutation.isPending}
+          >
+            {saveAnalysisMutation.isPending ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
+            Save Analysis
+          </Button>
           <Button variant="outline" onClick={onExport}>
             <Download className="h-4 w-4 mr-2" />
             Export Results
@@ -73,10 +130,6 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
           <Button variant="outline" onClick={onShare}>
             <Share className="h-4 w-4 mr-2" />
             Share Analysis
-          </Button>
-          <Button variant="outline" onClick={onSave}>
-            <Bookmark className="h-4 w-4 mr-2" />
-            Save for Later
           </Button>
         </div>
 
@@ -142,12 +195,24 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {structuredAnalysis.attachments.length > 0 ? (
                 structuredAnalysis.attachments.map((attachment) => (
-                  <AttachmentReference
-                    key={attachment.id}
-                    attachment={attachment}
-                    onClick={() => handleAttachmentClick(attachment)}
-                    size="medium"
-                  />
+                  <div key={attachment.id} className="relative">
+                    <AttachmentReference
+                      attachment={attachment}
+                      onClick={() => handleAttachmentClick(attachment)}
+                      size="medium"
+                    />
+                    {/* File-Recommendation Relationship Indicator */}
+                    {fileRecommendationCounts[attachment.id] && (
+                      <div className="absolute -top-2 -right-2">
+                        <Badge 
+                          variant="secondary" 
+                          className="bg-blue-100 text-blue-800 text-xs px-2 py-1"
+                        >
+                          {fileRecommendationCounts[attachment.id]} rec{fileRecommendationCounts[attachment.id] !== 1 ? 's' : ''}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
                 ))
               ) : (
                 <div className="col-span-full">
@@ -245,19 +310,31 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
                   </div>
                 </div>
 
-                {/* Files Analyzed */}
+                {/* Files Analyzed with Relationship Indicators */}
                 {stepData.uploadedFiles && stepData.uploadedFiles.length > 0 && (
                   <div className="mt-6">
                     <h4 className="font-medium text-gray-900 mb-3">Files Analyzed</h4>
                     <div className="space-y-2">
-                      {stepData.uploadedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                          <span className="text-sm text-gray-700">{file.name}</span>
-                          <span className="text-xs text-gray-500">
-                            {Math.round(file.size / 1024)} KB
-                          </span>
-                        </div>
-                      ))}
+                      {stepData.uploadedFiles.map((file, index) => {
+                        const attachment = structuredAnalysis.attachments.find(att => att.name === file.name);
+                        const relationshipCount = attachment ? fileRecommendationCounts[attachment.id] || 0 : 0;
+                        
+                        return (
+                          <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                            <span className="text-sm text-gray-700">{file.name}</span>
+                            <div className="flex items-center gap-2">
+                              {relationshipCount > 0 && (
+                                <Badge variant="outline" className="text-xs">
+                                  {relationshipCount} recommendation{relationshipCount !== 1 ? 's' : ''}
+                                </Badge>
+                              )}
+                              <span className="text-xs text-gray-500">
+                                {Math.round(file.size / 1024)} KB
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -272,7 +349,14 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-auto">
             <div className="p-4 border-b flex items-center justify-between">
-              <h3 className="text-lg font-semibold">{selectedAttachment.name}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold">{selectedAttachment.name}</h3>
+                {fileRecommendationCounts[selectedAttachment.id] && (
+                  <Badge variant="secondary" className="text-xs">
+                    {fileRecommendationCounts[selectedAttachment.id]} related recommendation{fileRecommendationCounts[selectedAttachment.id] !== 1 ? 's' : ''}
+                  </Badge>
+                )}
+              </div>
               <Button variant="ghost" onClick={() => setSelectedAttachment(null)}>
                 ×
               </Button>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { StepProps } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -134,8 +133,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
   };
 
   const handleSave = () => {
-    // TODO: Implement save functionality
-    console.log('Save analysis results');
+    console.log('Analysis saved successfully');
   };
 
   // Loading state while fetching template or running analysis
@@ -217,7 +215,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
         </div>
 
         <EnhancedAnalysisResultsViewer
-          stepData={stepData}
+          stepData={{ ...stepData, templateData }}
           analysisResult={analysisResult}
           templateData={templateData}
           onExport={handleExport}

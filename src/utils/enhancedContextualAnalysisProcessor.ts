@@ -201,34 +201,104 @@ export class EnhancedContextualAnalysisProcessor {
   }
 
   /**
-   * Find attachments related to this recommendation
+   * Enhanced method to find attachments related to this recommendation
    */
   private static findRelatedAttachments(content: string, attachments: AnalysisAttachment[]): string[] {
     const lowerContent = content.toLowerCase();
     const relatedIds: string[] = [];
     
     attachments.forEach(attachment => {
-      // Check for direct file name mentions
+      let relevanceScore = 0;
+      
+      // Direct file name mentions (highest score)
       if (lowerContent.includes(attachment.name.toLowerCase())) {
-        relatedIds.push(attachment.id);
-        return;
+        relevanceScore += 100;
       }
       
-      // Check for domain mentions for URLs
+      // Domain mentions for URLs
       if (attachment.type === 'url' && attachment.metadata?.domain) {
         if (lowerContent.includes(attachment.metadata.domain.toLowerCase())) {
-          relatedIds.push(attachment.id);
-          return;
+          relevanceScore += 80;
         }
       }
       
-      // Contextual matching based on content type
-      if (attachment.type === 'image' && (lowerContent.includes('visual') || lowerContent.includes('design'))) {
+      // Semantic content matching
+      relevanceScore += this.calculateSemanticRelevance(content, attachment);
+      
+      // Type-based contextual matching
+      relevanceScore += this.calculateTypeBasedRelevance(content, attachment);
+      
+      // Include if relevance score is above threshold
+      if (relevanceScore >= 30) {
         relatedIds.push(attachment.id);
       }
     });
     
     return relatedIds;
+  }
+
+  /**
+   * Calculate semantic relevance between recommendation content and attachment
+   */
+  private static calculateSemanticRelevance(content: string, attachment: AnalysisAttachment): number {
+    const lowerContent = content.toLowerCase();
+    let score = 0;
+    
+    // Keywords associated with different types of analysis
+    const visualKeywords = ['design', 'layout', 'visual', 'ui', 'interface', 'appearance', 'style'];
+    const functionalKeywords = ['navigation', 'menu', 'button', 'link', 'form', 'interaction'];
+    const contentKeywords = ['text', 'copy', 'heading', 'title', 'description', 'content'];
+    
+    // Image attachments - higher relevance for visual/design content
+    if (attachment.type === 'image') {
+      if (visualKeywords.some(keyword => lowerContent.includes(keyword))) score += 25;
+      if (functionalKeywords.some(keyword => lowerContent.includes(keyword))) score += 15;
+    }
+    
+    // URL attachments - higher relevance for functional/interactive content
+    if (attachment.type === 'url') {
+      if (functionalKeywords.some(keyword => lowerContent.includes(keyword))) score += 25;
+      if (contentKeywords.some(keyword => lowerContent.includes(keyword))) score += 20;
+      if (visualKeywords.some(keyword => lowerContent.includes(keyword))) score += 15;
+    }
+    
+    // File attachments - contextual based on file type
+    if (attachment.type === 'file') {
+      if (attachment.mimeType?.includes('image') && visualKeywords.some(keyword => lowerContent.includes(keyword))) {
+        score += 20;
+      }
+    }
+    
+    return score;
+  }
+
+  /**
+   * Calculate type-based relevance
+   */
+  private static calculateTypeBasedRelevance(content: string, attachment: AnalysisAttachment): number {
+    const lowerContent = content.toLowerCase();
+    let score = 0;
+    
+    // Category-specific matching
+    if (lowerContent.includes('accessibility')) {
+      if (attachment.type === 'image') score += 15; // Screenshots for accessibility analysis
+      if (attachment.type === 'url') score += 20; // Live sites for accessibility testing
+    }
+    
+    if (lowerContent.includes('conversion') || lowerContent.includes('cta')) {
+      if (attachment.type === 'url') score += 25; // Landing pages for conversion analysis
+      if (attachment.type === 'image' && attachment.name.toLowerCase().includes('landing')) score += 20;
+    }
+    
+    if (lowerContent.includes('performance')) {
+      if (attachment.type === 'url') score += 30; // URLs for performance testing
+    }
+    
+    if (lowerContent.includes('branding') || lowerContent.includes('brand')) {
+      if (attachment.type === 'image') score += 20; // Visual assets for branding
+    }
+    
+    return score;
   }
 
   /**
