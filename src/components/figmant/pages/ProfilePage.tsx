@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { SettingsContainer } from '@/components/dashboard/settings/SettingsContainer';
+import { SimplifiedProfile } from '@/components/dashboard/settings/SimplifiedProfile';
 
 export const ProfilePage: React.FC = () => {
-  return <SettingsContainer />;
+  return <SimplifiedProfile />;
 };

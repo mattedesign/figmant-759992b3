@@ -4,7 +4,7 @@ import { Navigation } from '@/components/layout/Navigation';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { RecentAnalyses } from '@/components/dashboard/RecentAnalyses';
 import { AnalyticsOverview } from '@/components/dashboard/AnalyticsOverview';
-import { Settings } from '@/components/dashboard/Settings';
+import { SimplifiedProfile } from '@/components/dashboard/settings/SimplifiedProfile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreditStatus } from '@/components/dashboard/CreditStatus';
 import { AdvancedDesignAnalysisPage } from '@/components/design/AdvancedDesignAnalysisPage';
@@ -206,7 +206,7 @@ const Dashboard = () => {
             </TabsContent>
 
             <TabsContent value="settings" className="mt-6">
-              <Settings />
+              <SimplifiedProfile />
             </TabsContent>
           </Tabs>
         </div>

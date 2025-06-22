@@ -11,7 +11,7 @@ import { AlertTriangle } from 'lucide-react';
 import { AdminAssetDashboard } from '@/components/admin/AdminAssetDashboard';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { DebugPanel } from '@/components/admin/DebugPanel';
-import { Settings } from '@/components/dashboard/Settings';
+import { SimplifiedProfile } from '@/components/dashboard/settings/SimplifiedProfile';
 import { PromptsPage } from '@/components/design/PromptsPage';
 import { SubscriptionPlansManager } from './admin/SubscriptionPlansManager';
 
@@ -158,7 +158,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
                     Configure API keys, analysis preferences, and Claude AI integration settings.
                   </p>
                 </div>
-                <Settings />
+                <SimplifiedProfile />
               </div>
             </TabsContent>
 
@@ -182,7 +182,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ initialTab }) => {
                     Configure system-wide settings, API keys, and administrative preferences.
                   </p>
                 </div>
-                <Settings />
+                <SimplifiedProfile />
               </div>
             </TabsContent>
 
