@@ -9,10 +9,12 @@ import { ScreenshotServiceSetup } from './ScreenshotServiceSetup';
 
 interface AnalysisNavigationHeaderProps {
   creditCost?: number;
+  onToggleCollapse?: () => void;
 }
 
 export const AnalysisNavigationHeader: React.FC<AnalysisNavigationHeaderProps> = ({ 
-  creditCost 
+  creditCost,
+  onToggleCollapse
 }) => {
   const navigate = useNavigate();
   const [showSetup, setShowSetup] = useState(false);
