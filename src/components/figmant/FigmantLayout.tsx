@@ -1,3 +1,4 @@
+
 // src/components/figmant/FigmantLayout.tsx
 
 import React, { useState, useEffect } from 'react';
@@ -115,10 +116,11 @@ export const FigmantLayout: React.FC = () => {
     );
   }
 
-  // Desktop layout with responsive sidebar behavior
+  // Desktop layout with proper z-index hierarchy and no overlapping elements
   return (
     <div className="h-screen flex w-full gap-4 overflow-hidden p-3" style={{ background: 'transparent' }}>
-      <div className="flex-shrink-0">
+      {/* Sidebar - Fixed z-index and proper positioning */}
+      <div className="flex-shrink-0 relative z-10">
         <FigmantSidebar 
           activeSection={activeSection}
           onSectionChange={handleSectionChange}
@@ -126,7 +128,8 @@ export const FigmantLayout: React.FC = () => {
         />
       </div>
       
-      <div className="flex-1 min-w-0 overflow-hidden">
+      {/* Main Content - Lower z-index, no overlays */}
+      <div className="flex-1 min-w-0 overflow-hidden relative z-0">
         <FigmantMainContent
           activeSection={activeSection}
           setActiveSection={handleSectionChange}

@@ -31,6 +31,12 @@ export const useWizardState = () => {
       const template = location.state.selectedTemplate;
       const startStep = location.state.startStep || 2; // Default to step 2 when coming from templates
       
+      console.log('🎯 Template pre-selected from Templates page:', { 
+        template: template.title, 
+        startStep,
+        state: location.state 
+      });
+      
       setStepData(prev => ({
         ...prev,
         selectedType: template.id,
@@ -49,6 +55,8 @@ export const useWizardState = () => {
     // Also handle legacy preSelectedTemplate flag for backward compatibility
     else if (location.state?.preSelectedTemplate && location.state?.selectedTemplate) {
       const template = location.state.selectedTemplate;
+      
+      console.log('🔄 Legacy template handling:', template.title);
       
       setStepData(prev => ({
         ...prev,

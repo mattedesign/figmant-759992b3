@@ -9,6 +9,7 @@ import {
   BreadcrumbPage,
 } from '@/components/ui/breadcrumb';
 import { ChevronRight, Home } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 interface BreadcrumbItem {
   label: string;
@@ -21,6 +22,19 @@ interface FigmantBreadcrumbsProps {
 }
 
 export const FigmantBreadcrumbs: React.FC<FigmantBreadcrumbsProps> = ({ items }) => {
+  const location = useLocation();
+  
+  // Don't render breadcrumbs in analysis, wizard-analysis, or chat contexts
+  // These views should have clean, focused interfaces
+  const hideBreadcrumbs = location.pathname.includes('/analysis') || 
+                         location.pathname.includes('/wizard-analysis') || 
+                         location.pathname.includes('/chat') ||
+                         location.search.includes('analysis');
+  
+  if (hideBreadcrumbs) {
+    return null;
+  }
+
   return (
     <Breadcrumb className="mb-4">
       <BreadcrumbList>

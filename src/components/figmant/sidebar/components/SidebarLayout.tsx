@@ -36,13 +36,14 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
 }) => {
   return (
     <div 
-      className={`h-screen flex flex-col transition-all duration-300 overflow-hidden ${
+      className={`h-screen flex flex-col transition-all duration-300 overflow-hidden relative z-20 ${
         isCollapsed ? 'w-20' : 'w-72'
       }`}
       style={{ 
         borderRadius: '20px',
         border: '1px solid var(--Stroke-01, #ECECEC)',
-        backgroundColor: isCollapsed ? '#F8F9FA' : 'white'
+        backgroundColor: isCollapsed ? '#F8F9FA' : 'white',
+        pointerEvents: 'auto' // Ensure clicks work
       }}
     >
       <SidebarHeader 
@@ -60,7 +61,8 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
         />
       )}
       
-      <div className="flex-1 overflow-y-auto">
+      {/* Navigation - Ensure proper pointer events */}
+      <div className="flex-1 overflow-y-auto relative z-10" style={{ pointerEvents: 'auto' }}>
         <SidebarNavigation 
           activeSection={activeSection}
           onSectionChange={onSectionChange}
@@ -76,7 +78,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
 
       {/* Credits Section - Only show for non-owners and when not collapsed */}
       {!isOwner && !isCollapsed && (
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0" style={{ pointerEvents: 'auto' }}>
           <SidebarCredits 
             currentBalance={currentBalance}
             totalPurchased={totalPurchased}
