@@ -11,7 +11,9 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
   stepData,
   setStepData,
   currentStep,
-  totalSteps
+  totalSteps,
+  onNextStep,
+  onPreviousStep
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
@@ -30,9 +32,22 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     const currentFiles = stepData.uploadedFiles || [];
     const newFiles = [...currentFiles, ...files];
     
+    // Also update the uploads structure for backward compatibility
+    const currentUploads = stepData.uploads || { images: [], urls: [], files: [], screenshots: [] };
+    const newUploads = { ...currentUploads };
+    
+    files.forEach(file => {
+      if (file.type.startsWith('image/')) {
+        newUploads.images = [...newUploads.images, file];
+      } else {
+        newUploads.files = [...newUploads.files, file];
+      }
+    });
+    
     setStepData(prev => ({ 
       ...prev, 
-      uploadedFiles: newFiles
+      uploadedFiles: newFiles,
+      uploads: newUploads
     }));
   };
 
@@ -49,7 +64,11 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     setUrls(updatedUrls);
     setStepData(prev => ({ 
       ...prev, 
-      referenceLinks: updatedUrls
+      referenceLinks: updatedUrls,
+      uploads: {
+        ...prev.uploads,
+        urls: updatedUrls.filter(url => url.trim() !== '')
+      }
     }));
   };
 
@@ -67,7 +86,11 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     setUrls(updatedUrls);
     setStepData(prev => ({ 
       ...prev, 
-      referenceLinks: updatedUrls.length > 0 ? updatedUrls : ['']
+      referenceLinks: updatedUrls.length > 0 ? updatedUrls : [''],
+      uploads: {
+        ...prev.uploads,
+        urls: updatedUrls.filter(url => url.trim() !== '')
+      }
     }));
   };
 
@@ -75,7 +98,22 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     const currentFiles = stepData.uploadedFiles || [];
     const newFiles = currentFiles.filter((_, i) => i !== index);
     
-    setStepData(prev => ({ ...prev, uploadedFiles: newFiles }));
+    // Also update uploads structure
+    const currentUploads = stepData.uploads || { images: [], urls: [], files: [], screenshots: [] };
+    const removedFile = currentFiles[index];
+    let newUploads = { ...currentUploads };
+    
+    if (removedFile?.type.startsWith('image/')) {
+      newUploads.images = newUploads.images.filter((_, i) => i !== index);
+    } else {
+      newUploads.files = newUploads.files.filter((_, i) => i !== index);
+    }
+    
+    setStepData(prev => ({ 
+      ...prev, 
+      uploadedFiles: newFiles,
+      uploads: newUploads
+    }));
   };
 
   const handleChooseFiles = () => {
@@ -248,6 +286,16 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
             </div>
           </CardContent>
         </Card>
+
+        {/* Navigation */}
+        <div className="flex justify-between pt-6">
+          <Button variant="outline" onClick={onPreviousStep}>
+            Previous
+          </Button>
+          <Button onClick={onNextStep}>
+            Continue to Context
+          </Button>
+        </div>
       </div>
     </div>
   );

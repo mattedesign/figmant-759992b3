@@ -2,19 +2,25 @@
 import { useState } from 'react';
 import { StepData } from '../types';
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 export const useWizardState = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [stepData, setStepData] = useState<StepData>({
     selectedType: '',
-    projectName: 'Untitled Analysis', // Set default project name
-    analysisGoals: '', // Keep this field but don't require it since we removed the step
+    projectName: 'Untitled Analysis',
+    analysisGoals: '',
     contextualData: {},
     uploadedFiles: [],
     customPrompt: '',
     stakeholders: [],
-    referenceLinks: []
+    referenceLinks: [''],
+    uploads: {
+      images: [],
+      urls: [],
+      files: [],
+      screenshots: []
+    }
   });
 
   const handleNextStep = () => {
@@ -34,13 +40,13 @@ export const useWizardState = () => {
       case 1:
         return !!stepData.selectedType;
       case 2:
-        // For step 2 (Project Details), we no longer require static fields - just check if there are contextual fields to fill
-        return true; // Always allow proceeding since contextual fields are optional or template-specific
+        // Allow proceeding even if no uploads (uploads are optional)
+        return true;
       case 3:
-        return stepData.uploadedFiles && stepData.uploadedFiles.length > 0;
+        // Require at least some contextual data or additional context
+        return Object.keys(stepData.contextualData || {}).length > 0 || 
+               !!stepData.analysisGoals?.trim();
       case 4:
-        return true; // Custom prompt is optional
-      case 5:
         return false; // Processing step - no next
       default:
         return false;
