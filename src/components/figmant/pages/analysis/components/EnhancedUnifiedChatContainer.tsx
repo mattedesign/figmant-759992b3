@@ -1,18 +1,28 @@
 
 import React from 'react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { EnhancedChatStateProvider } from './EnhancedChatStateProvider';
-import { MobileChatLayout } from './MobileChatLayout';
 import { DesktopChatLayout } from './DesktopChatLayout';
+import { MobileChatLayout } from './MobileChatLayout';
+import { EnhancedChatStateProvider } from './EnhancedChatStateProvider';
+import { ChatErrorBoundary } from './ChatErrorBoundary';
 
 export const EnhancedUnifiedChatContainer: React.FC = () => {
-  const isMobile = useIsMobile();
-
-  console.log('🔄 ENHANCED UNIFIED CHAT CONTAINER - Rendering with enhanced context and mobile:', isMobile);
+  console.log('💬 ENHANCED UNIFIED CHAT CONTAINER - Rendering enhanced chat system');
 
   return (
-    <EnhancedChatStateProvider>
-      {isMobile ? <MobileChatLayout /> : <DesktopChatLayout />}
-    </EnhancedChatStateProvider>
+    <ChatErrorBoundary>
+      <EnhancedChatStateProvider>
+        <div className="h-full flex flex-col">
+          {/* Desktop Layout */}
+          <div className="hidden md:flex h-full">
+            <DesktopChatLayout />
+          </div>
+          
+          {/* Mobile Layout */}
+          <div className="md:hidden h-full">
+            <MobileChatLayout />
+          </div>
+        </div>
+      </EnhancedChatStateProvider>
+    </ChatErrorBoundary>
   );
 };

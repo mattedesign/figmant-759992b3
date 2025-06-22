@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { useLocation } from 'react-router-dom';
 import { usePersistentChatSession } from '@/hooks/usePersistentChatSession';
+import { useMessageHistoryRestoration } from '@/hooks/useMessageHistoryRestoration';
 
 interface UseChatStateProps {
   onAttachmentsChange?: (attachments: ChatAttachment[]) => void;
@@ -22,6 +23,9 @@ export const useChatState = (props?: UseChatStateProps) => {
   const [selectedPromptTemplate, setSelectedPromptTemplate] = useState<string>('master');
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('master');
 
+  // Message history restoration
+  const { historyState, loadMessageHistory, clearHistory } = useMessageHistoryRestoration();
+
   // Persistent session management
   const {
     currentSessionId,
@@ -34,6 +38,20 @@ export const useChatState = (props?: UseChatStateProps) => {
     switchToSession,
     isSessionInitialized
   } = usePersistentChatSession();
+
+  // Load message history when session changes
+  useEffect(() => {
+    const restoreMessageHistory = async () => {
+      if (currentSessionId && isSessionInitialized) {
+        console.log('🔄 CHAT STATE - Loading message history for session:', currentSessionId);
+        const restoredMessages = await loadMessageHistory(currentSessionId);
+        setMessages(restoredMessages);
+        console.log('✅ CHAT STATE - Message history restored:', restoredMessages.length);
+      }
+    };
+
+    restoreMessageHistory();
+  }, [currentSessionId, isSessionInitialized, loadMessageHistory]);
 
   // Load historical analysis if provided in navigation state
   useEffect(() => {
@@ -95,7 +113,8 @@ export const useChatState = (props?: UseChatStateProps) => {
   const clearMessages = useCallback(() => {
     setMessages([]);
     setAttachments([]);
-  }, []);
+    clearHistory();
+  }, [clearHistory]);
 
   const updateLastMessage = useCallback((content: string) => {
     setMessages(prev => {
@@ -118,23 +137,22 @@ export const useChatState = (props?: UseChatStateProps) => {
     createNewSession(sessionName);
   }, [clearMessages, createNewSession]);
 
-  const loadSession = useCallback((sessionId: string) => {
+  const loadSession = useCallback(async (sessionId: string) => {
     // Clear current messages and switch session
     clearMessages();
-    switchToSession(sessionId);
+    await switchToSession(sessionId);
     
-    // Note: In a full implementation, you'd also load the message history
-    // from the database here. For now, we're focusing on attachment persistence.
+    // Message history will be loaded automatically via useEffect
   }, [clearMessages, switchToSession]);
 
   return {
     // Message state
     messages,
-    setMessages, // This is now properly typed as React.Dispatch<React.SetStateAction<ChatMessage[]>>
+    setMessages,
     message,
-    setMessage, // This is now properly typed as React.Dispatch<React.SetStateAction<string>>
+    setMessage,
     attachments,
-    setAttachments, // This is now properly typed as React.Dispatch<React.SetStateAction<ChatAttachment[]>>
+    setAttachments,
     showUrlInput,
     setShowUrlInput,
     urlInput,
@@ -166,6 +184,9 @@ export const useChatState = (props?: UseChatStateProps) => {
     // Session operations
     startNewSession,
     loadSession,
-    saveMessageAttachments
+    saveMessageAttachments,
+    
+    // Message history state
+    historyState
   };
 };
