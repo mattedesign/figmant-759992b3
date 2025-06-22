@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -20,11 +19,13 @@ import { useToast } from '@/hooks/use-toast';
 interface ScreenshotServiceStatusProps {
   className?: string;
   showCompact?: boolean;
+  showTitle?: boolean;
 }
 
 export const ScreenshotServiceStatus: React.FC<ScreenshotServiceStatusProps> = ({ 
   className,
-  showCompact = false 
+  showCompact = false,
+  showTitle = true
 }) => {
   const [serviceStatus, setServiceStatus] = useState<{
     isWorking: boolean;
@@ -80,7 +81,6 @@ export const ScreenshotServiceStatus: React.FC<ScreenshotServiceStatusProps> = (
         });
       }
       
-      // Refresh status after test
       await checkServiceStatus();
     } catch (error) {
       toast({
@@ -100,15 +100,15 @@ export const ScreenshotServiceStatus: React.FC<ScreenshotServiceStatusProps> = (
   if (showCompact && serviceStatus) {
     return (
       <div className={`flex items-center gap-2 text-sm ${className}`}>
-        {serviceStatus.isWorking ? (
+        {serviceStatus.isWorking && serviceStatus.hasApiKey ? (
           <Badge variant="default" className="bg-green-100 text-green-800">
             <CheckCircle className="h-3 w-3 mr-1" />
-            Screenshots Ready
+            Real Screenshots
           </Badge>
         ) : (
           <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
             <AlertTriangle className="h-3 w-3 mr-1" />
-            Screenshots Disabled
+            Mock Screenshots
           </Badge>
         )}
         <Button
@@ -126,21 +126,23 @@ export const ScreenshotServiceStatus: React.FC<ScreenshotServiceStatusProps> = (
 
   return (
     <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Camera className="h-5 w-5 text-blue-600" />
-          Screenshot Service Status
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={checkServiceStatus}
-            disabled={isLoading}
-            className="ml-auto"
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </Button>
-        </CardTitle>
-      </CardHeader>
+      {showTitle && (
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Camera className="h-5 w-5 text-blue-600" />
+            Screenshot Service Status
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={checkServiceStatus}
+              disabled={isLoading}
+              className="ml-auto"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
+          </CardTitle>
+        </CardHeader>
+      )}
       
       <CardContent className="space-y-4">
         {/* Service Status */}
