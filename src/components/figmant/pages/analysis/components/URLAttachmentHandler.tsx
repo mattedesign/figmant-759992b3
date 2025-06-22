@@ -71,7 +71,7 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
         }
       };
 
-      console.log('Creating new URL attachment with screenshot capture:', newAttachment);
+      console.log('🔗 Creating new URL attachment with screenshot capture:', newAttachment);
       setAttachments(prev => [...prev, newAttachment]);
       
       setUrlInput('');
@@ -97,9 +97,9 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
         // Update the attachment with screenshot data
         setAttachments(prev => prev.map(att => {
           if (att.id === newAttachment.id) {
-            return {
+            const updatedAtt = {
               ...att,
-              status: 'uploaded',
+              status: 'uploaded' as const,
               metadata: {
                 ...att.metadata,
                 screenshots: {
@@ -108,6 +108,21 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
                 }
               }
             };
+
+            // Also set direct screenshot URLs on the attachment for easier access
+            const desktopResult = screenshotResults.desktop?.[0];
+            const mobileResult = screenshotResults.mobile?.[0];
+            
+            if (desktopResult?.success && desktopResult.screenshotUrl) {
+              updatedAtt.screenshotUrl = desktopResult.screenshotUrl;
+              updatedAtt.thumbnailUrl = desktopResult.thumbnailUrl || desktopResult.screenshotUrl;
+            } else if (mobileResult?.success && mobileResult.screenshotUrl) {
+              updatedAtt.screenshotUrl = mobileResult.screenshotUrl;
+              updatedAtt.thumbnailUrl = mobileResult.thumbnailUrl || mobileResult.screenshotUrl;
+            }
+
+            console.log('🔗 Updated attachment with screenshots:', updatedAtt);
+            return updatedAtt;
           }
           return att;
         }));
@@ -157,7 +172,7 @@ export const URLAttachmentHandler: React.FC<URLAttachmentHandlerProps> = ({
       }
 
     } catch (error) {
-      console.error('URL validation error:', error);
+      console.error('🔗 URL validation error:', error);
       toast({
         variant: "destructive",
         title: "Invalid URL",
