@@ -19,8 +19,8 @@ interface ConversationContext {
     attachments?: number;
   }>;
   totalMessages: number;
-  sessionAttachments: any[];
-  sessionLinks: any[];
+  sessionAttachments?: any[];
+  sessionLinks?: any[];
 }
 
 interface AutoSaveState {
@@ -165,7 +165,7 @@ export const useEnhancedChatContext = (sessionId?: string) => {
     }
   }, [autoSaveMutation]);
 
-  // Load historical context method (added to fix build error)
+  // Load historical context method
   const loadHistoricalContext = useCallback((sessionId: string) => {
     console.log('📚 ENHANCED CHAT CONTEXT - Loading historical context for session:', sessionId);
     refetchContext();
@@ -302,7 +302,7 @@ export const useEnhancedChatContext = (sessionId?: string) => {
     autoSaveState,
     isLoadingContext,
     triggerAutoSave,
-    loadHistoricalContext, // Added missing method
+    loadHistoricalContext,
     createContextualPrompt,
     saveConversation,
     shouldCreateSummary,
