@@ -62,13 +62,20 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
       console.log('🔍 Starting premium analysis with template:', templateData);
       setAnalysisStarted(true);
       
+      // Extract contextual fields from metadata with proper type checking
+      let contextualFields = [];
+      if (templateData.metadata && typeof templateData.metadata === 'object' && templateData.metadata !== null) {
+        const metadata = templateData.metadata as Record<string, any>;
+        contextualFields = Array.isArray(metadata.contextual_fields) ? metadata.contextual_fields : [];
+      }
+      
       // Create a properly formatted prompt object
       const selectedPrompt = {
         id: templateData.id,
         title: templateData.title || templateData.display_name,
         category: templateData.category,
         original_prompt: templateData.original_prompt,
-        contextual_fields: templateData.contextual_fields || []
+        contextual_fields: contextualFields
       };
       
       premiumAnalysisMutation.mutate({
@@ -92,12 +99,19 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
       setAnalysisResult(null);
       setAnalysisStarted(true);
       
+      // Extract contextual fields from metadata with proper type checking
+      let contextualFields = [];
+      if (templateData.metadata && typeof templateData.metadata === 'object' && templateData.metadata !== null) {
+        const metadata = templateData.metadata as Record<string, any>;
+        contextualFields = Array.isArray(metadata.contextual_fields) ? metadata.contextual_fields : [];
+      }
+
       const selectedPrompt = {
         id: templateData.id,
         title: templateData.title || templateData.display_name,
         category: templateData.category,
         original_prompt: templateData.original_prompt,
-        contextual_fields: templateData.contextual_fields || []
+        contextual_fields: contextualFields
       };
 
       premiumAnalysisMutation.mutate({
