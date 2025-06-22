@@ -27,7 +27,27 @@ export const useWizardState = () => {
 
   // Handle pre-selected template from Templates page
   useEffect(() => {
-    if (location.state?.selectedTemplate && location.state?.preSelectedTemplate) {
+    if (location.state?.selectedTemplate) {
+      const template = location.state.selectedTemplate;
+      const startStep = location.state.startStep || 2; // Default to step 2 when coming from templates
+      
+      setStepData(prev => ({
+        ...prev,
+        selectedType: template.id,
+        projectName: `${template.title} Analysis`,
+        analysisGoals: template.description || `Analysis using ${template.title} template`,
+        contextualData: {
+          selectedTemplate: template,
+          templateCategory: template.category,
+          templateTitle: template.title
+        }
+      }));
+      
+      // Start at the specified step (usually step 2 for template pre-selection)
+      setCurrentStep(startStep);
+    }
+    // Also handle legacy preSelectedTemplate flag for backward compatibility
+    else if (location.state?.preSelectedTemplate && location.state?.selectedTemplate) {
       const template = location.state.selectedTemplate;
       
       setStepData(prev => ({

@@ -20,6 +20,9 @@ export const navigationMigrations = {
   
   // Legacy search -> Templates (search within templates)
   'search': 'templates',
+  
+  // Premium analysis -> Wizard Analysis (unified workflow)
+  'premium-analysis': 'wizard-analysis',
 } as const;
 
 /**
