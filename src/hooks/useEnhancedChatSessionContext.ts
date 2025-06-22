@@ -19,88 +19,63 @@ export const useEnhancedChatSessionContext = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Initialize or create session
   const initializeSession = useCallback(async (sessionName?: string) => {
+    if (sessionContext.isInitialized && sessionContext.sessionId) {
+      console.log('🔧 SESSION CONTEXT - Session already initialized:', sessionContext.sessionId);
+      return sessionContext.sessionId;
+    }
+
     setIsLoading(true);
     try {
-      console.log('🔄 SESSION CONTEXT - Initializing session...');
+      console.log('🔧 SESSION CONTEXT - Creating new session...');
       
-      const session = await ChatSessionService.createSession(sessionName);
-      
-      setSessionContext({
+      const session = await ChatSessionService.createSession(
+        sessionName || `Enhanced Chat ${new Date().toLocaleDateString()}`
+      );
+
+      const newContext: SessionContext = {
         sessionId: session.id,
         sessionName: session.session_name,
         isInitialized: true,
         messageCount: 0,
         lastActivity: new Date(session.created_at)
+      };
+
+      setSessionContext(newContext);
+
+      console.log('✅ SESSION CONTEXT - Session initialized:', newContext);
+      
+      toast({
+        title: "Enhanced Session Ready",
+        description: "Your conversation context is now active with full history tracking.",
       });
 
-      console.log('✅ SESSION CONTEXT - Session initialized:', session.id);
-      return session;
-      
+      return session.id;
     } catch (error) {
-      console.error('❌ SESSION CONTEXT - Error initializing session:', error);
+      console.error('❌ SESSION CONTEXT - Initialization failed:', error);
       toast({
         variant: "destructive",
-        title: "Session Error",
-        description: "Failed to initialize chat session",
+        title: "Session Creation Failed",
+        description: "Could not initialize enhanced chat context. Some features may be limited.",
       });
       throw error;
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [sessionContext.isInitialized, sessionContext.sessionId, toast]);
 
-  // Load existing session
-  const loadSession = useCallback(async (sessionId: string) => {
-    setIsLoading(true);
-    try {
-      console.log('🔄 SESSION CONTEXT - Loading session:', sessionId);
-      
-      // Load session messages to get context
-      const messages = await ChatSessionService.loadMessages(sessionId);
-      
-      setSessionContext({
-        sessionId,
-        isInitialized: true,
-        messageCount: messages.length,
-        lastActivity: messages.length > 0 ? new Date(messages[messages.length - 1].created_at) : undefined
-      });
-
-      console.log('✅ SESSION CONTEXT - Session loaded:', {
-        sessionId,
-        messageCount: messages.length
-      });
-      
-    } catch (error) {
-      console.error('❌ SESSION CONTEXT - Error loading session:', error);
-      toast({
-        variant: "destructive",
-        title: "Session Error",
-        description: "Failed to load chat session",
-      });
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast]);
-
-  // Update session activity
-  const updateSessionActivity = useCallback(() => {
-    if (sessionContext.sessionId) {
-      setSessionContext(prev => ({
-        ...prev,
-        lastActivity: new Date(),
-        messageCount: prev.messageCount + 1
-      }));
-    }
-  }, [sessionContext.sessionId]);
+  const updateMessageCount = useCallback((count: number) => {
+    setSessionContext(prev => ({
+      ...prev,
+      messageCount: count,
+      lastActivity: new Date()
+    }));
+  }, []);
 
   return {
     sessionContext,
     isLoading,
     initializeSession,
-    loadSession,
-    updateSessionActivity
+    updateMessageCount
   };
 };

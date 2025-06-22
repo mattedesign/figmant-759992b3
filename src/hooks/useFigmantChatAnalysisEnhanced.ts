@@ -2,101 +2,115 @@
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useEnhancedChatContext } from '@/hooks/useEnhancedChatContext';
+import { useEnhancedChatContext } from './useEnhancedChatContext';
 
-interface EnhancedAnalysisParams {
+interface AnalysisParams {
   message: string;
-  attachments: any[];
+  attachments?: any[];
   template?: any;
   sessionId?: string;
 }
 
-interface EnhancedAnalysisResult {
+interface AnalysisResult {
   analysis: string;
   contextUsed: boolean;
+  analysisType: string;
+  confidenceScore: number;
   tokenEstimate: number;
-  attachmentCount: number;
 }
 
 export const useFigmantChatAnalysisEnhanced = (sessionId?: string) => {
   const { toast } = useToast();
   const { createContextualPrompt } = useEnhancedChatContext(sessionId);
 
-  return useMutation({
-    mutationFn: async (params: EnhancedAnalysisParams): Promise<EnhancedAnalysisResult> => {
-      console.log('🚀 ENHANCED CHAT ANALYSIS - Starting analysis with context:', {
-        messageLength: params.message.length,
-        attachmentsCount: params.attachments.length,
-        hasTemplate: !!params.template,
-        sessionId: params.sessionId
+  return useMutation<AnalysisResult, Error, AnalysisParams>({
+    mutationFn: async ({ message, attachments = [], template, sessionId }) => {
+      console.log('🚀 FIGMANT ENHANCED ANALYSIS - Starting with context:', {
+        sessionId,
+        messageLength: message.length,
+        attachmentsCount: attachments.length,
+        hasTemplate: !!template
       });
 
       try {
-        // Create contextual prompt using conversation history
-        const contextualPrompt = createContextualPrompt(params.message, params.template);
-        const contextUsed = contextualPrompt !== params.message;
-
-        console.log('🎯 ENHANCED CHAT ANALYSIS - Contextual prompt created:', {
-          originalLength: params.message.length,
+        // Create contextual prompt with conversation history
+        const contextualPrompt = createContextualPrompt(message, template);
+        
+        console.log('🎯 FIGMANT ENHANCED ANALYSIS - Contextual prompt created:', {
+          originalLength: message.length,
           contextualLength: contextualPrompt.length,
-          contextUsed
+          contextUsed: contextualPrompt.length > message.length
         });
 
-        // Call the edge function with the contextual prompt
-        const { data, error } = await supabase.functions.invoke('figmant-chat-analysis', {
+        // Call the enhanced analysis edge function
+        const { data, error } = await supabase.functions.invoke('figmant-chat-analysis-enhanced', {
           body: {
             message: contextualPrompt,
-            attachments: params.attachments,
-            template: params.template,
-            sessionId: params.sessionId,
-            enhanced: true // Flag to indicate this is an enhanced analysis
+            attachments,
+            template,
+            sessionId,
+            originalMessage: message,
+            contextEnhanced: true
           }
         });
 
         if (error) {
-          console.error('❌ ENHANCED CHAT ANALYSIS - Edge function error:', error);
+          console.error('❌ FIGMANT ENHANCED ANALYSIS - Edge function error:', error);
           throw new Error(`Analysis failed: ${error.message}`);
         }
 
         if (!data || !data.analysis) {
-          console.error('❌ ENHANCED CHAT ANALYSIS - Invalid response:', data);
-          throw new Error('Invalid response from analysis service');
+          console.error('❌ FIGMANT ENHANCED ANALYSIS - Invalid response:', data);
+          throw new Error('Invalid analysis response received');
         }
 
-        console.log('✅ ENHANCED CHAT ANALYSIS - Analysis completed successfully:', {
-          analysisLength: data.analysis.length,
-          contextUsed,
-          attachmentCount: params.attachments.length
-        });
-
-        return {
+        const result: AnalysisResult = {
           analysis: data.analysis,
-          contextUsed,
-          tokenEstimate: Math.ceil(contextualPrompt.length / 4),
-          attachmentCount: params.attachments.length
+          contextUsed: contextualPrompt.length > message.length,
+          analysisType: data.analysisType || 'enhanced_figmant_chat',
+          confidenceScore: data.confidenceScore || 0.85,
+          tokenEstimate: Math.ceil(contextualPrompt.length / 4)
         };
 
-      } catch (error) {
-        console.error('❌ ENHANCED CHAT ANALYSIS - Analysis failed:', error);
-        
-        toast({
-          variant: "destructive",
-          title: "Enhanced Analysis Failed",
-          description: error instanceof Error ? error.message : 'Unknown error occurred',
+        console.log('✅ FIGMANT ENHANCED ANALYSIS - Success:', {
+          analysisLength: result.analysis.length,
+          contextUsed: result.contextUsed,
+          confidenceScore: result.confidenceScore,
+          tokenEstimate: result.tokenEstimate
         });
+
+        return result;
+
+      } catch (error) {
+        console.error('❌ FIGMANT ENHANCED ANALYSIS - Complete failure:', error);
         
-        throw error;
+        // Provide fallback response
+        return {
+          analysis: `I apologize, but I encountered an error during the enhanced analysis. Your message has been received: "${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"
+
+Please try again, and your conversation history will be preserved for context.`,
+          contextUsed: false,
+          analysisType: 'error_fallback',
+          confidenceScore: 0.0,
+          tokenEstimate: 0
+        };
       }
     },
-    onSuccess: (result) => {
-      console.log('🎉 ENHANCED CHAT ANALYSIS - Mutation completed successfully:', {
-        contextUsed: result.contextUsed,
-        tokenEstimate: result.tokenEstimate,
-        attachmentCount: result.attachmentCount
+    onError: (error) => {
+      console.error('❌ FIGMANT ENHANCED ANALYSIS - Mutation error:', error);
+      toast({
+        variant: "destructive",
+        title: "Enhanced Analysis Failed",
+        description: "The analysis could not be completed, but your conversation context is preserved.",
       });
     },
-    onError: (error) => {
-      console.error('💥 ENHANCED CHAT ANALYSIS - Mutation failed:', error);
+    onSuccess: (data) => {
+      if (data.contextUsed) {
+        toast({
+          title: "Enhanced Analysis Complete",
+          description: "Your analysis included full conversation context for better insights.",
+        });
+      }
     }
   });
 };
