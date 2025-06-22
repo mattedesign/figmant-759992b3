@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +12,32 @@ import { UserList } from './user-management/UserList';
 import { UserDetails } from './user-management/UserDetails';
 import { UserFilters } from './user-management/UserFilters';
 import { UserStats } from './user-management/UserStats';
-import { UserManagementProfile } from '@/types/userManagement';
+
+interface UserManagementProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  role: 'owner' | 'subscriber';
+  created_at: string;
+  avatar_url: string;
+  address: string;
+  city: string;
+  country: string;
+  bio: string;
+  website: string;
+  phone_number: string;
+  state: string;
+  postal_code: string;
+  emergency_contact_name: string;
+  emergency_contact_phone: string;
+  notification_preferences: any;
+  billing_address: any;
+  subscriptions: {
+    status: string;
+    current_period_end: string | null;
+    stripe_customer_id: string | null;
+  }[];
+}
 
 type ValidSubscriptionStatus = 'active' | 'inactive' | 'cancelled' | 'expired';
 
@@ -82,6 +106,8 @@ export const UserManagement: React.FC = () => {
         postal_code: user.postal_code || null,
         emergency_contact_name: user.emergency_contact_name || null,
         emergency_contact_phone: user.emergency_contact_phone || null,
+        notification_preferences: user.notification_preferences || null,
+        billing_address: user.billing_address || null,
         subscriptions: user.subscriptions ? [user.subscriptions] : []
       }));
 
