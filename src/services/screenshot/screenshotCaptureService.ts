@@ -121,7 +121,7 @@ export class ScreenshotCaptureService {
   private static getProvider() {
     console.log('📸 SCREENSHOT SERVICE - Getting provider...');
     
-    // Check environment variable
+    // Check environment variable only
     const envApiKey = import.meta.env.VITE_SCREENSHOTONE_API_KEY;
     if (envApiKey && envApiKey.trim()) {
       console.log('✅ SCREENSHOT SERVICE - Using ScreenshotOne API with environment key');

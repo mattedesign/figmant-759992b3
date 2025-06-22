@@ -8,15 +8,15 @@ export class MockScreenshotProvider implements ScreenshotProvider {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
     
-    // Generate mock screenshot URLs using placehold.co (more reliable than via.placeholder.com)
+    // Generate mock screenshot URLs using placehold.co
     const deviceType = options.mobile ? 'mobile' : 'desktop';
     const width = options.width || (options.mobile ? 375 : 1920);
     const height = options.height || (options.mobile ? 812 : 1080);
     
     try {
       const hostname = new URL(url).hostname;
-      const displayText = `${deviceType.toUpperCase()}%0AScreenshot%0A${hostname}`;
-      const thumbnailText = `${deviceType}%0A${hostname}`;
+      const displayText = encodeURIComponent(`${deviceType.toUpperCase()}\nScreenshot\n${hostname}`);
+      const thumbnailText = encodeURIComponent(`${deviceType}\n${hostname}`);
       
       // Use placehold.co service with proper encoding
       const mockScreenshotUrl = `https://placehold.co/${width}x${height}/f0f0f0/333333/png?text=${displayText}`;
@@ -45,9 +45,9 @@ export class MockScreenshotProvider implements ScreenshotProvider {
       console.error('🎭 MockScreenshotProvider: Error generating URLs:', error);
       
       // Fallback with simple text if URL parsing fails
-      const fallbackText = `${deviceType.toUpperCase()}%0AScreenshot%0AWebsite`;
+      const fallbackText = encodeURIComponent(`${deviceType.toUpperCase()}\nScreenshot\nWebsite`);
       const mockScreenshotUrl = `https://placehold.co/${width}x${height}/f0f0f0/333333/png?text=${fallbackText}`;
-      const mockThumbnailUrl = `https://placehold.co/400x300/f0f0f0/333333/png?text=${deviceType}%0AWebsite`;
+      const mockThumbnailUrl = `https://placehold.co/400x300/f0f0f0/333333/png?text=${encodeURIComponent(`${deviceType}\nWebsite`)}`;
       
       return {
         success: true,
