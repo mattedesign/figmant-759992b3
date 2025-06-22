@@ -5,8 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Download, Share, Bookmark } from 'lucide-react';
 import { StepProps } from '../types';
-import { AnalysisSummary } from '../../analysis/AnalysisSummary';
-import { RecommendationCard } from '../../analysis/RecommendationCard';
 import { 
   processAttachments, 
   processAnalysisWithAttachmentContext, 
