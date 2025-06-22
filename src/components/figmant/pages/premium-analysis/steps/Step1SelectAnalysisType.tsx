@@ -122,11 +122,17 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
                     </div>
                     <div>
                       <CardTitle className="text-lg">{template.title}</CardTitle>
-                      {template.category && (
-                        <Badge variant="outline" className="mt-1">
-                          {template.category}
-                        </Badge>
-                      )}
+                      <div className="mt-1 flex items-center gap-2">
+                        {template.category && (
+                          <Badge variant="outline">
+                            {template.category}
+                          </Badge>
+                        )}
+                        <CreditCostDisplay 
+                          templateId={template.id} 
+                          isSelected={stepData.selectedType === template.id}
+                        />
+                      </div>
                     </div>
                   </div>
                   {stepData.selectedType === template.id && (
@@ -138,11 +144,7 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
                 <CardDescription className="text-sm">
                   {template.description}
                 </CardDescription>
-                <div className="mt-3 flex items-center justify-between">
-                  <CreditCostDisplay 
-                    templateId={template.id} 
-                    isSelected={stepData.selectedType === template.id}
-                  />
+                <div className="mt-3 flex items-center justify-end">
                   {/* Show contextual fields indicator if template has them */}
                   {template.metadata && 
                    typeof template.metadata === 'object' && 
