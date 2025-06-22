@@ -103,11 +103,44 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
           {templates.map((template) => (
             <div
               key={template.id}
-              className={`flex min-w-[260px] p-2 flex-col items-start gap-2 flex-1 rounded-3xl border cursor-pointer transition-all hover:shadow-md ${
+              className={`flex min-w-[260px] p-2 flex-col items-start gap-2 flex-1 rounded-3xl border cursor-pointer transition-all ${
                 stepData.selectedType === template.id 
                   ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                  : 'border-gray-200 bg-gray-50'
               }`}
+              style={{
+                borderRadius: '24px',
+                border: stepData.selectedType === template.id 
+                  ? '1px solid #3b82f6' 
+                  : '1px solid #ECECEC',
+                background: stepData.selectedType === template.id 
+                  ? '#eff6ff' 
+                  : 'var(--Surface-01, #FCFCFC)'
+              }}
+              onMouseEnter={(e) => {
+                if (stepData.selectedType !== template.id) {
+                  e.currentTarget.style.boxShadow = '0px 239px 67px 0px rgba(0, 0, 0, 0.00), 0px 153px 61px 0px rgba(0, 0, 0, 0.01), 0px 86px 52px 0px rgba(0, 0, 0, 0.04), 0px 38px 38px 0px rgba(0, 0, 0, 0.06), 0px 10px 21px 0px rgba(0, 0, 0, 0.07)';
+                  e.currentTarget.style.backdropFilter = 'blur(6px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (stepData.selectedType !== template.id) {
+                  e.currentTarget.style.boxShadow = '';
+                  e.currentTarget.style.backdropFilter = '';
+                }
+              }}
+              onFocus={(e) => {
+                if (stepData.selectedType !== template.id) {
+                  e.currentTarget.style.boxShadow = '0px 239px 67px 0px rgba(0, 0, 0, 0.00), 0px 153px 61px 0px rgba(0, 0, 0, 0.01), 0px 86px 52px 0px rgba(0, 0, 0, 0.04), 0px 38px 38px 0px rgba(0, 0, 0, 0.06), 0px 10px 21px 0px rgba(0, 0, 0, 0.07)';
+                  e.currentTarget.style.backdropFilter = 'blur(6px)';
+                }
+              }}
+              onBlur={(e) => {
+                if (stepData.selectedType !== template.id) {
+                  e.currentTarget.style.boxShadow = '';
+                  e.currentTarget.style.backdropFilter = '';
+                }
+              }}
               onClick={() => handleTemplateSelect(template.id)}
             >
               <CardHeader className="pb-3 w-full">
