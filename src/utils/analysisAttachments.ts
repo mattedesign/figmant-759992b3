@@ -95,6 +95,7 @@ export const extractAttachmentsFromChatAnalysis = (analysis: SavedChatAnalysis):
       const possibleAttachments = results.attachments || 
                                  results.files || 
                                  results.uploads || 
+                                 results.batch_uploads ||
                                  [];
       
       if (Array.isArray(possibleAttachments)) {
@@ -126,6 +127,15 @@ export const extractAttachmentsFromChatAnalysis = (analysis: SavedChatAnalysis):
           }
         });
       }
+    }
+    
+    // Check if analysis itself has attachment-like properties (stored data structure)
+    if (analysis.batch_uploads && Array.isArray(analysis.batch_uploads)) {
+      analysis.batch_uploads.forEach((att: any) => {
+        if (att && typeof att === 'object') {
+          attachments.push(processAttachmentData(att));
+        }
+      });
     }
     
     // Check metadata if it exists - but safely cast to avoid type errors

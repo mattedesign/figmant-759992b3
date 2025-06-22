@@ -101,8 +101,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
     return (
       <Card>
         <CardContent className="p-4">
-          {/* Enhanced responsive grid that works on mobile and tablet */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {sidebarSections.map((section) => {
               const Icon = section.icon;
               return (
@@ -110,14 +109,14 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
                   key={section.id}
                   variant={activeSection === section.id ? "default" : "ghost"}
                   className={cn(
-                    "justify-center h-auto p-3 text-center flex-col min-h-[80px]",
+                    "justify-start h-auto p-3 text-left",
                     activeSection === section.id && "bg-blue-50 border-blue-200 text-blue-700"
                   )}
                   onClick={() => onSectionChange(section.id)}
                 >
-                  <div className="flex flex-col items-center gap-2">
-                    <Icon className="h-5 w-5" />
-                    <span className="text-xs leading-tight">{section.label}</span>
+                  <div className="flex flex-col items-center gap-1">
+                    <Icon className="h-4 w-4" />
+                    <span className="text-xs">{section.label}</span>
                   </div>
                 </Button>
               );

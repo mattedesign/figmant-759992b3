@@ -3,11 +3,13 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ContactTab } from '@/components/dashboard/settings/ContactTab';
 import { useAuth } from '@/contexts/AuthContext';
-import { createEnhancedSettingsHandlers } from '@/components/dashboard/settings/utils/enhancedSettingsHandlers';
+import { useToast } from '@/hooks/use-toast';
+import { createSettingsHandlers } from '@/components/dashboard/settings/utils/settingsHandlers';
 
 export const ContactDetailsSection: React.FC = () => {
-  const { user, refetchUserData } = useAuth();
-  const handlers = createEnhancedSettingsHandlers(user, refetchUserData);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const handlers = createSettingsHandlers(user, toast);
 
   return (
     <div className="space-y-6">
