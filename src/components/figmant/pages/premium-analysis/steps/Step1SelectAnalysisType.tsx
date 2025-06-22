@@ -1,14 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
 import { StepProps } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useFigmantPromptTemplates } from '@/hooks/prompts/useFigmantPromptTemplates';
 import { Lightbulb, Target, TrendingUp, Users, Zap, CheckCircle, Star } from 'lucide-react';
 import { CreditCostDisplay } from '../components/CreditCostDisplay';
 import { supabase } from '@/integrations/supabase/client';
 import { useTemplateCreditStore } from '@/stores/templateCreditStore';
+import { getAnalysisCost } from '@/hooks/premium-analysis/creditCostManager';
 
 interface Step1SelectAnalysisTypeProps extends StepProps {
   onCreditCostChange?: (creditCost: number) => void;
@@ -64,6 +67,10 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
         onCreditCostChange(3);
       }
     }
+  };
+
+  const onSelectTemplate = (template: any) => {
+    handleTemplateSelect(template.id);
   };
 
   const getIcon = (category: string) => {
@@ -194,6 +201,73 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
           ))}
         </div>
       </div>
+
+      {/* Template Preview Modal */}
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          {previewTemplate && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    ⚡
+                  </div>
+                  {previewTemplate.title}
+                </DialogTitle>
+                <DialogDescription>{previewTemplate.description}</DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Analysis Type</h4>
+                    <Badge variant="outline">{previewTemplate.category}</Badge>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">Credit Cost</h4>
+                    <span className="text-xl font-bold">{getAnalysisCost(previewTemplate.id)} credits</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold mb-2">Effectiveness Rating</h4>
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star 
+                        key={i} 
+                        className={`w-4 h-4 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                      />
+                    ))}
+                    <span className="ml-2 text-sm text-gray-600">4/5</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold mb-2">What This Analysis Provides</h4>
+                  <div className="p-3 bg-blue-50 rounded">
+                    <p className="text-sm">
+                      Comprehensive analysis with actionable insights, improvement recommendations, 
+                      and strategic guidance tailored to your specific needs.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowPreview(false)}>
+                  Close
+                </Button>
+                <Button onClick={() => {
+                  onSelectTemplate(previewTemplate);
+                  setShowPreview(false);
+                }}>
+                  Select This Template
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
