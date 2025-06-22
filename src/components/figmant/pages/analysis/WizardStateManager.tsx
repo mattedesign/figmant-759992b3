@@ -1,9 +1,26 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 export interface WizardData {
+  // Step 1: Template Selection (existing)
   selectedType: string;
+  
+  // Step 2: Smart Upload (combines old steps 2-5)
+  uploads: {
+    images: File[];
+    urls: string[];
+    files: File[];
+    screenshots: any[];
+  };
+  
+  // Step 3: Contextual Fields (enhanced step 4)
+  contextualData: Record<string, any>;
+  additionalContext: string;
+  
+  // Step 4: Results (existing step 7)
+  analysisResults?: any;
+  
+  // Keep existing fields for backward compatibility
   projectName: string;
   analysisGoals: string;
   desiredOutcome: string;
@@ -21,7 +38,25 @@ export const useWizardState = () => {
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [wizardData, setWizardData] = useState<WizardData>({
+    // Step 1: Template Selection
     selectedType: '',
+    
+    // Step 2: Smart Upload
+    uploads: {
+      images: [],
+      urls: [],
+      files: [],
+      screenshots: []
+    },
+    
+    // Step 3: Contextual Fields
+    contextualData: {},
+    additionalContext: '',
+    
+    // Step 4: Results
+    analysisResults: undefined,
+    
+    // Backward compatibility fields
     projectName: '',
     analysisGoals: '',
     desiredOutcome: '',
@@ -30,7 +65,8 @@ export const useWizardState = () => {
     date: '',
     stakeholders: [],
     referenceLinks: [''],
-    customPrompt: ''
+    customPrompt: '',
+    uploadedFiles: []
   });
   const [historicalContext, setHistoricalContext] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -43,20 +79,14 @@ export const useWizardState = () => {
       
       // Pre-populate wizard with historical data if it's a design analysis
       if (historicalData.type === 'design') {
-        setWizardData({
-          analysisType: historicalData.analysisType,
+        setWizardData(prev => ({
+          ...prev,
           selectedType: historicalData.analysisType || '',
           projectName: `Continuation of: ${historicalData.title}`,
           analysisGoals: `Building upon previous analysis with score ${historicalData.score}/10`,
-          desiredOutcome: '',
-          improvementMetric: '',
-          deadline: '',
-          date: '',
-          stakeholders: [],
-          referenceLinks: [''],
-          customPrompt: '',
+          additionalContext: `Previous analysis context: ${historicalData.title}`,
           previousAnalysis: historicalData
-        });
+        }));
       }
     }
   }, [location.state]);
@@ -71,7 +101,25 @@ export const useWizardState = () => {
   const resetWizard = useCallback(() => {
     setCurrentStep(1);
     setWizardData({
+      // Step 1: Template Selection
       selectedType: '',
+      
+      // Step 2: Smart Upload
+      uploads: {
+        images: [],
+        urls: [],
+        files: [],
+        screenshots: []
+      },
+      
+      // Step 3: Contextual Fields
+      contextualData: {},
+      additionalContext: '',
+      
+      // Step 4: Results
+      analysisResults: undefined,
+      
+      // Backward compatibility fields
       projectName: '',
       analysisGoals: '',
       desiredOutcome: '',
@@ -80,7 +128,8 @@ export const useWizardState = () => {
       date: '',
       stakeholders: [],
       referenceLinks: [''],
-      customPrompt: ''
+      customPrompt: '',
+      uploadedFiles: []
     });
     setHistoricalContext(null);
     setIsProcessing(false);
@@ -91,31 +140,21 @@ export const useWizardState = () => {
       case 1:
         return wizardData.selectedType !== '';
       case 2:
-        return wizardData.projectName.trim() !== '';
+        // Allow proceeding even if no uploads (uploads are optional)
+        return true;
       case 3:
-        return wizardData.analysisGoals.trim() !== '';
+        // Require at least some contextual data
+        return Object.keys(wizardData.contextualData || {}).length > 0 || 
+               wizardData.additionalContext?.trim() !== '';
       case 4:
-        const hasAnyDynamicField = Object.keys(wizardData).some(key => {
-          if (!['selectedType', 'projectName', 'analysisGoals', 'stakeholders', 'referenceLinks', 'uploadedFiles', 'customPrompt'].includes(key)) {
-            const value = wizardData[key];
-            return typeof value === 'string' && value.trim() !== '';
-          }
-          return false;
-        });
-        return hasAnyDynamicField || wizardData.desiredOutcome?.trim() !== '';
-      case 5:
-        return true; // File upload is optional
-      case 6:
-        return true; // Custom prompt is optional
-      case 7:
-        return !isProcessing; // Can proceed if not currently processing
+        return !isProcessing;
       default:
         return false;
     }
   }, [currentStep, wizardData, isProcessing]);
 
   const handleNextStep = useCallback(() => {
-    if (currentStep < 7 && canProceedToNextStep()) {
+    if (currentStep < 4 && canProceedToNextStep()) {
       setCurrentStep(currentStep + 1);
     }
   }, [currentStep, canProceedToNextStep]);
@@ -148,6 +187,6 @@ export const useWizardState = () => {
     canProceedToNextStep,
     handleNextStep,
     handlePreviousStep,
-    totalSteps: 7
+    totalSteps: 4
   };
 };
