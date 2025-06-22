@@ -18,41 +18,17 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({
     name: attachment.name,
     type: attachment.type,
     url: attachment.url,
-    screenshotUrl: attachment.screenshotUrl,
-    thumbnailUrl: attachment.thumbnailUrl,
     metadata: attachment.metadata
   });
-
-  // Check for direct screenshot URLs first (easier access)
-  if (attachment.screenshotUrl || attachment.thumbnailUrl) {
-    const imageUrl = attachment.thumbnailUrl || attachment.screenshotUrl;
-    console.log('🖼️ SCREENSHOT DISPLAY - Using direct screenshot URL:', imageUrl);
-    
-    return (
-      <div className={`relative ${className}`}>
-        <EnhancedImage
-          attachment={{ ...attachment, url: imageUrl, thumbnailUrl: imageUrl }}
-          className="w-full h-full"
-          alt={`Screenshot of ${attachment.name}`}
-        />
-        
-        {/* Overlay with website info */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-          <div className="flex items-center gap-2 text-white text-sm">
-            <Globe className="w-4 h-4 flex-shrink-0" />
-            <span className="truncate">{attachment.name}</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Check if we have screenshot data in metadata
   const hasDesktopScreenshot = attachment.metadata?.screenshots?.desktop?.success;
   const hasMobileScreenshot = attachment.metadata?.screenshots?.mobile?.success;
   
-  const desktopUrl = hasDesktopScreenshot ? attachment.metadata.screenshots.desktop.thumbnailUrl || attachment.metadata.screenshots.desktop.screenshotUrl : null;
-  const mobileUrl = hasMobileScreenshot ? attachment.metadata.screenshots.mobile.thumbnailUrl || attachment.metadata.screenshots.mobile.screenshotUrl : null;
+  const desktopUrl = hasDesktopScreenshot ? 
+    (attachment.metadata.screenshots.desktop.thumbnailUrl || attachment.metadata.screenshots.desktop.screenshotUrl) : null;
+  const mobileUrl = hasMobileScreenshot ? 
+    (attachment.metadata.screenshots.mobile.thumbnailUrl || attachment.metadata.screenshots.mobile.screenshotUrl) : null;
 
   console.log('🖼️ SCREENSHOT DISPLAY - Checking metadata screenshots:', {
     hasDesktopScreenshot,
@@ -70,7 +46,7 @@ export const ScreenshotDisplay: React.FC<ScreenshotDisplayProps> = ({
       <div className={`relative ${className}`}>
         {preferredUrl ? (
           <EnhancedImage
-            attachment={{ ...attachment, url: preferredUrl, thumbnailUrl: preferredUrl }}
+            attachment={{ ...attachment, url: preferredUrl }}
             className="w-full h-full"
             alt={`Screenshot of ${attachment.name}`}
           />
