@@ -1,17 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import { StepProps } from '../types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Download, Share, Bookmark, Clock, CheckCircle, AlertCircle, Loader2, FileText, Link } from 'lucide-react';
+import { Clock, CheckCircle, AlertCircle, Bookmark, Loader2 } from 'lucide-react';
 import { usePremiumAnalysisSubmission } from '@/hooks/usePremiumAnalysisSubmission';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { EnhancedAnalysisResultsViewer } from '../components/EnhancedAnalysisResultsViewer';
 import { useWizardAnalysisSave } from '../hooks/useWizardAnalysisSave';
 import { useToast } from '@/hooks/use-toast';
-import { ExportModal } from '../components/ExportModal';
-import { ShareModal } from '../components/ShareModal';
 
 export const Step4ContextualResults: React.FC<StepProps> = ({ 
   stepData, 
@@ -24,8 +23,6 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
   const [useEnhancedViewer, setUseEnhancedViewer] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [showExportModal, setShowExportModal] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
   const { toast } = useToast();
   
   console.log('🔍 Step4ContextualResults - Rendering with stepData:', {
@@ -144,30 +141,6 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
     }
   };
 
-  const handleExport = () => {
-    if (premiumAnalysisMutation.data?.structuredAnalysis) {
-      setShowExportModal(true);
-    } else {
-      toast({
-        title: "Export Not Available",
-        description: "Please wait for the analysis to complete before exporting.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleShare = () => {
-    if (premiumAnalysisMutation.data?.structuredAnalysis) {
-      setShowShareModal(true);
-    } else {
-      toast({
-        title: "Share Not Available",
-        description: "Please wait for the analysis to complete before sharing.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleSave = async () => {
     if (analysisResult && premiumAnalysisMutation.data) {
       setIsSaving(true);
@@ -184,7 +157,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
         setSaveStatus('saved');
         toast({
           title: "Analysis Saved",
-          description: "Your analysis has been successfully saved with enhanced file associations.",
+          description: "Your analysis has been successfully saved.",
         });
         
         // Reset save status after 3 seconds
@@ -216,7 +189,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
           <p className="text-muted-foreground">
             {isLoadingTemplate 
               ? 'Preparing analysis configuration...' 
-              : `Processing ${templateData?.category || 'design'} analysis with file associations...`
+              : `Processing ${templateData?.category || 'design'} analysis...`
             }
           </p>
         </div>
@@ -253,7 +226,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
             <p className="text-muted-foreground">
               {!templateData 
                 ? "Analysis template not found" 
-                : "Click below to start your analysis with enhanced file associations"
+                : "Click below to start your analysis"
               }
             </p>
             {templateData && (
@@ -271,7 +244,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
   if (useEnhancedViewer && analysisResult) {
     return (
       <div className="w-full min-h-full">
-        {/* Enhanced Action Bar */}
+        {/* Simple Action Bar */}
         <div className="mb-4 flex justify-between items-center bg-white p-4 rounded-lg border shadow-sm">
           <div className="flex items-center gap-4">
             <Button 
@@ -305,16 +278,8 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
             </div>
           </div>
 
-          {/* Enhanced Action Buttons */}
+          {/* Simple Action Button */}
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleExport}>
-              <FileText className="h-4 w-4 mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleShare}>
-              <Link className="h-4 w-4 mr-2" />
-              Share
-            </Button>
             <Button 
               variant="outline" 
               size="sm"
@@ -335,32 +300,8 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
           stepData={stepData}
           analysisResult={analysisResult}
           templateData={templateData}
-          onExport={handleExport}
-          onShare={handleShare}
-          onSave={handleSave}
           structuredAnalysis={premiumAnalysisMutation.data?.structuredAnalysis}
-          isSaving={isSaving}
         />
-
-        {/* Export Modal */}
-        {premiumAnalysisMutation.data?.structuredAnalysis && (
-          <ExportModal
-            isOpen={showExportModal}
-            onClose={() => setShowExportModal(false)}
-            analysisResult={premiumAnalysisMutation.data.structuredAnalysis}
-            stepData={stepData}
-          />
-        )}
-
-        {/* Share Modal */}
-        {premiumAnalysisMutation.data?.structuredAnalysis && (
-          <ShareModal
-            isOpen={showShareModal}
-            onClose={() => setShowShareModal(false)}
-            analysisResult={premiumAnalysisMutation.data.structuredAnalysis}
-            stepData={stepData}
-          />
-        )}
       </div>
     );
   }
@@ -374,7 +315,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
           <h2 className="text-3xl font-bold text-center">Analysis Complete</h2>
         </div>
         <p className="text-center text-muted-foreground">
-          Your {templateData?.category || 'design'} analysis has been completed with enhanced file associations
+          Your {templateData?.category || 'design'} analysis has been completed
         </p>
       </div>
 
@@ -405,16 +346,8 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons with Enhanced Save */}
+        {/* Simple Save Button */}
         <div className="flex justify-center gap-4">
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="h-4 w-4 mr-2" />
-            Export Results
-          </Button>
-          <Button variant="outline" onClick={handleShare}>
-            <Share className="h-4 w-4 mr-2" />
-            Share Analysis
-          </Button>
           <Button 
             variant="outline" 
             onClick={handleSave}

@@ -10,10 +10,6 @@ import {
   TrendingUp, 
   AlertTriangle, 
   CheckCircle, 
-  Download, 
-  Share, 
-  Bookmark,
-  Link,
   Eye,
   Filter
 } from 'lucide-react';
@@ -28,21 +24,13 @@ interface EnhancedAnalysisResultsViewerProps {
   analysisResult: string;
   templateData?: any;
   structuredAnalysis?: ContextualAnalysisResult;
-  onExport?: () => void;
-  onShare?: () => void;
-  onSave?: () => void;
-  isSaving?: boolean;
 }
 
 export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsViewerProps> = ({
   stepData,
   analysisResult,
   templateData,
-  structuredAnalysis,
-  onExport,
-  onShare,
-  onSave,
-  isSaving
+  structuredAnalysis
 }) => {
   const [selectedPriority, setSelectedPriority] = useState<'all' | 'high' | 'medium' | 'low'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -78,22 +66,6 @@ export const EnhancedAnalysisResultsViewer: React.FC<EnhancedAnalysisResultsView
                 {templateData?.category || 'Premium'} analysis for {stepData.projectName}
               </p>
             </div>
-          </div>
-          
-          {/* Enhanced Action Buttons */}
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={onExport}>
-              <FileText className="h-4 w-4 mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" size="sm" onClick={onShare}>
-              <Link className="h-4 w-4 mr-2" />
-              Share
-            </Button>
-            <Button variant="outline" size="sm" onClick={onSave} disabled={isSaving}>
-              <Bookmark className="h-4 w-4 mr-2" />
-              {isSaving ? 'Saving...' : 'Save'}
-            </Button>
           </div>
         </div>
 
