@@ -8,6 +8,7 @@ import { Download, Share, Bookmark, Clock, CheckCircle, AlertCircle } from 'luci
 import { usePremiumAnalysisSubmission } from '@/hooks/usePremiumAnalysisSubmission';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { EnhancedAnalysisResultsViewer } from '../components/EnhancedAnalysisResultsViewer';
 
 export const Step4ContextualResults: React.FC<StepProps> = ({ 
   stepData, 
@@ -17,6 +18,7 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
 }) => {
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [analysisStarted, setAnalysisStarted] = useState(false);
+  const [useEnhancedViewer, setUseEnhancedViewer] = useState(true);
   
   console.log('🔍 Step4ContextualResults - Rendering with stepData:', {
     selectedType: stepData.selectedType,
@@ -121,6 +123,21 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
     }
   };
 
+  const handleExport = () => {
+    // TODO: Implement export functionality
+    console.log('Export analysis results');
+  };
+
+  const handleShare = () => {
+    // TODO: Implement share functionality
+    console.log('Share analysis results');
+  };
+
+  const handleSave = () => {
+    // TODO: Implement save functionality
+    console.log('Save analysis results');
+  };
+
   // Loading state while fetching template or running analysis
   if (isLoadingTemplate || premiumAnalysisMutation.isPending) {
     return (
@@ -184,7 +201,34 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
     );
   }
 
-  // Results state - show actual Claude AI analysis
+  // Results state - show enhanced viewer or fallback to original
+  if (useEnhancedViewer && analysisResult) {
+    return (
+      <div className="w-full min-h-full">
+        {/* Viewer Toggle */}
+        <div className="mb-4 flex justify-end">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setUseEnhancedViewer(!useEnhancedViewer)}
+          >
+            Switch to {useEnhancedViewer ? 'Simple' : 'Enhanced'} View
+          </Button>
+        </div>
+
+        <EnhancedAnalysisResultsViewer
+          stepData={stepData}
+          analysisResult={analysisResult}
+          templateData={templateData}
+          onExport={handleExport}
+          onShare={handleShare}
+          onSave={handleSave}
+        />
+      </div>
+    );
+  }
+
+  // Fallback to original simple view
   return (
     <div className="w-full min-h-full">
       <div className="w-full mb-8">
@@ -198,17 +242,28 @@ export const Step4ContextualResults: React.FC<StepProps> = ({
       </div>
 
       <div className="max-w-6xl mx-auto space-y-6">
+        {/* Viewer Toggle */}
+        <div className="flex justify-end">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setUseEnhancedViewer(!useEnhancedViewer)}
+          >
+            Switch to Enhanced View
+          </Button>
+        </div>
+
         {/* Action Buttons */}
         <div className="flex justify-center gap-4">
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             Export Results
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleShare}>
             <Share className="h-4 w-4 mr-2" />
             Share Analysis
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleSave}>
             <Bookmark className="h-4 w-4 mr-2" />
             Save for Later
           </Button>
