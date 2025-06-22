@@ -99,19 +99,19 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
       </div>
 
       <div className="max-w-4xl mx-auto">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
           {templates.map((template) => (
-            <Card 
+            <div
               key={template.id}
-              className={`cursor-pointer transition-all hover:shadow-md border-2 ${
+              className={`flex min-w-[260px] p-2 flex-col items-start gap-2 flex-1 rounded-3xl border cursor-pointer transition-all hover:shadow-md ${
                 stepData.selectedType === template.id 
                   ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-200 hover:border-gray-300'
+                  : 'border-gray-200 bg-gray-50 hover:border-gray-300'
               }`}
               onClick={() => handleTemplateSelect(template.id)}
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
+              <CardHeader className="pb-3 w-full">
+                <div className="flex items-start justify-between w-full">
                   <div className="flex items-center gap-3">
                     <div className={`p-2 rounded-lg ${
                       stepData.selectedType === template.id 
@@ -134,7 +134,7 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="w-full">
                 <CardDescription className="text-sm">
                   {template.description}
                 </CardDescription>
@@ -155,7 +155,7 @@ export const Step1SelectAnalysisType: React.FC<Step1SelectAnalysisTypeProps> = (
                   )}
                 </div>
               </CardContent>
-            </Card>
+            </div>
           ))}
         </div>
 
