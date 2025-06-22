@@ -8,7 +8,7 @@ import { DesktopChatLayout } from './DesktopChatLayout';
 export const UnifiedChatContainer: React.FC = () => {
   const isMobile = useIsMobile();
 
-  console.log('🔄 UNIFIED CHAT CONTAINER - Rendering with enhanced features and mobile:', isMobile);
+  console.log('🔄 UNIFIED CHAT CONTAINER - Rendering with mobile:', isMobile);
 
   return (
     <ChatStateProvider>

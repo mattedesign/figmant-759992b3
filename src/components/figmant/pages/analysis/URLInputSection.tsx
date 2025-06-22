@@ -1,14 +1,14 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Globe, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { Globe, Check, AlertCircle } from 'lucide-react';
 
 interface URLInputSectionProps {
   urlInput: string;
   setUrlInput: (value: string) => void;
-  onAddUrl: (url: string) => Promise<void>; // FIX: Direct function instead of complex handler
+  onAddUrl: () => void;
   onCancel: () => void;
 }
 
@@ -18,43 +18,22 @@ export const URLInputSection: React.FC<URLInputSectionProps> = ({
   onAddUrl,
   onCancel
 }) => {
-  const [isAdding, setIsAdding] = useState(false);
-
   const isValidUrl = (url: string) => {
     try {
-      let formattedUrl = url.trim();
-      if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-        formattedUrl = `https://${formattedUrl}`;
-      }
-      new URL(formattedUrl);
+      new URL(url.startsWith('http') ? url : `https://${url}`);
       return true;
     } catch {
       return false;
     }
   };
 
-  const handleAddUrl = async () => {
-    if (!isValidUrl(urlInput)) {
-      return;
-    }
-
-    setIsAdding(true);
-    
-    try {
-      // FIX: Use the passed onAddUrl function directly
-      await onAddUrl(urlInput);
-      
-      // Clear input and close
-      setUrlInput('');
-      onCancel();
-    } catch (error) {
-      console.error('Error adding URL:', error);
-    } finally {
-      setIsAdding(false);
+  const handleAddUrl = () => {
+    if (isValidUrl(urlInput)) {
+      onAddUrl();
     }
   };
 
-  const canAdd = urlInput.trim() && isValidUrl(urlInput) && !isAdding;
+  const canAdd = urlInput.trim() && isValidUrl(urlInput);
   const showError = urlInput.trim() && !isValidUrl(urlInput);
 
   return (
@@ -82,7 +61,6 @@ export const URLInputSection: React.FC<URLInputSectionProps> = ({
             onChange={(e) => setUrlInput(e.target.value)}
             placeholder="https://example.com/page or example.com"
             onKeyPress={(e) => e.key === 'Enter' && canAdd && handleAddUrl()}
-            disabled={isAdding}
             className={`${canAdd ? 'border-green-300 focus:border-green-500' : showError ? 'border-red-300 focus:border-red-500' : ''}`}
           />
           <Button 
@@ -91,18 +69,9 @@ export const URLInputSection: React.FC<URLInputSectionProps> = ({
             disabled={!canAdd}
             className={canAdd ? 'bg-green-600 hover:bg-green-700' : ''}
           >
-            {isAdding ? (
-              <>
-                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                Adding...
-              </>
-            ) : (
-              'Add'
-            )}
+            Add
           </Button>
-          <Button variant="ghost" onClick={onCancel} size="sm" disabled={isAdding}>
-            Cancel
-          </Button>
+          <Button variant="ghost" onClick={onCancel} size="sm">Cancel</Button>
         </div>
         {showError && (
           <p className="text-xs text-red-600">Please enter a valid URL (e.g., https://example.com or example.com)</p>

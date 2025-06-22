@@ -1,141 +1,104 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ChatMessage } from '@/types/chat';
 
-export interface SavedChatMessage {
+export interface ChatSession {
   id: string;
-  role: 'user' | 'assistant';
-  content: string;
+  user_id: string;
+  session_name?: string;
   created_at: string;
-  message_order: number;
-  metadata: any;
-  attachments: any[];
+  last_activity: string;
+  is_active: boolean;
 }
 
-export interface ConversationSummary {
+export interface ChatAttachmentRecord {
   id: string;
-  summary_content: string;
-  messages_included: number;
-  token_count_estimate: number;
-  created_at: string;
+  chat_session_id: string;
+  message_id?: string;
+  file_name: string;
+  file_path: string;
+  file_size?: number;
+  file_type?: string;
+  upload_timestamp: string;
+  is_active: boolean;
+  created_by: string;
 }
 
-export interface ConversationContext {
-  sessionId: string;
-  messages: Array<{
-    role: string;
-    content: string;
-    timestamp: string;
-    attachments?: number;
-  }>;
-  totalMessages: number;
-  sessionAttachments: any[];
-  sessionLinks: any[];
+export interface ChatLinkRecord {
+  id: string;
+  chat_session_id: string;
+  message_id?: string;
+  url: string;
+  link_title?: string;
+  link_description?: string;
+  link_thumbnail?: string;
+  upload_timestamp: string;
+  is_active: boolean;
+  created_by: string;
 }
 
 export class ChatSessionService {
-  // Create a new chat session
-  static async createSession(sessionName?: string) {
-    const { data, error } = await supabase
-      .from('chat_sessions')
-      .insert({
-        session_name: sessionName || `Chat ${new Date().toLocaleDateString()}`,
-        user_id: (await supabase.auth.getUser()).data.user?.id
-      })
-      .select()
-      .single();
+  static async createSession(sessionName?: string): Promise<ChatSession | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
 
-    if (error) {
-      console.error('Error creating session:', error);
-      throw new Error('Failed to create chat session');
+      const { data, error } = await supabase
+        .from('chat_sessions')
+        .insert({
+          session_name: sessionName || `Chat ${new Date().toLocaleString()}`,
+          user_id: user.id
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating chat session:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in createSession:', error);
+      return null;
     }
-
-    return data;
   }
 
-  // Save a message with its attachments
-  static async saveMessage(
-    sessionId: string,
-    role: 'user' | 'assistant',
-    content: string,
-    messageOrder: number,
-    metadata: any = {},
-    attachmentIds: string[] = [],
-    linkIds: string[] = []
-  ) {
-    const { data, error } = await supabase.rpc('save_chat_message', {
-      p_session_id: sessionId,
-      p_role: role,
-      p_content: content,
-      p_message_order: messageOrder,
-      p_metadata: metadata,
-      p_attachment_ids: attachmentIds,
-      p_link_ids: linkIds
-    });
+  static async getSessionsByUser(): Promise<ChatSession[]> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
 
-    if (error) {
-      console.error('Error saving message:', error);
-      throw new Error('Failed to save message');
+      // Use the safe function to prevent infinite loops
+      const { data, error } = await supabase.rpc('get_user_sessions_safe', {
+        p_user_id: user.id
+      });
+
+      if (error) {
+        console.error('Error fetching chat sessions:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in getSessionsByUser:', error);
+      return [];
     }
-
-    return data;
   }
 
-  // Load messages for a session
-  static async loadMessages(sessionId: string): Promise<SavedChatMessage[]> {
-    const user = (await supabase.auth.getUser()).data.user;
-    if (!user) throw new Error('User not authenticated');
+  static async updateSessionActivity(sessionId: string): Promise<void> {
+    try {
+      const { error } = await supabase.rpc('update_session_activity', {
+        session_id: sessionId
+      });
 
-    const { data, error } = await supabase.rpc('get_session_messages_safe', {
-      p_session_id: sessionId,
-      p_user_id: user.id
-    });
-
-    if (error) {
-      console.error('Error loading messages:', error);
-      throw new Error('Failed to load messages');
+      if (error) {
+        console.error('Error updating session activity:', error);
+      }
+    } catch (error) {
+      console.error('Error in updateSessionActivity:', error);
     }
-
-    // Type cast all problematic fields to ensure TypeScript compatibility
-    return (data || []).map(msg => ({
-      ...msg,
-      role: msg.role as 'user' | 'assistant',           // Cast role to union type
-      attachments: Array.isArray(msg.attachments) ? msg.attachments : (msg.attachments as any) || [],  // Cast Json to any[]
-      metadata: (msg.metadata as any) || {}              // Cast Json to any (object, not array)
-    }));
   }
 
-  // Get session attachments safely
-  static async getSessionAttachmentsSafe(sessionId: string, userId: string) {
-    const { data, error } = await supabase.rpc('get_session_attachments_safe', {
-      p_session_id: sessionId,
-      p_user_id: userId
-    });
-
-    if (error) {
-      console.error('Error loading session attachments:', error);
-      throw new Error('Failed to load session attachments');
-    }
-
-    return data || [];
-  }
-
-  // Get session links safely
-  static async getSessionLinksSafe(sessionId: string, userId: string) {
-    const { data, error } = await supabase.rpc('get_session_links_safe', {
-      p_session_id: sessionId,
-      p_user_id: userId
-    });
-
-    if (error) {
-      console.error('Error loading session links:', error);
-      throw new Error('Failed to load session links');
-    }
-
-    return data || [];
-  }
-
-  // Save file attachment
   static async saveAttachment(
     sessionId: string,
     messageId: string,
@@ -143,30 +106,37 @@ export class ChatSessionService {
     filePath: string,
     fileSize?: number,
     fileType?: string
-  ) {
-    const { data, error } = await supabase
-      .from('chat_attachments')
-      .insert({
-        chat_session_id: sessionId,
-        message_id: messageId,
-        file_name: fileName,
-        file_path: filePath,
-        file_size: fileSize,
-        file_type: fileType,
-        created_by: (await supabase.auth.getUser()).data.user?.id
-      })
-      .select()
-      .single();
+  ): Promise<ChatAttachmentRecord | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
 
-    if (error) {
-      console.error('Error saving attachment:', error);
-      throw new Error('Failed to save attachment');
+      const { data, error } = await supabase
+        .from('chat_attachments')
+        .insert({
+          chat_session_id: sessionId,
+          message_id: messageId,
+          file_name: fileName,
+          file_path: filePath,
+          file_size: fileSize,
+          file_type: fileType,
+          created_by: user.id
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving attachment:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in saveAttachment:', error);
+      return null;
     }
-
-    return data;
   }
 
-  // Save link attachment
   static async saveLink(
     sessionId: string,
     messageId: string,
@@ -174,159 +144,117 @@ export class ChatSessionService {
     title?: string,
     description?: string,
     thumbnail?: string
-  ) {
-    const { data, error } = await supabase
-      .from('chat_links')
-      .insert({
-        chat_session_id: sessionId,
-        message_id: messageId,
-        url,
-        link_title: title,
-        link_description: description,
-        link_thumbnail: thumbnail,
-        created_by: (await supabase.auth.getUser()).data.user?.id
-      })
-      .select()
-      .single();
+  ): Promise<ChatLinkRecord | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
 
-    if (error) {
-      console.error('Error saving link:', error);
-      throw new Error('Failed to save link');
-    }
+      const { data, error } = await supabase
+        .from('chat_links')
+        .insert({
+          chat_session_id: sessionId,
+          message_id: messageId,
+          url,
+          link_title: title,
+          link_description: description,
+          link_thumbnail: thumbnail,
+          created_by: user.id
+        })
+        .select()
+        .single();
 
-    return data;
-  }
+      if (error) {
+        console.error('Error saving link:', error);
+        return null;
+      }
 
-  // Create conversation summary
-  static async createSummary(
-    sessionId: string,
-    summaryContent: string,
-    messagesIncluded: number,
-    tokenCountEstimate: number = 0
-  ) {
-    const { data, error } = await supabase.rpc('create_conversation_summary', {
-      p_session_id: sessionId,
-      p_summary_content: summaryContent,
-      p_messages_included: messagesIncluded,
-      p_token_count_estimate: tokenCountEstimate
-    });
-
-    if (error) {
-      console.error('Error creating summary:', error);
-      throw new Error('Failed to create conversation summary');
-    }
-
-    return data;
-  }
-
-  // Get conversation summaries for a session
-  static async getSummaries(sessionId: string): Promise<ConversationSummary[]> {
-    const { data, error } = await supabase
-      .from('chat_conversation_summaries')
-      .select('*')
-      .eq('chat_session_id', sessionId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error loading summaries:', error);
-      throw new Error('Failed to load conversation summaries');
-    }
-
-    return data || [];
-  }
-
-  // Method to save conversation context to analysis history
-  static async saveConversationContext(
-    sessionId: string,
-    messages: ChatMessage[],
-    analysisType: string = 'conversation_context'
-  ): Promise<string | null> {
-    const { data, error } = await supabase
-      .from('chat_analysis_history')
-      .insert({
-        user_id: (await supabase.auth.getUser()).data.user?.id,
-        prompt_used: `Conversation in session: ${sessionId}`,
-        analysis_results: {
-          session_id: sessionId,
-          conversation_history: messages.map(msg => ({
-            role: msg.role,
-            content: msg.content,
-            timestamp: msg.timestamp.toISOString(),
-            attachments_count: msg.attachments?.length || 0
-          })),
-          message_count: messages.length,
-          last_updated: new Date().toISOString()
-        },
-        analysis_type: analysisType,
-        confidence_score: 1.0
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error saving conversation context:', error);
+      return data;
+    } catch (error) {
+      console.error('Error in saveLink:', error);
       return null;
     }
-
-    return data.id;
   }
 
-  // Method to load conversation context
-  static async loadConversationContext(sessionId: string): Promise<ChatMessage[]> {
-    const { data, error } = await supabase
-      .from('chat_analysis_history')
-      .select('*')
-      .eq('analysis_type', 'conversation_context')
-      .contains('analysis_results', { session_id: sessionId })
-      .order('created_at', { ascending: false })
-      .limit(1);
+  static async getSessionAttachments(sessionId: string): Promise<ChatAttachmentRecord[]> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
 
-    if (error || !data || data.length === 0) {
-      console.log('No conversation context found for session:', sessionId);
+      // Use the safe function to prevent infinite loops
+      const { data, error } = await supabase.rpc('get_session_attachments_safe', {
+        p_session_id: sessionId,
+        p_user_id: user.id
+      });
+
+      if (error) {
+        console.error('Error fetching session attachments:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error in getSessionAttachments:', error);
       return [];
     }
-
-    const context = data[0].analysis_results as any;
-    
-    // Convert stored conversation back to ChatMessage format
-    return context.conversation_history.map((msg: any, index: number) => ({
-      id: `restored-${index}-${Date.now()}`,
-      role: msg.role,
-      content: msg.content,
-      timestamp: new Date(msg.timestamp),
-      attachments: msg.attachments_count > 0 ? [] : undefined // Will be loaded separately
-    }));
   }
 
-  // Method to get conversation summary for Claude context
-  static async getConversationSummary(sessionId: string): Promise<ConversationContext | null> {
+  static async getSessionLinks(sessionId: string): Promise<ChatLinkRecord[]> {
     try {
-      // Load conversation history
-      const messages = await this.loadConversationContext(sessionId);
-      
-      // Load attachments and links
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) throw new Error('User not authenticated');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
 
-      const [attachmentsData, linksData] = await Promise.all([
-        this.getSessionAttachmentsSafe(sessionId, user.id),
-        this.getSessionLinksSafe(sessionId, user.id)
-      ]);
+      // Use the safe function to prevent infinite loops
+      const { data, error } = await supabase.rpc('get_session_links_safe', {
+        p_session_id: sessionId,
+        p_user_id: user.id
+      });
 
-      return {
-        sessionId,
-        messages: messages.map(msg => ({
-          role: msg.role,
-          content: msg.content,
-          timestamp: msg.timestamp.toISOString(),
-          attachments: msg.attachments?.length
-        })),
-        totalMessages: messages.length,
-        sessionAttachments: attachmentsData,
-        sessionLinks: linksData
-      };
+      if (error) {
+        console.error('Error fetching session links:', error);
+        return [];
+      }
+
+      return data || [];
     } catch (error) {
-      console.error('Error getting conversation summary:', error);
+      console.error('Error in getSessionLinks:', error);
+      return [];
+    }
+  }
+
+  static async uploadFileToStorage(file: File, sessionId: string): Promise<string | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `${user.id}/${sessionId}/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('design-uploads')
+        .upload(filePath, file);
+
+      if (error) {
+        console.error('Error uploading file:', error);
+        return null;
+      }
+
+      return data.path;
+    } catch (error) {
+      console.error('Error in file upload:', error);
+      return null;
+    }
+  }
+
+  static async getFileUrl(filePath: string): Promise<string | null> {
+    try {
+      const { data } = supabase.storage
+        .from('design-uploads')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error getting file URL:', error);
       return null;
     }
   }

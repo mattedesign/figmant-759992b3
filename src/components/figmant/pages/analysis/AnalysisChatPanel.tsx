@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ChatMessage, ChatAttachment } from '@/types/chat';
+import { ChatMessage, ChatAttachment } from '@/components/design/DesignChatInterface';
 import { AnalysisChatHeader } from './AnalysisChatHeader';
 import { PromptTemplateModal } from './PromptTemplateModal';
 import { URLInputSection } from './URLInputSection';
@@ -98,7 +98,7 @@ export const AnalysisChatPanel: React.FC<AnalysisChatPanelProps> = ({
                     <URLInputSection 
                       urlInput={urlInput} 
                       setUrlInput={setUrlInput} 
-                      onAddUrl={handleAddUrl}
+                      onAddUrl={handleAddUrl} 
                       onCancel={() => setShowUrlInput(false)} 
                     />
                   </div>

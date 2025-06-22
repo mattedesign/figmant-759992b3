@@ -1,194 +1,192 @@
 
-import React, { useState, useCallback } from 'react';
-import { ChatMessages } from '../ChatMessages';
-import { MessageInputSection } from '../MessageInputSection';
-import { URLInputModal } from './URLInputModal';
-import { AnalysisNavigationSidebar } from './AnalysisNavigationSidebar';
-import { AnalysisRightPanel } from '../AnalysisRightPanel';
-import { EnhancedChatMessageHandler } from './EnhancedChatMessageHandler';
-import { ContextIndicator } from './ContextIndicator';
-import { useChatStateContext } from './ChatStateProvider';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { AnalysisChatContainer } from './AnalysisChatContainer';
+import { AnalysisNavigationSidebar } from './AnalysisNavigationSidebar';
+import { URLInputHandler } from './URLInputHandler';
+import { useChatStateContext } from './ChatStateProvider';
+import { ChatAttachmentHandlers } from './ChatAttachmentHandlers';
+import { useFigmantChatAnalysis } from '@/hooks/useFigmantChatAnalysis';
+import { ChatMessage } from '@/components/design/DesignChatInterface';
 
 export const DesktopChatLayout: React.FC = () => {
-  const { 
-    conversationContext, 
-    autoSaveState,
-    messages, 
-    attachments,
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
+  const [isAssetsPanelVisible, setIsAssetsPanelVisible] = useState(true);
+
+  const {
+    messages,
+    setMessages,
+    isAnalyzing,
     message,
     setMessage,
-    currentSessionId,
-    isSessionInitialized,
-    saveConversation
+    attachments,
+    setAttachments,
+    templates,
+    setSelectedTemplateId,
+    getCurrentTemplate
   } = useChatStateContext();
 
-  const [showRightPanel, setShowRightPanel] = useState(true);
-  const [showUrlInput, setShowUrlInput] = useState(false);
+  const chatAnalysis = useFigmantChatAnalysis();
 
-  const handleRemoveAttachment = useCallback((id: string) => {
-    console.log('🗑️ DESKTOP CHAT LAYOUT - Remove attachment:', id);
-  }, []);
-
-  const handleViewAttachment = useCallback((attachment: any) => {
-    console.log('👁️ DESKTOP CHAT LAYOUT - View attachment:', attachment);
-    if (attachment.type === 'url' && attachment.url) {
-      window.open(attachment.url, '_blank', 'noopener,noreferrer');
+  const handleSendMessage = async () => {
+    console.log('🚀 DESKTOP LAYOUT - Send message');
+    
+    if (!message.trim() && attachments.length === 0) {
+      console.log('No content to send');
+      return;
     }
-  }, []);
 
-  const handleToggleUrlInput = useCallback(() => {
-    console.log('🔗 TOGGLE URL INPUT:', !showUrlInput);
-    setShowUrlInput(!showUrlInput);
-  }, [showUrlInput]);
-
-  const handleToggleRightPanel = useCallback(() => {
-    setShowRightPanel(!showRightPanel);
-  }, [showRightPanel]);
-
-  const handleManualSave = useCallback(async () => {
     try {
-      await saveConversation(messages);
+      // Create user message
+      const userMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: message,
+        attachments: attachments.length > 0 ? attachments : undefined,
+        timestamp: new Date()
+      };
+
+      // Add user message to state
+      if (setMessages) {
+        setMessages(prev => [...prev, userMessage]);
+      }
+
+      // Send to analysis API
+      const result = await chatAnalysis.mutateAsync({
+        message,
+        attachments,
+        template: getCurrentTemplate()
+      });
+
+      // Add AI response
+      const aiMessage: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: result.analysis,
+        timestamp: new Date()
+      };
+
+      if (setMessages) {
+        setMessages(prev => [...prev, aiMessage]);
+      }
+
+      // Clear input
+      if (setMessage) {
+        setMessage('');
+      }
+      
+      // Clear attachments if setAttachments is available
+      if (setAttachments) {
+        setAttachments([]);
+      }
+      
     } catch (error) {
-      console.error('Manual save failed:', error);
+      console.error('Send message error:', error);
     }
-  }, [saveConversation, messages]);
+  };
 
-  const handleCloseUrlInput = useCallback(() => {
-    setShowUrlInput(false);
-  }, []);
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
-  console.log('🖥️ DESKTOP CHAT LAYOUT - Rendering with enhanced context:', {
-    sessionId: currentSessionId,
-    isInitialized: isSessionInitialized,
-    messagesCount: messages.length,
-    attachmentsCount: attachments.length,
-    hasHistoricalContext: !!conversationContext.historicalContext,
-    hasAttachmentContext: conversationContext.attachmentContext?.length > 0,
-    tokenEstimate: conversationContext.tokenEstimate,
-    autoSaveStatus: autoSaveState.status,
-    showRightPanel,
-    showUrlInput
-  });
+  const canSend = message.trim().length > 0 || attachments.length > 0;
+
+  const handleTemplateSelect = (templateId: string) => {
+    if (setSelectedTemplateId) {
+      setSelectedTemplateId(templateId);
+    }
+  };
+
+  const handleViewTemplate = (template: any) => {
+    console.log('🎯 DESKTOP LAYOUT - View template:', template);
+  };
+
+  const handleToggleUrlInput = () => {
+    setShowUrlInput(!showUrlInput);
+  };
+
+  const handleViewAttachment = (attachment: any) => {
+    console.log('View attachment:', attachment);
+  };
 
   return (
-    <div className="flex h-full w-full">
-      {/* Left Sidebar - Analysis Navigation */}
-      <div className="w-80 border-r border-gray-200 bg-gray-50">
-        <AnalysisNavigationSidebar
-          messages={messages}
-          attachments={attachments}
-          onRemoveAttachment={handleRemoveAttachment}
-          onViewAttachment={handleViewAttachment}
-        />
-      </div>
-
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Enhanced Context Indicator */}
-        <div className="p-3 border-b border-gray-100 bg-white">
-          <div className="flex items-center justify-between">
-            <ContextIndicator
-              hasHistoricalContext={!!conversationContext.historicalContext}
-              hasAttachmentContext={conversationContext.attachmentContext?.length > 0}
-              messageCount={messages.length}
-              tokenEstimate={conversationContext.tokenEstimate}
-              autoSaveStatus={autoSaveState.status}
-              lastSaved={autoSaveState.lastSaved}
+    <ChatAttachmentHandlers>
+      {(attachmentHandlers) => (
+        <div className="h-full flex gap-4">
+          {/* Main Chat Container */}
+          <div className="flex-1 min-w-0 relative">
+            <AnalysisChatContainer
+              messages={messages}
+              isAnalyzing={isAnalyzing || chatAnalysis.isPending}
+              message={message}
+              setMessage={setMessage}
+              onSendMessage={handleSendMessage}
+              onKeyPress={handleKeyPress}
+              getCurrentTemplate={getCurrentTemplate}
+              canSend={canSend}
+              onFileUpload={attachmentHandlers.handleFileUpload}
+              onToggleUrlInput={handleToggleUrlInput}
+              showUrlInput={false}
+              urlInput=""
+              setUrlInput={() => {}}
+              onAddUrl={() => {}}
+              onCancelUrl={() => {}}
+              onTemplateSelect={handleTemplateSelect}
+              availableTemplates={templates}
+              onViewTemplate={handleViewTemplate}
+              attachments={attachments}
+              onRemoveAttachment={attachmentHandlers.removeAttachment}
             />
             
-            {/* Right Panel Toggle */}
-            <div className="flex items-center gap-2">
-              {autoSaveState.status === 'error' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleManualSave}
-                  className="text-xs"
-                >
-                  Manual Save
-                </Button>
-              )}
-              
+            {/* URL Input Handler */}
+            {showUrlInput && (
+              <div className="absolute top-0 left-0 right-0 z-10 p-4">
+                <URLInputHandler
+                  showUrlInput={showUrlInput}
+                  onClose={() => setShowUrlInput(false)}
+                  attachments={attachments}
+                  onAttachmentAdd={attachmentHandlers.handleAttachmentAdd}
+                  onAttachmentUpdate={attachmentHandlers.handleAttachmentUpdate}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Analysis Assets Panel */}
+          {isAssetsPanelVisible && (
+            <div className="flex-shrink-0 w-72">
+              <AnalysisNavigationSidebar
+                messages={messages}
+                attachments={attachments}
+                onRemoveAttachment={attachmentHandlers.removeAttachment}
+                onViewAttachment={handleViewAttachment}
+                lastAnalysisResult={lastAnalysisResult}
+                isCollapsed={false}
+                onToggleCollapse={() => setIsAssetsPanelVisible(!isAssetsPanelVisible)}
+              />
+            </div>
+          )}
+
+          {/* Toggle Button for Assets Panel */}
+          {!isAssetsPanelVisible && (
+            <div className="flex-shrink-0 flex items-start pt-4">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                onClick={handleToggleRightPanel}
-                className="p-2"
-                title={showRightPanel ? 'Hide Details Panel' : 'Show Details Panel'}
+                onClick={() => setIsAssetsPanelVisible(true)}
+                className="h-8 w-8 p-0"
               >
-                {showRightPanel ? (
-                  <PanelRightClose className="h-4 w-4" />
-                ) : (
-                  <PanelRightOpen className="h-4 w-4" />
-                )}
+                <PanelRightOpen className="h-4 w-4" />
               </Button>
             </div>
-          </div>
-        </div>
-
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto">
-          <ChatMessages messages={messages} />
-        </div>
-
-        {/* Enhanced Input Section with Fixed Handlers */}
-        <div className="border-t border-gray-200 bg-white">
-          <EnhancedChatMessageHandler>
-            {({ handleSendMessage, handleKeyPress, handleAddUrl, handleFileUpload, canSend, isProcessing }) => (
-              <>
-                {/* URL Input Modal */}
-                {showUrlInput && (
-                  <div className="p-4 border-b">
-                    <URLInputModal
-                      isOpen={showUrlInput}
-                      onClose={handleCloseUrlInput}
-                      onAddUrl={handleAddUrl} // FIX: Pass handler directly
-                    />
-                  </div>
-                )}
-
-                {/* Message Input with Fixed Event Handlers */}
-                <MessageInputSection
-                  message={message}
-                  onMessageChange={setMessage}
-                  onSendMessage={handleSendMessage}
-                  onKeyPress={handleKeyPress}
-                  onToggleUrlInput={handleToggleUrlInput}
-                  onFileUpload={handleFileUpload}
-                  isAnalyzing={isProcessing}
-                  canSend={canSend}
-                />
-              </>
-            )}
-          </EnhancedChatMessageHandler>
-        </div>
-      </div>
-
-      {/* Enhanced Right Panel - Collapsible */}
-      {showRightPanel && (
-        <div className="border-l border-gray-200 bg-gray-50">
-          <AnalysisRightPanel 
-            currentSessionId={currentSessionId}
-            conversationContext={{
-              sessionId: conversationContext.sessionId,
-              messages: conversationContext.messages,
-              totalMessages: conversationContext.totalMessages || 0,
-              sessionAttachments: conversationContext.sessionAttachments || [],
-              sessionLinks: conversationContext.sessionLinks || [],
-              historicalContext: conversationContext.historicalContext,
-              attachmentContext: conversationContext.attachmentContext,
-              tokenEstimate: conversationContext.tokenEstimate
-            }}
-            autoSaveStatus={autoSaveState.status}
-            messageCount={autoSaveState.messageCount}
-            lastSaved={autoSaveState.lastSaved}
-            onRemoveAttachment={handleRemoveAttachment}
-            onViewAttachment={handleViewAttachment}
-          />
+          )}
         </div>
       )}
-    </div>
+    </ChatAttachmentHandlers>
   );
 };

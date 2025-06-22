@@ -3,7 +3,7 @@ import React from 'react';
 import { EnhancedAttachmentStatus } from './EnhancedAttachmentStatus';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import { ChatAttachment } from '@/types/chat';
+import { ChatAttachment } from '../DesignChatInterface';
 
 interface ChatAttachmentsProps {
   attachments: ChatAttachment[];

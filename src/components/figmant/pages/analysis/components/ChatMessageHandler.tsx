@@ -1,6 +1,6 @@
 
 import React, { ReactNode } from 'react';
-import { ChatMessage, ChatAttachment } from '@/types/chat';
+import { ChatMessage } from '@/components/design/DesignChatInterface';
 import { useChatStateContext } from './ChatStateProvider';
 
 interface ChatMessageHandlerProps {
@@ -33,8 +33,7 @@ export const ChatMessageHandler: React.FC<ChatMessageHandlerProps> = ({ children
     console.log('🔥 CHAT MESSAGE HANDLER - Current state:', {
       messageLength: message.length,
       attachmentsCount: attachments.length,
-      hasAnalyzeFunction: !!analyzeWithClaude,
-      existingMessagesCount: messages.length
+      hasAnalyzeFunction: !!analyzeWithClaude
     });
 
     if (!message.trim() && attachments.length === 0) {
@@ -49,7 +48,6 @@ export const ChatMessageHandler: React.FC<ChatMessageHandlerProps> = ({ children
     console.log('🚀 MESSAGE HANDLER - Sending message with attachments:', {
       messageLength: message.length,
       attachmentsCount: attachments.length,
-      existingMessages: messages.length
     });
 
     const userMessage: ChatMessage = {
@@ -69,8 +67,8 @@ export const ChatMessageHandler: React.FC<ChatMessageHandlerProps> = ({ children
       saveMessageAttachments(userMessage);
       
       toast({
-        title: "Message Saved",
-        description: "Your message and attachments have been saved to this chat session.",
+        title: "Attachments Saved",
+        description: "Your files and links have been saved to this chat session.",
       });
     }
 
@@ -105,15 +103,13 @@ export const ChatMessageHandler: React.FC<ChatMessageHandlerProps> = ({ children
       // Clear attachments after successful analysis
       setAttachments([]);
 
-      console.log('✅ CHAT MESSAGE HANDLER - Analysis completed, total messages:', newMessages.length + 1);
-
     } catch (error) {
       console.error('🔥 CHAT MESSAGE HANDLER - Analysis error:', error);
       
       const errorMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: `Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}. Your conversation history has been preserved.`,
+        content: `Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         timestamp: new Date()
       };
 

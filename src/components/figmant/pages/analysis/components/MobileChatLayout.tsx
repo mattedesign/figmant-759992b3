@@ -1,44 +1,88 @@
 
-import React from 'react';
-import { ChatMessages } from '../ChatMessages';
-import { MessageInputSection } from '../MessageInputSection';
+import React, { useState } from 'react';
+import { AnalysisChatContainer } from './AnalysisChatContainer';
+import { URLInputHandler } from './URLInputHandler';
 import { useChatStateContext } from './ChatStateProvider';
+import { ChatAttachmentHandlers } from './ChatAttachmentHandlers';
 
 export const MobileChatLayout: React.FC = () => {
-  const { 
-    messages, 
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const {
+    messages,
+    isAnalyzing,
     message,
     setMessage,
     attachments,
-    conversationContext,
-    autoSaveState
+    templates,
+    setSelectedTemplateId,
+    getCurrentTemplate
   } = useChatStateContext();
 
-  console.log('📱 MOBILE CHAT LAYOUT - Rendering with enhanced context:', {
-    messagesCount: messages.length,
-    attachmentsCount: attachments.length,
-    autoSaveStatus: autoSaveState.status
-  });
+  const handleSendMessage = async () => {
+    // Implementation will be moved here from UnifiedChatContainer
+    console.log('🚀 MOBILE LAYOUT - Send message');
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const canSend = message.trim().length > 0 || attachments.length > 0;
+
+  const handleTemplateSelect = (templateId: string) => {
+    if (setSelectedTemplateId) {
+      setSelectedTemplateId(templateId);
+    }
+  };
+
+  const handleViewTemplate = (template: any) => {
+    console.log('🎯 MOBILE LAYOUT - View template:', template);
+  };
+
+  const handleToggleUrlInput = () => {
+    setShowUrlInput(!showUrlInput);
+  };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <ChatMessages messages={messages} />
-      </div>
-
-      {/* Input Section */}
-      <div className="border-t border-gray-200 bg-white p-4">
-        <MessageInputSection
-          message={message}
-          onMessageChange={setMessage}
-          onSendMessage={() => {}}
-          onKeyPress={() => {}}
-          onToggleUrlInput={() => {}}
-          isAnalyzing={false}
-          canSend={message.trim().length > 0}
-        />
-      </div>
-    </div>
+    <ChatAttachmentHandlers>
+      {(attachmentHandlers) => (
+        <div className="h-full">
+          <AnalysisChatContainer
+            messages={messages}
+            isAnalyzing={isAnalyzing}
+            message={message}
+            setMessage={setMessage}
+            onSendMessage={handleSendMessage}
+            onKeyPress={handleKeyPress}
+            getCurrentTemplate={getCurrentTemplate}
+            canSend={canSend}
+            onFileUpload={attachmentHandlers.handleFileUpload}
+            onToggleUrlInput={handleToggleUrlInput}
+            showUrlInput={showUrlInput}
+            urlInput=""
+            setUrlInput={() => {}}
+            onAddUrl={() => {}}
+            onCancelUrl={() => setShowUrlInput(false)}
+            onTemplateSelect={handleTemplateSelect}
+            availableTemplates={templates}
+            onViewTemplate={handleViewTemplate}
+            attachments={attachments}
+            onRemoveAttachment={attachmentHandlers.removeAttachment}
+          />
+          
+          {/* URL Input Handler for Mobile */}
+          <URLInputHandler
+            showUrlInput={showUrlInput}
+            onClose={() => setShowUrlInput(false)}
+            attachments={attachments}
+            onAttachmentAdd={attachmentHandlers.handleAttachmentAdd}
+            onAttachmentUpdate={attachmentHandlers.handleAttachmentUpdate}
+          />
+        </div>
+      )}
+    </ChatAttachmentHandlers>
   );
 };
