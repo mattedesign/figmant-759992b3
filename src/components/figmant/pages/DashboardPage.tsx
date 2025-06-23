@@ -1,6 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { DashboardHeader } from './dashboard/DashboardHeader';
+import { DashboardQuickActions } from './dashboard/DashboardQuickActions';
 import { DashboardAnalyticsTabsSection } from './dashboard/DashboardAnalyticsTabsSection';
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
@@ -69,7 +70,10 @@ export const DashboardPage: React.FC = () => {
           isRefreshing={isRefreshing} 
         />
 
-        {/* PRIMARY FOCUS: Business Intelligence Dashboard with Real Data - Most prominent position */}
+        {/* PRIMARY FOCUS: Quick Actions - Most prominent position after header */}
+        <DashboardQuickActions />
+
+        {/* SECONDARY FOCUS: Business Intelligence Dashboard with Real Data */}
         <DashboardAnalyticsTabsSection 
           dataStats={memoizedDataStats} 
           analysisData={memoizedAnalysisData}
