@@ -1,75 +1,143 @@
 
-import React from 'react';
-import { useParams, Navigate } from 'react-router-dom';
-import { FigmantSidebar } from './navigation/FigmantSidebar';
-import { FigmantTopNavigation } from './navigation/FigmantTopNavigation';
-import { DashboardPage } from './pages/DashboardPage';
-import { InsightsPage } from './pages/InsightsPage';
-import { PremiumAnalysisPage } from './pages/premium-analysis/PremiumAnalysisPage';
-import { AllAnalysisPageWrapper } from '@/components/design/analysis/AllAnalysisPageWrapper';
-import { AdvancedDesignAnalysisPageContent } from '../design/AdvancedDesignAnalysisPageContent';
-import { ProcessingPage } from '../design/ProcessingPage';
-import { PromptsPage } from '../design/PromptsPage';
-import { AnalysisHistoryPage } from '../design/AnalysisHistoryPage';
-import { PerformanceAnalyticsDashboard } from './analytics/PerformanceAnalyticsDashboard';
-import ProfilePage from '../../pages/ProfilePage';
-import AdminAssets from '../../pages/AdminAssets';
-import { useAuth } from '@/contexts/AuthContext';
+// src/components/figmant/FigmantLayout.tsx
+
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { FigmantSidebar } from './sidebar/FigmantSidebarContainer';
+import { FigmantMainContent } from './FigmantMainContent';
+import { MobileNavigation } from './navigation/MobileNavigation';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { migrateNavigationRoute } from '@/utils/navigationMigration';
 
 export const FigmantLayout: React.FC = () => {
+  // Get section from URL parameters
   const { section } = useParams<{ section: string }>();
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   
-  // Default to dashboard if no section specified
-  const currentSection = section || 'dashboard';
-
-  const renderContent = () => {
-    switch (currentSection) {
-      case 'dashboard':
-        return <DashboardPage />;
-      case 'insights':
-        return <InsightsPage />;
-      case 'premium-analysis':
-        return <PremiumAnalysisPage />;
-      case 'analysis':
-        return <AllAnalysisPageWrapper />;
-      case 'upload':
-        return <AdvancedDesignAnalysisPageContent />;
-      case 'processing':
-        return <ProcessingPage />;
-      case 'prompts':
-        return <PromptsPage />;
-      case 'history':
-        return <AnalysisHistoryPage />;
-      case 'analytics':
-        return <PerformanceAnalyticsDashboard />;
-      case 'profile':
-        return <ProfilePage />;
-      case 'admin':
-        // Only show admin for owner
-        if (user?.user_metadata?.role === 'owner') {
-          return <AdminAssets />;
-        }
-        return <Navigate to="/figmant/dashboard" replace />;
-      default:
-        return <Navigate to="/figmant/dashboard" replace />;
-    }
+  // State management
+  const [selectedAnalysis, setSelectedAnalysis] = useState(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  
+  // Responsive design states
+  const isMobile = useIsMobile();
+  const isTablet = !isMobile && window.innerWidth < 1024;
+  
+  // Default to dashboard if no section specified, apply migration for legacy URLs
+  const rawActiveSection = section || 'dashboard';
+  const activeSection = migrateNavigationRoute(rawActiveSection);
+  
+  // Handle navigation - update URL when section changes
+  const handleSectionChange = (newSection: string) => {
+    const migratedSection = migrateNavigationRoute(newSection);
+    navigate(`/figmant/${migratedSection}`, { 
+      state: location.state,
+      replace: false 
+    });
   };
 
-  return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <FigmantSidebar currentSection={currentSection} />
-      
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Navigation */}
-        <FigmantTopNavigation currentSection={currentSection} />
+  // Handle URL changes and migration redirects
+  useEffect(() => {
+    // If the current URL section needed migration, redirect to the correct URL
+    if (section && section !== activeSection) {
+      navigate(`/figmant/${activeSection}`, { 
+        state: location.state,
+        replace: true 
+      });
+    }
+    
+    // If no section in URL, redirect to dashboard
+    if (!section) {
+      navigate('/figmant/dashboard', { 
+        state: location.state,
+        replace: true 
+      });
+    }
+  }, [section, activeSection, navigate, location.state]);
+
+  // Handle navigation state from external links (like premium analysis, template selection)
+  useEffect(() => {
+    if (location.state?.activeSection) {
+      const targetSection = migrateNavigationRoute(location.state.activeSection);
+      if (targetSection !== activeSection) {
+        navigate(`/figmant/${targetSection}`, { 
+          state: location.state,
+          replace: true 
+        });
+      }
+    }
+  }, [location.state, activeSection, navigate]);
+
+  const handleBackToList = () => {
+    setSelectedAnalysis(null);
+  };
+
+  const handleRightSidebarModeChange = (mode: string) => {
+    // Handle right sidebar mode changes if needed
+    console.log('Right sidebar mode changed:', mode);
+  };
+
+  const handleSidebarCollapsedChange = (collapsed: boolean) => {
+    setIsSidebarCollapsed(collapsed);
+  };
+
+  // Screen size detection with responsive behavior
+  const screenSize = React.useMemo(() => ({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    isMobile,
+    isTablet
+  }), [isMobile, isTablet]);
+
+  // Mobile layout
+  if (isMobile) {
+    return (
+      <div className="h-screen flex flex-col w-full overflow-hidden p-3" style={{ background: 'transparent' }}>
+        {/* Mobile Header with Navigation */}
+        <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between rounded-t-lg">
+          <h1 className="text-xl font-bold text-gray-900">figmant</h1>
+          <MobileNavigation 
+            activeSection={activeSection}
+            onSectionChange={handleSectionChange}
+          />
+        </div>
         
-        {/* Page Content */}
-        <main className="flex-1 overflow-hidden">
-          {renderContent()}
-        </main>
+        {/* Mobile Main Content */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <FigmantMainContent
+            activeSection={activeSection}
+            setActiveSection={handleSectionChange}
+            selectedAnalysis={selectedAnalysis}
+            onBackToList={handleBackToList}
+            onRightSidebarModeChange={handleRightSidebarModeChange}
+            isSidebarCollapsed={isSidebarCollapsed}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop layout with proper z-index hierarchy and no overlapping elements
+  return (
+    <div className="h-screen flex w-full gap-4 overflow-hidden p-3" style={{ background: 'transparent' }}>
+      {/* Sidebar - Fixed z-index and proper positioning */}
+      <div className="flex-shrink-0 relative z-10">
+        <FigmantSidebar 
+          activeSection={activeSection}
+          onSectionChange={handleSectionChange}
+          onCollapsedChange={handleSidebarCollapsedChange}
+        />
+      </div>
+      
+      {/* Main Content - Lower z-index, no overlays */}
+      <div className="flex-1 min-w-0 overflow-hidden relative z-0">
+        <FigmantMainContent
+          activeSection={activeSection}
+          setActiveSection={handleSectionChange}
+          selectedAnalysis={selectedAnalysis}
+          onBackToList={handleBackToList}
+          onRightSidebarModeChange={handleRightSidebarModeChange}
+          isSidebarCollapsed={isSidebarCollapsed}
+        />
       </div>
     </div>
   );
