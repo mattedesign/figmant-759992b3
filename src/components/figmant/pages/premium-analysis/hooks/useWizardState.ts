@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { StepData } from '../types';
 
-const TOTAL_STEPS = 4; // Fixed to 4 steps for the proper flow
+const TOTAL_STEPS = 4; // Correct 4-step flow
 
 export const useWizardState = () => {
   const location = useLocation();

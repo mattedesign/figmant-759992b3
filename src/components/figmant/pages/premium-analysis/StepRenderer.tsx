@@ -18,11 +18,11 @@ export const StepRenderer: React.FC<StepRendererProps> = (props) => {
       case 1:
         return <Step1SelectAnalysisType {...props} />;
       case 2:
-        return <Step2SmartUpload {...props} />;
+        return <Step2SmartUpload {...props} />; // File upload is now step 2
       case 3:
-        return <Step3ContextualFields {...props} />;
+        return <Step3ContextualFields {...props} />; // Contextual fields step 3
       case 4:
-        return <Step4ContextualResults {...props} />;
+        return <Step4ContextualResults {...props} />; // Results step 4
       default:
         return <div>Invalid step</div>;
     }
