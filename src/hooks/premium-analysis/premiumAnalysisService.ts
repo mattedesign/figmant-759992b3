@@ -48,20 +48,18 @@ export class PremiumAnalysisService {
     const contextPrompt = buildContextPrompt(stepData, selectedPrompt);
     console.log('🔍 Context prompt length:', contextPrompt.length);
 
-    // Call Claude AI function with premium analysis context
-    console.log('🔍 Calling Claude AI function...');
+    // Call Claude AI function with corrected parameters (matching working chat analysis pattern)
+    console.log('🔍 Calling Claude AI function with corrected parameters...');
     const { data: claudeResponse, error: claudeError } = await supabase.functions.invoke('claude-ai', {
       body: {
         message: contextPrompt,
-        requestType: 'premium_analysis',
-        analysisType: selectedPrompt.category,
-        promptTemplate: selectedPrompt.original_prompt,
-        // Include uploaded files with their storage paths
+        // ✅ FIX: Remove requestType parameter that was causing fallback to mock data
+        // ✅ FIX: Use same attachment format as working chat analysis
         attachments: uploadedFileAttachments.map(file => ({
+          id: file.name,
+          type: 'file',
           name: file.name,
-          type: file.type,
-          path: file.path,
-          size: file.size
+          uploadPath: file.path
         }))
       }
     });

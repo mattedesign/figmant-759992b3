@@ -50,7 +50,7 @@ export const Step4AnalysisResults: React.FC<StepProps> = ({
       promptLength: selectedTemplate.original_prompt?.length || 0
     } : null,
     premiumAnalysisState: {
-      isLoading: premiumAnalysis.isLoading,
+      isPending: premiumAnalysis.isPending,
       isError: premiumAnalysis.isError,
       isSuccess: premiumAnalysis.isSuccess,
       hasData: !!premiumAnalysis.data
