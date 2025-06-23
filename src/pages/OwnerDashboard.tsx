@@ -55,10 +55,6 @@ export const OwnerDashboard = () => {
   }, [searchParams]);
 
   return (
-    <FigmantLayout
-      activeSection={activeSection}
-      onSectionChange={handleSectionChange}
-      user={user}
-    />
+    <FigmantLayout />
   );
 };
