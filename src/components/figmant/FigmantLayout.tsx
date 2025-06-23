@@ -6,7 +6,7 @@ import { FigmantTopNavigation } from './navigation/FigmantTopNavigation';
 import { DashboardPage } from './pages/DashboardPage';
 import { InsightsPage } from './pages/InsightsPage';
 import { PremiumAnalysisPage } from './pages/premium-analysis/PremiumAnalysisPage';
-import { AllAnalysisPageWrapper } from './pages/analysis/AllAnalysisPageWrapper';
+import { AllAnalysisPageWrapper } from '@/components/design/analysis/AllAnalysisPageWrapper';
 import { AdvancedDesignAnalysisPageContent } from '../design/AdvancedDesignAnalysisPageContent';
 import { ProcessingPage } from '../design/ProcessingPage';
 import { PromptsPage } from '../design/PromptsPage';
