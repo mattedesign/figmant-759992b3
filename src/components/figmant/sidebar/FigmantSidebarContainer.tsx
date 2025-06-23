@@ -26,6 +26,11 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
     onCollapsedChange
   });
 
+  const handleSectionClick = (sectionId: string) => {
+    console.log('🔧 Sidebar - Section clicked:', sectionId);
+    onSectionChange?.(sectionId);
+  };
+
   const currentBalance = credits?.current_balance || 0;
   const totalPurchased = credits?.total_purchased || 0;
 
@@ -34,7 +39,7 @@ export const FigmantSidebar: React.FC<FigmantSidebarProps> = ({
       isCollapsed={isCollapsed}
       onToggleCollapse={handleToggleCollapse}
       activeSection={activeSection}
-      onSectionChange={onSectionChange}
+      onSectionChange={handleSectionClick}
       isOwner={isOwner}
       profile={profile}
       user={user}

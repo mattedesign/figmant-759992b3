@@ -39,7 +39,10 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({
                   ? "border border-orange-200 bg-orange-50 text-orange-700 rounded-[12px] hover:bg-orange-100"
                   : "hover:bg-gray-50 hover:rounded-[12px] text-gray-700"
             )}
-            onClick={() => onSectionChange(section.id)}
+            onClick={() => {
+              console.log('🔧 NavigationMenu - Clicking section:', section.id);
+              onSectionChange(section.id);
+            }}
           >
             <section.icon className="mr-3 h-5 w-5" />
             {section.label}

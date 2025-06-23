@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { DashboardPage } from './pages/DashboardPage';
 import { InsightsPage } from './pages/InsightsPage';
@@ -34,6 +34,11 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   isSidebarCollapsed,
 }) => {
   const location = useLocation();
+
+  // Sync with URL changes
+  useEffect(() => {
+    console.log('🔧 FigmantMainContent - activeSection changed:', activeSection);
+  }, [activeSection]);
 
   const renderContent = () => {
     // Apply migration to current activeSection for backward compatibility

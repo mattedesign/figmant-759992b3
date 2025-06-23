@@ -12,36 +12,52 @@ export const FigmantLayout: React.FC = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   
-  // Extract section from URL path
-  const pathSegments = location.pathname.split('/').filter(Boolean);
-  const urlSection = pathSegments.length > 1 ? pathSegments[1] : 'dashboard';
-  
-  // Apply migration and set active section
-  const [activeSection, setActiveSection] = useState(() => {
-    const migratedSection = migrateNavigationRoute(urlSection);
-    return migratedSection;
-  });
-  
+  // Get section from URL, default to 'dashboard'
+  const sectionFromUrl = searchParams.get('section') || 'dashboard';
+  const [activeSection, setActiveSection] = useState(() => migrateNavigationRoute(sectionFromUrl));
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // Update section when URL changes
+  // Sync activeSection with URL parameters
   useEffect(() => {
-    const newSection = pathSegments.length > 1 ? pathSegments[1] : 'dashboard';
-    const migratedSection = migrateNavigationRoute(newSection);
+    const currentSection = searchParams.get('section') || 'dashboard';
+    const migratedSection = migrateNavigationRoute(currentSection);
     
     if (migratedSection !== activeSection) {
+      console.log('🔧 URL sync - Updating section:', currentSection, '->', migratedSection);
       setActiveSection(migratedSection);
     }
-  }, [location.pathname, activeSection, pathSegments]);
+  }, [searchParams, activeSection]);
 
-  // Handle section changes from sidebar
-  const handleSectionChange = (newSection: string) => {
-    const migratedSection = migrateNavigationRoute(newSection);
+  // Handle navigation state from other pages
+  useEffect(() => {
+    if (location.state?.activeSection) {
+      const migratedSection = migrateNavigationRoute(location.state.activeSection);
+      console.log('🔧 Location state - Setting section:', migratedSection);
+      setActiveSection(migratedSection);
+      
+      // Update URL to match
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set('section', migratedSection);
+        return newParams;
+      });
+    }
+  }, [location.state, setSearchParams]);
+
+  // Update setActiveSection to also update URL
+  const handleSectionChange = (section: string) => {
+    console.log('🔧 Section change requested:', section);
+    const migratedSection = migrateNavigationRoute(section);
+    
     setActiveSection(migratedSection);
     
-    // Update URL without full navigation
-    window.history.pushState({}, '', `/figmant/${migratedSection}`);
+    // Update URL
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('section', migratedSection);
+      return newParams;
+    });
   };
 
   const handleBackToList = () => {

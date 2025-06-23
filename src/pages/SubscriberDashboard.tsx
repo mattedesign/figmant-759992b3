@@ -27,22 +27,24 @@ export const SubscriberDashboard = () => {
 
   // Get initial section from URL or default to dashboard
   const getInitialSection = () => {
-    const tabParam = searchParams.get('tab');
-    return tabParam && tabToSectionMap[tabParam] ? tabToSectionMap[tabParam] : 'dashboard';
+    const sectionParam = searchParams.get('section');
+    return sectionParam && tabToSectionMap[sectionParam] ? tabToSectionMap[sectionParam] : 'dashboard';
   };
 
   const [activeSection, setActiveSection] = useState(getInitialSection);
 
   // Update URL when section changes
   const handleSectionChange = (section: string) => {
+    console.log('🔧 SubscriberDashboard - Section change:', section);
+    
+    // Update URL to reflect the new section
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('section', section);
+      return newParams;
+    });
+    
     setActiveSection(section);
-    
-    // Find the corresponding tab name for the URL
-    const tabName = Object.entries(tabToSectionMap).find(([, sectionName]) => sectionName === section)?.[0] || section;
-    
-    const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set('tab', tabName);
-    setSearchParams(newSearchParams);
   };
 
   // Listen for URL changes (back/forward navigation)
