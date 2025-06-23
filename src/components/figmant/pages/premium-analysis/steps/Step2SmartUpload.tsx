@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,9 +7,82 @@ import { Upload, Link, Image, FileText, X, RefreshCw } from 'lucide-react';
 import { StepProps } from '../types';
 import { ScreenshotDisplay } from '@/components/figmant/pages/analysis/components/ScreenshotDisplay';
 import { AttachmentCard } from '@/components/figmant/analysis/AttachmentCard';
+import { AttachmentPreviewCard } from '@/components/figmant/pages/analysis/components/AttachmentPreviewCard';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
 import { useToast } from '@/hooks/use-toast';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
+
+// Custom File Preview Component that works with ChatAttachment interface
+const CustomFilePreview: React.FC<{
+  attachment: ChatAttachment;
+  onDelete: () => void;
+}> = ({ attachment, onDelete }) => {
+  const getFileIcon = () => {
+    if (!attachment.file) return FileText;
+    
+    const fileType = attachment.file.type;
+    if (fileType.startsWith('image/')) return Image;
+    if (fileType.includes('pdf') || fileType.includes('text')) return FileText;
+    return FileText;
+  };
+
+  const getPreviewUrl = () => {
+    if (attachment.file && attachment.file.type.startsWith('image/')) {
+      return URL.createObjectURL(attachment.file);
+    }
+    return null;
+  };
+
+  const getFileSize = () => {
+    if (attachment.file?.size) {
+      const size = attachment.file.size;
+      if (size < 1024) return `${size} B`;
+      if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+      return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+    }
+    return '';
+  };
+
+  const IconComponent = getFileIcon();
+  const previewUrl = getPreviewUrl();
+
+  return (
+    <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+      {previewUrl ? (
+        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+          <img 
+            src={previewUrl} 
+            alt={attachment.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ) : (
+        <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+          <IconComponent className="w-6 h-6 text-gray-500" />
+        </div>
+      )}
+      
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-gray-900 truncate">
+          {attachment.name}
+        </p>
+        <div className="flex items-center space-x-2 text-xs text-gray-500">
+          {getFileSize() && <span>{getFileSize()}</span>}
+          <span className="capitalize">{attachment.status}</span>
+        </div>
+      </div>
+      
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onDelete}
+        className="h-8 w-8 p-0 text-gray-400 hover:text-red-500"
+      >
+        <X className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+};
 
 export const Step2SmartUpload: React.FC<StepProps> = ({
   stepData,
@@ -39,15 +111,17 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     const currentFiles = stepData.uploadedFiles || [];
     const newFiles = [...currentFiles, ...files];
     
-    // Create file attachments
+    // Create file attachments with proper interface structure
     const newAttachments = files.map(file => ({
       id: `file-${Date.now()}-${Math.random()}`,
       type: 'file' as const,
       name: file.name,
       file: file,
       status: 'uploaded' as const,
-      fileSize: file.size,
-      thumbnailUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
+      metadata: {
+        fileSize: file.size,
+        thumbnailUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
+      }
     }));
 
     setAttachments(prev => [...prev, ...newAttachments]);
@@ -93,7 +167,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
       return;
     }
 
-    // Create URL attachment
+    // Create URL attachment with proper interface structure
     const urlAttachment: ChatAttachment = {
       id: `url-${Date.now()}-${Math.random()}`,
       type: 'url',
@@ -524,15 +598,9 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
                       className="w-full"
                     />
                   ) : attachment.type === 'file' ? (
-                    <AttachmentCard
-                      attachment={{
-                        id: attachment.id,
-                        name: attachment.name,
-                        type: 'file',
-                        thumbnailUrl: attachment.thumbnailUrl,
-                        file_size: attachment.fileSize
-                      }}
-                      showDownload={false}
+                    <CustomFilePreview
+                      attachment={attachment}
+                      onDelete={() => removeAttachment(attachment.id)}
                     />
                   ) : null}
                   

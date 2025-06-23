@@ -18,15 +18,23 @@ export const AttachmentPreviewCard: React.FC<AttachmentPreviewCardProps> = ({
   onView,
   showActions = true
 }) => {
-  const isImage = attachment.file?.type.startsWith('image/') || attachment.thumbnailUrl;
+  const isImage = attachment.file?.type.startsWith('image/') || attachment.type === 'image';
+  
+  // Safely access thumbnailUrl from metadata or direct property
+  const thumbnailUrl = attachment.metadata?.thumbnailUrl || 
+                      (attachment as any).thumbnailUrl || 
+                      (attachment.file && attachment.file.type.startsWith('image/') ? URL.createObjectURL(attachment.file) : null);
+  
+  // Safely access file size
+  const fileSize = attachment.file?.size || (attachment as any).fileSize;
   
   return (
     <div className="flex items-start gap-3 p-3 border rounded-lg bg-white hover:bg-gray-50 transition-colors">
       {/* Thumbnail or Icon */}
       <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center flex-shrink-0 overflow-hidden">
-        {isImage && attachment.thumbnailUrl ? (
+        {isImage && thumbnailUrl ? (
           <img
-            src={attachment.thumbnailUrl}
+            src={thumbnailUrl}
             alt={attachment.name}
             className="w-full h-full object-cover"
             onError={(e) => {
@@ -52,9 +60,9 @@ export const AttachmentPreviewCard: React.FC<AttachmentPreviewCardProps> = ({
             {isImage ? 'Image' : 'File'}
           </Badge>
           
-          {attachment.fileSize && (
+          {fileSize && (
             <Badge variant="secondary" className="text-xs">
-              {(attachment.fileSize / 1024).toFixed(1)} KB
+              {(fileSize / 1024).toFixed(1)} KB
             </Badge>
           )}
         </div>
