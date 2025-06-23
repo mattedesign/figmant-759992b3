@@ -1,3 +1,4 @@
+
 import { 
   Home, 
   BarChart3, 
@@ -9,6 +10,7 @@ import {
   Shield,
   Wand2,
   User,
+  Brain,
   LucideIcon
 } from 'lucide-react';
 
@@ -29,6 +31,13 @@ export const navigationConfig = {
       icon: Home, 
       priority: 1,
       description: 'Main overview and activity center'
+    },
+    { 
+      id: 'insights', 
+      label: 'Insights', 
+      icon: Brain, 
+      priority: 1,
+      description: 'Advanced analytics and AI-powered insights'
     },
     { 
       id: 'analysis', 
