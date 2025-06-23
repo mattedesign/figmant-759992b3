@@ -8,6 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Brain, Target, TrendingUp, Zap, Crown, Search, Star, Eye, Filter } from 'lucide-react';
 import { TemplatePreviewModal } from '../components/TemplatePreviewModal';
+import { ClaudePromptExample } from '@/hooks/useClaudePromptExamples';
+
+// Extended interface to include the missing properties
+interface ExtendedClaudePromptExample extends ClaudePromptExample {
+  contextual_fields?: any[];
+  contextFields?: any[];
+}
 
 const getCategoryIcon = (category: string) => {
   switch (category) {
@@ -72,6 +79,10 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
     
     const template = promptTemplates.find(t => t.id === templateId);
     if (template) {
+      // Cast to extended interface for safe property access
+      const extendedTemplate = template as ExtendedClaudePromptExample;
+      const contextualFields = extendedTemplate.contextual_fields || extendedTemplate.contextFields || [];
+      
       // Save both selectedType and selectedTemplate for proper validation
       setStepData(prev => ({
         ...prev,
@@ -84,7 +95,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
           selectedTemplate: template,
           templateCategory: template.category,
           templateTitle: template.title,
-          contextualFields: template?.contextual_fields || template?.contextFields || []
+          contextualFields
         }
       }));
       
