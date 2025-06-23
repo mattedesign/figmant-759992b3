@@ -69,91 +69,97 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
   }
 
   return (
-    <div className="space-y-6">
-      <StepHeader
-        title={preSelectedTemplate ? "Template Selected" : "Select Analysis Type"}
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-      />
-      
-      {/* Description text handled separately */}
-      <div className="text-center text-gray-600 mb-6">
-        {preSelectedTemplate 
-          ? `You've selected the ${preSelectedTemplate.title} template. You can change this selection or proceed to the next step.`
-          : "Choose the type of analysis you want to perform"
-        }
-      </div>
-
-      {preSelectedTemplate && (
-        <div className="mb-6">
-          <Card className="border-2 border-blue-500 bg-blue-50">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                {React.createElement(getCategoryIcon(preSelectedTemplate.category), { 
-                  className: "h-5 w-5 text-primary" 
-                })}
-                <Badge className={getCategoryColor(preSelectedTemplate.category)}>
-                  {preSelectedTemplate.category.replace('_', ' ')}
-                </Badge>
-              </div>
-              <CardTitle className="text-lg">{preSelectedTemplate.title}</CardTitle>
-              {preSelectedTemplate.description && (
-                <CardDescription>{preSelectedTemplate.description}</CardDescription>
-              )}
-            </CardHeader>
-          </Card>
-        </div>
-      )}
-
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">
-          {preSelectedTemplate ? "Available Templates:" : "Choose a Template:"}
-        </h3>
+    <div className="h-full flex flex-col">
+      <div className="flex-shrink-0">
+        <StepHeader
+          title={preSelectedTemplate ? "Template Selected" : "Select Analysis Type"}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+        />
         
-        <div className="grid md:grid-cols-2 gap-4">
-          {promptTemplates.map((template) => {
-            const IconComponent = getCategoryIcon(template.category);
-            const isSelected = stepData.selectedType === template.id;
-            
-            return (
-              <Card 
-                key={template.id}
-                className={`cursor-pointer transition-all hover:shadow-md ${
-                  isSelected ? 'border-2 border-blue-500 bg-blue-50' : ''
-                }`}
-                onClick={() => handleTemplateSelect(template.id)}
-              >
-                <CardHeader>
-                  <div className="flex items-center gap-2 mb-2">
-                    <IconComponent className="h-5 w-5 text-primary" />
-                    <Badge className={getCategoryColor(template.category)}>
-                      {template.category.replace('_', ' ')}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-base">{template.title}</CardTitle>
-                  {template.description && (
-                    <CardDescription className="text-sm">
-                      {template.description}
-                    </CardDescription>
-                  )}
-                </CardHeader>
-                
-                <CardContent>
-                  {template.use_case_context && (
-                    <div className="text-xs text-gray-600">
-                      <span className="font-medium">Best for:</span> {template.use_case_context}
+        {/* Description text */}
+        <div className="text-center text-gray-600 mb-6">
+          {preSelectedTemplate 
+            ? `You've selected the ${preSelectedTemplate.title} template. You can change this selection or proceed to the next step.`
+            : "Choose the type of analysis you want to perform"
+          }
+        </div>
+
+        {preSelectedTemplate && (
+          <div className="mb-6">
+            <Card className="border-2 border-blue-500 bg-blue-50 min-h-0">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  {React.createElement(getCategoryIcon(preSelectedTemplate.category), { 
+                    className: "h-5 w-5 text-primary" 
+                  })}
+                  <Badge className={getCategoryColor(preSelectedTemplate.category)}>
+                    {preSelectedTemplate.category.replace('_', ' ')}
+                  </Badge>
+                </div>
+                <CardTitle className="text-lg">{preSelectedTemplate.title}</CardTitle>
+                {preSelectedTemplate.description && (
+                  <CardDescription>{preSelectedTemplate.description}</CardDescription>
+                )}
+              </CardHeader>
+            </Card>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">
+            {preSelectedTemplate ? "Available Templates:" : "Choose a Template:"}
+          </h3>
+        </div>
+      </div>
+      
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-4">
+            {promptTemplates.map((template) => {
+              const IconComponent = getCategoryIcon(template.category);
+              const isSelected = stepData.selectedType === template.id;
+              
+              return (
+                <Card 
+                  key={template.id}
+                  className={`cursor-pointer transition-all hover:shadow-md min-h-0 ${
+                    isSelected ? 'border-2 border-blue-500 bg-blue-50' : ''
+                  }`}
+                  onClick={() => handleTemplateSelect(template.id)}
+                >
+                  <CardHeader>
+                    <div className="flex items-center gap-2 mb-2">
+                      <IconComponent className="h-5 w-5 text-primary" />
+                      <Badge className={getCategoryColor(template.category)}>
+                        {template.category.replace('_', ' ')}
+                      </Badge>
                     </div>
-                  )}
+                    <CardTitle className="text-base">{template.title}</CardTitle>
+                    {template.description && (
+                      <CardDescription className="text-sm">
+                        {template.description}
+                      </CardDescription>
+                    )}
+                  </CardHeader>
                   
-                  {template.effectiveness_rating && (
-                    <div className="mt-2 text-xs text-gray-500">
-                      Effectiveness: {template.effectiveness_rating}/10
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
+                  <CardContent>
+                    {template.use_case_context && (
+                      <div className="text-xs text-gray-600">
+                        <span className="font-medium">Best for:</span> {template.use_case_context}
+                      </div>
+                    )}
+                    
+                    {template.effectiveness_rating && (
+                      <div className="mt-2 text-xs text-gray-500">
+                        Effectiveness: {template.effectiveness_rating}/10
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
