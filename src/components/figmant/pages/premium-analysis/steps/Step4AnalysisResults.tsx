@@ -167,6 +167,27 @@ export const Step4AnalysisResults: React.FC<StepProps> = ({
     }
   };
 
+  // Show error if no template is found
+  if (stepData.selectedType && !selectedTemplate) {
+    return (
+      <div className="w-full min-h-full">
+        <div className="w-full">
+          <h2 className="text-3xl font-bold text-center mb-8">Template Not Found</h2>
+        </div>
+        <div className="max-w-2xl mx-auto">
+          <ErrorState 
+            errorMessage={`Template not found for type: ${stepData.selectedType}`}
+            selectedType={stepData.selectedType}
+            hasSelectedTemplate={false}
+            debugLogs={[]}
+            onRetry={handleRetry}
+            onBackToAnalysis={handleBackToAnalysis}
+          />
+        </div>
+      </div>
+    );
+  }
+
   // PROCESSING STATE
   if (processingState === 'processing') {
     return (
