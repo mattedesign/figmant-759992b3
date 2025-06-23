@@ -1,99 +1,162 @@
+
 import React, { useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
-import { Upload, Link, Image, FileText, X, RefreshCw, Loader2 } from 'lucide-react';
+import { Upload, File, FileText, Image as ImageIcon, Globe, X, Loader2, Check, ArrowLeft, ArrowRight, RefreshCw } from 'lucide-react';
 import { StepProps } from '../types';
 import { ScreenshotDisplay } from '@/components/figmant/pages/analysis/components/ScreenshotDisplay';
-import { AttachmentCard } from '@/components/figmant/analysis/AttachmentCard';
-import { AttachmentPreviewCard } from '@/components/figmant/pages/analysis/components/AttachmentPreviewCard';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
 import { useToast } from '@/hooks/use-toast';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
-// Wizard-specific File Preview Component compatible with ChatAttachment interface
-const WizardFilePreview: React.FC<{
+// Compact File Preview Component
+const CompactFilePreview: React.FC<{
   attachment: ChatAttachment;
   onDelete: () => void;
 }> = ({ attachment, onDelete }) => {
   const getFileIcon = () => {
-    if (!attachment.file) return FileText;
-    
+    if (!attachment.file) return File;
     const fileType = attachment.file.type;
-    if (fileType.startsWith('image/')) return Image;
-    if (fileType.includes('pdf') || fileType.includes('text')) return FileText;
-    return FileText;
-  };
-
-  const getPreviewUrl = () => {
-    if (attachment.file && attachment.file.type.startsWith('image/')) {
-      return URL.createObjectURL(attachment.file);
-    }
-    return null;
+    if (fileType.startsWith('image/')) return ImageIcon;
+    if (fileType.includes('pdf')) return FileText;
+    return File;
   };
 
   const getFileSize = () => {
     if (attachment.file?.size) {
       const size = attachment.file.size;
-      if (size < 1024) return `${size} B`;
-      if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
-      return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+      if (size < 1024 * 1024) return `${(size / 1024).toFixed(0)}KB`;
+      return `${(size / (1024 * 1024)).toFixed(1)}MB`;
     }
     return '';
   };
 
   const IconComponent = getFileIcon();
-  const previewUrl = getPreviewUrl();
 
   return (
-    <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-      {/* Status indicator */}
-      {attachment.status === 'processing' && (
-        <div className="flex items-center space-x-2 mb-2">
-          <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-          <span className="text-sm text-blue-600">Processing...</span>
-        </div>
-      )}
-      
-      {/* File preview/icon */}
-      {previewUrl ? (
-        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+    <div className="flex items-center space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors group">
+      {/* File Icon/Preview */}
+      {attachment.file?.type.startsWith('image/') ? (
+        <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
           <img 
-            src={previewUrl} 
+            src={URL.createObjectURL(attachment.file)} 
             alt={attachment.name}
             className="w-full h-full object-cover"
+            onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
           />
         </div>
       ) : (
-        <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-          <IconComponent className="w-6 h-6 text-gray-500" />
+        <div className="w-10 h-10 bg-blue-100 rounded-md flex items-center justify-center flex-shrink-0">
+          <IconComponent className="w-5 h-5 text-blue-600" />
         </div>
       )}
       
-      {/* File info */}
+      {/* File Info */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">
           {attachment.name}
         </p>
         <div className="flex items-center space-x-2 text-xs text-gray-500">
           {getFileSize() && <span>{getFileSize()}</span>}
-          <span className="capitalize">{attachment.status}</span>
-          {attachment.errorMessage && (
-            <span className="text-red-500">• {attachment.errorMessage}</span>
+          {attachment.status === 'processing' && (
+            <span className="flex items-center space-x-1 text-blue-600">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              <span>Processing...</span>
+            </span>
+          )}
+          {attachment.status === 'uploaded' && (
+            <span className="flex items-center space-x-1 text-green-600">
+              <Check className="w-3 h-3" />
+              <span>Ready</span>
+            </span>
           )}
         </div>
       </div>
       
-      {/* Delete button */}
+      {/* Single Delete Button */}
       <Button
         variant="ghost"
         size="sm"
         onClick={onDelete}
-        className="h-8 w-8 p-0 text-gray-400 hover:text-red-500"
+        className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0 text-gray-400 hover:text-red-500"
       >
         <X className="h-4 w-4" />
       </Button>
+    </div>
+  );
+};
+
+// Compact URL Preview Component
+const CompactUrlPreview: React.FC<{
+  attachment: ChatAttachment;
+  onDelete: () => void;
+  onRetry: () => void;
+}> = ({ attachment, onDelete, onRetry }) => {
+  const hostname = attachment.url ? new URL(attachment.url).hostname : '';
+  const screenshots = attachment.metadata?.screenshots;
+  
+  const hasDesktop = screenshots?.desktop?.success;
+  const hasMobile = screenshots?.mobile?.success;
+  const hasAnyScreenshot = hasDesktop || hasMobile;
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 transition-colors group">
+      <div className="flex items-center space-x-3 p-3">
+        {/* Website Icon/Screenshot */}
+        <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center flex-shrink-0">
+          {hasDesktop && screenshots?.desktop?.screenshotUrl ? (
+            <img 
+              src={screenshots.desktop.screenshotUrl} 
+              alt={hostname}
+              className="w-full h-full object-cover rounded-md"
+            />
+          ) : (
+            <Globe className="w-5 h-5 text-gray-400" />
+          )}
+        </div>
+        
+        {/* URL Info */}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-900 truncate">
+            {hostname}
+          </p>
+          <div className="flex items-center space-x-2 text-xs text-gray-500">
+            {attachment.status === 'processing' && (
+              <span className="flex items-center space-x-1 text-blue-600">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                <span>Capturing screenshots...</span>
+              </span>
+            )}
+            {hasAnyScreenshot && (
+              <span className="flex items-center space-x-1 text-green-600">
+                <Check className="w-3 h-3" />
+                <span>{hasDesktop && hasMobile ? 'Desktop & Mobile' : hasDesktop ? 'Desktop' : 'Mobile'}</span>
+              </span>
+            )}
+            {attachment.status === 'error' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onRetry}
+                className="h-auto p-0 text-blue-600 hover:text-blue-700 text-xs"
+              >
+                Retry Screenshots
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        {/* Delete Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onDelete}
+          className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0 text-gray-400 hover:text-red-500"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };
@@ -107,9 +170,8 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
   onPreviousStep
 }) => {
   const [dragActive, setDragActive] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
-  const [urls, setUrls] = useState<string[]>(stepData.referenceLinks || ['']);
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
+  const [urlInput, setUrlInput] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -132,8 +194,6 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
       name: file.name,
       file: file,
       status: 'uploaded' as const,
-      // For file attachments, we don't use screenshots metadata
-      // The ChatAttachment interface expects screenshots for URL types
       ...(file.type.startsWith('image/') && {
         thumbnailUrl: URL.createObjectURL(file)
       })
@@ -167,8 +227,9 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     }
   };
 
-  const handleUrlAdd = async (url: string) => {
-    if (!url.trim()) return;
+  const handleAddUrl = async () => {
+    const url = urlInput.trim();
+    if (!url) return;
 
     // Validate URL format
     try {
@@ -198,6 +259,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     };
 
     setAttachments(prev => [...prev, urlAttachment]);
+    setUrlInput(''); // Clear input after adding
 
     toast({
       title: "Capturing Screenshots",
@@ -211,8 +273,6 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
         true, // desktop
         true  // mobile
       );
-
-      console.log('📸 Screenshot results:', screenshotResults);
 
       const updatedMetadata = {
         screenshots: {
@@ -287,8 +347,6 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
   const handleRetryScreenshot = async (attachment: ChatAttachment) => {
     if (attachment.type !== 'url' || !attachment.url) return;
     
-    console.log('🔄 Retrying screenshot for:', attachment.url);
-    
     // Update status to processing
     setAttachments(prev => prev.map(att => 
       att.id === attachment.id 
@@ -317,8 +375,6 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
         true, // desktop
         true  // mobile
       );
-      
-      console.log('🔄 Retry screenshot results:', screenshotResults);
       
       const updatedMetadata = {
         screenshots: {
@@ -391,81 +447,13 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     }
   };
 
-  const handleUrlChange = (index: number, value: string) => {
-    const updatedUrls = [...urls];
-    updatedUrls[index] = value;
-    setUrls(updatedUrls);
-    setStepData(prev => ({ 
-      ...prev, 
-      referenceLinks: updatedUrls,
-      uploads: {
-        ...prev.uploads,
-        urls: updatedUrls.filter(url => url.trim() !== '')
-      }
-    }));
-  };
-
-  const handleUrlSubmit = (index: number) => {
-    const url = urls[index];
-    if (url.trim()) {
-      handleUrlAdd(url.trim());
-    }
-  };
-
-  const addUrl = () => {
-    const updatedUrls = [...urls, ''];
-    setUrls(updatedUrls);
-    setStepData(prev => ({ 
-      ...prev, 
-      referenceLinks: updatedUrls
-    }));
-  };
-
-  const removeUrl = (index: number) => {
-    const updatedUrls = urls.filter((_, i) => i !== index);
-    setUrls(updatedUrls);
-    setStepData(prev => ({ 
-      ...prev, 
-      referenceLinks: updatedUrls.length > 0 ? updatedUrls : [''],
-      uploads: {
-        ...prev.uploads,
-        urls: updatedUrls.filter(url => url.trim() !== '')
-      }
-    }));
-  };
-
-  const removeFile = (index: number) => {
-    const currentFiles = stepData.uploadedFiles || [];
-    const newFiles = currentFiles.filter((_, i) => i !== index);
-    
-    // Also update uploads structure
-    const currentUploads = stepData.uploads || { images: [], urls: [], files: [], screenshots: [] };
-    const removedFile = currentFiles[index];
-    let newUploads = { ...currentUploads };
-    
-    if (removedFile?.type.startsWith('image/')) {
-      newUploads.images = newUploads.images.filter((_, i) => i !== index);
-    } else {
-      newUploads.files = newUploads.files.filter((_, i) => i !== index);
-    }
-    
-    setStepData(prev => ({ 
-      ...prev, 
-      uploadedFiles: newFiles,
-      uploads: newUploads
-    }));
-  };
-
-  const removeAttachment = (id: string) => {
+  const handleAttachmentRemove = (id: string) => {
     setAttachments(prev => prev.filter(att => att.id !== id));
   };
 
   const handleChooseFiles = () => {
     fileInputRef.current?.click();
   };
-
-  const totalFiles = stepData.uploadedFiles?.length || 0;
-  const hasContent = totalFiles > 0 || urls.some(url => url.trim() !== '') || attachments.length > 0;
 
   return (
     <div className="w-full min-h-full">
@@ -476,7 +464,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
         </p>
       </div>
 
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6">
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -487,249 +475,170 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
           className="hidden"
         />
 
-        {/* Drag & Drop Zone */}
-        <Card>
-          <CardContent 
-            className={`p-8 border-2 border-dashed transition-colors cursor-pointer ${
-              dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
-            }`}
-            onDragEnter={() => setDragActive(true)}
-            onDragLeave={() => setDragActive(false)}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDrop}
-            onClick={handleChooseFiles}
-          >
-            <div className="text-center">
-              <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-lg font-medium mb-2">
-                Drag & drop files here, or click to browse
-              </h3>
-              <p className="text-sm text-gray-500 mb-4">
-                Supports images, PDFs, Figma files, and documents (Max 10MB per file)
+        {/* IMPROVED LAYOUT - Upload Areas */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* File Upload Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900">Upload Files</h3>
+            
+            {/* Drag & Drop Zone */}
+            <div 
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${
+                dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+              }`}
+              onDragEnter={() => setDragActive(true)}
+              onDragLeave={() => setDragActive(false)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleDrop}
+              onClick={handleChooseFiles}
+            >
+              <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+              <p className="text-sm text-gray-600">
+                Click to upload or drag & drop
               </p>
-              <Button variant="outline" type="button">
-                Choose Files
-              </Button>
+              <p className="text-xs text-gray-500 mt-1">
+                PNG, JPG, PDF up to 10MB
+              </p>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* URL Input Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Link className="w-5 h-5" />
-              Add URLs for Analysis
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {urls.map((url, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Input
-                    type="url"
-                    placeholder="https://example.com"
-                    value={url}
-                    onChange={(e) => handleUrlChange(index, e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleUrlSubmit(index);
-                      }
-                    }}
-                    className="flex-1"
-                  />
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleUrlSubmit(index)}
-                    disabled={!url.trim()}
-                    type="button"
-                  >
-                    Add
-                  </Button>
-                  {urls.length > 1 && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => removeUrl(index)}
-                      type="button"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
+            
+            {/* Inline File Previews */}
+            {attachments.filter(att => att.type === 'file').length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-700">
+                  Files ({attachments.filter(att => att.type === 'file').length})
+                </p>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {attachments
+                    .filter(att => att.type === 'file')
+                    .map((attachment) => (
+                      <CompactFilePreview
+                        key={attachment.id}
+                        attachment={attachment}
+                        onDelete={() => handleAttachmentRemove(attachment.id)}
+                      />
+                    ))
+                  }
                 </div>
-              ))}
-              <Button 
-                variant="outline" 
-                onClick={addUrl}
-                className="w-full"
-                type="button"
-              >
-                Add Another URL
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Preview Section */}
-        <div className="mt-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Preview</h3>
-            {attachments.length > 0 && (
-              <span className="text-sm text-gray-500">
-                {attachments.length} item{attachments.length !== 1 ? 's' : ''} added
-              </span>
+              </div>
             )}
           </div>
           
-          {attachments.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-              <div className="text-gray-400 mb-2">
-                <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 16m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <p className="text-gray-500 font-medium">No files or URLs added yet</p>
-              <p className="text-gray-400 text-sm mt-1">
-                Upload files or add URLs above to see previews here
-              </p>
+          {/* URL Upload Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900">Add Websites</h3>
+            
+            {/* URL Input */}
+            <div className="space-y-3">
+              <Input
+                placeholder="Enter website URL (e.g., competitor.com)"
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddUrl()}
+              />
+              <Button 
+                onClick={handleAddUrl} 
+                disabled={!urlInput.trim()}
+                className="w-full"
+              >
+                Add Website
+              </Button>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {attachments.map((attachment) => (
-                <div key={attachment.id} className="border rounded-lg p-4 bg-white shadow-sm">
-                  {attachment.status === 'processing' && (
-                    <div className="flex items-center space-x-3 text-blue-600 mb-3">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                      <span className="text-sm font-medium">
-                        {attachment.type === 'url' ? 'Capturing screenshots...' : 'Processing file...'}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {attachment.type === 'url' && attachment.metadata?.screenshots ? (
-                    <ScreenshotDisplay
-                      attachment={attachment}
-                      className="w-full"
-                    />
-                  ) : attachment.type === 'file' ? (
-                    <WizardFilePreview
-                      attachment={attachment}
-                      onDelete={() => removeAttachment(attachment.id)}
-                    />
-                  ) : null}
-                  
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="flex items-center gap-2">
-                      {attachment.type === 'url' && attachment.status === 'error' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRetryScreenshot(attachment)}
-                          className="flex items-center gap-1"
-                        >
-                          <RefreshCw className="h-3 w-3" />
-                          Retry Screenshots
-                        </Button>
-                      )}
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeAttachment(attachment.id)}
-                      className="text-gray-400 hover:text-destructive hover:bg-red-50"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
+            
+            {/* Inline URL Previews */}
+            {attachments.filter(att => att.type === 'url').length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-700">
+                  Websites ({attachments.filter(att => att.type === 'url').length})
+                </p>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {attachments
+                    .filter(att => att.type === 'url')
+                    .map((attachment) => (
+                      <CompactUrlPreview
+                        key={attachment.id}
+                        attachment={attachment}
+                        onDelete={() => handleAttachmentRemove(attachment.id)}
+                        onRetry={() => handleRetryScreenshot(attachment)}
+                      />
+                    ))
+                  }
                 </div>
-              ))}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Summary Section - Only show if items exist */}
+        {attachments.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
+                <span className="text-sm font-medium text-blue-900">
+                  Ready for Analysis
+                </span>
+              </div>
+              <span className="text-sm text-blue-700">
+                {attachments.length} item{attachments.length !== 1 ? 's' : ''} added
+              </span>
             </div>
-          )}
+            <p className="text-xs text-blue-700 mt-1">
+              Your files and websites are ready for AI analysis in the next step.
+            </p>
+          </div>
+        )}
+        
+        {/* Help Section - Always visible for guidance */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-gray-900 mb-2">💡 Tips for Better Analysis</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
+            <div>
+              <p className="font-medium">📁 Recommended Files:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Design mockups & wireframes</li>
+                <li>Current website screenshots</li>
+                <li>Brand guidelines</li>
+                <li>User research data</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-medium">🔗 Useful URLs:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Competitor websites</li>
+                <li>Your current site/app</li>
+                <li>Design inspiration</li>
+                <li>Industry benchmarks</li>
+              </ul>
+            </div>
+          </div>
         </div>
 
-        {/* Upload Summary */}
-        {hasContent && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Uploaded Content ({totalFiles} files, {urls.filter(url => url.trim()).length} URLs)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {stepData.uploadedFiles?.map((file: File, index: number) => (
-                  <div key={`file-${index}`} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                    {file.type.startsWith('image/') ? (
-                      <Image className="w-4 h-4 text-blue-600" />
-                    ) : (
-                      <FileText className="w-4 h-4 text-green-600" />
-                    )}
-                    <span className="flex-1 truncate text-sm">{file.name}</span>
-                    <span className="text-xs text-gray-500">
-                      {(file.size / 1024 / 1024).toFixed(1)}MB
-                    </span>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => removeFile(index)}
-                      type="button"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-                {urls.filter(url => url.trim()).map((url, index) => (
-                  <div key={`url-${index}`} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                    <Link className="w-4 h-4 text-purple-600" />
-                    <span className="flex-1 truncate text-sm">{url}</span>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => removeUrl(urls.indexOf(url))}
-                      type="button"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Guidelines */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="p-6">
-            <div className="grid md:grid-cols-2 gap-6 text-sm">
-              <div>
-                <h4 className="font-medium mb-2 text-blue-900">📁 Recommended Files:</h4>
-                <ul className="space-y-1 text-blue-800">
-                  <li>• Design mockups & wireframes</li>
-                  <li>• Current website screenshots</li>
-                  <li>• Brand guidelines</li>
-                  <li>• User research data</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-medium mb-2 text-blue-900">🔗 Useful URLs:</h4>
-                <ul className="space-y-1 text-blue-800">
-                  <li>• Competitor websites</li>
-                  <li>• Your current site/app</li>
-                  <li>• Design inspiration</li>
-                  <li>• Industry benchmarks</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Navigation */}
-        <div className="flex justify-between pt-6">
-          <Button variant="outline" onClick={onPreviousStep}>
-            Previous
+        {/* SINGLE NAVIGATION SECTION */}
+        <div className="flex justify-between items-center pt-6 border-t border-gray-200 mt-8">
+          <Button 
+            variant="outline" 
+            onClick={onPreviousStep}
+            className="flex items-center space-x-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Previous</span>
           </Button>
-          <Button onClick={onNextStep}>
-            Continue to Context
-          </Button>
+          
+          <div className="flex items-center space-x-3">
+            {attachments.length > 0 && (
+              <span className="text-sm text-gray-600">
+                {attachments.length} item{attachments.length !== 1 ? 's' : ''} ready
+              </span>
+            )}
+            <Button 
+              onClick={onNextStep}
+              className="flex items-center space-x-2"
+            >
+              <span>Continue to Context</span>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
