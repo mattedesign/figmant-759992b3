@@ -3,7 +3,7 @@ import React from 'react';
 import { Step1SelectAnalysisType } from './steps/Step1SelectAnalysisType';
 import { Step5UploadFiles } from './steps/Step5UploadFiles';
 import { Step6CustomPrompt } from './steps/Step6CustomPrompt';
-import { Step7Processing } from './steps/Step7Processing';
+import { Step4AnalysisResults } from './steps/Step4AnalysisResults';
 import { StepProps } from './types';
 
 interface StepRendererProps extends StepProps {
@@ -22,7 +22,7 @@ export const StepRenderer: React.FC<StepRendererProps> = (props) => {
       case 3:
         return <Step6CustomPrompt {...props} />; // Contextual Fields
       case 4:
-        return <Step7Processing {...props} />; // Analysis Results
+        return <Step4AnalysisResults {...props} />; // Analysis Results
       default:
         return <div>Invalid step</div>;
     }

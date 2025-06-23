@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Download, ExternalLink, ArrowLeft } from 'lucide-react';
 
-export const Step7Processing: React.FC<StepProps> = ({ 
+export const Step4AnalysisResults: React.FC<StepProps> = ({ 
   stepData, 
   setStepData, 
   currentStep, 
@@ -41,7 +41,7 @@ export const Step7Processing: React.FC<StepProps> = ({
       console.log('🔍 Processing contextual fields:', selectedTemplate.contextual_fields.length);
       
       selectedTemplate.contextual_fields.forEach(field => {
-        const value = stepData.contextualData?.[field.id] || field.default_value || '';
+        const value = stepData.contextualData?.[field.id] || '';
         const placeholder = `{{${field.id}}}`;
         
         if (enhancedPrompt.includes(placeholder)) {
