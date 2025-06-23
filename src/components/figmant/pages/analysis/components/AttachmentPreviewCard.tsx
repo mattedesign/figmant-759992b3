@@ -18,15 +18,15 @@ export const AttachmentPreviewCard: React.FC<AttachmentPreviewCardProps> = ({
   onView,
   showActions = true
 }) => {
-  const isImage = attachment.file?.type.startsWith('image/') || attachment.type === 'image';
+  const isImage = attachment.file?.type.startsWith('image/') || attachment.type === 'file';
   
-  // Safely access thumbnailUrl from metadata or direct property
-  const thumbnailUrl = attachment.metadata?.thumbnailUrl || 
-                      (attachment as any).thumbnailUrl || 
-                      (attachment.file && attachment.file.type.startsWith('image/') ? URL.createObjectURL(attachment.file) : null);
+  // For file attachments, check if it's an image and create preview URL
+  const thumbnailUrl = attachment.file && attachment.file.type.startsWith('image/') 
+    ? URL.createObjectURL(attachment.file) 
+    : null;
   
   // Safely access file size
-  const fileSize = attachment.file?.size || (attachment as any).fileSize;
+  const fileSize = attachment.file?.size;
   
   return (
     <div className="flex items-start gap-3 p-3 border rounded-lg bg-white hover:bg-gray-50 transition-colors">
@@ -42,7 +42,7 @@ export const AttachmentPreviewCard: React.FC<AttachmentPreviewCardProps> = ({
               target.style.display = 'none';
             }}
           />
-        ) : isImage ? (
+        ) : isImage && attachment.type === 'file' ? (
           <ImageIcon className="h-6 w-6 text-blue-500" />
         ) : (
           <FileText className="h-6 w-6 text-gray-500" />
@@ -57,7 +57,7 @@ export const AttachmentPreviewCard: React.FC<AttachmentPreviewCardProps> = ({
         
         <div className="flex items-center gap-2 mt-1">
           <Badge variant="outline" className="text-xs">
-            {isImage ? 'Image' : 'File'}
+            {attachment.type === 'file' ? 'File' : 'URL'}
           </Badge>
           
           {fileSize && (

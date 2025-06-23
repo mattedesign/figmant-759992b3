@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Upload, Link, Image, FileText, X, RefreshCw } from 'lucide-react';
+import { Upload, Link, Image, FileText, X, RefreshCw, Loader2 } from 'lucide-react';
 import { StepProps } from '../types';
 import { ScreenshotDisplay } from '@/components/figmant/pages/analysis/components/ScreenshotDisplay';
 import { AttachmentCard } from '@/components/figmant/analysis/AttachmentCard';
@@ -12,8 +12,8 @@ import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptur
 import { useToast } from '@/hooks/use-toast';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
-// Custom File Preview Component that works with ChatAttachment interface
-const CustomFilePreview: React.FC<{
+// Wizard-specific File Preview Component compatible with ChatAttachment interface
+const WizardFilePreview: React.FC<{
   attachment: ChatAttachment;
   onDelete: () => void;
 }> = ({ attachment, onDelete }) => {
@@ -48,6 +48,15 @@ const CustomFilePreview: React.FC<{
 
   return (
     <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+      {/* Status indicator */}
+      {attachment.status === 'processing' && (
+        <div className="flex items-center space-x-2 mb-2">
+          <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+          <span className="text-sm text-blue-600">Processing...</span>
+        </div>
+      )}
+      
+      {/* File preview/icon */}
       {previewUrl ? (
         <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
           <img 
@@ -62,6 +71,7 @@ const CustomFilePreview: React.FC<{
         </div>
       )}
       
+      {/* File info */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">
           {attachment.name}
@@ -69,9 +79,13 @@ const CustomFilePreview: React.FC<{
         <div className="flex items-center space-x-2 text-xs text-gray-500">
           {getFileSize() && <span>{getFileSize()}</span>}
           <span className="capitalize">{attachment.status}</span>
+          {attachment.errorMessage && (
+            <span className="text-red-500">• {attachment.errorMessage}</span>
+          )}
         </div>
       </div>
       
+      {/* Delete button */}
       <Button
         variant="ghost"
         size="sm"
@@ -111,17 +125,18 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     const currentFiles = stepData.uploadedFiles || [];
     const newFiles = [...currentFiles, ...files];
     
-    // Create file attachments with proper interface structure
-    const newAttachments = files.map(file => ({
+    // Create file attachments with proper ChatAttachment interface structure
+    const newAttachments: ChatAttachment[] = files.map(file => ({
       id: `file-${Date.now()}-${Math.random()}`,
       type: 'file' as const,
       name: file.name,
       file: file,
       status: 'uploaded' as const,
-      metadata: {
-        fileSize: file.size,
-        thumbnailUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
-      }
+      // For file attachments, we don't use screenshots metadata
+      // The ChatAttachment interface expects screenshots for URL types
+      ...(file.type.startsWith('image/') && {
+        thumbnailUrl: URL.createObjectURL(file)
+      })
     }));
 
     setAttachments(prev => [...prev, ...newAttachments]);
@@ -167,7 +182,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
       return;
     }
 
-    // Create URL attachment with proper interface structure
+    // Create URL attachment with proper ChatAttachment interface structure
     const urlAttachment: ChatAttachment = {
       id: `url-${Date.now()}-${Math.random()}`,
       type: 'url',
@@ -250,7 +265,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
           ? { 
               ...att, 
               status: 'error' as const, 
-              error: 'Screenshot capture failed',
+              errorMessage: 'Screenshot capture failed',
               metadata: {
                 screenshots: {
                   desktop: { success: false, url, error: 'Capture failed' },
@@ -356,7 +371,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
           ? { 
               ...att,
               status: 'error' as const,
-              error: 'Screenshot retry failed',
+              errorMessage: 'Screenshot retry failed',
               metadata: {
                 ...attachment.metadata,
                 screenshots: {
@@ -598,7 +613,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
                       className="w-full"
                     />
                   ) : attachment.type === 'file' ? (
-                    <CustomFilePreview
+                    <WizardFilePreview
                       attachment={attachment}
                       onDelete={() => removeAttachment(attachment.id)}
                     />
