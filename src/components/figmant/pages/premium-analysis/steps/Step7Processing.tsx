@@ -1,11 +1,10 @@
 
-// Complete Step7Processing.tsx with all states (processing, error, and complete)
-
 import React, { useEffect, useState } from 'react';
 import { StepProps } from '../types';
 import { ProcessingState } from '../components/ProcessingState';
 import { ErrorState } from '../components/ErrorState';
 import { usePremiumAnalysisSubmission } from '@/hooks/usePremiumAnalysisSubmission';
+import { useTemplateSelection } from '../hooks/useTemplateSelection';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,26 +24,71 @@ export const Step7Processing: React.FC<StepProps> = ({
   const [error, setError] = useState<string | null>(null);
   
   const premiumAnalysis = usePremiumAnalysisSubmission();
+  const { selectedTemplate } = useTemplateSelection(stepData.selectedType);
+
+  const constructEnhancedPrompt = () => {
+    if (!selectedTemplate) {
+      console.warn('No selected template found, using fallback prompt');
+      return `Analyze this ${stepData.selectedType} design and provide comprehensive insights.`;
+    }
+    
+    console.log('🔍 Constructing enhanced prompt with template:', selectedTemplate.title);
+    
+    let enhancedPrompt = selectedTemplate.original_prompt;
+    
+    // Replace template variables with contextual data
+    if (selectedTemplate.contextual_fields && selectedTemplate.contextual_fields.length > 0) {
+      console.log('🔍 Processing contextual fields:', selectedTemplate.contextual_fields.length);
+      
+      selectedTemplate.contextual_fields.forEach(field => {
+        const value = stepData.contextualData?.[field.id] || field.default_value || '';
+        const placeholder = `{{${field.id}}}`;
+        
+        if (enhancedPrompt.includes(placeholder)) {
+          enhancedPrompt = enhancedPrompt.replace(new RegExp(`\\{\\{${field.id}\\}\\}`, 'g'), value);
+          console.log(`🔍 Replaced ${placeholder} with: ${value}`);
+        }
+      });
+    }
+    
+    // Add context about uploaded files
+    if (stepData.uploadedFiles?.length) {
+      enhancedPrompt += `\n\nAnalyze the uploaded files: ${stepData.uploadedFiles.map(f => f.name).join(', ')}`;
+      console.log('🔍 Added file context for', stepData.uploadedFiles.length, 'files');
+    }
+    
+    // Add custom prompt if provided
+    if (stepData.customPrompt) {
+      enhancedPrompt += `\n\nAdditional Context: ${stepData.customPrompt}`;
+      console.log('🔍 Added custom prompt context');
+    }
+    
+    console.log('🔍 Enhanced prompt constructed, length:', enhancedPrompt.length);
+    return enhancedPrompt;
+  };
 
   useEffect(() => {
     // Start the actual analysis when component mounts
-    if (processingState === 'processing' && stepData.selectedType) {
-      console.log('🧙 Starting premium analysis with step data:', stepData);
+    if (processingState === 'processing' && stepData.selectedType && selectedTemplate) {
+      console.log('🧙 Starting enhanced premium analysis with template data:', {
+        templateId: selectedTemplate.id,
+        templateTitle: selectedTemplate.title,
+        hasContextualFields: selectedTemplate.contextual_fields?.length > 0,
+        contextualDataKeys: Object.keys(stepData.contextualData || {}),
+        uploadedFilesCount: stepData.uploadedFiles?.length || 0
+      });
       
-      // Find the selected prompt template based on selectedType
-      const selectedPrompt = {
-        id: stepData.selectedType,
-        title: stepData.selectedType,
-        category: 'wizard',
-        original_prompt: `Analyze this ${stepData.selectedType} design and provide comprehensive insights.`
-      };
-
+      const enhancedPrompt = constructEnhancedPrompt();
+      
       premiumAnalysis.mutate({
-        stepData,
-        selectedPrompt
+        stepData: {
+          ...stepData,
+          customPrompt: enhancedPrompt // Use enhanced prompt instead of basic customPrompt
+        },
+        selectedPrompt: selectedTemplate
       });
     }
-  }, [processingState, stepData.selectedType]);
+  }, [processingState, stepData.selectedType, selectedTemplate]);
 
   // Handle analysis completion
   useEffect(() => {
@@ -132,8 +176,13 @@ export const Step7Processing: React.FC<StepProps> = ({
         </div>
         <div className="max-w-2xl mx-auto">
           <ProcessingState 
-            selectedTemplateTitle={stepData.selectedType || 'Analysis'}
-            debugLogs={['Starting analysis...', 'Processing with AI...', 'Generating insights...']}
+            selectedTemplateTitle={selectedTemplate?.title || stepData.selectedType || 'Analysis'}
+            debugLogs={[
+              'Loading template configuration...', 
+              'Processing contextual fields...', 
+              'Constructing enhanced analysis prompt...',
+              'Sending to AI for analysis...'
+            ]}
           />
         </div>
       </div>
@@ -151,7 +200,7 @@ export const Step7Processing: React.FC<StepProps> = ({
           <ErrorState 
             errorMessage={error || 'An unknown error occurred'}
             selectedType={stepData.selectedType}
-            hasSelectedTemplate={!!stepData.selectedType}
+            hasSelectedTemplate={!!selectedTemplate}
             debugLogs={[]}
             onRetry={handleRetry}
             onBackToAnalysis={handleBackToAnalysis}
@@ -171,9 +220,9 @@ export const Step7Processing: React.FC<StepProps> = ({
           </div>
         </div>
         <h2 className="text-3xl font-bold text-gray-900 mb-2">Analysis Complete</h2>
-        <p className="text-lg text-green-600 font-medium mb-4">Premium Analysis Complete!</p>
+        <p className="text-lg text-green-600 font-medium mb-4">Enhanced Premium Analysis Complete!</p>
         <p className="text-gray-600">
-          Your comprehensive {stepData.selectedType} analysis is ready
+          Your comprehensive {selectedTemplate?.title || stepData.selectedType} analysis is ready
         </p>
       </div>
 
@@ -235,8 +284,10 @@ export const Step7Processing: React.FC<StepProps> = ({
 
         {/* Premium Features Note */}
         <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
-          <h4 className="font-medium text-amber-800 mb-2">✨ Premium Analysis Features:</h4>
+          <h4 className="font-medium text-amber-800 mb-2">✨ Enhanced Premium Analysis Features:</h4>
           <ul className="text-sm text-amber-700 space-y-1">
+            <li>• Template-specific analysis with contextual field integration</li>
+            <li>• Enhanced prompts with variable substitution</li>
             <li>• Comprehensive market analysis with competitive insights</li>
             <li>• Strategic recommendations with implementation priorities</li>
             <li>• Revenue impact predictions and conversion optimization</li>
