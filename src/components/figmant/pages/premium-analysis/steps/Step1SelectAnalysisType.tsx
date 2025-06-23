@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { StepProps } from '../types';
 import { StepHeader } from '../components/StepHeader';
@@ -7,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Brain, Target, TrendingUp, Zap, Crown, Search, Star, Eye, Filter, Edit3 } from 'lucide-react';
+import { Brain, Target, TrendingUp, Zap, Crown, Search, Star, Eye, Filter } from 'lucide-react';
 import { TemplatePreviewModal } from '../components/TemplatePreviewModal';
 
 const getCategoryIcon = (category: string) => {
@@ -61,7 +62,6 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortBy, setSortBy] = useState('most_popular');
   const [previewTemplate, setPreviewTemplate] = useState(null);
-  const [showAllTemplates, setShowAllTemplates] = useState(false);
 
   const handleTemplateSelect = (templateId: string, event?: React.MouseEvent) => {
     // Prevent any default behavior and event bubbling
@@ -98,21 +98,6 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
     }
     
     setPreviewTemplate(template);
-  };
-
-  const handleChangeSelection = () => {
-    setShowAllTemplates(true);
-    // Clear current selection to allow new selection
-    setStepData(prev => ({
-      ...prev,
-      selectedType: '',
-      contextualData: {
-        ...prev.contextualData,
-        selectedTemplate: null,
-        templateCategory: null,
-        templateTitle: null
-      }
-    }));
   };
 
   // Filter and sort templates
@@ -156,11 +141,6 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
     }));
   }, [promptTemplates]);
 
-  // Check if template is pre-selected (from Templates page)
-  const preSelectedTemplate = stepData.contextualData?.selectedTemplate;
-  const isTemplateSelected = !!stepData.selectedType;
-  const selectedTemplate = promptTemplates.find(t => t.id === stepData.selectedType);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -173,231 +153,157 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
     <div className="h-full flex flex-col">
       <div className="flex-shrink-0">
         <StepHeader
-          title={isTemplateSelected ? "Template Selected" : "Select Analysis Type"}
+          title="Select Analysis Type"
           currentStep={currentStep}
           totalSteps={totalSteps}
         />
         
         {/* Description text */}
         <div className="text-center text-gray-600 mb-6">
-          {isTemplateSelected 
-            ? "Your template is ready. You can proceed to the next step or change your selection."
-            : "Choose the type of analysis you want to perform"
-          }
+          Choose the type of analysis you want to perform
         </div>
 
-        {/* Selected Template Display */}
-        {isTemplateSelected && selectedTemplate && (
-          <div className="mb-6">
-            <Card className="border-2 border-blue-500 bg-blue-50 min-h-0">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {React.createElement(getCategoryIcon(selectedTemplate.category), { 
-                      className: "h-5 w-5 text-primary" 
-                    })}
-                    <Badge className={getCategoryColor(selectedTemplate.category)}>
-                      {selectedTemplate.category.replace('_', ' ')}
-                    </Badge>
-                    {selectedTemplate.effectiveness_rating > 8 && (
-                      <Badge className="bg-yellow-100 text-yellow-800">
-                        Most Popular
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleChangeSelection}
-                    className="flex items-center gap-2"
-                  >
-                    <Edit3 className="h-4 w-4" />
-                    Change Selection
-                  </Button>
-                </div>
-                
-                <CardTitle className="text-lg">{selectedTemplate.title}</CardTitle>
-                {selectedTemplate.description && (
-                  <CardDescription>{selectedTemplate.description}</CardDescription>
-                )}
-                {selectedTemplate.effectiveness_rating && (
-                  <div className="mt-2">
-                    {renderStarRating(selectedTemplate.effectiveness_rating)}
-                  </div>
-                )}
-              </CardHeader>
-            </Card>
-          </div>
-        )}
-
-        {/* Template Selection Grid - Only show if no template selected OR user wants to change */}
-        {(!isTemplateSelected || showAllTemplates) && (
-          <>
-            {/* Search and Filter Controls */}
-            <div className="space-y-4 mb-6">
-              <h3 className="text-lg font-medium">
-                {showAllTemplates ? "Choose a Different Template:" : "Choose a Template:"}
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {/* Search */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Search templates..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-
-                {/* Category Filter */}
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger>
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="All Categories" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map(cat => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                {/* Sort Options */}
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger>
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
-                    <SelectItem value="most_popular">Most Popular</SelectItem>
-                    <SelectItem value="lowest_cost">Lowest Cost</SelectItem>
-                    <SelectItem value="highest_cost">Highest Cost</SelectItem>
-                    <SelectItem value="alphabetical">Alphabetical</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                {/* Results Count */}
-                <div className="flex items-center text-sm text-gray-600">
-                  {filteredAndSortedTemplates.length} template{filteredAndSortedTemplates.length !== 1 ? 's' : ''} found
-                </div>
-              </div>
-              
-              {/* Cancel Change Selection Button */}
-              {showAllTemplates && (
-                <div className="flex justify-center">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowAllTemplates(false)}
-                    className="text-sm"
-                  >
-                    Cancel Change Selection
-                  </Button>
-                </div>
-              )}
+        {/* Search and Filter Controls */}
+        <div className="space-y-4 mb-6">
+          <h3 className="text-lg font-medium">Choose a Template:</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search templates..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
             </div>
-          </>
-        )}
+
+            {/* Category Filter */}
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger>
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map(cat => (
+                  <SelectItem key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Sort Options */}
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger>
+                <TrendingUp className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
+                <SelectItem value="most_popular">Most Popular</SelectItem>
+                <SelectItem value="lowest_cost">Lowest Cost</SelectItem>
+                <SelectItem value="highest_cost">Highest Cost</SelectItem>
+                <SelectItem value="alphabetical">Alphabetical</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Results Count */}
+            <div className="flex items-center text-sm text-gray-600">
+              {filteredAndSortedTemplates.length} template{filteredAndSortedTemplates.length !== 1 ? 's' : ''} found
+            </div>
+          </div>
+        </div>
       </div>
       
-      {/* Template Grid - Only show if no template selected OR user wants to change */}
-      {(!isTemplateSelected || showAllTemplates) && (
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-4">
-              {filteredAndSortedTemplates.map((template) => {
-                const IconComponent = getCategoryIcon(template.category);
-                const isSelected = stepData.selectedType === template.id;
-                const isPopular = template.effectiveness_rating > 8;
-                
-                return (
-                  <Card 
-                    key={template.id}
-                    className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] min-h-0 relative group ${
-                      isSelected ? 'border-2 border-blue-500 bg-blue-50' : 'hover:border-gray-300'
-                    }`}
-                    onClick={(e) => {
-                      handleTemplateSelect(template.id, e);
-                      // Hide template grid after selection
-                      setShowAllTemplates(false);
-                    }}
-                  >
-                    <CardHeader>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <IconComponent className="h-5 w-5 text-primary" />
-                          <Badge className={getCategoryColor(template.category)}>
-                            {template.category.replace('_', ' ')}
+      {/* Template Grid */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-4">
+            {filteredAndSortedTemplates.map((template) => {
+              const IconComponent = getCategoryIcon(template.category);
+              const isSelected = stepData.selectedType === template.id;
+              const isPopular = template.effectiveness_rating > 8;
+              
+              return (
+                <Card 
+                  key={template.id}
+                  className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] min-h-0 relative group ${
+                    isSelected ? 'border-2 border-blue-500 bg-blue-50' : 'hover:border-gray-300'
+                  }`}
+                  onClick={(e) => handleTemplateSelect(template.id, e)}
+                >
+                  <CardHeader>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <IconComponent className="h-5 w-5 text-primary" />
+                        <Badge className={getCategoryColor(template.category)}>
+                          {template.category.replace('_', ' ')}
+                        </Badge>
+                        {isPopular && (
+                          <Badge className="bg-yellow-100 text-yellow-800">
+                            Most Popular
                           </Badge>
-                          {isPopular && (
-                            <Badge className="bg-yellow-100 text-yellow-800">
-                              Most Popular
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        {/* Preview Button */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={(e) => handlePreviewTemplate(template, e)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      
-                      <CardTitle className="text-base">{template.title}</CardTitle>
-                      {template.description && (
-                        <CardDescription className="text-sm">
-                          {template.description}
-                        </CardDescription>
-                      )}
-                      
-                      {/* Star Rating */}
-                      {template.effectiveness_rating && (
-                        <div className="mt-2">
-                          {renderStarRating(template.effectiveness_rating)}
-                        </div>
-                      )}
-                    </CardHeader>
-                    
-                    <CardContent>
-                      {template.use_case_context && (
-                        <div className="text-xs text-gray-600 mb-2">
-                          <span className="font-medium">Best for:</span> {template.use_case_context}
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span>Credit Cost: {template.credit_cost || 3}</span>
-                        {template.effectiveness_rating && (
-                          <span>Rating: {template.effectiveness_rating}/10</span>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-
-            {filteredAndSortedTemplates.length === 0 && (
-              <div className="text-center py-12">
-                <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No templates found</h3>
-                <p className="text-gray-600">
-                  Try adjusting your search query or filters to find what you're looking for.
-                </p>
-              </div>
-            )}
+                      
+                      {/* Preview Button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => handlePreviewTemplate(template, e)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    <CardTitle className="text-base">{template.title}</CardTitle>
+                    {template.description && (
+                      <CardDescription className="text-sm">
+                        {template.description}
+                      </CardDescription>
+                    )}
+                    
+                    {/* Star Rating */}
+                    {template.effectiveness_rating && (
+                      <div className="mt-2">
+                        {renderStarRating(template.effectiveness_rating)}
+                      </div>
+                    )}
+                  </CardHeader>
+                  
+                  <CardContent>
+                    {template.use_case_context && (
+                      <div className="text-xs text-gray-600 mb-2">
+                        <span className="font-medium">Best for:</span> {template.use_case_context}
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>Credit Cost: {template.credit_cost || 3}</span>
+                      {template.effectiveness_rating && (
+                        <span>Rating: {template.effectiveness_rating}/10</span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
+
+          {filteredAndSortedTemplates.length === 0 && (
+            <div className="text-center py-12">
+              <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No templates found</h3>
+              <p className="text-gray-600">
+                Try adjusting your search query or filters to find what you're looking for.
+              </p>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Template Preview Modal */}
       {previewTemplate && (
@@ -407,7 +313,6 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
           onClose={() => setPreviewTemplate(null)}
           onSelectTemplate={(templateId) => {
             handleTemplateSelect(templateId);
-            setShowAllTemplates(false);
           }}
         />
       )}
