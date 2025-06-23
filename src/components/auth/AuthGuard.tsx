@@ -25,17 +25,35 @@ export const AuthGuard = ({
   useEffect(() => {
     console.log('AuthGuard effect - loading:', loading, 'user:', user?.id, 'profile:', profile?.role, 'requireOwner:', requireOwner);
     
-    if (!loading) {
-      if (requireAuth && !user) {
+    if (!loading && !user && requireAuth) {
+      // Only redirect to auth if not already there
+      if (window.location.pathname !== '/auth') {
         console.log('AuthGuard: No user, redirecting to auth');
         navigate('/auth');
+      }
+      return;
+    }
+
+    if (!loading && user && !requireAuth) {
+      // Authenticated user accessing auth page -> redirect to main app
+      if (window.location.pathname === '/auth') {
+        console.log('AuthGuard: Authenticated user on auth page, redirecting to figmant');
+        navigate('/figmant');
+        return;
+      }
+    }
+
+    // Handle owner requirements
+    if (requireOwner && user) {
+      if (profile === null) {
+        // Still loading profile
         return;
       }
       
-      // Wait for profile to be loaded before checking owner requirement
-      if (requireOwner && user && profile !== null && profile?.role !== 'owner') {
-        console.log('AuthGuard: User is not owner, redirecting to dashboard. Profile:', profile);
-        navigate('/dashboard');
+      if (profile?.role !== 'owner') {
+        // Not an owner, redirect to main dashboard
+        console.log('AuthGuard: User is not owner, redirecting to figmant. Profile:', profile);
+        navigate('/figmant');
         return;
       }
     }
@@ -102,7 +120,7 @@ export const AuthGuard = ({
           </CardHeader>
           <CardContent>
             <Button 
-              onClick={() => navigate('/dashboard')} 
+              onClick={() => navigate('/figmant')} 
               className="w-full"
             >
               Go to Dashboard
@@ -134,7 +152,7 @@ export const AuthGuard = ({
             </Button>
             <Button 
               variant="outline"
-              onClick={() => navigate('/dashboard')} 
+              onClick={() => navigate('/figmant')} 
               className="w-full"
             >
               Go to Dashboard

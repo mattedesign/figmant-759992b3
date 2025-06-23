@@ -5,24 +5,35 @@
  */
 
 export const navigationMigrations = {
-  // Legacy chat/analysis routes -> Analysis
-  'chat': 'analysis',
-  'competitor-analysis': 'analysis',
+  // Analysis routes
+  'chat': 'competitor-analysis',
+  'analysis': 'competitor-analysis',
   
-  // Legacy wizard routes -> Wizard Analysis (direct to stepped process)
+  // Wizard routes
   'wizard': 'wizard-analysis',
   
-  // Revenue analysis -> Premium Analysis (new standardized name)
+  // Premium analysis routes
   'revenue-analysis': 'premium-analysis',
   
-  // Preferences -> Settings
+  // Settings routes
   'preferences': 'settings',
   
-  // Legacy search -> Templates (search within templates)
+  // Search routes
   'search': 'templates',
   
-  // Premium analysis -> Wizard Analysis (unified workflow)
-  'premium-analysis': 'wizard-analysis',
+  // Ensure correct mapping for existing routes
+  'competitor-analysis': 'competitor-analysis',
+  'wizard-analysis': 'wizard-analysis',
+  'premium-analysis': 'premium-analysis',
+  'dashboard': 'dashboard',
+  'insights': 'insights',
+  'templates': 'templates',
+  'analytics': 'analytics',
+  'credits': 'credits',
+  'admin': 'admin',
+  'settings': 'settings',
+  'profile': 'profile',
+  'help-support': 'help-support'
 } as const;
 
 /**

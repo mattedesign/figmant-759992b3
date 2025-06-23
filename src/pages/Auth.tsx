@@ -9,7 +9,7 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Redirect authenticated users to the new default route (figmant)
+    // Redirect authenticated users to figmant (not dashboard)
     if (!loading && user) {
       console.log('Auth: User is authenticated, redirecting to figmant...');
       navigate('/figmant', { replace: true });

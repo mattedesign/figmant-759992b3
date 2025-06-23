@@ -1,8 +1,6 @@
 
-// src/components/figmant/FigmantLayout.tsx
-
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { FigmantSidebar } from './sidebar/FigmantSidebarContainer';
 import { FigmantMainContent } from './FigmantMainContent';
 import { MobileNavigation } from './navigation/MobileNavigation';
@@ -10,83 +8,53 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { migrateNavigationRoute } from '@/utils/navigationMigration';
 
 export const FigmantLayout: React.FC = () => {
-  // Get section from URL parameters
-  const { section } = useParams<{ section: string }>();
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
+  const isMobile = useIsMobile();
   
-  // State management
+  // Extract section from URL path
+  const pathSegments = location.pathname.split('/').filter(Boolean);
+  const urlSection = pathSegments.length > 1 ? pathSegments[1] : 'dashboard';
+  
+  // Apply migration and set active section
+  const [activeSection, setActiveSection] = useState(() => {
+    const migratedSection = migrateNavigationRoute(urlSection);
+    return migratedSection;
+  });
+  
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  
-  // Responsive design states
-  const isMobile = useIsMobile();
-  const isTablet = !isMobile && window.innerWidth < 1024;
-  
-  // Default to dashboard if no section specified, apply migration for legacy URLs
-  const rawActiveSection = section || 'dashboard';
-  const activeSection = migrateNavigationRoute(rawActiveSection);
-  
-  // Handle navigation - update URL when section changes
+
+  // Update section when URL changes
+  useEffect(() => {
+    const newSection = pathSegments.length > 1 ? pathSegments[1] : 'dashboard';
+    const migratedSection = migrateNavigationRoute(newSection);
+    
+    if (migratedSection !== activeSection) {
+      setActiveSection(migratedSection);
+    }
+  }, [location.pathname, activeSection, pathSegments]);
+
+  // Handle section changes from sidebar
   const handleSectionChange = (newSection: string) => {
     const migratedSection = migrateNavigationRoute(newSection);
-    navigate(`/figmant/${migratedSection}`, { 
-      state: location.state,
-      replace: false 
-    });
-  };
-
-  // Handle URL changes and migration redirects
-  useEffect(() => {
-    // If the current URL section needed migration, redirect to the correct URL
-    if (section && section !== activeSection) {
-      navigate(`/figmant/${activeSection}`, { 
-        state: location.state,
-        replace: true 
-      });
-    }
+    setActiveSection(migratedSection);
     
-    // If no section in URL, redirect to dashboard
-    if (!section) {
-      navigate('/figmant/dashboard', { 
-        state: location.state,
-        replace: true 
-      });
-    }
-  }, [section, activeSection, navigate, location.state]);
-
-  // Handle navigation state from external links (like premium analysis, template selection)
-  useEffect(() => {
-    if (location.state?.activeSection) {
-      const targetSection = migrateNavigationRoute(location.state.activeSection);
-      if (targetSection !== activeSection) {
-        navigate(`/figmant/${targetSection}`, { 
-          state: location.state,
-          replace: true 
-        });
-      }
-    }
-  }, [location.state, activeSection, navigate]);
+    // Update URL without full navigation
+    window.history.pushState({}, '', `/figmant/${migratedSection}`);
+  };
 
   const handleBackToList = () => {
     setSelectedAnalysis(null);
   };
 
   const handleRightSidebarModeChange = (mode: string) => {
-    // Handle right sidebar mode changes if needed
     console.log('Right sidebar mode changed:', mode);
   };
 
   const handleSidebarCollapsedChange = (collapsed: boolean) => {
     setIsSidebarCollapsed(collapsed);
   };
-
-  // Screen size detection with responsive behavior
-  const screenSize = React.useMemo(() => ({
-    width: typeof window !== 'undefined' ? window.innerWidth : 0,
-    isMobile,
-    isTablet
-  }), [isMobile, isTablet]);
 
   // Mobile layout
   if (isMobile) {
@@ -116,10 +84,10 @@ export const FigmantLayout: React.FC = () => {
     );
   }
 
-  // Desktop layout with proper z-index hierarchy and no overlapping elements
+  // Desktop layout
   return (
     <div className="h-screen flex w-full gap-4 overflow-hidden p-3" style={{ background: 'transparent' }}>
-      {/* Sidebar - Fixed z-index and proper positioning */}
+      {/* Sidebar */}
       <div className="flex-shrink-0 relative z-10">
         <FigmantSidebar 
           activeSection={activeSection}
@@ -128,7 +96,7 @@ export const FigmantLayout: React.FC = () => {
         />
       </div>
       
-      {/* Main Content - Lower z-index, no overlays */}
+      {/* Main Content */}
       <div className="flex-1 min-w-0 overflow-hidden relative z-0">
         <FigmantMainContent
           activeSection={activeSection}

@@ -9,11 +9,10 @@ interface ChatPageProps {
 export const ChatPage: React.FC<ChatPageProps> = ({
   selectedTemplate
 }) => {
-  console.log('💬 CHAT ANALYSIS PAGE - Rendering chat analysis system');
+  console.log('💬 CHAT PAGE - Rendering competitor analysis interface', { selectedTemplate });
   
   return (
     <div className="h-full flex flex-col min-h-0">
-      {/* Main Chat Content - Full width since FigmantSidebar is now at layout level */}
       <div className="flex-1 min-h-0 px-0">
         <UnifiedChatContainer />
       </div>

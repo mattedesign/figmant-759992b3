@@ -1,6 +1,4 @@
 
-// src/App.tsx
-
 import React from 'react';
 import {
   BrowserRouter as Router,
@@ -9,14 +7,8 @@ import {
   Navigate,
 } from 'react-router-dom';
 import Auth from '@/pages/Auth';
-import Subscription from '@/pages/Subscription';
-import PaymentSuccess from '@/pages/PaymentSuccess';
-import DesignAnalysis from '@/pages/DesignAnalysis';
-import StripeWebhookTest from '@/pages/StripeWebhookTest';
-import AdminAssets from '@/pages/AdminAssets';
 import { FigmantLayout } from '@/components/figmant/FigmantLayout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
-import ProfilePage from './pages/ProfilePage';
 import { EnhancedProfileSync } from '@/components/auth/EnhancedProfileSync';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -34,19 +26,12 @@ const App: React.FC = () => {
             <div className="min-h-screen bg-gray-50">
               <Router>
                 <Routes>
+                  {/* Auth Route - No Guard */}
                   <Route path="/auth" element={<Auth />} />
                   
-                  {/* Updated Figmant routing with dynamic sections */}
+                  {/* Main Figmant Application */}
                   <Route
-                    path="/figmant/:section"
-                    element={
-                      <AuthGuard>
-                        <FigmantLayout />
-                      </AuthGuard>
-                    }
-                  />
-                  <Route
-                    path="/figmant"
+                    path="/figmant/*"
                     element={
                       <AuthGuard>
                         <FigmantLayout />
@@ -54,70 +39,15 @@ const App: React.FC = () => {
                     }
                   />
                   
-                  {/* Root redirect to figmant dashboard */}
-                  <Route path="/" element={<Navigate to="/figmant/dashboard" replace />} />
+                  {/* Root Redirect */}
+                  <Route path="/" element={<Navigate to="/figmant" replace />} />
                   
-                  {/* Legacy dashboard routes - redirect to figmant */}
-                  <Route
-                    path="/dashboard"
-                    element={<Navigate to="/figmant/dashboard" replace />}
-                  />
-                  <Route
-                    path="/owner"
-                    element={
-                      <AuthGuard requireOwner>
-                        <Navigate to="/figmant/admin" replace />
-                      </AuthGuard>
-                    }
-                  />
+                  {/* Legacy Routes - Redirect to Figmant */}
+                  <Route path="/dashboard/*" element={<Navigate to="/figmant" replace />} />
+                  <Route path="/analysis/*" element={<Navigate to="/figmant/competitor-analysis" replace />} />
                   
-                  {/* Legacy profile route - redirect to new figmant profile */}
-                  <Route
-                    path="/profile"
-                    element={<Navigate to="/figmant/profile" replace />}
-                  />
-                  
-                  {/* Preserve other important routes */}
-                  <Route
-                    path="/analysis"
-                    element={
-                      <AuthGuard>
-                        <DesignAnalysis />
-                      </AuthGuard>
-                    }
-                  />
-                  <Route
-                    path="/subscription"
-                    element={
-                      <AuthGuard>
-                        <Subscription />
-                      </AuthGuard>
-                    }
-                  />
-                  <Route
-                    path="/payment-success"
-                    element={
-                      <AuthGuard>
-                        <PaymentSuccess />
-                      </AuthGuard>
-                    }
-                  />
-                  <Route
-                    path="/admin/assets"
-                    element={
-                      <AuthGuard>
-                        <AdminAssets />
-                      </AuthGuard>
-                    }
-                  />
-                  <Route
-                    path="/stripe-webhook-test"
-                    element={
-                      <AuthGuard requireOwner>
-                        <StripeWebhookTest />
-                      </AuthGuard>
-                    }
-                  />
+                  {/* Catch All - Redirect to Figmant */}
+                  <Route path="*" element={<Navigate to="/figmant" replace />} />
                 </Routes>
               </Router>
             </div>
