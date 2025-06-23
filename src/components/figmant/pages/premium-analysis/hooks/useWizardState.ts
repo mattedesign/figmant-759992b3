@@ -76,15 +76,25 @@ export const useWizardState = () => {
   }, [location.state]);
 
   const handleNextStep = () => {
+    console.log('🔄 Wizard next step requested:', { currentStep, nextStep: currentStep + 1 });
+    
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep(currentStep + 1);
     }
+    
+    // CRITICAL: No navigation or component switching here
+    // This should only update the step number
   };
 
   const handlePreviousStep = () => {
+    console.log('🔄 Wizard previous step requested:', { currentStep, prevStep: currentStep - 1 });
+    
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
+    
+    // CRITICAL: No navigation or component switching here
+    // This should only update the step number
   };
 
   const canProceedToNextStep = (): boolean => {
