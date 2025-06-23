@@ -34,9 +34,9 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':
-        return <DashboardPage />;
+        return <DashboardPage activeSection={activeSection} onSectionChange={setActiveSection} user={undefined} />;
       case 'insights':
-        return <InsightsPage />;
+        return <InsightsPage activeSection={activeSection} onSectionChange={setActiveSection} user={undefined} />;
       case 'analysis':
         return <AnalysisPage />;
       case 'chat':
@@ -60,7 +60,7 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       case 'premium-analysis':
         return <PremiumAnalysisPage />;
       default:
-        return <DashboardPage />;
+        return <DashboardPage activeSection={activeSection} onSectionChange={setActiveSection} user={undefined} />;
     }
   };
 
