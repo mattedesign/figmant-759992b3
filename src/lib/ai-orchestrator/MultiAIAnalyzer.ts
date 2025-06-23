@@ -1,5 +1,5 @@
 
-import { EnhancedAnalysisResult, EnhancementSettings, AccessibilityAnalysis, DiversityAnalysis, FormOptimization, SecondaryAnalysis } from '@/types/enhancement';
+import type { EnhancedAnalysisResult, EnhancementSettings, AccessibilityAnalysis, DiversityAnalysis, FormOptimization, SecondaryAnalysis } from '@/types/enhancement';
 import { supabase } from '@/integrations/supabase/client';
 import { isValidEnhancementSettings } from '@/utils/typeUtils';
 

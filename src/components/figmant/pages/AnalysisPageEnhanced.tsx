@@ -1,11 +1,10 @@
-
 import React, { useEffect } from 'react';
 import { AnalysisPageContainer } from './analysis/AnalysisPageContainer';
 import { EnhancementDashboard } from './analysis/EnhancementDashboard';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTemplateCreditStore } from '@/stores/templateCreditStore';
 import { useAIEnhancement } from '@/hooks/useAIEnhancement';
-import { AnalysisPageEnhancedProps } from '@/types/enhancement';
+import type { AnalysisPageEnhancedProps } from '@/types/enhancement';
 
 export const AnalysisPageEnhanced: React.FC<AnalysisPageEnhancedProps> = ({ 
   selectedTemplate,

@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { MultiAIAnalyzer } from '@/lib/ai-orchestrator/MultiAIAnalyzer';
-import { EnhancedAnalysisResult, EnhancementSettings } from '@/types/enhancement';
+import type { EnhancedAnalysisResult, EnhancementSettings } from '@/types/enhancement';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 

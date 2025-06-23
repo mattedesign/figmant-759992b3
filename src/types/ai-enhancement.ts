@@ -1,5 +1,5 @@
 
-export { 
+export type { 
   AIServiceConfig,
   EnhancementSettings,
   AccessibilityAnalysis,
