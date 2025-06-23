@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { DashboardHeader } from './dashboard/DashboardHeader';
 import { DashboardQuickActions } from './dashboard/DashboardQuickActions';
+import { DashboardUXLaws } from './dashboard/DashboardUXLaws';
 import { DashboardAnalyticsTabsSection } from './dashboard/DashboardAnalyticsTabsSection';
 import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkeletonLoading';
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
@@ -72,6 +73,9 @@ export const DashboardPage: React.FC = () => {
 
         {/* PRIMARY FOCUS: Quick Actions - Most prominent position after header */}
         <DashboardQuickActions />
+
+        {/* UX EDUCATION: UX Laws and Principles for learning */}
+        <DashboardUXLaws />
 
         {/* SECONDARY FOCUS: Business Intelligence Dashboard with Real Data */}
         <DashboardAnalyticsTabsSection 
