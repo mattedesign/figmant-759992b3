@@ -10,6 +10,7 @@ export const useWizardState = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [stepData, setStepData] = useState<StepData>({
     selectedType: '',
+    selectedTemplate: undefined, // Add selectedTemplate
     projectName: 'Untitled Analysis',
     analysisGoals: '',
     contextualData: {},
@@ -17,6 +18,7 @@ export const useWizardState = () => {
     customPrompt: '',
     stakeholders: [],
     referenceLinks: [''],
+    attachments: [], // Add attachments
     uploads: {
       images: [],
       urls: [],
@@ -40,6 +42,7 @@ export const useWizardState = () => {
       setStepData(prev => ({
         ...prev,
         selectedType: template.id,
+        selectedTemplate: template, // Save full template object
         projectName: `${template.title} Analysis`,
         analysisGoals: template.description || `Analysis using ${template.title} template`,
         contextualData: {
@@ -61,6 +64,7 @@ export const useWizardState = () => {
       setStepData(prev => ({
         ...prev,
         selectedType: template.id,
+        selectedTemplate: template, // Save full template object
         projectName: `${template.title} Analysis`,
         analysisGoals: template.description || `Analysis using ${template.title} template`,
         contextualData: {
@@ -100,13 +104,15 @@ export const useWizardState = () => {
   const canProceedToNextStep = (): boolean => {
     switch (currentStep) {
       case 1:
-        return !!stepData.selectedType; // Template selected
+        // Ensure both selectedType and selectedTemplate are present
+        return !!stepData.selectedType && !!stepData.selectedTemplate;
       case 2:
         return true; // File upload (optional)
       case 3:
         return true; // Contextual fields (optional)
       case 4:
-        return false; // Analysis results (final step)
+        // Must have template to start analysis
+        return !!stepData.selectedTemplate;
       default:
         return false;
     }

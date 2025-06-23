@@ -1,7 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
 import { StepProps } from '../types';
-import { StepHeader } from '../components/StepHeader';
 import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -74,19 +73,23 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
     
     const template = promptTemplates.find(t => t.id === templateId);
     if (template) {
-      // Only update wizard state - no navigation
+      // Save both selectedType and selectedTemplate for proper validation
       setStepData(prev => ({
         ...prev,
         selectedType: templateId,
+        selectedTemplate: template, // Save full template object
+        projectName: `${template.title} Analysis`,
+        analysisGoals: template.description || `Analysis using ${template.title} template`,
         contextualData: {
           ...prev.contextualData,
           selectedTemplate: template,
           templateCategory: template.category,
-          templateTitle: template.title
+          templateTitle: template.title,
+          contextualFields: template.contextual_fields || []
         }
       }));
       
-      console.log('✅ Template selection updated in wizard state');
+      console.log('✅ Template selection updated in wizard state:', template);
     }
   };
 
@@ -152,15 +155,12 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
   return (
     <div className="h-full flex flex-col">
       <div className="flex-shrink-0">
-        <StepHeader
-          title="Select Analysis Type"
-          currentStep={currentStep}
-          totalSteps={totalSteps}
-        />
-        
-        {/* Description text */}
-        <div className="text-center text-gray-600 mb-6">
-          Choose the type of analysis you want to perform
+        {/* Page Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Select Analysis Type</h1>
+          <p className="text-gray-600">
+            Choose the type of analysis you want to perform
+          </p>
         </div>
 
         {/* Search and Filter Controls */}

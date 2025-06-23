@@ -1,6 +1,7 @@
 
 export interface StepData {
   selectedType: string;
+  selectedTemplate?: any; // Add template object
   projectName: string;
   analysisGoals: string;
   contextualData: Record<string, any>;
@@ -14,6 +15,7 @@ export interface StepData {
     files: File[];
     screenshots: any[];
   };
+  attachments?: ChatAttachment[]; // Add attachments for the new Step2
 }
 
 export interface StepProps {
@@ -21,8 +23,7 @@ export interface StepProps {
   setStepData: React.Dispatch<React.SetStateAction<StepData>>;
   currentStep: number;
   totalSteps: number;
-  onNextStep?: () => void;
-  onPreviousStep?: () => void;
+  // Remove navigation props since WizardNavigation handles them
 }
 
 export interface Stakeholder {
@@ -35,4 +36,17 @@ export interface AnalysisType {
   id: string;
   title: string;
   icon: React.ComponentType<any>;
+}
+
+// Add ChatAttachment interface if not imported
+export interface ChatAttachment {
+  id: string;
+  type: 'file' | 'url';
+  name: string;
+  file?: File;
+  url?: string;
+  status: 'uploading' | 'uploaded' | 'processing' | 'error';
+  thumbnailUrl?: string;
+  errorMessage?: string;
+  metadata?: any;
 }

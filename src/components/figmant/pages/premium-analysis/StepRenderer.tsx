@@ -5,24 +5,74 @@ import { Step2SmartUpload } from './steps/Step2SmartUpload';
 import { Step6CustomPrompt } from './steps/Step6CustomPrompt';
 import { Step4AnalysisResults } from './steps/Step4AnalysisResults';
 import { StepProps } from './types';
+import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
 interface StepRendererProps extends StepProps {
   onCreditCostChange?: (creditCost: number) => void;
 }
 
-export const StepRenderer: React.FC<StepRendererProps> = (props) => {
-  const { currentStep } = props;
-
+export const StepRenderer: React.FC<StepRendererProps> = ({
+  stepData,
+  setStepData,
+  currentStep,
+  totalSteps,
+  onCreditCostChange
+}) => {
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return <Step1SelectAnalysisType {...props} />;
+        return (
+          <Step1SelectAnalysisType 
+            stepData={stepData}
+            setStepData={setStepData}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+          />
+        );
       case 2:
-        return <Step2SmartUpload {...props} />; // Smart Upload with Preview
+        return (
+          <Step2SmartUpload 
+            attachments={stepData.attachments || []}
+            onAttachmentAdd={(attachment: ChatAttachment) => {
+              setStepData(prev => ({
+                ...prev,
+                attachments: [...(prev.attachments || []), attachment]
+              }));
+            }}
+            onAttachmentRemove={(id: string) => {
+              setStepData(prev => ({
+                ...prev,
+                attachments: (prev.attachments || []).filter(att => att.id !== id)
+              }));
+            }}
+            onAttachmentUpdate={(id: string, updates: Partial<ChatAttachment>) => {
+              setStepData(prev => ({
+                ...prev,
+                attachments: (prev.attachments || []).map(att => 
+                  att.id === id ? { ...att, ...updates } : att
+                )
+              }));
+            }}
+          />
+        );
       case 3:
-        return <Step6CustomPrompt {...props} />; // Contextual Fields
+        return (
+          <Step6CustomPrompt 
+            stepData={stepData}
+            setStepData={setStepData}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+          />
+        );
       case 4:
-        return <Step4AnalysisResults {...props} />; // Analysis Results
+        return (
+          <Step4AnalysisResults 
+            stepData={stepData}
+            setStepData={setStepData}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+          />
+        );
       default:
         return <div>Invalid step</div>;
     }

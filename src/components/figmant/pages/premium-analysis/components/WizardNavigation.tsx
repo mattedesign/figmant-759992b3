@@ -37,7 +37,7 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
   
   const getButtonText = () => {
     if (isOnFinalStep) {
-      return 'Start Wizard Analysis';
+      return 'Start Analysis';
     }
     return 'Continue';
   };
@@ -50,10 +50,13 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
       buttonText: getButtonText()
     });
     if (canProceed) {
+      if (isOnFinalStep) {
+        console.log('🎯 Starting analysis...');
+      }
       console.log('🎯 Calling onNextStep...');
       onNextStep();
     } else {
-      console.log('🎯 Cannot proceed - button should be disabled but was clicked');
+      console.error('🎯 Cannot proceed - validation failed');
     }
   };
   

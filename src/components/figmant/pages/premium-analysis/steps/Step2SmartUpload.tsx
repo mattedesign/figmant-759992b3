@@ -3,8 +3,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Upload, File, FileText, Image as ImageIcon, Globe, X, Loader2, Check, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
-import { StepProps } from '../types';
+import { Upload, File, FileText, Image as ImageIcon, Globe, X, Loader2, Check, Plus } from 'lucide-react';
 import { ScreenshotDisplay } from '@/components/figmant/pages/analysis/components/ScreenshotDisplay';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
 import { useToast } from '@/hooks/use-toast';
@@ -127,18 +126,23 @@ const WebsitePreviewCard: React.FC<{
   );
 };
 
-export const Step2SmartUpload: React.FC<StepProps> = ({
-  stepData,
-  setStepData,
-  currentStep,
-  totalSteps,
-  onNextStep,
-  onPreviousStep
+// Updated Props Interface - Remove navigation props
+interface Step2SmartUploadProps {
+  attachments: ChatAttachment[];
+  onAttachmentAdd: (attachment: ChatAttachment) => void;
+  onAttachmentRemove: (id: string) => void;
+  onAttachmentUpdate: (id: string, updates: Partial<ChatAttachment>) => void;
+}
+
+export const Step2SmartUpload: React.FC<Step2SmartUploadProps> = ({
+  attachments,
+  onAttachmentAdd,
+  onAttachmentRemove,
+  onAttachmentUpdate
 }) => {
-  console.log('🔍 Step2SmartUpload rendered with stepData:', stepData);
+  console.log('🔍 Step2SmartUpload rendered with attachments:', attachments);
   
   const [dragActive, setDragActive] = useState(false);
-  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [urlInput, setUrlInput] = useState<string>('');
   const [fileInputKey, setFileInputKey] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -155,9 +159,6 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
   const handleFileUpload = async (files: File[]) => {
     console.log('📁 File upload called with files:', files.length);
     
-    const currentFiles = stepData.uploadedFiles || [];
-    const newFiles = [...currentFiles, ...files];
-    
     const newAttachments: ChatAttachment[] = files.map(file => ({
       id: `file-${Date.now()}-${Math.random()}`,
       type: 'file' as const,
@@ -169,24 +170,9 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
       })
     }));
 
-    setAttachments(prev => [...prev, ...newAttachments]);
-    
-    const currentUploads = stepData.uploads || { images: [], urls: [], files: [], screenshots: [] };
-    const newUploads = { ...currentUploads };
-    
-    files.forEach(file => {
-      if (file.type.startsWith('image/')) {
-        newUploads.images = [...newUploads.images, file];
-      } else {
-        newUploads.files = [...newUploads.files, file];
-      }
+    newAttachments.forEach(attachment => {
+      onAttachmentAdd(attachment);
     });
-    
-    setStepData(prev => ({ 
-      ...prev, 
-      uploadedFiles: newFiles,
-      uploads: newUploads
-    }));
 
     // Reset file input to allow selecting same file again
     setFileInputKey(prev => prev + 1);
@@ -236,11 +222,10 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
         }
       };
 
-      setAttachments(prev => prev.map(att => 
-        att.id === attachment.id 
-          ? { ...att, status: 'uploaded' as const, metadata: updatedMetadata }
-          : att
-      ));
+      onAttachmentUpdate(attachment.id, { 
+        status: 'uploaded' as const, 
+        metadata: updatedMetadata 
+      });
 
       const desktopSuccess = screenshotResults.desktop?.[0]?.success;
       const mobileSuccess = screenshotResults.mobile?.[0]?.success;
@@ -261,21 +246,16 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     } catch (error) {
       console.error('📸 Screenshot capture error:', error);
       
-      setAttachments(prev => prev.map(att => 
-        att.id === attachment.id 
-          ? { 
-              ...att, 
-              status: 'error' as const, 
-              errorMessage: 'Screenshot capture failed',
-              metadata: {
-                screenshots: {
-                  desktop: { success: false, url, error: 'Capture failed' },
-                  mobile: { success: false, url, error: 'Capture failed' }
-                }
-              }
-            }
-          : att
-      ));
+      onAttachmentUpdate(attachment.id, { 
+        status: 'error' as const, 
+        errorMessage: 'Screenshot capture failed',
+        metadata: {
+          screenshots: {
+            desktop: { success: false, url, error: 'Capture failed' },
+            mobile: { success: false, url, error: 'Capture failed' }
+          }
+        }
+      });
 
       toast({
         variant: "destructive",
@@ -331,7 +311,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
 
     console.log('🔗 Created attachment:', urlAttachment);
     
-    setAttachments(prev => [...prev, urlAttachment]);
+    onAttachmentAdd(urlAttachment);
     setUrlInput('');
     console.log('🔗 URL added to attachments and input cleared');
 
@@ -347,21 +327,16 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
   const handleRetryScreenshot = async (attachment: ChatAttachment) => {
     if (attachment.type !== 'url' || !attachment.url) return;
     
-    setAttachments(prev => prev.map(att => 
-      att.id === attachment.id 
-        ? { 
-            ...att,
-            status: 'processing' as const,
-            metadata: {
-              ...attachment.metadata,
-              screenshots: {
-                desktop: { success: false, url: attachment.url },
-                mobile: { success: false, url: attachment.url }
-              }
-            }
-          }
-        : att
-    ));
+    onAttachmentUpdate(attachment.id, {
+      status: 'processing' as const,
+      metadata: {
+        ...attachment.metadata,
+        screenshots: {
+          desktop: { success: false, url: attachment.url },
+          mobile: { success: false, url: attachment.url }
+        }
+      }
+    });
     
     toast({
       title: "Retrying Screenshot",
@@ -369,11 +344,6 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     });
     
     await handleScreenshotCapture(attachment, attachment.url);
-  };
-
-  const handleAttachmentRemove = (id: string) => {
-    console.log('🗑️ Removing attachment:', id);
-    setAttachments(prev => prev.filter(att => att.id !== id));
   };
 
   return (
@@ -441,7 +411,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
                     <FilePreviewCard
                       key={attachment.id}
                       attachment={attachment}
-                      onDelete={() => handleAttachmentRemove(attachment.id)}
+                      onDelete={() => onAttachmentRemove(attachment.id)}
                     />
                   ))
                 }
@@ -493,7 +463,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
                   <WebsitePreviewCard
                     key={attachment.id}
                     attachment={attachment}
-                    onDelete={() => handleAttachmentRemove(attachment.id)}
+                    onDelete={() => onAttachmentRemove(attachment.id)}
                     onRetry={() => handleRetryScreenshot(attachment)}
                   />
                 ))
@@ -525,33 +495,6 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
               </ul>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* SINGLE NAVIGATION - ONLY ONE SET OF BUTTONS */}
-      <div className="flex justify-between items-center pt-8 border-t border-gray-200 mt-8">
-        <Button 
-          variant="outline" 
-          onClick={onPreviousStep}
-          className="flex items-center space-x-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Previous</span>
-        </Button>
-        
-        <div className="flex items-center space-x-3">
-          {attachments.length > 0 && (
-            <span className="text-sm text-gray-600">
-              {attachments.length} item{attachments.length !== 1 ? 's' : ''} ready
-            </span>
-          )}
-          <Button 
-            onClick={onNextStep}
-            className="flex items-center space-x-2"
-          >
-            <span>Continue to Context</span>
-            <ArrowRight className="w-4 h-4" />
-          </Button>
         </div>
       </div>
     </div>
