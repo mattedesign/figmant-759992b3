@@ -63,9 +63,18 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
   const [sortBy, setSortBy] = useState('most_popular');
   const [previewTemplate, setPreviewTemplate] = useState(null);
 
-  const handleTemplateSelect = (templateId: string) => {
+  const handleTemplateSelect = (templateId: string, event?: React.MouseEvent) => {
+    // Prevent any default behavior and event bubbling
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    console.log('🎯 Template selected in wizard:', templateId);
+    
     const template = promptTemplates.find(t => t.id === templateId);
     if (template) {
+      // Only update wizard state - no navigation
       setStepData(prev => ({
         ...prev,
         selectedType: templateId,
@@ -76,10 +85,18 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
           templateTitle: template.title
         }
       }));
+      
+      console.log('✅ Template selection updated in wizard state');
     }
   };
 
-  const handlePreviewTemplate = (template: any) => {
+  const handlePreviewTemplate = (template: any, event?: React.MouseEvent) => {
+    // Prevent event bubbling to template card
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
     setPreviewTemplate(template);
   };
 
@@ -253,7 +270,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                   className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] min-h-0 relative group ${
                     isSelected ? 'border-2 border-blue-500 bg-blue-50' : 'hover:border-gray-300'
                   }`}
-                  onClick={() => handleTemplateSelect(template.id)}
+                  onClick={(e) => handleTemplateSelect(template.id, e)}
                 >
                   <CardHeader>
                     <div className="flex items-center justify-between mb-2">
@@ -274,10 +291,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
                         variant="ghost"
                         size="sm"
                         className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handlePreviewTemplate(template);
-                        }}
+                        onClick={(e) => handlePreviewTemplate(template, e)}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -335,7 +349,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
           template={previewTemplate}
           isOpen={!!previewTemplate}
           onClose={() => setPreviewTemplate(null)}
-          onSelectTemplate={handleTemplateSelect}
+          onSelectTemplate={(templateId) => handleTemplateSelect(templateId)}
         />
       )}
     </div>
