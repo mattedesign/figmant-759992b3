@@ -5,11 +5,10 @@
  */
 
 export const navigationMigrations = {
-  // Analysis routes
-  'chat': 'competitor-analysis',
-  'analysis': 'competitor-analysis',
+  // Legacy chat routes -> analysis (main analysis page)
+  'chat': 'analysis',
   
-  // Wizard routes
+  // Legacy wizard routes -> Wizard Analysis (direct to stepped process)
   'wizard': 'wizard-analysis',
   
   // Premium analysis routes
@@ -21,8 +20,8 @@ export const navigationMigrations = {
   // Search routes
   'search': 'templates',
   
-  // Ensure correct mapping for existing routes
-  'competitor-analysis': 'competitor-analysis',
+  // Ensure correct mapping for existing routes (no migration needed)
+  'analysis': 'analysis',
   'wizard-analysis': 'wizard-analysis',
   'premium-analysis': 'premium-analysis',
   'dashboard': 'dashboard',

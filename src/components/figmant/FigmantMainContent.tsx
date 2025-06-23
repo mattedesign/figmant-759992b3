@@ -47,8 +47,8 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
       case 'insights':
         return <InsightsPage activeSection={activeSection} onSectionChange={setActiveSection} user={undefined} />;
       
-      case 'competitor-analysis':
-        // UC-024 - AI Competitor Analysis (Chat Interface)
+      case 'analysis':
+        // Main analysis page (what menu "Analysis" points to) - UC-024 AI Competitor Analysis
         return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
       
       case 'wizard-analysis':
@@ -87,12 +87,8 @@ export const FigmantMainContent: React.FC<FigmantMainContentProps> = ({
         return <SearchPage />;
       
       // Legacy Routes - Redirect with proper content
-      case 'analysis':
-        // Legacy analysis route -> Competitor Analysis
-        return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
-      
       case 'chat':
-        // Legacy chat route -> Competitor Analysis
+        // Legacy chat route -> Main Analysis (UC-024 AI Competitor Analysis)
         return <ChatPage selectedTemplate={location.state?.selectedTemplate} />;
       
       case 'wizard':

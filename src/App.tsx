@@ -44,7 +44,7 @@ const App: React.FC = () => {
                   
                   {/* Legacy Routes - Redirect to Figmant */}
                   <Route path="/dashboard/*" element={<Navigate to="/figmant" replace />} />
-                  <Route path="/analysis/*" element={<Navigate to="/figmant/competitor-analysis" replace />} />
+                  <Route path="/competitor-analysis/*" element={<Navigate to="/figmant/analysis" replace />} />
                   
                   {/* Catch All - Redirect to Figmant */}
                   <Route path="*" element={<Navigate to="/figmant" replace />} />
