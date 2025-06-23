@@ -26,60 +26,165 @@ export const Step4AnalysisResults: React.FC<StepProps> = ({
   const premiumAnalysis = usePremiumAnalysisSubmission();
   const { selectedTemplate } = useTemplateSelection(stepData.selectedType);
 
+  // 🔍 EXTENSIVE DEBUGGING: Log component initialization
+  console.log('🧙 Step4AnalysisResults COMPONENT INIT:', {
+    currentStep,
+    totalSteps,
+    processingState,
+    stepData: {
+      selectedType: stepData.selectedType,
+      projectName: stepData.projectName,
+      analysisGoals: stepData.analysisGoals,
+      contextualDataKeys: Object.keys(stepData.contextualData || {}),
+      contextualDataValues: stepData.contextualData,
+      uploadedFilesCount: stepData.uploadedFiles?.length || 0,
+      customPrompt: stepData.customPrompt,
+      hasReferenceLinks: stepData.referenceLinks?.length > 0
+    },
+    selectedTemplate: selectedTemplate ? {
+      id: selectedTemplate.id,
+      title: selectedTemplate.title,
+      category: selectedTemplate.category,
+      hasContextualFields: selectedTemplate.contextual_fields?.length > 0,
+      contextualFieldsCount: selectedTemplate.contextual_fields?.length || 0,
+      promptLength: selectedTemplate.original_prompt?.length || 0
+    } : null,
+    premiumAnalysisState: {
+      isLoading: premiumAnalysis.isLoading,
+      isError: premiumAnalysis.isError,
+      isSuccess: premiumAnalysis.isSuccess,
+      hasData: !!premiumAnalysis.data
+    }
+  });
+
   const constructEnhancedPrompt = () => {
+    console.log('🔍 CONSTRUCTING ENHANCED PROMPT START');
+    
     if (!selectedTemplate) {
-      console.warn('No selected template found, using fallback prompt');
+      console.warn('❌ No selected template found, using fallback prompt');
       return `Analyze this ${stepData.selectedType} design and provide comprehensive insights.`;
     }
     
-    console.log('🔍 Constructing enhanced prompt with template:', selectedTemplate.title);
+    console.log('🔍 Enhanced prompt construction with template:', {
+      templateId: selectedTemplate.id,
+      templateTitle: selectedTemplate.title,
+      originalPromptLength: selectedTemplate.original_prompt?.length || 0,
+      contextualFieldsCount: selectedTemplate.contextual_fields?.length || 0,
+      contextualFieldsData: selectedTemplate.contextual_fields
+    });
     
     let enhancedPrompt = selectedTemplate.original_prompt;
     
     // Replace template variables with contextual data
     if (selectedTemplate.contextual_fields && selectedTemplate.contextual_fields.length > 0) {
-      console.log('🔍 Processing contextual fields:', selectedTemplate.contextual_fields.length);
+      console.log('🔍 Processing contextual fields:', {
+        fieldsCount: selectedTemplate.contextual_fields.length,
+        availableContextData: stepData.contextualData,
+        contextDataKeys: Object.keys(stepData.contextualData || {})
+      });
       
       selectedTemplate.contextual_fields.forEach(field => {
         const value = stepData.contextualData?.[field.id] || '';
         const placeholder = `{{${field.id}}}`;
         
+        console.log('🔍 Processing field:', {
+          fieldId: field.id,
+          fieldLabel: field.label,
+          placeholder,
+          value,
+          hasPlaceholderInPrompt: enhancedPrompt.includes(placeholder)
+        });
+        
         if (enhancedPrompt.includes(placeholder)) {
           enhancedPrompt = enhancedPrompt.replace(new RegExp(`\\{\\{${field.id}\\}\\}`, 'g'), value);
-          console.log(`🔍 Replaced ${placeholder} with: ${value}`);
+          console.log(`✅ Replaced ${placeholder} with: ${value}`);
+        } else {
+          console.log(`⚠️ Placeholder ${placeholder} not found in prompt`);
         }
       });
+    } else {
+      console.log('ℹ️ No contextual fields to process');
     }
     
     // Add context about uploaded files
     if (stepData.uploadedFiles?.length) {
-      enhancedPrompt += `\n\nAnalyze the uploaded files: ${stepData.uploadedFiles.map(f => f.name).join(', ')}`;
-      console.log('🔍 Added file context for', stepData.uploadedFiles.length, 'files');
+      const fileContext = `\n\nAnalyze the uploaded files: ${stepData.uploadedFiles.map(f => f.name).join(', ')}`;
+      enhancedPrompt += fileContext;
+      console.log('🔍 Added file context:', {
+        filesCount: stepData.uploadedFiles.length,
+        fileNames: stepData.uploadedFiles.map(f => f.name),
+        addedContext: fileContext
+      });
     }
     
     // Add custom prompt if provided
     if (stepData.customPrompt) {
-      enhancedPrompt += `\n\nAdditional Context: ${stepData.customPrompt}`;
-      console.log('🔍 Added custom prompt context');
+      const customContext = `\n\nAdditional Context: ${stepData.customPrompt}`;
+      enhancedPrompt += customContext;
+      console.log('🔍 Added custom prompt context:', {
+        customPromptLength: stepData.customPrompt.length,
+        addedContext: customContext
+      });
     }
     
-    console.log('🔍 Enhanced prompt constructed, length:', enhancedPrompt.length);
+    console.log('🔍 ENHANCED PROMPT CONSTRUCTION COMPLETE:', {
+      originalLength: selectedTemplate.original_prompt?.length || 0,
+      finalLength: enhancedPrompt.length,
+      hasFileContext: !!stepData.uploadedFiles?.length,
+      hasCustomContext: !!stepData.customPrompt,
+      finalPromptPreview: enhancedPrompt.substring(0, 300) + '...'
+    });
+    
     return enhancedPrompt;
   };
 
   useEffect(() => {
+    console.log('🔍 ANALYSIS TRIGGER EFFECT CALLED:', {
+      processingState,
+      hasSelectedType: !!stepData.selectedType,
+      hasSelectedTemplate: !!selectedTemplate,
+      shouldTriggerAnalysis: processingState === 'processing' && stepData.selectedType && selectedTemplate
+    });
+
     // Start the actual analysis when component mounts
     if (processingState === 'processing' && stepData.selectedType && selectedTemplate) {
-      console.log('🧙 Starting enhanced premium analysis with template data:', {
-        templateId: selectedTemplate.id,
-        templateTitle: selectedTemplate.title,
-        hasContextualFields: selectedTemplate.contextual_fields?.length > 0,
-        contextualDataKeys: Object.keys(stepData.contextualData || {}),
-        uploadedFilesCount: stepData.uploadedFiles?.length || 0
+      console.log('🧙 STARTING ENHANCED PREMIUM ANALYSIS:', {
+        templateData: {
+          id: selectedTemplate.id,
+          title: selectedTemplate.title,
+          category: selectedTemplate.category,
+          hasContextualFields: selectedTemplate.contextual_fields?.length > 0,
+          contextualFieldsCount: selectedTemplate.contextual_fields?.length || 0
+        },
+        stepDataSummary: {
+          selectedType: stepData.selectedType,
+          projectName: stepData.projectName,
+          contextualDataKeys: Object.keys(stepData.contextualData || {}),
+          uploadedFilesCount: stepData.uploadedFiles?.length || 0,
+          hasCustomPrompt: !!stepData.customPrompt
+        }
       });
       
       const enhancedPrompt = constructEnhancedPrompt();
       
+      console.log('🔍 CALLING premiumAnalysis.mutate WITH:', {
+        stepDataPayload: {
+          selectedType: stepData.selectedType,
+          projectName: stepData.projectName,
+          analysisGoals: stepData.analysisGoals,
+          contextualData: stepData.contextualData,
+          uploadedFilesCount: stepData.uploadedFiles?.length || 0,
+          customPromptReplaced: enhancedPrompt !== stepData.customPrompt,
+          enhancedPromptLength: enhancedPrompt.length
+        },
+        selectedPromptPayload: {
+          id: selectedTemplate.id,
+          title: selectedTemplate.title,
+          category: selectedTemplate.category,
+          original_prompt_length: selectedTemplate.original_prompt?.length || 0
+        }
+      });
+
       premiumAnalysis.mutate({
         stepData: {
           ...stepData,
@@ -87,13 +192,37 @@ export const Step4AnalysisResults: React.FC<StepProps> = ({
         },
         selectedPrompt: selectedTemplate
       });
+    } else {
+      console.log('🔍 Analysis NOT triggered because:', {
+        processingStateIsProcessing: processingState === 'processing',
+        hasSelectedType: !!stepData.selectedType,
+        hasSelectedTemplate: !!selectedTemplate,
+        selectedType: stepData.selectedType,
+        selectedTemplateId: selectedTemplate?.id
+      });
     }
   }, [processingState, stepData.selectedType, selectedTemplate]);
 
   // Handle analysis completion
   useEffect(() => {
+    console.log('🔍 ANALYSIS COMPLETION EFFECT:', {
+      isSuccess: premiumAnalysis.isSuccess,
+      hasData: !!premiumAnalysis.data,
+      data: premiumAnalysis.data
+    });
+
     if (premiumAnalysis.isSuccess && premiumAnalysis.data) {
-      console.log('🧙 Premium analysis completed:', premiumAnalysis.data);
+      console.log('🧙 PREMIUM ANALYSIS COMPLETED SUCCESSFULLY:', {
+        result: {
+          hasAnalysis: !!premiumAnalysis.data.analysis,
+          analysisLength: premiumAnalysis.data.analysis?.length || 0,
+          analysisPreview: premiumAnalysis.data.analysis?.substring(0, 200) || 'No analysis',
+          savedAnalysisId: premiumAnalysis.data.savedAnalysisId,
+          debugInfo: premiumAnalysis.data.debugInfo,
+          fullDataStructure: premiumAnalysis.data
+        }
+      });
+      
       setAnalysisResult(premiumAnalysis.data);
       setProcessingState('complete');
     }
@@ -101,8 +230,19 @@ export const Step4AnalysisResults: React.FC<StepProps> = ({
 
   // Handle analysis error
   useEffect(() => {
+    console.log('🔍 ANALYSIS ERROR EFFECT:', {
+      isError: premiumAnalysis.isError,
+      error: premiumAnalysis.error
+    });
+
     if (premiumAnalysis.isError) {
-      console.error('🧙 Premium analysis failed:', premiumAnalysis.error);
+      console.error('🧙 PREMIUM ANALYSIS FAILED:', {
+        error: premiumAnalysis.error,
+        errorMessage: premiumAnalysis.error?.message,
+        errorStack: premiumAnalysis.error?.stack,
+        fullError: premiumAnalysis.error
+      });
+      
       setError(premiumAnalysis.error?.message || 'Analysis failed');
       setProcessingState('error');
     }
@@ -169,6 +309,11 @@ export const Step4AnalysisResults: React.FC<StepProps> = ({
 
   // Show error if no template is found
   if (stepData.selectedType && !selectedTemplate) {
+    console.error('❌ TEMPLATE NOT FOUND ERROR:', {
+      selectedType: stepData.selectedType,
+      hasSelectedTemplate: !!selectedTemplate
+    });
+    
     return (
       <div className="w-full min-h-full">
         <div className="w-full">
@@ -190,6 +335,8 @@ export const Step4AnalysisResults: React.FC<StepProps> = ({
 
   // PROCESSING STATE
   if (processingState === 'processing') {
+    console.log('🔍 RENDERING PROCESSING STATE');
+    
     return (
       <div className="w-full min-h-full">
         <div className="w-full">
@@ -212,6 +359,8 @@ export const Step4AnalysisResults: React.FC<StepProps> = ({
 
   // ERROR STATE
   if (processingState === 'error') {
+    console.log('🔍 RENDERING ERROR STATE:', { error });
+    
     return (
       <div className="w-full min-h-full">
         <div className="w-full">
@@ -232,6 +381,11 @@ export const Step4AnalysisResults: React.FC<StepProps> = ({
   }
 
   // COMPLETE STATE - show actual results
+  console.log('🔍 RENDERING COMPLETE STATE:', {
+    hasAnalysisResult: !!analysisResult,
+    analysisResultStructure: analysisResult
+  });
+
   return (
     <div className="w-full min-h-full">
       <div className="w-full text-center mb-8">
