@@ -4,8 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Upload, Link, Image, FileText, X } from 'lucide-react';
+import { Upload, Link, Image, FileText, X, RefreshCw } from 'lucide-react';
 import { StepProps } from '../types';
+import { ScreenshotDisplay } from '@/components/figmant/pages/analysis/components/ScreenshotDisplay';
+import { AttachmentCard } from '@/components/figmant/analysis/AttachmentCard';
+import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
+import { useToast } from '@/hooks/use-toast';
+import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
 export const Step2SmartUpload: React.FC<StepProps> = ({
   stepData,
@@ -18,7 +23,9 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [urls, setUrls] = useState<string[]>(stepData.referenceLinks || ['']);
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -31,6 +38,19 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
   const handleFileUpload = async (files: File[]) => {
     const currentFiles = stepData.uploadedFiles || [];
     const newFiles = [...currentFiles, ...files];
+    
+    // Create file attachments
+    const newAttachments = files.map(file => ({
+      id: `file-${Date.now()}-${Math.random()}`,
+      type: 'file' as const,
+      name: file.name,
+      file: file,
+      status: 'uploaded' as const,
+      fileSize: file.size,
+      thumbnailUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
+    }));
+
+    setAttachments(prev => [...prev, ...newAttachments]);
     
     // Also update the uploads structure for backward compatibility
     const currentUploads = stepData.uploads || { images: [], urls: [], files: [], screenshots: [] };
@@ -58,6 +78,230 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     }
   };
 
+  const handleUrlAdd = async (url: string) => {
+    if (!url.trim()) return;
+
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Invalid URL",
+        description: "Please enter a valid URL starting with http:// or https://",
+      });
+      return;
+    }
+
+    // Create URL attachment
+    const urlAttachment: ChatAttachment = {
+      id: `url-${Date.now()}-${Math.random()}`,
+      type: 'url',
+      name: new URL(url).hostname,
+      url: url,
+      status: 'processing',
+      metadata: {
+        screenshots: {
+          desktop: { success: false, url },
+          mobile: { success: false, url }
+        }
+      }
+    };
+
+    setAttachments(prev => [...prev, urlAttachment]);
+
+    toast({
+      title: "Capturing Screenshots",
+      description: `Starting screenshot capture for ${urlAttachment.name}...`,
+    });
+
+    // Capture screenshots
+    try {
+      const screenshotResults = await ScreenshotCaptureService.captureCompetitorSet(
+        [url],
+        true, // desktop
+        true  // mobile
+      );
+
+      console.log('📸 Screenshot results:', screenshotResults);
+
+      const updatedMetadata = {
+        screenshots: {
+          desktop: {
+            success: screenshotResults.desktop?.[0]?.success || false,
+            url: url,
+            screenshotUrl: screenshotResults.desktop?.[0]?.screenshotUrl,
+            thumbnailUrl: screenshotResults.desktop?.[0]?.thumbnailUrl,
+            error: screenshotResults.desktop?.[0]?.success === false ? 
+              (screenshotResults.desktop?.[0]?.error || 'Desktop screenshot failed') : undefined
+          },
+          mobile: {
+            success: screenshotResults.mobile?.[0]?.success || false,
+            url: url,
+            screenshotUrl: screenshotResults.mobile?.[0]?.screenshotUrl,
+            thumbnailUrl: screenshotResults.mobile?.[0]?.thumbnailUrl,
+            error: screenshotResults.mobile?.[0]?.success === false ? 
+              (screenshotResults.mobile?.[0]?.error || 'Mobile screenshot failed') : undefined
+          }
+        }
+      };
+
+      setAttachments(prev => prev.map(att => 
+        att.id === urlAttachment.id 
+          ? { ...att, status: 'uploaded' as const, metadata: updatedMetadata }
+          : att
+      ));
+
+      const desktopSuccess = screenshotResults.desktop?.[0]?.success;
+      const mobileSuccess = screenshotResults.mobile?.[0]?.success;
+
+      if (desktopSuccess || mobileSuccess) {
+        toast({
+          title: "Screenshots Captured",
+          description: `Successfully captured ${desktopSuccess && mobileSuccess ? 'desktop and mobile' : desktopSuccess ? 'desktop' : 'mobile'} screenshots.`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Screenshot Failed",
+          description: `Unable to capture screenshots for ${urlAttachment.name}. The website will still be analyzed.`,
+        });
+      }
+
+    } catch (error) {
+      console.error('📸 Screenshot capture error:', error);
+      
+      setAttachments(prev => prev.map(att => 
+        att.id === urlAttachment.id 
+          ? { 
+              ...att, 
+              status: 'error' as const, 
+              error: 'Screenshot capture failed',
+              metadata: {
+                screenshots: {
+                  desktop: { success: false, url, error: 'Capture failed' },
+                  mobile: { success: false, url, error: 'Capture failed' }
+                }
+              }
+            }
+          : att
+      ));
+
+      toast({
+        variant: "destructive",
+        title: "Screenshot Failed",
+        description: `Unable to capture screenshots for ${urlAttachment.name}. The website will still be analyzed.`,
+      });
+    }
+  };
+
+  const handleRetryScreenshot = async (attachment: ChatAttachment) => {
+    if (attachment.type !== 'url' || !attachment.url) return;
+    
+    console.log('🔄 Retrying screenshot for:', attachment.url);
+    
+    // Update status to processing
+    setAttachments(prev => prev.map(att => 
+      att.id === attachment.id 
+        ? { 
+            ...att,
+            status: 'processing' as const,
+            metadata: {
+              ...attachment.metadata,
+              screenshots: {
+                desktop: { success: false, url: attachment.url },
+                mobile: { success: false, url: attachment.url }
+              }
+            }
+          }
+        : att
+    ));
+    
+    toast({
+      title: "Retrying Screenshot",
+      description: `Capturing new screenshots for ${new URL(attachment.url).hostname}...`,
+    });
+    
+    try {
+      const screenshotResults = await ScreenshotCaptureService.captureCompetitorSet(
+        [attachment.url],
+        true, // desktop
+        true  // mobile
+      );
+      
+      console.log('🔄 Retry screenshot results:', screenshotResults);
+      
+      const updatedMetadata = {
+        screenshots: {
+          desktop: {
+            success: screenshotResults.desktop?.[0]?.success || false,
+            url: attachment.url,
+            screenshotUrl: screenshotResults.desktop?.[0]?.screenshotUrl,
+            thumbnailUrl: screenshotResults.desktop?.[0]?.thumbnailUrl,
+            error: screenshotResults.desktop?.[0]?.success === false ? 
+              (screenshotResults.desktop?.[0]?.error || 'Desktop screenshot failed') : undefined
+          },
+          mobile: {
+            success: screenshotResults.mobile?.[0]?.success || false,
+            url: attachment.url,
+            screenshotUrl: screenshotResults.mobile?.[0]?.screenshotUrl,
+            thumbnailUrl: screenshotResults.mobile?.[0]?.thumbnailUrl,
+            error: screenshotResults.mobile?.[0]?.success === false ? 
+              (screenshotResults.mobile?.[0]?.error || 'Mobile screenshot failed') : undefined
+          }
+        }
+      };
+      
+      setAttachments(prev => prev.map(att => 
+        att.id === attachment.id 
+          ? { ...att, status: 'uploaded' as const, metadata: updatedMetadata }
+          : att
+      ));
+      
+      const desktopSuccess = screenshotResults.desktop?.[0]?.success;
+      const mobileSuccess = screenshotResults.mobile?.[0]?.success;
+      
+      if (desktopSuccess || mobileSuccess) {
+        toast({
+          title: "Screenshots Updated",
+          description: `Successfully captured ${desktopSuccess && mobileSuccess ? 'desktop and mobile' : desktopSuccess ? 'desktop' : 'mobile'} screenshots.`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Retry Failed",
+          description: `Still unable to capture screenshots for ${new URL(attachment.url).hostname}.`,
+        });
+      }
+      
+    } catch (error) {
+      console.error('🔄 Screenshot retry error:', error);
+      
+      setAttachments(prev => prev.map(att => 
+        att.id === attachment.id 
+          ? { 
+              ...att,
+              status: 'error' as const,
+              error: 'Screenshot retry failed',
+              metadata: {
+                ...attachment.metadata,
+                screenshots: {
+                  desktop: { success: false, url: attachment.url, error: 'Retry failed' },
+                  mobile: { success: false, url: attachment.url, error: 'Retry failed' }
+                }
+              }
+            }
+          : att
+      ));
+      
+      toast({
+        variant: "destructive",
+        title: "Retry Failed",
+        description: `Unable to capture screenshots. The website will still be analyzed.`,
+      });
+    }
+  };
+
   const handleUrlChange = (index: number, value: string) => {
     const updatedUrls = [...urls];
     updatedUrls[index] = value;
@@ -70,6 +314,13 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
         urls: updatedUrls.filter(url => url.trim() !== '')
       }
     }));
+  };
+
+  const handleUrlSubmit = (index: number) => {
+    const url = urls[index];
+    if (url.trim()) {
+      handleUrlAdd(url.trim());
+    }
   };
 
   const addUrl = () => {
@@ -116,12 +367,16 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     }));
   };
 
+  const removeAttachment = (id: string) => {
+    setAttachments(prev => prev.filter(att => att.id !== id));
+  };
+
   const handleChooseFiles = () => {
     fileInputRef.current?.click();
   };
 
   const totalFiles = stepData.uploadedFiles?.length || 0;
-  const hasContent = totalFiles > 0 || urls.some(url => url.trim() !== '');
+  const hasContent = totalFiles > 0 || urls.some(url => url.trim() !== '') || attachments.length > 0;
 
   return (
     <div className="w-full min-h-full">
@@ -187,8 +442,22 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
                     placeholder="https://example.com"
                     value={url}
                     onChange={(e) => handleUrlChange(index, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleUrlSubmit(index);
+                      }
+                    }}
                     className="flex-1"
                   />
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleUrlSubmit(index)}
+                    disabled={!url.trim()}
+                    type="button"
+                  >
+                    Add
+                  </Button>
                   {urls.length > 1 && (
                     <Button 
                       variant="ghost" 
@@ -212,6 +481,89 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
             </div>
           </CardContent>
         </Card>
+
+        {/* Preview Section */}
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Preview</h3>
+            {attachments.length > 0 && (
+              <span className="text-sm text-gray-500">
+                {attachments.length} item{attachments.length !== 1 ? 's' : ''} added
+              </span>
+            )}
+          </div>
+          
+          {attachments.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+              <div className="text-gray-400 mb-2">
+                <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 16m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <p className="text-gray-500 font-medium">No files or URLs added yet</p>
+              <p className="text-gray-400 text-sm mt-1">
+                Upload files or add URLs above to see previews here
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {attachments.map((attachment) => (
+                <div key={attachment.id} className="border rounded-lg p-4 bg-white shadow-sm">
+                  {attachment.status === 'processing' && (
+                    <div className="flex items-center space-x-3 text-blue-600 mb-3">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      <span className="text-sm font-medium">
+                        {attachment.type === 'url' ? 'Capturing screenshots...' : 'Processing file...'}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {attachment.type === 'url' && attachment.metadata?.screenshots ? (
+                    <ScreenshotDisplay
+                      attachment={attachment}
+                      className="w-full"
+                    />
+                  ) : attachment.type === 'file' ? (
+                    <AttachmentCard
+                      attachment={{
+                        id: attachment.id,
+                        name: attachment.name,
+                        type: 'file',
+                        thumbnailUrl: attachment.thumbnailUrl,
+                        file_size: attachment.fileSize
+                      }}
+                      showDownload={false}
+                    />
+                  ) : null}
+                  
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center gap-2">
+                      {attachment.type === 'url' && attachment.status === 'error' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRetryScreenshot(attachment)}
+                          className="flex items-center gap-1"
+                        >
+                          <RefreshCw className="h-3 w-3" />
+                          Retry Screenshots
+                        </Button>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeAttachment(attachment.id)}
+                      className="text-gray-400 hover:text-destructive hover:bg-red-50"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Upload Summary */}
         {hasContent && (
