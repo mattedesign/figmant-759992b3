@@ -10,6 +10,7 @@ interface WizardNavigationProps {
   onPreviousStep: () => void;
   onNextStep: () => void;
   canProceed: boolean;
+  hideNavigation?: boolean;
 }
 
 export const WizardNavigation: React.FC<WizardNavigationProps> = ({
@@ -17,7 +18,8 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
   totalSteps,
   onPreviousStep,
   onNextStep,
-  canProceed
+  canProceed,
+  hideNavigation = false
 }) => {
   const isMobile = useIsMobile();
   
@@ -25,13 +27,14 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
     currentStep,
     totalSteps,
     canProceed,
+    hideNavigation,
     isOnFinalStep: currentStep === 4,
     isProcessingStep: currentStep === 5,
     isMobile
   });
 
-  // Don't show navigation if we're past the total steps OR on processing step
-  if (currentStep > totalSteps || currentStep === 5) return null;
+  // Don't show navigation if hidden, we're past the total steps OR on processing step
+  if (hideNavigation || currentStep > totalSteps || currentStep === 5) return null;
   
   const isOnFinalStep = currentStep === 4;
   

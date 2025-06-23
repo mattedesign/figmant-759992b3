@@ -1,7 +1,7 @@
 
 export interface StepData {
   selectedType: string;
-  selectedTemplate?: any; // Add template object
+  selectedTemplate?: any;
   projectName: string;
   analysisGoals: string;
   contextualData: Record<string, any>;
@@ -15,7 +15,7 @@ export interface StepData {
     files: File[];
     screenshots: any[];
   };
-  attachments?: ChatAttachment[]; // Add attachments for the new Step2
+  attachments?: WizardChatAttachment[];
 }
 
 export interface StepProps {
@@ -23,7 +23,8 @@ export interface StepProps {
   setStepData: React.Dispatch<React.SetStateAction<StepData>>;
   currentStep: number;
   totalSteps: number;
-  // Remove navigation props since WizardNavigation handles them
+  onNextStep?: () => void;
+  onPreviousStep?: () => void;
 }
 
 export interface Stakeholder {
@@ -38,15 +39,36 @@ export interface AnalysisType {
   icon: React.ComponentType<any>;
 }
 
-// Add ChatAttachment interface if not imported
-export interface ChatAttachment {
+// Unified ChatAttachment interface for the wizard
+export interface WizardChatAttachment {
   id: string;
   type: 'file' | 'url';
   name: string;
   file?: File;
   url?: string;
-  status: 'uploading' | 'uploaded' | 'processing' | 'error';
-  thumbnailUrl?: string;
+  uploadPath?: string;
+  status: 'pending' | 'processing' | 'uploading' | 'uploaded' | 'error';
   errorMessage?: string;
-  metadata?: any;
+  processingInfo?: any;
+  metadata?: {
+    screenshots?: {
+      desktop?: {
+        success: boolean;
+        url: string;
+        screenshotUrl?: string;
+        thumbnailUrl?: string;
+        error?: string;
+      };
+      mobile?: {
+        success: boolean;
+        url: string;
+        screenshotUrl?: string;
+        thumbnailUrl?: string;
+        error?: string;
+      };
+    };
+    fileSize?: number;
+    thumbnailUrl?: string;
+  };
+  thumbnailUrl?: string;
 }

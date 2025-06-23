@@ -4,11 +4,12 @@ import { Step1SelectAnalysisType } from './steps/Step1SelectAnalysisType';
 import { Step2SmartUpload } from './steps/Step2SmartUpload';
 import { Step6CustomPrompt } from './steps/Step6CustomPrompt';
 import { Step4AnalysisResults } from './steps/Step4AnalysisResults';
-import { StepProps } from './types';
-import { ChatAttachment } from '@/components/design/DesignChatInterface';
+import { StepProps, WizardChatAttachment } from './types';
 
 interface StepRendererProps extends StepProps {
   onCreditCostChange?: (creditCost: number) => void;
+  onNextStep: () => void;
+  onPreviousStep: () => void;
 }
 
 export const StepRenderer: React.FC<StepRendererProps> = ({
@@ -16,7 +17,9 @@ export const StepRenderer: React.FC<StepRendererProps> = ({
   setStepData,
   currentStep,
   totalSteps,
-  onCreditCostChange
+  onCreditCostChange,
+  onNextStep,
+  onPreviousStep
 }) => {
   const renderStepContent = () => {
     switch (currentStep) {
@@ -27,13 +30,15 @@ export const StepRenderer: React.FC<StepRendererProps> = ({
             setStepData={setStepData}
             currentStep={currentStep}
             totalSteps={totalSteps}
+            onNextStep={onNextStep}
+            onPreviousStep={onPreviousStep}
           />
         );
       case 2:
         return (
           <Step2SmartUpload 
             attachments={stepData.attachments || []}
-            onAttachmentAdd={(attachment: ChatAttachment) => {
+            onAttachmentAdd={(attachment: WizardChatAttachment) => {
               setStepData(prev => ({
                 ...prev,
                 attachments: [...(prev.attachments || []), attachment]
@@ -45,7 +50,7 @@ export const StepRenderer: React.FC<StepRendererProps> = ({
                 attachments: (prev.attachments || []).filter(att => att.id !== id)
               }));
             }}
-            onAttachmentUpdate={(id: string, updates: Partial<ChatAttachment>) => {
+            onAttachmentUpdate={(id: string, updates: Partial<WizardChatAttachment>) => {
               setStepData(prev => ({
                 ...prev,
                 attachments: (prev.attachments || []).map(att => 
@@ -53,6 +58,8 @@ export const StepRenderer: React.FC<StepRendererProps> = ({
                 )
               }));
             }}
+            onPrevious={onPreviousStep}
+            onNext={onNextStep}
           />
         );
       case 3:
@@ -62,6 +69,8 @@ export const StepRenderer: React.FC<StepRendererProps> = ({
             setStepData={setStepData}
             currentStep={currentStep}
             totalSteps={totalSteps}
+            onNextStep={onNextStep}
+            onPreviousStep={onPreviousStep}
           />
         );
       case 4:

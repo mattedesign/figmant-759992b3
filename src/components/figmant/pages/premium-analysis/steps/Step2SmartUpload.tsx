@@ -7,11 +7,11 @@ import { Upload, File, FileText, Image as ImageIcon, Globe, X, Loader2, Check, P
 import { ScreenshotDisplay } from '@/components/figmant/pages/analysis/components/ScreenshotDisplay';
 import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptureService';
 import { useToast } from '@/hooks/use-toast';
-import { ChatAttachment } from '@/components/design/DesignChatInterface';
+import { WizardChatAttachment } from '../types';
 
 // File Preview Component
 const FilePreviewCard: React.FC<{
-  attachment: ChatAttachment;
+  attachment: WizardChatAttachment;
   onDelete: () => void;
 }> = ({ attachment, onDelete }) => {
   const getPreviewUrl = () => {
@@ -75,7 +75,7 @@ const FilePreviewCard: React.FC<{
 
 // Website Preview Component
 const WebsitePreviewCard: React.FC<{
-  attachment: ChatAttachment;
+  attachment: WizardChatAttachment;
   onDelete: () => void;
   onRetry: () => void;
 }> = ({ attachment, onDelete, onRetry }) => {
@@ -126,19 +126,23 @@ const WebsitePreviewCard: React.FC<{
   );
 };
 
-// Updated Props Interface - Remove navigation props
+// Updated Props Interface with navigation
 interface Step2SmartUploadProps {
-  attachments: ChatAttachment[];
-  onAttachmentAdd: (attachment: ChatAttachment) => void;
+  attachments: WizardChatAttachment[];
+  onAttachmentAdd: (attachment: WizardChatAttachment) => void;
   onAttachmentRemove: (id: string) => void;
-  onAttachmentUpdate: (id: string, updates: Partial<ChatAttachment>) => void;
+  onAttachmentUpdate: (id: string, updates: Partial<WizardChatAttachment>) => void;
+  onPrevious: () => void;
+  onNext: () => void;
 }
 
 export const Step2SmartUpload: React.FC<Step2SmartUploadProps> = ({
   attachments,
   onAttachmentAdd,
   onAttachmentRemove,
-  onAttachmentUpdate
+  onAttachmentUpdate,
+  onPrevious,
+  onNext
 }) => {
   console.log('🔍 Step2SmartUpload rendered with attachments:', attachments);
   
@@ -159,7 +163,7 @@ export const Step2SmartUpload: React.FC<Step2SmartUploadProps> = ({
   const handleFileUpload = async (files: File[]) => {
     console.log('📁 File upload called with files:', files.length);
     
-    const newAttachments: ChatAttachment[] = files.map(file => ({
+    const newAttachments: WizardChatAttachment[] = files.map(file => ({
       id: `file-${Date.now()}-${Math.random()}`,
       type: 'file' as const,
       name: file.name,
@@ -189,7 +193,7 @@ export const Step2SmartUpload: React.FC<Step2SmartUploadProps> = ({
     fileInputRef.current?.click();
   };
 
-  const handleScreenshotCapture = async (attachment: ChatAttachment, url: string) => {
+  const handleScreenshotCapture = async (attachment: WizardChatAttachment, url: string) => {
     console.log('📸 Starting screenshot capture for:', url);
     
     try {
@@ -295,7 +299,7 @@ export const Step2SmartUpload: React.FC<Step2SmartUploadProps> = ({
 
     const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
     
-    const urlAttachment: ChatAttachment = {
+    const urlAttachment: WizardChatAttachment = {
       id: `url-${Date.now()}-${Math.random()}`,
       type: 'url',
       name: new URL(formattedUrl).hostname,
@@ -324,7 +328,7 @@ export const Step2SmartUpload: React.FC<Step2SmartUploadProps> = ({
     handleScreenshotCapture(urlAttachment, formattedUrl);
   };
 
-  const handleRetryScreenshot = async (attachment: ChatAttachment) => {
+  const handleRetryScreenshot = async (attachment: WizardChatAttachment) => {
     if (attachment.type !== 'url' || !attachment.url) return;
     
     onAttachmentUpdate(attachment.id, {
@@ -470,6 +474,23 @@ export const Step2SmartUpload: React.FC<Step2SmartUploadProps> = ({
               }
             </div>
           )}
+        </div>
+
+        {/* Navigation */}
+        <div className="flex justify-between pt-6 border-t border-gray-200">
+          <Button 
+            variant="outline" 
+            onClick={onPrevious}
+            className="flex items-center gap-2"
+          >
+            Previous
+          </Button>
+          <Button 
+            onClick={onNext}
+            className="bg-gray-900 hover:bg-gray-800 text-white"
+          >
+            Continue
+          </Button>
         </div>
 
         {/* Tips Section */}

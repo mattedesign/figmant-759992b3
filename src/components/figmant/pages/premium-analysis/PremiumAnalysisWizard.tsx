@@ -70,7 +70,7 @@ export const PremiumAnalysisWizard: React.FC = () => {
         </ScrollArea>
       </div>
       
-      {/* Fixed navigation footer - always visible */}
+      {/* Fixed navigation footer - conditionally hidden on Step 2 */}
       <div className="flex-shrink-0 bg-white border-t border-gray-200">
         <WizardNavigation
           currentStep={currentStep}
@@ -78,6 +78,7 @@ export const PremiumAnalysisWizard: React.FC = () => {
           onPreviousStep={handlePreviousStep}
           onNextStep={handleNextStep}
           canProceed={canProceedToNextStep()}
+          hideNavigation={currentStep === 2}
         />
       </div>
     </div>

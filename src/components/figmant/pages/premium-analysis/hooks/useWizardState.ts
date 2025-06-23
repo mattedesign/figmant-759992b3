@@ -10,7 +10,7 @@ export const useWizardState = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [stepData, setStepData] = useState<StepData>({
     selectedType: '',
-    selectedTemplate: undefined, // Add selectedTemplate
+    selectedTemplate: undefined,
     projectName: 'Untitled Analysis',
     analysisGoals: '',
     contextualData: {},
@@ -18,7 +18,7 @@ export const useWizardState = () => {
     customPrompt: '',
     stakeholders: [],
     referenceLinks: [''],
-    attachments: [], // Add attachments
+    attachments: [],
     uploads: {
       images: [],
       urls: [],

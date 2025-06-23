@@ -85,7 +85,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
           selectedTemplate: template,
           templateCategory: template.category,
           templateTitle: template.title,
-          contextualFields: template.contextual_fields || []
+          contextualFields: template.contextual_fields || template.contextFields || []
         }
       }));
       
