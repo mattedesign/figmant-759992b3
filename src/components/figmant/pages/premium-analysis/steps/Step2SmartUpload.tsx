@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,8 +9,8 @@ import { ScreenshotCaptureService } from '@/services/screenshot/screenshotCaptur
 import { useToast } from '@/hooks/use-toast';
 import { ChatAttachment } from '@/components/design/DesignChatInterface';
 
-// Compact File Preview Component
-const CompactFileCard: React.FC<{
+// File Preview Component
+const FilePreviewCard: React.FC<{
   attachment: ChatAttachment;
   onDelete: () => void;
 }> = ({ attachment, onDelete }) => {
@@ -34,7 +33,6 @@ const CompactFileCard: React.FC<{
 
   return (
     <div className="relative group aspect-square">
-      {/* File Preview/Icon */}
       <div className="w-full h-full border border-gray-200 rounded-lg overflow-hidden bg-white">
         {previewUrl ? (
           <img 
@@ -52,7 +50,6 @@ const CompactFileCard: React.FC<{
           </div>
         )}
         
-        {/* Status Overlay */}
         {attachment.status === 'processing' && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <Loader2 className="w-6 h-6 text-white animate-spin" />
@@ -60,7 +57,6 @@ const CompactFileCard: React.FC<{
         )}
       </div>
       
-      {/* Delete Button - Appears on Hover */}
       <Button
         variant="destructive"
         size="sm"
@@ -70,7 +66,6 @@ const CompactFileCard: React.FC<{
         <X className="h-3 w-3" />
       </Button>
       
-      {/* File Name Tooltip */}
       <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-xs p-1 truncate opacity-0 group-hover:opacity-100 transition-opacity">
         {attachment.name}
       </div>
@@ -78,8 +73,8 @@ const CompactFileCard: React.FC<{
   );
 };
 
-// Compact Website Preview Component
-const CompactWebsiteCard: React.FC<{
+// Website Preview Component
+const WebsitePreviewCard: React.FC<{
   attachment: ChatAttachment;
   onDelete: () => void;
   onRetry: () => void;
@@ -89,8 +84,7 @@ const CompactWebsiteCard: React.FC<{
   const hasDesktop = screenshots?.desktop?.success;
 
   return (
-    <div className="flex items-center space-x-3 p-2 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors group">
-      {/* Website Screenshot/Icon */}
+    <div className="flex items-center space-x-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors group">
       <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center flex-shrink-0">
         {hasDesktop && screenshots?.desktop?.screenshotUrl ? (
           <img 
@@ -103,7 +97,6 @@ const CompactWebsiteCard: React.FC<{
         )}
       </div>
       
-      {/* Website Info */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">
           {hostname}
@@ -121,7 +114,6 @@ const CompactWebsiteCard: React.FC<{
         )}
       </div>
       
-      {/* Delete Button */}
       <Button
         variant="ghost"
         size="sm"
@@ -145,6 +137,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [urlInput, setUrlInput] = useState<string>('');
+  const [fileInputKey, setFileInputKey] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -160,7 +153,6 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     const currentFiles = stepData.uploadedFiles || [];
     const newFiles = [...currentFiles, ...files];
     
-    // Create file attachments with proper ChatAttachment interface structure
     const newAttachments: ChatAttachment[] = files.map(file => ({
       id: `file-${Date.now()}-${Math.random()}`,
       type: 'file' as const,
@@ -174,7 +166,6 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
 
     setAttachments(prev => [...prev, ...newAttachments]);
     
-    // Also update the uploads structure for backward compatibility
     const currentUploads = stepData.uploads || { images: [], urls: [], files: [], screenshots: [] };
     const newUploads = { ...currentUploads };
     
@@ -191,20 +182,26 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
       uploadedFiles: newFiles,
       uploads: newUploads
     }));
+
+    // Reset file input to allow selecting same file again
+    setFileInputKey(prev => prev + 1);
   };
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
+    if (files && files.length > 0) {
       handleFileUpload(Array.from(files));
     }
+  };
+
+  const openFileDialog = () => {
+    fileInputRef.current?.click();
   };
 
   const handleAddUrl = async () => {
     const url = urlInput.trim();
     if (!url) return;
 
-    // Validate URL format
     try {
       new URL(url);
     } catch {
@@ -216,7 +213,6 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
       return;
     }
 
-    // Create URL attachment with proper ChatAttachment interface structure
     const urlAttachment: ChatAttachment = {
       id: `url-${Date.now()}-${Math.random()}`,
       type: 'url',
@@ -232,19 +228,18 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     };
 
     setAttachments(prev => [...prev, urlAttachment]);
-    setUrlInput(''); // Clear input after adding
+    setUrlInput('');
 
     toast({
       title: "Capturing Screenshots",
       description: `Starting screenshot capture for ${urlAttachment.name}...`,
     });
 
-    // Capture screenshots
     try {
       const screenshotResults = await ScreenshotCaptureService.captureCompetitorSet(
         [url],
-        true, // desktop
-        true  // mobile
+        true,
+        true
       );
 
       const updatedMetadata = {
@@ -320,7 +315,6 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
   const handleRetryScreenshot = async (attachment: ChatAttachment) => {
     if (attachment.type !== 'url' || !attachment.url) return;
     
-    // Update status to processing
     setAttachments(prev => prev.map(att => 
       att.id === attachment.id 
         ? { 
@@ -345,8 +339,8 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     try {
       const screenshotResults = await ScreenshotCaptureService.captureCompetitorSet(
         [attachment.url],
-        true, // desktop
-        true  // mobile
+        true,
+        true
       );
       
       const updatedMetadata = {
@@ -424,71 +418,69 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     setAttachments(prev => prev.filter(att => att.id !== id));
   };
 
-  const handleChooseFiles = () => {
-    fileInputRef.current?.click();
-  };
-
   return (
-    <div className="w-full min-h-full">
-      <div className="w-full">
-        <h2 className="text-3xl font-bold text-center mb-8">Upload Your Content</h2>
-        <p className="text-center text-gray-600 mb-8">
+    <div className="max-w-4xl mx-auto p-6">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*,.pdf,.sketch,.fig,.xd"
+        className="hidden"
+        onChange={handleFileSelect}
+        key={fileInputKey}
+      />
+
+      {/* Page Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Upload Your Content</h1>
+        <p className="text-gray-600">
           Add screenshots, designs, competitor URLs, or documents for analysis (optional)
         </p>
       </div>
-
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept=".png,.jpg,.jpeg,.pdf,.txt,.json,.fig"
-          onChange={handleFileInputChange}
-          className="hidden"
-        />
-
-        {/* Compact Files Section */}
-        <div className="space-y-3">
+      
+      {/* Main Upload Sections */}
+      <div className="space-y-8">
+        
+        {/* Files Section */}
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Files</h3>
+            <h2 className="text-xl font-semibold text-gray-900">Files</h2>
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleChooseFiles}
+              onClick={openFileDialog}
               className="h-8 w-8 p-0 rounded-full bg-gray-100 hover:bg-gray-200"
             >
               <Plus className="h-4 w-4" />
             </Button>
           </div>
           
-          {/* Compact Upload Container */}
+          {/* Upload Container */}
           <div 
-            className={`border-2 border-dashed rounded-xl p-4 transition-colors cursor-pointer ${
+            className={`border-2 border-dashed rounded-xl p-6 transition-colors cursor-pointer ${
               dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
             }`}
             onDragEnter={() => setDragActive(true)}
             onDragLeave={() => setDragActive(false)}
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleDrop}
-            onClick={handleChooseFiles}
+            onClick={openFileDialog}
           >
             {attachments.filter(att => att.type === 'file').length === 0 ? (
               // Empty State
               <div className="text-center py-8">
-                <div className="mx-auto h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
-                  <Upload className="h-6 w-6 text-gray-400" />
-                </div>
-                <p className="text-sm text-gray-600">Click to upload or drag & drop</p>
-                <p className="text-xs text-gray-500 mt-1">PNG, JPG, PDF up to 10MB</p>
+                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-lg text-gray-600 mb-2">Click to upload or drag & drop</p>
+                <p className="text-sm text-gray-500">PNG, JPG, PDF up to 10MB</p>
               </div>
             ) : (
-              // Files Preview Grid - Compact Design
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              // Files Grid
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {attachments
                   .filter(att => att.type === 'file')
                   .map((attachment) => (
-                    <CompactFileCard
+                    <FilePreviewCard
                       key={attachment.id}
                       attachment={attachment}
                       onDelete={() => handleAttachmentRemove(attachment.id)}
@@ -498,27 +490,27 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
                 
                 {/* Add More Button */}
                 <div 
-                  className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors"
-                  onClick={handleChooseFiles}
+                  className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-gray-400 transition-colors bg-gray-50"
+                  onClick={openFileDialog}
                 >
-                  <Plus className="h-6 w-6 text-gray-400" />
+                  <Plus className="h-8 w-8 text-gray-400" />
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Compact Websites Section */}
-        <div className="space-y-3">
+        {/* Websites Section */}
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Websites</h3>
+            <h2 className="text-xl font-semibold text-gray-900">Websites</h2>
             <span className="text-sm text-gray-500">
               {attachments.filter(att => att.type === 'url').length} added
             </span>
           </div>
           
           {/* URL Input */}
-          <div className="flex space-x-2">
+          <div className="flex space-x-3">
             <Input
               placeholder="Enter website URL (e.g., competitor.com)"
               value={urlInput}
@@ -529,19 +521,18 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
             <Button 
               onClick={handleAddUrl} 
               disabled={!urlInput.trim()}
-              size="sm"
             >
               Add
             </Button>
           </div>
           
-          {/* Website Previews - Compact List */}
+          {/* Website List */}
           {attachments.filter(att => att.type === 'url').length > 0 && (
-            <div className="space-y-2 max-h-40 overflow-y-auto">
+            <div className="space-y-3">
               {attachments
                 .filter(att => att.type === 'url')
                 .map((attachment) => (
-                  <CompactWebsiteCard
+                  <WebsitePreviewCard
                     key={attachment.id}
                     attachment={attachment}
                     onDelete={() => handleAttachmentRemove(attachment.id)}
@@ -553,26 +544,12 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
           )}
         </div>
 
-        {/* Status Summary - Only if items exist */}
-        {attachments.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-blue-900 font-medium">
-                ✓ Ready for Analysis
-              </span>
-              <span className="text-blue-700">
-                {attachments.length} item{attachments.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-          </div>
-        )}
-        
-        {/* Help Section - Guidance */}
+        {/* Tips Section */}
         <div className="bg-gray-50 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-gray-900 mb-2">💡 Tips for Better Analysis</h4>
+          <h3 className="text-sm font-medium text-gray-900 mb-3">💡 Tips for Better Analysis</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
             <div>
-              <p className="font-medium">📁 Recommended Files:</p>
+              <p className="font-medium text-gray-700 mb-2">📁 Recommended Files:</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>Design mockups & wireframes</li>
                 <li>Current website screenshots</li>
@@ -581,7 +558,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
               </ul>
             </div>
             <div>
-              <p className="font-medium">🔗 Useful URLs:</p>
+              <p className="font-medium text-gray-700 mb-2">🔗 Useful URLs:</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>Competitor websites</li>
                 <li>Your current site/app</li>
@@ -591,32 +568,32 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
             </div>
           </div>
         </div>
+      </div>
 
-        {/* SINGLE NAVIGATION - Only navigation in entire component */}
-        <div className="flex justify-between items-center pt-6 border-t border-gray-200 mt-8">
+      {/* SINGLE NAVIGATION - ONLY ONE IN ENTIRE FILE */}
+      <div className="flex justify-between items-center pt-8 border-t border-gray-200 mt-8">
+        <Button 
+          variant="outline" 
+          onClick={onPreviousStep}
+          className="flex items-center space-x-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Previous</span>
+        </Button>
+        
+        <div className="flex items-center space-x-3">
+          {attachments.length > 0 && (
+            <span className="text-sm text-gray-600">
+              {attachments.length} item{attachments.length !== 1 ? 's' : ''} ready
+            </span>
+          )}
           <Button 
-            variant="outline" 
-            onClick={onPreviousStep}
+            onClick={onNextStep}
             className="flex items-center space-x-2"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Previous</span>
+            <span>Continue to Context</span>
+            <ArrowRight className="w-4 h-4" />
           </Button>
-          
-          <div className="flex items-center space-x-3">
-            {attachments.length > 0 && (
-              <span className="text-sm text-gray-600">
-                {attachments.length} item{attachments.length !== 1 ? 's' : ''} ready
-              </span>
-            )}
-            <Button 
-              onClick={onNextStep}
-              className="flex items-center space-x-2"
-            >
-              <span>Continue to Context</span>
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
         </div>
       </div>
     </div>
