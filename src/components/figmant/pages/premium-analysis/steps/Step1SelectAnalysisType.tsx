@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { StepProps } from '../types';
 import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
@@ -85,7 +84,7 @@ export const Step1SelectAnalysisType: React.FC<StepProps> = ({
           selectedTemplate: template,
           templateCategory: template.category,
           templateTitle: template.title,
-          contextualFields: template.contextual_fields || template.contextFields || []
+          contextualFields: template?.contextual_fields || template?.contextFields || []
         }
       }));
       
