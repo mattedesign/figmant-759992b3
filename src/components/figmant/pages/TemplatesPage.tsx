@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -6,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { FileText, Star, Brain, Target, TrendingUp, Zap, Crown, Sparkles } from 'lucide-react';
 import { useClaudePromptExamples } from '@/hooks/useClaudePromptExamples';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const getCategoryIcon = (category: string) => {
   switch (category) {
@@ -38,14 +37,25 @@ export const TemplatesPage: React.FC = () => {
   const { data: promptTemplates = [], isLoading } = useClaudePromptExamples();
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleUseTemplate = (template) => {
-    // Route to wizard-analysis step 2 with template pre-selected
+    // CRITICAL: Don't navigate if we're currently in wizard mode
+    // This prevents Templates page from interfering with wizard flow
+    if (window.location.pathname.includes('wizard-analysis') || 
+        location.pathname.includes('wizard') ||
+        location.state?.activeSection === 'wizard-analysis') {
+      console.log('🚫 Wizard mode detected - Templates page ignoring navigation to prevent interference');
+      return;
+    }
+    
+    // Only navigate if we're explicitly on the templates page
+    // and not in any wizard context
+    console.log('✅ Templates page - navigating to analysis with template:', template.title);
     navigate('/figmant', { 
       state: { 
-        activeSection: 'wizard-analysis',
-        selectedTemplate: template,
-        startStep: 2
+        activeSection: 'analysis',
+        selectedTemplate: template
       }
     });
   };
