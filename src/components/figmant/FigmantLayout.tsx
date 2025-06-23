@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FigmantSidebar } from './sidebar/FigmantSidebarContainer';
 import { FigmantMainContent } from './FigmantMainContent';
 import { MobileNavigation } from './navigation/MobileNavigation';
@@ -8,26 +8,38 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { migrateNavigationRoute } from '@/utils/navigationMigration';
 
 export const FigmantLayout: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  // Get section from URL, default to 'dashboard'
-  const sectionFromUrl = searchParams.get('section') || 'dashboard';
-  const [activeSection, setActiveSection] = useState(() => migrateNavigationRoute(sectionFromUrl));
+  // Extract section from pathname instead of search params
+  const getActiveSectionFromPath = (pathname: string): string => {
+    // Remove /figmant prefix and get the section
+    const pathParts = pathname.split('/');
+    if (pathParts.length >= 3) {
+      return pathParts[2]; // e.g., /figmant/credits -> credits
+    }
+    return 'dashboard'; // default
+  };
+  
+  const [activeSection, setActiveSection] = useState(() => {
+    const pathSection = getActiveSectionFromPath(location.pathname);
+    return migrateNavigationRoute(pathSection);
+  });
+  
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // Sync activeSection with URL parameters
+  // Sync activeSection with URL pathname changes
   useEffect(() => {
-    const currentSection = searchParams.get('section') || 'dashboard';
-    const migratedSection = migrateNavigationRoute(currentSection);
+    const pathSection = getActiveSectionFromPath(location.pathname);
+    const migratedSection = migrateNavigationRoute(pathSection);
     
     if (migratedSection !== activeSection) {
-      console.log('🔧 URL sync - Updating section:', currentSection, '->', migratedSection);
+      console.log('🔧 URL sync - Updating section from path:', pathSection, '->', migratedSection);
       setActiveSection(migratedSection);
     }
-  }, [searchParams, activeSection]);
+  }, [location.pathname, activeSection]);
 
   // Handle navigation state from other pages
   useEffect(() => {
@@ -36,28 +48,20 @@ export const FigmantLayout: React.FC = () => {
       console.log('🔧 Location state - Setting section:', migratedSection);
       setActiveSection(migratedSection);
       
-      // Update URL to match
-      setSearchParams(prev => {
-        const newParams = new URLSearchParams(prev);
-        newParams.set('section', migratedSection);
-        return newParams;
-      });
+      // Navigate to the clean URL path
+      navigate(`/figmant/${migratedSection}`);
     }
-  }, [location.state, setSearchParams]);
+  }, [location.state, navigate]);
 
-  // Update setActiveSection to also update URL
+  // Handle navigation by updating the URL path
   const handleSectionChange = (section: string) => {
     console.log('🔧 Section change requested:', section);
     const migratedSection = migrateNavigationRoute(section);
     
     setActiveSection(migratedSection);
     
-    // Update URL
-    setSearchParams(prev => {
-      const newParams = new URLSearchParams(prev);
-      newParams.set('section', migratedSection);
-      return newParams;
-    });
+    // Navigate to the clean URL path
+    navigate(`/figmant/${migratedSection}`);
   };
 
   const handleBackToList = () => {

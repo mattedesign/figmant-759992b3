@@ -1,11 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { FigmantLayout } from '@/components/figmant/FigmantLayout';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const OwnerDashboard = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   
   // Map URL tab parameter to internal section names
@@ -26,35 +24,13 @@ export const OwnerDashboard = () => {
     'wizard-analysis': 'wizard-analysis'
   };
 
-  // Get initial section from URL or default to dashboard
-  const getInitialSection = () => {
-    const sectionParam = searchParams.get('section');
-    return sectionParam && tabToSectionMap[sectionParam] ? tabToSectionMap[sectionParam] : 'dashboard';
-  };
+  const [activeSection, setActiveSection] = useState('dashboard');
 
-  const [activeSection, setActiveSection] = useState(getInitialSection);
-
-  // Update URL when section changes
+  // Handle section changes - URL handling is done by FigmantLayout
   const handleSectionChange = (section: string) => {
     console.log('🔧 OwnerDashboard - Section change:', section);
-    
-    // Update URL to reflect the new section
-    setSearchParams(prev => {
-      const newParams = new URLSearchParams(prev);
-      newParams.set('section', section);
-      return newParams;
-    });
-    
     setActiveSection(section);
   };
-
-  // Listen for URL changes (back/forward navigation)
-  useEffect(() => {
-    const currentSection = getInitialSection();
-    if (currentSection !== activeSection) {
-      setActiveSection(currentSection);
-    }
-  }, [searchParams]);
 
   return (
     <FigmantLayout />

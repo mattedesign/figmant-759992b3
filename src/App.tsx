@@ -29,9 +29,89 @@ const App: React.FC = () => {
                   {/* Auth Route - No Guard */}
                   <Route path="/auth" element={<Auth />} />
                   
-                  {/* Main Figmant Application */}
+                  {/* Main Figmant Application with Individual Routes */}
                   <Route
-                    path="/figmant/*"
+                    path="/figmant"
+                    element={
+                      <AuthGuard>
+                        <FigmantLayout />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/figmant/dashboard"
+                    element={
+                      <AuthGuard>
+                        <FigmantLayout />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/figmant/analysis"
+                    element={
+                      <AuthGuard>
+                        <FigmantLayout />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/figmant/competitor-analysis"
+                    element={
+                      <AuthGuard>
+                        <FigmantLayout />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/figmant/wizard-analysis"
+                    element={
+                      <AuthGuard>
+                        <FigmantLayout />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/figmant/premium-analysis"
+                    element={
+                      <AuthGuard>
+                        <FigmantLayout />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/figmant/templates"
+                    element={
+                      <AuthGuard>
+                        <FigmantLayout />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/figmant/credits"
+                    element={
+                      <AuthGuard>
+                        <FigmantLayout />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/figmant/settings"
+                    element={
+                      <AuthGuard>
+                        <FigmantLayout />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/figmant/admin"
+                    element={
+                      <AuthGuard>
+                        <FigmantLayout />
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/figmant/help-support"
                     element={
                       <AuthGuard>
                         <FigmantLayout />
@@ -40,14 +120,14 @@ const App: React.FC = () => {
                   />
                   
                   {/* Root Redirect */}
-                  <Route path="/" element={<Navigate to="/figmant" replace />} />
+                  <Route path="/" element={<Navigate to="/figmant/dashboard" replace />} />
                   
                   {/* Legacy Routes - Redirect to Figmant */}
-                  <Route path="/dashboard/*" element={<Navigate to="/figmant" replace />} />
+                  <Route path="/dashboard/*" element={<Navigate to="/figmant/dashboard" replace />} />
                   <Route path="/competitor-analysis/*" element={<Navigate to="/figmant/analysis" replace />} />
                   
                   {/* Catch All - Redirect to Figmant */}
-                  <Route path="*" element={<Navigate to="/figmant" replace />} />
+                  <Route path="*" element={<Navigate to="/figmant/dashboard" replace />} />
                 </Routes>
               </Router>
             </div>
