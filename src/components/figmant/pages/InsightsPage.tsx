@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { DashboardHeader } from './dashboard/DashboardHeader';
 import { DashboardAnalyticsTabsSection } from './dashboard/DashboardAnalyticsTabsSection';
@@ -6,7 +5,17 @@ import { EnhancedDashboardSkeleton } from './dashboard/components/EnhancedSkelet
 import { useDashboardOptimized } from '@/hooks/useDashboardOptimized';
 import { useToast } from '@/hooks/use-toast';
 
-export const InsightsPage: React.FC = () => {
+interface InsightsPageProps {
+  activeSection?: string;
+  onSectionChange?: (section: string) => void;
+  user?: any;
+}
+
+export const InsightsPage: React.FC<InsightsPageProps> = ({
+  activeSection,
+  onSectionChange,
+  user
+}) => {
   const {
     memoizedAnalysisData,
     memoizedInsightsData,
