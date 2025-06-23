@@ -5,12 +5,7 @@ import { EnhancementDashboard } from './analysis/EnhancementDashboard';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTemplateCreditStore } from '@/stores/templateCreditStore';
 import { useAIEnhancement } from '@/hooks/useAIEnhancement';
-
-interface AnalysisPageEnhancedProps {
-  selectedTemplate?: any;
-  originalAnalysis?: any;
-  showEnhancementDashboard?: boolean;
-}
+import { AnalysisPageEnhancedProps } from '@/types/enhancement';
 
 export const AnalysisPageEnhanced: React.FC<AnalysisPageEnhancedProps> = ({ 
   selectedTemplate,

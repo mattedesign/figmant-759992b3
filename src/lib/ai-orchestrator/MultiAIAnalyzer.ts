@@ -1,6 +1,7 @@
 
-import { EnhancedAnalysisResult, EnhancementSettings, AccessibilityAnalysis, DiversityAnalysis, FormOptimization, SecondaryAnalysis } from '@/types/ai-enhancement';
+import { EnhancedAnalysisResult, EnhancementSettings, AccessibilityAnalysis, DiversityAnalysis, FormOptimization, SecondaryAnalysis } from '@/types/enhancement';
 import { supabase } from '@/integrations/supabase/client';
+import { isValidEnhancementSettings } from '@/utils/typeUtils';
 
 export class MultiAIAnalyzer {
   private settings: EnhancementSettings;
@@ -256,7 +257,14 @@ export class MultiAIAnalyzer {
         return null;
       }
 
-      return data.setting_value as EnhancementSettings;
+      // Type-safe parsing with validation
+      const settingsData = data.setting_value;
+      if (isValidEnhancementSettings(settingsData)) {
+        return settingsData;
+      }
+
+      console.warn('Invalid enhancement settings format, using defaults');
+      return null;
     } catch (error) {
       console.error('Failed to fetch enhancement settings:', error);
       return null;

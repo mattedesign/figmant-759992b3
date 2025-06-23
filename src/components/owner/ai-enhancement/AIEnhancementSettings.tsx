@@ -5,10 +5,11 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { EnhancementSettings, CostCalculation } from '@/types/ai-enhancement';
+import { EnhancementSettings, CostCalculation } from '@/types/enhancement';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { isValidEnhancementSettings } from '@/utils/typeUtils';
 
 export const AIEnhancementSettings: React.FC = () => {
   const { user, profile } = useAuth();
@@ -84,7 +85,7 @@ export const AIEnhancementSettings: React.FC = () => {
         .from('admin_settings')
         .upsert({
           setting_key: 'ai_enhancement_settings',
-          setting_value: settings,
+          setting_value: settings as any, // Type assertion for JSON compatibility
           updated_by: user.id
         });
 
@@ -119,18 +120,36 @@ export const AIEnhancementSettings: React.FC = () => {
     }
   };
 
-  const canEnableService = (serviceKey: string) => {
+  const canEnableService = (serviceKey: keyof Omit<EnhancementSettings, 'tier' | 'autoEnhance'>) => {
     const enabledCount = Object.values(settings).filter(
-      (service, index) => index < 4 && service.enabled
+      (service, index, array) => {
+        const keys = Object.keys(settings);
+        const currentKey = keys[index];
+        return ['googleVision', 'openaiVision', 'amazonRekognition', 'microsoftFormRecognizer'].includes(currentKey) &&
+               typeof service === 'object' && 
+               service && 
+               'enabled' in service && 
+               service.enabled;
+      }
     ).length;
 
-    if (settings.tier === 'basic' && enabledCount >= 1 && !settings[serviceKey as keyof EnhancementSettings].enabled) {
+    const currentService = settings[serviceKey];
+    const isCurrentEnabled = typeof currentService === 'object' && currentService && 'enabled' in currentService && currentService.enabled;
+
+    if (settings.tier === 'basic' && enabledCount >= 1 && !isCurrentEnabled) {
       return false;
     }
-    if (settings.tier === 'professional' && enabledCount >= 2 && !settings[serviceKey as keyof EnhancementSettings].enabled) {
+    if (settings.tier === 'professional' && enabledCount >= 2 && !isCurrentEnabled) {
       return false;
     }
     return true;
+  };
+
+  const updateServiceSetting = (serviceKey: keyof Omit<EnhancementSettings, 'tier' | 'autoEnhance'>, enabled: boolean) => {
+    setSettings(prev => ({
+      ...prev,
+      [serviceKey]: { ...prev[serviceKey], enabled }
+    }));
   };
 
   if (profile?.role !== 'owner') {
@@ -211,10 +230,7 @@ export const AIEnhancementSettings: React.FC = () => {
             <Switch
               checked={settings.googleVision.enabled}
               onCheckedChange={(enabled) => 
-                canEnableService('googleVision') && setSettings(prev => ({
-                  ...prev,
-                  googleVision: { ...prev.googleVision, enabled }
-                }))
+                canEnableService('googleVision') && updateServiceSetting('googleVision', enabled)
               }
               disabled={!canEnableService('googleVision')}
             />
@@ -234,10 +250,7 @@ export const AIEnhancementSettings: React.FC = () => {
             <Switch
               checked={settings.openaiVision.enabled}
               onCheckedChange={(enabled) => 
-                canEnableService('openaiVision') && setSettings(prev => ({
-                  ...prev,
-                  openaiVision: { ...prev.openaiVision, enabled }
-                }))
+                canEnableService('openaiVision') && updateServiceSetting('openaiVision', enabled)
               }
               disabled={!canEnableService('openaiVision')}
             />
@@ -257,10 +270,7 @@ export const AIEnhancementSettings: React.FC = () => {
             <Switch
               checked={settings.amazonRekognition.enabled}
               onCheckedChange={(enabled) => 
-                canEnableService('amazonRekognition') && setSettings(prev => ({
-                  ...prev,
-                  amazonRekognition: { ...prev.amazonRekognition, enabled }
-                }))
+                canEnableService('amazonRekognition') && updateServiceSetting('amazonRekognition', enabled)
               }
               disabled={!canEnableService('amazonRekognition')}
             />
@@ -280,10 +290,7 @@ export const AIEnhancementSettings: React.FC = () => {
             <Switch
               checked={settings.microsoftFormRecognizer.enabled}
               onCheckedChange={(enabled) => 
-                canEnableService('microsoftFormRecognizer') && setSettings(prev => ({
-                  ...prev,
-                  microsoftFormRecognizer: { ...prev.microsoftFormRecognizer, enabled }
-                }))
+                canEnableService('microsoftFormRecognizer') && updateServiceSetting('microsoftFormRecognizer', enabled)
               }
               disabled={!canEnableService('microsoftFormRecognizer')}
             />
