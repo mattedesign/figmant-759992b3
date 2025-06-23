@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -134,6 +135,8 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
   onNextStep,
   onPreviousStep
 }) => {
+  console.log('🔍 Step2SmartUpload rendered with stepData:', stepData);
+  
   const [dragActive, setDragActive] = useState(false);
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const [urlInput, setUrlInput] = useState<string>('');
@@ -150,6 +153,8 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
   }, []);
 
   const handleFileUpload = async (files: File[]) => {
+    console.log('📁 File upload called with files:', files.length);
+    
     const currentFiles = stepData.uploadedFiles || [];
     const newFiles = [...currentFiles, ...files];
     
@@ -198,49 +203,17 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
     fileInputRef.current?.click();
   };
 
-  const handleAddUrl = async () => {
-    const url = urlInput.trim();
-    if (!url) return;
-
-    try {
-      new URL(url);
-    } catch {
-      toast({
-        variant: "destructive",
-        title: "Invalid URL",
-        description: "Please enter a valid URL starting with http:// or https://",
-      });
-      return;
-    }
-
-    const urlAttachment: ChatAttachment = {
-      id: `url-${Date.now()}-${Math.random()}`,
-      type: 'url',
-      name: new URL(url).hostname,
-      url: url,
-      status: 'processing',
-      metadata: {
-        screenshots: {
-          desktop: { success: false, url },
-          mobile: { success: false, url }
-        }
-      }
-    };
-
-    setAttachments(prev => [...prev, urlAttachment]);
-    setUrlInput('');
-
-    toast({
-      title: "Capturing Screenshots",
-      description: `Starting screenshot capture for ${urlAttachment.name}...`,
-    });
-
+  const handleScreenshotCapture = async (attachment: ChatAttachment, url: string) => {
+    console.log('📸 Starting screenshot capture for:', url);
+    
     try {
       const screenshotResults = await ScreenshotCaptureService.captureCompetitorSet(
         [url],
-        true,
-        true
+        true, // desktop
+        true  // mobile
       );
+
+      console.log('📸 Screenshot results:', screenshotResults);
 
       const updatedMetadata = {
         screenshots: {
@@ -264,7 +237,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
       };
 
       setAttachments(prev => prev.map(att => 
-        att.id === urlAttachment.id 
+        att.id === attachment.id 
           ? { ...att, status: 'uploaded' as const, metadata: updatedMetadata }
           : att
       ));
@@ -281,7 +254,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
         toast({
           variant: "destructive",
           title: "Screenshot Failed",
-          description: `Unable to capture screenshots for ${urlAttachment.name}. The website will still be analyzed.`,
+          description: `Unable to capture screenshots for ${new URL(url).hostname}. The website will still be analyzed.`,
         });
       }
 
@@ -289,7 +262,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
       console.error('📸 Screenshot capture error:', error);
       
       setAttachments(prev => prev.map(att => 
-        att.id === urlAttachment.id 
+        att.id === attachment.id 
           ? { 
               ...att, 
               status: 'error' as const, 
@@ -307,9 +280,68 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
       toast({
         variant: "destructive",
         title: "Screenshot Failed",
-        description: `Unable to capture screenshots for ${urlAttachment.name}. The website will still be analyzed.`,
+        description: `Unable to capture screenshots for ${new URL(url).hostname}. The website will still be analyzed.`,
       });
     }
+  };
+
+  const handleAddUrl = async () => {
+    console.log('🔗 handleAddUrl called with:', urlInput);
+    
+    const url = urlInput.trim();
+    if (!url) {
+      console.log('🔗 URL input is empty, returning');
+      return;
+    }
+
+    console.log('🔗 Processing URL:', url);
+
+    try {
+      // Format URL properly
+      const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+      console.log('🔗 Formatted URL:', formattedUrl);
+      
+      new URL(formattedUrl); // Validate URL format
+      console.log('🔗 URL validation passed');
+    } catch {
+      console.error('🔗 Invalid URL format:', url);
+      toast({
+        variant: "destructive",
+        title: "Invalid URL",
+        description: "Please enter a valid URL starting with http:// or https://",
+      });
+      return;
+    }
+
+    const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+    
+    const urlAttachment: ChatAttachment = {
+      id: `url-${Date.now()}-${Math.random()}`,
+      type: 'url',
+      name: new URL(formattedUrl).hostname,
+      url: formattedUrl,
+      status: 'processing',
+      metadata: {
+        screenshots: {
+          desktop: { success: false, url: formattedUrl },
+          mobile: { success: false, url: formattedUrl }
+        }
+      }
+    };
+
+    console.log('🔗 Created attachment:', urlAttachment);
+    
+    setAttachments(prev => [...prev, urlAttachment]);
+    setUrlInput('');
+    console.log('🔗 URL added to attachments and input cleared');
+
+    toast({
+      title: "Capturing Screenshots",
+      description: `Starting screenshot capture for ${urlAttachment.name}...`,
+    });
+
+    // Start screenshot capture in background
+    handleScreenshotCapture(urlAttachment, formattedUrl);
   };
 
   const handleRetryScreenshot = async (attachment: ChatAttachment) => {
@@ -336,85 +368,11 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
       description: `Capturing new screenshots for ${new URL(attachment.url).hostname}...`,
     });
     
-    try {
-      const screenshotResults = await ScreenshotCaptureService.captureCompetitorSet(
-        [attachment.url],
-        true,
-        true
-      );
-      
-      const updatedMetadata = {
-        screenshots: {
-          desktop: {
-            success: screenshotResults.desktop?.[0]?.success || false,
-            url: attachment.url,
-            screenshotUrl: screenshotResults.desktop?.[0]?.screenshotUrl,
-            thumbnailUrl: screenshotResults.desktop?.[0]?.thumbnailUrl,
-            error: screenshotResults.desktop?.[0]?.success === false ? 
-              (screenshotResults.desktop?.[0]?.error || 'Desktop screenshot failed') : undefined
-          },
-          mobile: {
-            success: screenshotResults.mobile?.[0]?.success || false,
-            url: attachment.url,
-            screenshotUrl: screenshotResults.mobile?.[0]?.screenshotUrl,
-            thumbnailUrl: screenshotResults.mobile?.[0]?.thumbnailUrl,
-            error: screenshotResults.mobile?.[0]?.success === false ? 
-              (screenshotResults.mobile?.[0]?.error || 'Mobile screenshot failed') : undefined
-          }
-        }
-      };
-      
-      setAttachments(prev => prev.map(att => 
-        att.id === attachment.id 
-          ? { ...att, status: 'uploaded' as const, metadata: updatedMetadata }
-          : att
-      ));
-      
-      const desktopSuccess = screenshotResults.desktop?.[0]?.success;
-      const mobileSuccess = screenshotResults.mobile?.[0]?.success;
-      
-      if (desktopSuccess || mobileSuccess) {
-        toast({
-          title: "Screenshots Updated",
-          description: `Successfully captured ${desktopSuccess && mobileSuccess ? 'desktop and mobile' : desktopSuccess ? 'desktop' : 'mobile'} screenshots.`,
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Retry Failed",
-          description: `Still unable to capture screenshots for ${new URL(attachment.url).hostname}.`,
-        });
-      }
-      
-    } catch (error) {
-      console.error('🔄 Screenshot retry error:', error);
-      
-      setAttachments(prev => prev.map(att => 
-        att.id === attachment.id 
-          ? { 
-              ...att,
-              status: 'error' as const,
-              errorMessage: 'Screenshot retry failed',
-              metadata: {
-                ...attachment.metadata,
-                screenshots: {
-                  desktop: { success: false, url: attachment.url, error: 'Retry failed' },
-                  mobile: { success: false, url: attachment.url, error: 'Retry failed' }
-                }
-              }
-            }
-          : att
-      ));
-      
-      toast({
-        variant: "destructive",
-        title: "Retry Failed",
-        description: `Unable to capture screenshots. The website will still be analyzed.`,
-      });
-    }
+    await handleScreenshotCapture(attachment, attachment.url);
   };
 
   const handleAttachmentRemove = (id: string) => {
+    console.log('🗑️ Removing attachment:', id);
     setAttachments(prev => prev.filter(att => att.id !== id));
   };
 
@@ -570,7 +528,7 @@ export const Step2SmartUpload: React.FC<StepProps> = ({
         </div>
       </div>
 
-      {/* SINGLE NAVIGATION - ONLY ONE IN ENTIRE FILE */}
+      {/* SINGLE NAVIGATION - ONLY ONE SET OF BUTTONS */}
       <div className="flex justify-between items-center pt-8 border-t border-gray-200 mt-8">
         <Button 
           variant="outline" 
