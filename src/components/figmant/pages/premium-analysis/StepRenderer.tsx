@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { Step1SelectAnalysisType } from './steps/Step1SelectAnalysisType';
-import { Step2SmartUpload } from './steps/Step2SmartUpload';
-import { Step3ContextualFields } from './steps/Step3ContextualFields';
-import { Step4ContextualResults } from './steps/Step4ContextualResults';
+import { Step5UploadFiles } from './steps/Step5UploadFiles';
+import { Step6CustomPrompt } from './steps/Step6CustomPrompt';
+import { Step7Processing } from './steps/Step7Processing';
 import { StepProps } from './types';
 
 interface StepRendererProps extends StepProps {
@@ -18,11 +18,11 @@ export const StepRenderer: React.FC<StepRendererProps> = (props) => {
       case 1:
         return <Step1SelectAnalysisType {...props} />;
       case 2:
-        return <Step2SmartUpload {...props} />; // File upload is now step 2
+        return <Step5UploadFiles {...props} />; // File Upload
       case 3:
-        return <Step3ContextualFields {...props} />; // Contextual fields step 3
+        return <Step6CustomPrompt {...props} />; // Contextual Fields
       case 4:
-        return <Step4ContextualResults {...props} />; // Results step 4
+        return <Step7Processing {...props} />; // Analysis Results
       default:
         return <div>Invalid step</div>;
     }

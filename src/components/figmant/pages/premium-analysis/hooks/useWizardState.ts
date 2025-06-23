@@ -100,16 +100,13 @@ export const useWizardState = () => {
   const canProceedToNextStep = (): boolean => {
     switch (currentStep) {
       case 1:
-        return !!stepData.selectedType;
+        return !!stepData.selectedType; // Template selected
       case 2:
-        // Allow proceeding even if no uploads (uploads are optional)
-        return true;
+        return true; // File upload (optional)
       case 3:
-        // Require at least some contextual data or additional context
-        return Object.keys(stepData.contextualData || {}).length > 0 || 
-               !!stepData.analysisGoals?.trim();
+        return true; // Contextual fields (optional)
       case 4:
-        return false; // Results step - no next step
+        return false; // Analysis results (final step)
       default:
         return false;
     }

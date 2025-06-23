@@ -28,15 +28,18 @@ export const Step6CustomPrompt: React.FC<StepProps> = ({
   return (
     <div className="w-full min-h-full">
       <div className="w-full">
-        <h2 className="text-3xl font-bold text-center mb-8">Custom Prompts</h2>
+        <h2 className="text-3xl font-bold text-center mb-8">Additional Context</h2>
+        <p className="text-center text-gray-600 mb-8">
+          Add any specific requirements, goals, or context for your analysis (optional)
+        </p>
       </div>
 
       <div className="max-w-2xl mx-auto space-y-6">
         <FormField
           id="customPrompt"
           type="textarea"
-          label="Add Your Custom Prompt"
-          placeholder="e.g. Create a user-friendly mobile app to help people track their daily water intake"
+          label="Analysis Goals & Context"
+          placeholder="e.g. Focus on mobile user experience, analyze checkout flow conversion, compare against competitor X..."
           value={stepData.customPrompt}
           onChange={handleCustomPromptChange}
         />
